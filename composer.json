@@ -1,0 +1,27 @@
+{
+    "name": "jfelder/oracledb",
+    "description": "Oracle DB driver for Laravel 4",
+    "keywords": ["oracle", "laravel"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jimmy Felder",
+            "email": "jimmyfelder@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "illuminate/support": "4.0.x",
+        "illuminate/database": "4.0.x"
+    },
+    "require-dev": {
+        "mockery/mockery": "0.7.2",
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Jfelder\\OracleDB": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
