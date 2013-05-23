@@ -1,6 +1,7 @@
 <?php namespace Jfelder\OracleDB\Schema\Grammars;
 
 use \Illuminate\Support\Fluent;
+use \Illuminate\Database\Connection;
 use \Illuminate\Database\Schema\Blueprint;
 
 class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {

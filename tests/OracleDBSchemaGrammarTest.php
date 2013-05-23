@@ -3,7 +3,7 @@
 use Mockery as m;
 use Illuminate\Database\Schema\Blueprint;
 
-class OracledbSchemaGrammarTest extends PHPUnit_Framework_TestCase {
+class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 
 	public function tearDown()
 	{
