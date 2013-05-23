@@ -1,6 +1,6 @@
 # Laravel 4 Oracle Database Package
 
-OracleDB [![Build Status](https://travis-ci.org/jfelder/Laravel-OracleDB.png)](https://travis-ci.org/jfelder/Laravel-OracleDB)
+OracleDB [![Build Status](https://travis-ci.org/jfelder/Laravel-OracleDB.png?branch=master)](https://travis-ci.org/jfelder/Laravel-OracleDB)
 ========
 
 OracleDB is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). OracleDB is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses the  (Thanks to @taylorotwell)
