@@ -71,9 +71,9 @@ You can use the Query Builder functionality exactly the same as you would with t
 Every query on [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) has been tested to ensure that it works.
 
 Offset & Limit
-
+```php
 $users = DB::table('users')->skip(10)->take(5)->get();
-
+```
 
 See [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) for more information.
 
