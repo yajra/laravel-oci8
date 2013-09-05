@@ -1,8 +1,8 @@
-<?php namespace CrazyCodr\Laravel\PdoViaOci8;
+<?php namespace CrazyCodr\Oci8;
 
 use Illuminate\Database\Connection;
 
-class PdoViaOci8Connection extends Connection {
+class Oci8Connection extends Connection {
 
 	/**
 	 * Get the default query grammar instance.
@@ -11,7 +11,7 @@ class PdoViaOci8Connection extends Connection {
 	 */
 	protected function getDefaultQueryGrammar()
 	{
-		return $this->withTablePrefix(new Query\Grammars\OracleGrammar);
+		return $this->withTablePrefix(new \Jfelder\OracleDB\Query\Grammars\OracleGrammar);
 	}
 
 	/**
@@ -21,7 +21,6 @@ class PdoViaOci8Connection extends Connection {
 	 */
 	protected function getDefaultSchemaGrammar()
 	{
-		return $this->withTablePrefix(new Schema\Grammars\OracleGrammar);
+		return $this->withTablePrefix(new \Jfelder\OracleDB\Schema\Grammars\OracleGrammar);
 	}
-	
 }

@@ -1,27 +1,21 @@
 {
-    "name": "crazycodr/laravel-pdo-via-oci8",
-    "description": "Oracle DB driver for Laravel 4 using CrazyCodr's PDO userspace OCI8 driver",
-    "keywords": ["oracle", "laravel"],
-    "license": "MIT",
+    "name": "crazycodr/laravel-oci8",
+    "description": "Laravel PDO Userspace wrapper around Oci8 functions",
     "authors": [
         {
-            "name": "CrazyCodr - Mathieu Dumoulin",
+            "name": "Mathieu Dumoulin",
             "email": "crazyone@crazycoders.net"
         }
     ],
     "require": {
         "php": ">=5.3.0",
         "illuminate/support": "4.0.x",
-        "illuminate/database": "4.0.x"
-    },
-    "require-dev": {
-        "mockery/mockery": "0.7.2",
-        "phpunit/phpunit": "3.7.*"
+        "jfelder/oracledb": "dev-master",
+        "crazycodr/pdo-via-oci8": "dev-master"
     },
     "autoload": {
         "psr-0": {
-            "CrazyCodr\\Laravel\\PdoViaOci8": "src/"
+            "CrazyCodr\\Oci8": "src/"
         }
-    },
-    "minimum-stability": "dev"
+    }
 }

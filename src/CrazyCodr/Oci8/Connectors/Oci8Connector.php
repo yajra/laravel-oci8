@@ -1,18 +1,21 @@
-<?php namespace CrazyCodr\Laravel\PdoViaOci8\Connectors;
+<?php namespace CrazyCodr\Oci8\Connectors;
 
 use Illuminate\Database\Connectors;
 
-class PdoViaOci8Connector extends \Illuminate\Database\Connectors\Connector implements \Illuminate\Database\Connectors\ConnectorInterface {
+class Oci8Connector 
+    extends \Illuminate\Database\Connectors\Connector 
+    implements \Illuminate\Database\Connectors\ConnectorInterface 
+{
 
-    	/**
+    /**
 	 * The default PDO connection options.
 	 *
 	 * @var array
 	 */
 	protected $options = array(
-			\PDO::ATTR_CASE => \PDO::CASE_LOWER,
-			\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-			\PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
+		\PDO::ATTR_CASE => \PDO::CASE_LOWER,
+		\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+		\PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
 	);
 
 	/**
@@ -29,8 +32,10 @@ class PdoViaOci8Connector extends \Illuminate\Database\Connectors\Connector impl
 		// new connection instance. The PDO options control various aspects of the
 		// connection's behavior, and some might be specified by the developers.
 		$options = $this->getOptions($config);
-        
-		return new \CrazyCodr\Pdo\Oci8($dsn, $config['username'], $config['password']);
+
+		$connection = new \CrazyCodr\Pdo\Oci8($dsn, $config['username'], $config['password'], $options);
+                
+		return $connection;
 	}
 
 	/**
@@ -45,26 +50,26 @@ class PdoViaOci8Connector extends \Illuminate\Database\Connectors\Connector impl
 		// First we will create the basic DSN setup as well as the port if it is in
 		// in the configuration options. This will give us the basic DSN we will
 		// need to establish the PDO connections and return them back for use.
-		if (isset($config['port'])) 
+        if (isset($config['port'])) 
         {
             $port = (int)$config['port'];
-		} 
+        } 
         else 
         {
             $port = 1521;
-		}
+        }
 
-        //If no host, the db name must be defined in tnsnames.ora
-		if (isset($config['host'])) 
+        // If no host, the db name must be defined in tnsnames.ora 
+        if (isset($config['hostname'])) 
         {
-            $dsn = "oci://".$config['host'].":".$port.'/'.$config['database'];
-		}
+            $dsn = "oci://".$config['hostname'].':'.$port."/".$config['database'];
+        } 
         else 
         {
             $dsn = "oci://".$config['database'];
-		}
+        }
 
-		//If a character set has been specified, include it
+        // If a character set has been specified, include it
         if (isset($config['charset'])) 
         {
             $dsn .= ";charset=".$config['charset'];
@@ -72,6 +77,6 @@ class PdoViaOci8Connector extends \Illuminate\Database\Connectors\Connector impl
 
         return $dsn;
 
-	}
+    }
         
 }
