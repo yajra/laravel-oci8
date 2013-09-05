@@ -17,5 +17,6 @@
         "psr-0": {
             "CrazyCodr\\Oci8": "src/"
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
