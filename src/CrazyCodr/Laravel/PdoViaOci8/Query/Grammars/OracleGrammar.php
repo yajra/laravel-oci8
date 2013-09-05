@@ -1,4 +1,4 @@
-<?php namespace Jfelder\OracleDB\Query\Grammars;
+<?php namespace CrazyCodr\Laravel\PdoViaOci8\Query\Grammars;
 
 use \Illuminate\Database\Query\Builder;
 

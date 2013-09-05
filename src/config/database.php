@@ -3,10 +3,10 @@
 return array(
 	'connections' => array(
 
-		'oracle' => array(
-			'driver'   => 'oci',
+		'laravel-pdo-via-oci8' => array(
+			'driver'   => 'pdo-via-oci8',
 			'host'     => 'localhost',
-                        'port'     => '1521',
+            'port'     => '1521',
 			'database' => 'database',
 			'username' => 'root',
 			'password' => '',

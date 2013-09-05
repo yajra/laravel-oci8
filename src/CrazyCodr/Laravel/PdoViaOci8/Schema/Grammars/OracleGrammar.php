@@ -1,4 +1,4 @@
-<?php namespace Jfelder\OracleDB\Schema\Grammars;
+<?php namespace CrazyCodr\Laravel\PdoViaOci8\Schema\Grammars;
 
 use \Illuminate\Support\Fluent;
 use \Illuminate\Database\Connection;

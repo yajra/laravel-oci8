@@ -1,8 +1,8 @@
-<?php namespace Jfelder\OracleDB;
+<?php namespace CrazyCodr\Laravel\PdoViaOci8;
 
 use Illuminate\Database\Connection;
 
-class OracleConnection extends Connection {
+class PdoViaOci8Connection extends Connection {
 
 	/**
 	 * Get the default query grammar instance.
@@ -23,4 +23,5 @@ class OracleConnection extends Connection {
 	{
 		return $this->withTablePrefix(new Schema\Grammars\OracleGrammar);
 	}
+	
 }

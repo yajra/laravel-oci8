@@ -1,8 +1,8 @@
-<?php namespace Jfelder\OracleDB\Connectors;
+<?php namespace CrazyCodr\Laravel\PdoViaOci8\Connectors;
 
 use Illuminate\Database\Connectors;
 
-class OracleConnector extends \Illuminate\Database\Connectors\Connector implements \Illuminate\Database\Connectors\ConnectorInterface {
+class PdoViaOci8Connector extends \Illuminate\Database\Connectors\Connector implements \Illuminate\Database\Connectors\ConnectorInterface {
 
     	/**
 	 * The default PDO connection options.
@@ -29,10 +29,8 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
 		// new connection instance. The PDO options control various aspects of the
 		// connection's behavior, and some might be specified by the developers.
 		$options = $this->getOptions($config);
-
-		$connection = $this->createConnection($dsn, $config, $options);
-                
-		return $connection;
+        
+		return new \CrazyCodr\Pdo\Oci8($dsn, $config['username'], $config['password']);
 	}
 
 	/**
@@ -43,37 +41,37 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
 	 */
 	protected function getDsn(array $config)
 	{
+
 		// First we will create the basic DSN setup as well as the port if it is in
 		// in the configuration options. This will give us the basic DSN we will
 		// need to establish the PDO connections and return them back for use.
-		extract($config);
-
 		if (isset($config['port'])) 
-                {
-                    $port = ":{$config['port']}";
+        {
+            $port = (int)$config['port'];
 		} 
-                else 
-                {
-                    $port = "";
+        else 
+        {
+            $port = 1521;
 		}
 
-                // If no host, the db name must be defined in tnsnames.ora 
+        //If no host, the db name must be defined in tnsnames.ora
 		if (isset($config['host'])) 
-                {
-                    $dsn = "oci:dbname={$config['host']}{$port}/{$config['database']}";
-		} 
-                else 
-                {
-                    $dsn = "oci:dbname={$config['database']}";
+        {
+            $dsn = "oci://".$config['host'].":".$port.'/'.$config['database'];
+		}
+        else 
+        {
+            $dsn = "oci://".$config['database'];
 		}
 
-		// If a character set has been specified, include it
-                if (isset($config['charset'])) 
-                {
-                    $dsn .= ";charset=".$config['charset'];
-                }
+		//If a character set has been specified, include it
+        if (isset($config['charset'])) 
+        {
+            $dsn .= ";charset=".$config['charset'];
+        }
 
-                return $dsn;
+        return $dsn;
+
 	}
         
 }
