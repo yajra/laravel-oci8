@@ -68,6 +68,12 @@ class Oci8Connector
         {
             $dsn = "oci://".$config['database'];
         }
+        
+        // Add SID, if defined in config
+        if (isset($config['sid']) && $config['sid'])
+        {
+	        $dsn .= '/SID/'.$config['sid'];
+        }
 
         // If a character set has been specified, include it
         if (isset($config['charset'])) 
