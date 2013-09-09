@@ -64,6 +64,10 @@ class Oci8Connector
         {
             $dsn = "oci://".$config['host'].':'.$port."/".$config['database'];
         } 
+        else if (isset($config['hostname'])) 
+        {
+            $dsn = "oci://".$config['hostname'].':'.$port."/".$config['database'];
+        } 
         else 
         {
             $dsn = "oci://".$config['database'];
