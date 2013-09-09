@@ -38,7 +38,7 @@ Finally you need to setup a valid database configuration using the driver "pdo-v
 
 ```php
 'connection-name' => array(
-    'hostname' => 'something',
+    'host' => 'something',
     'port' => 'something',
     'username' => 'something',
     'password' => 'something',

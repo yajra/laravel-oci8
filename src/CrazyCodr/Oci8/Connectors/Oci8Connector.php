@@ -60,7 +60,11 @@ class Oci8Connector
         }
 
         // If no host, the db name must be defined in tnsnames.ora 
-        if (isset($config['hostname'])) 
+        if (isset($config['host'])) 
+        {
+            $dsn = "oci://".$config['host'].':'.$port."/".$config['database'];
+        } 
+        else if (isset($config['hostname'])) 
         {
             $dsn = "oci://".$config['hostname'].':'.$port."/".$config['database'];
         } 
