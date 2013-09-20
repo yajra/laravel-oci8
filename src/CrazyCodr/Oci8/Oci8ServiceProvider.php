@@ -43,9 +43,9 @@ class Oci8ServiceProvider extends ServiceProvider {
 			//Create a connector
 	        $this->app['db']->extend($conn, function($config) 
 	        {
-	            $oConnector = new \CrazyCodr\Oci8\Connectors\Oci8Connector();
+	            $oConnector = new Connectors\Oci8Connector();
 	            $connection = $oConnector->connect($config);
-	            return new \CrazyCodr\Oci8\Oci8Connection($connection, $config["database"], $config["prefix"]);
+	            return new Oci8Connection($connection, $config["database"], $config["prefix"]);
 	        });
 
 		}

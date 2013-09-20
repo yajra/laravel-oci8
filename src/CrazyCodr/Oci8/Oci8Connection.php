@@ -11,7 +11,7 @@ class Oci8Connection extends Connection {
 	 */
 	protected function getDefaultQueryGrammar()
 	{
-		return $this->withTablePrefix(new \Jfelder\OracleDB\Query\Grammars\OracleGrammar);
+		return $this->withTablePrefix(new Query\Grammars\OracleGrammar);
 	}
 
 	/**
@@ -21,6 +21,6 @@ class Oci8Connection extends Connection {
 	 */
 	protected function getDefaultSchemaGrammar()
 	{
-		return $this->withTablePrefix(new \Jfelder\OracleDB\Schema\Grammars\OracleGrammar);
+		return $this->withTablePrefix(new Schema\Grammars\OracleGrammar);
 	}
 }
