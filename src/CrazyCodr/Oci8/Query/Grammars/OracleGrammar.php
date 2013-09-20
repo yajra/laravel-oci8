@@ -115,5 +115,16 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	{
 		return '';
 	}
+	
+	/**
+	* Compile a truncate table statement into SQL.
+	*
+	* @param  \Illuminate\Database\Query\Builder  $query
+	* @return array
+	*/
+	public function compileTruncate(Builder $query)
+	{
+		return array('truncate table '.$this->wrapTable($query->from) => array());
+	}
 
 }
