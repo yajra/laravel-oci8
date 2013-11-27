@@ -45,7 +45,10 @@ class Oci8ServiceProvider extends ServiceProvider {
 	        {
 	            $oConnector = new Connectors\Oci8Connector();
 	            $connection = $oConnector->connect($config);
-	            return new Oci8Connection($connection, $config["database"], $config["prefix"]);
+	            $db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
+	            // set oracle date format to match PHP's date
+	            $db->setDateFormat('YYYY-MM-DD HH:MI:SS');
+	            return $db;
 	        });
 
 		}
