@@ -61,4 +61,53 @@ Also compatible with:
 - Schema (WIP)
 - Migrations (WIP)
 
-forked from crazycodr/laravel-oci8 (https://github.com/crazycodr/laravel-oci8)
+Examples
+=======
+
+Configuration (database.php)
+```php
+'default' => 'oracle',
+
+'oracle' => array(
+    'driver' => 'pdo-via-oci8',
+    'host' => '127.0.0.1',
+    'port' => '1521',
+    'database' => 'xe', // Service ID
+    'username' => 'schema',
+    'password' => 'password',
+    'charset' => '',
+    'prefix' => '',
+)
+```
+
+Basic query
+```php
+DB::select('select * from mylobs');
+```
+
+The lovely Oracle BLOB >.<
+
+Querying a blob field will now load the value instead of the OCI-Lob object. See [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) for blob conversion details.
+```php
+$data = DB::table('mylobs')->get();
+foreach ($data as $row) {
+	echo $row->blobdata . '<br>';
+}
+```
+Inserting a blob
+```php
+DB::transaction(function($conn){
+	$pdo = $conn->pdo;
+	$sql = "INSERT INTO mylobs (id, blobdata)
+		VALUES (mylobs_id_seq.nextval, EMPTY_BLOB())
+		RETURNING blobdata INTO :blob";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':blob', $lob, PDO::PARAM_LOB);
+	$stmt->execute();
+	$lob->save('blob content');
+});
+```
+
+CREDITS
+=======
+forked from [crazycodr/laravel-oci8](https://github.com/crazycodr/laravel-oci8)
