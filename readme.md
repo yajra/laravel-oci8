@@ -3,7 +3,7 @@
 Laravel-OCI8
 ============
 
-Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses CrazyCodr/pdo-via-oci8 to communicate with Oracle.
+Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses yajra/laravel-pdo-via-oci8 to communicate with Oracle.
 
 The PDO-via-OCI8 package is a simple userspace driver for PDO that uses the tried and
 tested OCI8 functions instead of using the still experimental and not all that functionnal
@@ -17,12 +17,12 @@ Also note that this package is highly dependant on jfelder/oracledb for all the 
 Installation
 ============
 
-Add `crazycodr/laravel-oci8` as a requirement to composer.json:
+Add `yajra/laravel-oci8` as a requirement to composer.json:
 
 ```json
 {
     "require": {
-        "crazycodr/laravel-oci8": "*"
+        "yajra/laravel-oci8": "*"
     }
 }
 ```
@@ -31,7 +31,7 @@ And then run `composer update`
 Once Composer has installed or updated your packages you need to register the service provider. Open up `app/config/app.php` and find the `providers` key and add:
 
 ```php
-'CrazyCodr\Oci8\Oci8ServiceProvider'
+'yajra\Oci8\Oci8ServiceProvider'
 ```
 
 Finally you need to setup a valid database configuration using the driver "pdo-via-oci8". Configure your connection as usual with:
@@ -60,3 +60,5 @@ Also compatible with:
 - Eloquent
 - Schema (WIP)
 - Migrations (WIP)
+
+forked from crazycodr/laravel-oci8 (https://github.com/crazycodr/laravel-oci8)

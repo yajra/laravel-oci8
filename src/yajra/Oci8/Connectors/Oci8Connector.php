@@ -1,10 +1,10 @@
-<?php namespace CrazyCodr\Oci8\Connectors;
+<?php namespace yajra\Oci8\Connectors;
 
 use Illuminate\Database\Connectors;
 
-class Oci8Connector 
-    extends \Illuminate\Database\Connectors\Connector 
-    implements \Illuminate\Database\Connectors\ConnectorInterface 
+class Oci8Connector
+    extends \Illuminate\Database\Connectors\Connector
+    implements \Illuminate\Database\Connectors\ConnectorInterface
 {
 
     /**
@@ -33,8 +33,8 @@ class Oci8Connector
 		// connection's behavior, and some might be specified by the developers.
 		$options = $this->getOptions($config);
 
-		$connection = new \CrazyCodr\Pdo\Oci8($dsn, $config['username'], $config['password'], $options);
-                
+		$connection = new \yajra\Pdo\Oci8($dsn, $config['username'], $config['password'], $options);
+
 		return $connection;
 	}
 
@@ -50,29 +50,29 @@ class Oci8Connector
 		// First we will create the basic DSN setup as well as the port if it is in
 		// in the configuration options. This will give us the basic DSN we will
 		// need to establish the PDO connections and return them back for use.
-        if (isset($config['port'])) 
+        if (isset($config['port']))
         {
             $port = (int)$config['port'];
-        } 
-        else 
+        }
+        else
         {
             $port = 1521;
         }
 
-        // If no host, the db name must be defined in tnsnames.ora 
-        if (isset($config['host'])) 
+        // If no host, the db name must be defined in tnsnames.ora
+        if (isset($config['host']))
         {
             $dsn = "oci://".$config['host'].':'.$port."/".$config['database'];
-        } 
-        else if (isset($config['hostname'])) 
+        }
+        else if (isset($config['hostname']))
         {
             $dsn = "oci://".$config['hostname'].':'.$port."/".$config['database'];
-        } 
-        else 
+        }
+        else
         {
             $dsn = "oci://".$config['database'];
         }
-        
+
         // Add SID, if defined in config
         if (isset($config['sid']) && $config['sid'])
         {
@@ -80,7 +80,7 @@ class Oci8Connector
         }
 
         // If a character set has been specified, include it
-        if (isset($config['charset'])) 
+        if (isset($config['charset']))
         {
             $dsn .= ";charset=".$config['charset'];
         }
@@ -88,5 +88,5 @@ class Oci8Connector
         return $dsn;
 
     }
-        
+
 }

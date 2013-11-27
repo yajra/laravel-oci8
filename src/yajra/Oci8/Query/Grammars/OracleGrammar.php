@@ -1,4 +1,4 @@
-<?php namespace CrazyCodr\Oci8\Query\Grammars;
+<?php namespace yajra\Oci8\Query\Grammars;
 
 use \Illuminate\Database\Query\Builder;
 
@@ -51,7 +51,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		// expression from the query and get the records with row numbers within our
 		// given limit and offset value that we just put on as a query constraint.
 		$temp = $this->compileTableExpression($sql, $constraint, $query);
-                
+
                 return $temp;
 	}
 
@@ -71,7 +71,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 
 			return "between {$start} and {$finish}";
 		}
-	
+
 		return ">= {$start}";
 	}
 
@@ -81,7 +81,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 * @param  string  $sql
 	 * @param  string  $constraint
 	 * @return string
-         * 
+         *
  	 */
 	protected function compileTableExpression($sql, $constraint, $query)
 	{
@@ -115,7 +115,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	{
 		return '';
 	}
-	
+
 	/**
 	* Compile a truncate table statement into SQL.
 	*

@@ -1,4 +1,4 @@
-<?php namespace CrazyCodr\Oci8;
+<?php namespace yajra\Oci8;
 
 use Illuminate\Support\ServiceProvider;
 use Config;
@@ -19,7 +19,7 @@ class Oci8ServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('crazycodr/oci8');
+		$this->package('yajra/oci8');
 	}
 
 	/**
@@ -30,7 +30,7 @@ class Oci8ServiceProvider extends ServiceProvider {
 	public function register()
 	{
 
-		//Extend the connections with pdo-via-oci8 drivers by using a crazycodr\pdo\oci8 connector
+		//Extend the connections with pdo-via-oci8 drivers by using a yajra\pdo\oci8 connector
 		foreach(Config::get('database.connections') as $conn => $config)
 		{
 
@@ -41,7 +41,7 @@ class Oci8ServiceProvider extends ServiceProvider {
 			}
 
 			//Create a connector
-	        $this->app['db']->extend($conn, function($config) 
+	        $this->app['db']->extend($conn, function($config)
 	        {
 	            $oConnector = new Connectors\Oci8Connector();
 	            $connection = $oConnector->connect($config);

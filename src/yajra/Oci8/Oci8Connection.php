@@ -1,4 +1,4 @@
-<?php namespace CrazyCodr\Oci8;
+<?php namespace yajra\Oci8;
 
 use Illuminate\Database\Connection;
 
