@@ -105,6 +105,16 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	}
 
 	/**
+	 * Compile the query to determine if a table exists.
+	 *
+	 * @return string
+	 */
+	public function compileTableExists()
+	{
+		return "SELECT * FROM user_tables where upper(table_name) = upper(?)";
+	}
+
+	/**
 	 * Compile a create table command.
 	 *
 	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
@@ -466,7 +476,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function typeTimestamp(Fluent $column)
 	{
-		return 'timestamp default 0';
+		return 'date default sysdate';
 	}
 
 	/**
