@@ -86,7 +86,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	protected function compileTableExpression($sql, $constraint, $query)
 	{
             if ($query->limit > 0) {
-                return "select t2.* from ( select t1.*, ROWNUM AS \"rn\" from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+                return "select t2.* from ( select ROWNUM AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
             } else {
                 return "select * from ({$sql}) where rownum {$constraint}";
             }
