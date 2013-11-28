@@ -32,9 +32,45 @@ class Oci8Connection extends Connection {
 	 * function to set oracle's current session date format
 	 * @param string $format
 	 */
-	public function setDateFormat($format = 'YYYY-MM-DD HH:MI:SS') {
-		$sql = "alter session set nls_date_format = '$format'";
-		$this->pdo->exec($sql);
+	public function setDateFormat($format = 'YYYY-MM-DD HH:MI:SS')
+	{
+		self::statement("alter session set nls_date_format = '$format'");
 	}
 
+	/**
+	 * function to create oracle sequence
+	 * @param  strine $name
+	 */
+	public function createSequence($name)
+	{
+		if (!$name) {
+			return false;
+		}
+		return self::statement('CREATE SEQUENCE '. $name);
+	}
+
+	/**
+	 * function to drop oracle sequence
+	 * @param  strine $name
+	 */
+	public function dropSequence($name)
+	{
+		if (!$name) {
+			return false;
+		}
+		return self::statement('DROP SEQUENCE '. $name);
+	}
+
+	/**
+	 * function to get oracle sequence last inserted id
+	 * @param  strine $name
+	 */
+	public function lastInsertId($name)
+	{
+		if (!$name) {
+			return false;
+		}
+		$data = self::select("SELECT $name.CURRVAL as id FROM DUAL");
+		return $data[0]->id;
+	}
 }
