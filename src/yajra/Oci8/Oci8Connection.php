@@ -40,6 +40,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * function to create oracle sequence
 	 * @param  strine $name
+	 * @return boolean
 	 */
 	public function createSequence($name)
 	{
@@ -52,6 +53,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * function to drop oracle sequence
 	 * @param  strine $name
+	 * @return boolean
 	 */
 	public function dropSequence($name)
 	{
@@ -64,13 +66,38 @@ class Oci8Connection extends Connection {
 	/**
 	 * function to get oracle sequence last inserted id
 	 * @param  strine $name
+	 * @return integer
 	 */
 	public function lastInsertId($name)
 	{
 		if (!$name) {
-			return false;
+			return 0;
 		}
 		$data = self::select("SELECT $name.CURRVAL as id FROM DUAL");
 		return $data[0]->id;
 	}
+
+	/**
+	 * get sequence next value
+	 * @param  string $name
+	 * @return integer
+	 */
+	public function nextSequenceValue($name) {
+		if (!$name) {
+			return 0;
+		}
+		$data = self::select("SELECT $name.NEXTVAL as id FROM DUAL");
+		return $data[0]->id;
+	}
+
+	/**
+	 * same function as lastInsertId. added for clarity with oracle sql statement.
+	 * @param  string $name
+	 * @return integer
+	 */
+	public function currentSequenceValue($name)
+	{
+		return $this->lastInsertId($name);
+	}
+
 }
