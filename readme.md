@@ -108,6 +108,31 @@ DB::transaction(function($conn){
 });
 ```
 
+Oracle Sequence Examples
+```php
+// creating a sequence
+DB::createSequence('seq_name');
+
+// deleting a sequence
+DB::dropSequence('seq_name');
+
+// get new id from sequence
+$id = DB::nextSequenceValue('seq_name')
+
+// get last inserted id
+// Note: you must execute an insert statement using a sequence to be able to use this function
+$id = DB::lastInsertId('seq_name');
+// or
+$id = DB::currentSequenceValue('seq_name');
+
+```
+
+Date Formatting (Note: Oracle's date format is set to 'YYYY-MM-DD HH:MI:SS' by default to match PHP's common date format)
+```php
+// set oracle session date format
+DB::setDateFormat('MM/DD/YYYY');
+```
+
 CREDITS
 =======
 forked from [crazycodr/laravel-oci8](https://github.com/crazycodr/laravel-oci8)
