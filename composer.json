@@ -1,6 +1,8 @@
 {
     "name": "yajra/laravel-oci8",
     "description": "Laravel PDO Userspace wrapper around Oci8 functions",
+    "keywords" : ["laravel4","laravel","oracle","oci8","pdo_oci"],
+    "license": "MIT",
     "authors": [
         {
             "name": "yajra - Arjay Angeles",
