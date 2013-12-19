@@ -97,7 +97,7 @@ foreach ($data as $row) {
 Inserting a blob
 ```php
 DB::transaction(function($conn){
-	$pdo = $conn->pdo;
+	$pdo = $conn->getPdo();
 	$sql = "INSERT INTO mylobs (id, blobdata)
 		VALUES (mylobs_id_seq.nextval, EMPTY_BLOB())
 		RETURNING blobdata INTO :blob";
