@@ -19,7 +19,38 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 * @var array
 	 */
 	protected $modifiers = array('Increment', 'Nullable', 'Default');
+	
+        /**
+	 * The possible column serials
+	 *
+	 * @var array
+	 */
+	protected $serials = array('bigInteger', 'integer', 'mediumInteger', 'smallInteger', 'tinyInteger');
 
+	/**
+	 * Compile the query to determine the list of tables.
+	 *
+	 * @return string
+	 */
+	public function compileTableExists()
+	{
+		return 'select * from user_tables where table_name = upper(?)';
+	}
+
+
+	/**
+	 * Compile the query to determine the list of columns.
+	 *
+	 * @param  string  $table
+	 * @return string
+	 */
+	public function compileColumnExists($table)
+	{
+		return "select column_name from user_tab_columns where table_name = upper(?) and column_name = upper(?)";
+                
+	}
+
+        
         /**
 	 * Get the primary key syntax for a table creation statement.
 	 *
@@ -349,6 +380,28 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	}
 
 	/**
+	 * Create the column definition for a long text type.
+	 *
+	 * @param  \Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
+	protected function typeLongText(Fluent $column)
+	{
+		return 'clob';
+	}
+
+	/**
+	 * Create the column definition for a medium text type.
+	 *
+	 * @param  \Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
+	protected function typeMediumText(Fluent $column)
+	{
+		return 'clob';
+	}
+
+	/**
 	 * Create the column definition for a text type.
 	 *
 	 * @param  Illuminate\Support\Fluent  $column
@@ -365,9 +418,42 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 * @param  Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
+	protected function typeBigInteger(Fluent $column)
+	{
+		return 'number(19,0)';
+	}
+
+	/**
+	 * Create the column definition for a integer type.
+	 *
+	 * @param  Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
 	protected function typeInteger(Fluent $column)
 	{
-		return 'integer';
+		return 'number(10,0)';
+	}
+
+	/**
+	 * Create the column definition for a medium integer type.
+	 *
+	 * @param  Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
+	protected function typeMediumInteger(Fluent $column)
+	{
+		return 'number(7,0)';
+	}
+
+	/**
+	 * Create the column definition for a small integer type.
+	 *
+	 * @param  Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
+	protected function typeSmallInteger(Fluent $column)
+	{
+		return 'number(5,0)';
 	}
 
 	/**
@@ -378,7 +464,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function typeTinyInteger(Fluent $column)
 	{
-		return 'number(1)';
+		return 'number(3,0)';
 	}
 
 	/**
@@ -388,6 +474,17 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 * @return string
 	 */
 	protected function typeFloat(Fluent $column)
+	{
+		return "number({$column->total}, {$column->places})";
+	}
+
+	/**
+	 * Create the column definition for a double type.
+	 *
+	 * @param  \Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
+	protected function typeDouble(Fluent $column)
 	{
 		return "number({$column->total}, {$column->places})";
 	}
@@ -516,7 +613,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function modifyIncrement(Blueprint $blueprint, Fluent $column)
 	{
-		if ($column->type == 'integer' and $column->autoIncrement)
+		if (in_array($column->type, $this->serials) && $column->autoIncrement)
 		{
                         $blueprint->primary($column->name);
 		}

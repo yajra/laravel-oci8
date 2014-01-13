@@ -32,6 +32,22 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		return $this->concatenate($components);
 	}
 
+        
+        /**
+	 * Compile the lock into SQL.
+	 *
+	 * @param  \Illuminate\Database\Query\Builder  $query
+	 * @param  bool|string  $value
+	 * @return string
+	 */
+	protected function compileLock(Builder $query, $value)
+	{
+		if (is_string($value)) return $value;
+
+		return $value ? 'for update' : 'lock in share mode';
+	}
+
+
 	/**
 	 * Create a full ANSI offset clause for the query.
 	 *
@@ -86,7 +102,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	protected function compileTableExpression($sql, $constraint, $query)
 	{
             if ($query->limit > 0) {
-                return "select t2.* from ( select t1.*, ROWNUM AS \"rn\" from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+                return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
             } else {
                 return "select * from ({$sql}) where rownum {$constraint}";
             }

@@ -58,9 +58,13 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
 		}
 
                 // If no host, the db name must be defined in tnsnames.ora 
-		if (isset($config['host'])) 
+		if (!empty($config['host'])) 
                 {
                     $dsn = "oci:dbname={$config['host']}{$port}/{$config['database']}";
+		} 
+		elseif (!empty($config['tns'])) 
+                {
+                    $dsn = "oci:dbname={$config['tns']}";
 		} 
                 else 
                 {

@@ -22,7 +22,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('create table users ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('create table users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testBasicCreateTableWithPrimary()
@@ -37,7 +37,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('create table users ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('create table users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
         }
 
 	public function testBasicCreateTableWithPrefix()
@@ -54,7 +54,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $grammar);
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('create table prefix_users ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testBasicCreateTableWithPrefixAndPrimary()
@@ -71,7 +71,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $grammar);
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('create table prefix_users ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
         }
 
 	public function testBasicCreateTableWithPrefixPrimaryAndForeignKeys()
@@ -90,7 +90,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $grammar);
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('create table prefix_users ( id integer not null, email varchar2(255) not null, foo_id integer not null, constraint users_foo_id_foreign foreign key ( foo_id ) references prefix_orders ( id ), constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, foo_id number(10,0) not null, constraint users_foo_id_foreign foreign key ( foo_id ) references prefix_orders ( id ), constraint users_id_primary primary key ( id ) )', $statements[0]);
         }
 
 	public function testBasicCreateTableWithPrefixPrimaryAndForeignKeysWithCascadeDelete()
@@ -109,7 +109,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $grammar);
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('create table prefix_users ( id integer not null, email varchar2(255) not null, foo_id integer not null, constraint users_foo_id_foreign foreign key ( foo_id ) references prefix_orders ( id ) on delete cascade, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, foo_id number(10,0) not null, constraint users_foo_id_foreign foreign key ( foo_id ) references prefix_orders ( id ) on delete cascade, constraint users_id_primary primary key ( id ) )', $statements[0]);
         }
 
 	public function testBasicAlterTable()
@@ -123,7 +123,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('alter table users add ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testBasicAlterTableWithPrimary()
@@ -137,7 +137,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('alter table users add ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testBasicAlterTableWithPrefix()
@@ -153,7 +153,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $grammar);
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table prefix_users add ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('alter table prefix_users add ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testBasicAlterTableWithPrefixAndPrimary()
@@ -169,7 +169,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($conn, $grammar);
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table prefix_users add ( id integer not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('alter table prefix_users add ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testDropTable()
@@ -340,7 +340,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( id integer not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+		$this->assertEquals('alter table users add ( id number(10,0) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
 	public function testAddingString()
@@ -374,6 +374,26 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('alter table users add ( foo varchar2(100) null default CURRENT TIMESTAMP )', $statements[0]);
 	}
 
+	public function testAddingLongText()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->longText('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
+	}
+
+	public function testAddingMediumText()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->mediumText('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
+	}
+
 	public function testAddingText()
 	{
 		$blueprint = new Blueprint('users');
@@ -384,6 +404,24 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('alter table users add ( foo varchar2(4000) not null )', $statements[0]);
 	}
 
+	public function testAddingBigInteger()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->bigInteger('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo number(19,0) not null )', $statements[0]);
+
+		$blueprint = new Blueprint('users');
+		$blueprint->bigInteger('foo', true);
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo number(19,0) not null, constraint users_foo_primary primary key ( foo ) )', $statements[0]);				
+	}
+
+
         public function testAddingInteger()
 	{
 		$blueprint = new Blueprint('users');
@@ -391,16 +429,39 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo integer not null )', $statements[0]);
+		$this->assertEquals('alter table users add ( foo number(10,0) not null )', $statements[0]);
 
 		$blueprint = new Blueprint('users');
 		$blueprint->integer('foo', true);
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo integer not null, constraint users_foo_primary primary key ( foo ) )', $statements[0]);				
+		$this->assertEquals('alter table users add ( foo number(10,0) not null, constraint users_foo_primary primary key ( foo ) )', $statements[0]);				
 	}
 
+        
+	public function testAddingMediumInteger()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->mediumInteger('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo number(7,0) not null )', $statements[0]);
+	}
+
+
+	public function testAddingSmallInteger()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->smallInteger('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo number(5,0) not null )', $statements[0]);
+	}
+
+        
 	public function testAddingTinyInteger()
 	{
 		$blueprint = new Blueprint('users');
@@ -408,9 +469,10 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo number(1) not null )', $statements[0]);
+		$this->assertEquals('alter table users add ( foo number(3,0) not null )', $statements[0]);
 	}
 
+        
 	public function testAddingFloat()
 	{
 		$blueprint = new Blueprint('users');
@@ -420,6 +482,18 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, count($statements));
 		$this->assertEquals('alter table users add ( foo number(5, 2) not null )', $statements[0]);
 	}
+
+        
+	public function testAddingDouble()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->double('foo', 5, 2);
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo number(5, 2) not null )', $statements[0]);
+	}
+
 
 	public function testAddingDecimal()
 	{
@@ -431,6 +505,7 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('alter table users add ( foo number(5, 2) not null )', $statements[0]);
 	}
 
+        
 	public function testAddingBoolean()
 	{
 		$blueprint = new Blueprint('users');

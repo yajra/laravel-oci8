@@ -5,12 +5,13 @@ return array(
 
 		'oracle' => array(
 			'driver'   => 'oci',
-			'host'     => 'localhost',
+                        'tns'      => '',
+                        'host'     => 'localhost',
                         'port'     => '1521',
-			'database' => 'database',
-			'username' => 'root',
-			'password' => '',
-			'prefix'   => '',
+                        'database' => 'database',
+                        'username' => 'root',
+                        'password' => '', 
+                        'prefix'   => '',
 		),
 
 	),

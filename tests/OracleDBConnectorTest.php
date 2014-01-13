@@ -2,12 +2,22 @@
 
 use Mockery as m;
 
-class OracleDBConnectorTest extends PHPUnit_Framework_TestCase {
+class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
 
 	public function tearDown()
 	{
 		m::close();
 	}
+
+
+	public function testOptionResolution()
+	{
+		$connector = new Illuminate\Database\Connectors\Connector;
+		$connector->setDefaultOptions(array(0 => 'foo', 1 => 'bar'));
+		$this->assertEquals(array(0 => 'baz', 1 => 'bar', 2 => 'boom'), $connector->getOptions(array('options' => array(0 => 'baz', 2 => 'boom'))));
+	}
+
+
       	/**
 	 * @dataProvider OracleConnectProvider
 	 */
@@ -22,7 +32,8 @@ class OracleDBConnectorTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($result === $connection);
 	}
 
-	public function OracleConnectProvider()
+
+        public function OracleConnectProvider()
 	{
 		return array(
 			array('oci:dbname=//localhost:1521/orcl', array('host' => '//localhost', 'port' => '1521', 'database' => 'orcl')),
@@ -35,6 +46,8 @@ class OracleDBConnectorTest extends PHPUnit_Framework_TestCase {
 			array('oci:dbname=localhost/orcl;charset=utf8', array('host' => 'localhost', 'database' => 'orcl', 'charset' => 'utf8')),
 			array('oci:dbname=//localhost/orcl', array('database' => '//localhost/orcl')),
 			array('oci:dbname=//localhost/orcl;charset=utf8', array('database' => '//localhost/orcl', 'charset' => 'utf8')),
+			array('oci:dbname=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)))', array('tns' => '(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)))')),
+			array('oci:dbname=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)));charset=utf8', array('tns' => '(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)))', 'charset' => 'utf8')),
 		);
 	}
 
