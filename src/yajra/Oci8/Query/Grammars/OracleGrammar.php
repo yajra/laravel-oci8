@@ -11,6 +11,20 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 */
 	protected $wrapper = '%s';
 
+    /**
+	 * Compile the lock into SQL.
+	 *
+	 * @param  \Illuminate\Database\Query\Builder  $query
+	 * @param  bool|string  $value
+	 * @return string
+	 */
+	protected function compileLock(Builder $query, $value)
+	{
+		if (is_string($value)) return $value;
+
+		return $value ? 'for update' : 'lock in share mode';
+	}
+
 	/**
 	 * Compile a select query into SQL.
 	 *
@@ -81,7 +95,6 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 * @param  string  $sql
 	 * @param  string  $constraint
 	 * @return string
-         *
  	 */
 	protected function compileTableExpression($sql, $constraint, $query)
 	{
