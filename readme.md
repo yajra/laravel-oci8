@@ -1,21 +1,23 @@
 # Laravel 4 Oracle (OCI8) Database Support
 
-Laravel-OCI8
-============
+###Laravel-OCI8
 
-Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses yajra/laravel-pdo-via-oci8 to communicate with Oracle.
+[![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.png)](https://packagist.org/packages/yajra/laravel-oci8) [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/downloads.png)](https://packagist.org/packages/yajra/laravel-oci8) [![Build Status](https://travis-ci.org/yajra/laravel-oci8.png)](https://travis-ci.org/yajra/laravel-oci8)
 
-The PDO-via-OCI8 package is a simple userspace driver for PDO that uses the tried and
-tested OCI8 functions instead of using the still experimental and not all that functionnal
-PDO_OCI library.
+Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 
-Also note that this package is highly dependant on jfelder/oracledb for all the grammar portion. No need to reinvent the wheel...
+The [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) package is a simple userspace driver for PDO that uses the tried and
+tested [OCI8](http://php.net/oci8) functions instead of using the still experimental and not all that functionnal
+[PDO_OCI](http://www.php.net/manual/en/ref.pdo-oci.php) library.
+
+**Please report any bugs you may find.**
 
 - [Installation](#installation)
+- [Examples](#examples)
 - [Support](#support)
+- [Credits](#credits)
 
-Installation
-============
+###Installation
 
 Add `yajra/laravel-oci8` as a requirement to composer.json:
 
@@ -48,21 +50,7 @@ Finally you need to setup a valid database configuration using the driver "pdo-v
 ```
 And run your laravel installation...
 
-Support
-=======
-Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
-
-See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
-
-Also compatible with:
-
-- Query Builder
-- Eloquent
-- Schema (WIP)
-- Migrations (WIP)
-
-Examples
-=======
+###Examples
 
 Configuration (database.php)
 ```php
@@ -91,20 +79,20 @@ Querying a blob field will now load the value instead of the OCI-Lob object. See
 ```php
 $data = DB::table('mylobs')->get();
 foreach ($data as $row) {
-	echo $row->blobdata . '<br>';
+    echo $row->blobdata . '<br>';
 }
 ```
 Inserting a blob
 ```php
 DB::transaction(function($conn){
-	$pdo = $conn->getPdo();
-	$sql = "INSERT INTO mylobs (id, blobdata)
-		VALUES (mylobs_id_seq.nextval, EMPTY_BLOB())
-		RETURNING blobdata INTO :blob";
-	$stmt = $pdo->prepare($sql);
-	$stmt->bindParam(':blob', $lob, PDO::PARAM_LOB);
-	$stmt->execute();
-	$lob->save('blob content');
+    $pdo = $conn->getPdo();
+    $sql = "INSERT INTO mylobs (id, blobdata)
+        VALUES (mylobs_id_seq.nextval, EMPTY_BLOB())
+        RETURNING blobdata INTO :blob";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':blob', $lob, PDO::PARAM_LOB);
+    $stmt->execute();
+    $lob->save('blob content');
 });
 ```
 
@@ -133,6 +121,40 @@ Date Formatting (Note: Oracle's date format is set to 'YYYY-MM-DD HH:MI:SS' by d
 DB::setDateFormat('MM/DD/YYYY');
 ```
 
-CREDITS
-=======
-forked from [crazycodr/laravel-oci8](https://github.com/crazycodr/laravel-oci8)
+###Support
+
+Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
+
+See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
+
+###Query Builder
+You can use the Query Builder functionality exactly the same as you would with the default DB class in Laravel 4.
+Every query on [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) has been tested to ensure that it works.
+
+Offset & Limit
+```php
+$users = DB::table('users')->skip(10)->take(5)->get();
+```
+
+See [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) for more information.
+
+###Eloquent
+
+See [Laravel 4 Eloquent Docs](http://four.laravel.com/docs/eloquent) for more information.
+
+###Schema (WIP)
+
+See [Laravel 4 Schema Docs](http://four.laravel.com/docs/schema) for more information.
+
+###Migrations (WIP)
+
+See [Laravel 4 Migrations Docs](http://four.laravel.com/docs/migrations) for more information.
+
+###License
+
+Licensed under the [MIT License](http://cheeaun.mit-license.org/).
+
+###Credits
+
+- [crazycodr/laravel-oci8](https://github.com/crazycodr/laravel-oci8)
+- [jfelder/Laravel-OracleDB](https://github.com/jfelder/Laravel-OracleDB)

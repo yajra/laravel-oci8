@@ -15,6 +15,9 @@
         "illuminate/database": "4.*",
         "yajra/laravel-pdo-via-oci8": "dev-master"
     },
+    "require-dev": {
+        "mockery/mockery": "0.7.2"
+    },
     "autoload": {
         "psr-0": {
             "yajra\\Oci8": "src/"
