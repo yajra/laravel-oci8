@@ -65,28 +65,6 @@ Just like the built-in database drivers, you can use the connection method to ac
 
 See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
 
-###Query Builder
-You can use the Query Builder functionality exactly the same as you would with the default DB class in Laravel 4. 
-Every query on [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) has been tested to ensure that it works.
-
-Offset & Limit
-```php
-$users = DB::table('users')->skip(10)->take(5)->get();
-```
-
-See [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) for more information.
-
-###Eloquent
-
-See [Laravel 4 Eloquent Docs](http://four.laravel.com/docs/eloquent) for more information.
-
-###Schema (WIP)
-
-See [Laravel 4 Schema Docs](http://four.laravel.com/docs/schema) for more information.
-
-###Migrations (WIP)
-
-See [Laravel 4 Migrations Docs](http://four.laravel.com/docs/migrations) for more information.
 
 ###License
 

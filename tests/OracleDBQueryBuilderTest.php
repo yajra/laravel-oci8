@@ -334,6 +334,10 @@ class DatabaseQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testLimitsAndOffsets()
 	{
 		$builder = $this->getBuilder();
+		$builder->select('*')->from('users')->offset(10);
+		$this->assertEquals('select * from (select * from users) where rownum >= 11', $builder->toSql());
+
+		$builder = $this->getBuilder();
 		$builder->select('*')->from('users')->offset(5)->limit(10);
 		$this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from users) t1 ) t2 where t2."rn" between 6 and 15', $builder->toSql());
 
