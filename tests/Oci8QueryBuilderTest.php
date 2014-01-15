@@ -11,7 +11,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		m::close();
 	}
 
-
 	public function testBasicSelect()
 	{
 		$builder = $this->getBuilder();
@@ -19,14 +18,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users', $builder->toSql());
 	}
 
-
 	public function testAddingSelects()
 	{
 		$builder = $this->getBuilder();
 		$builder->select('foo')->addSelect('bar')->addSelect(array('baz', 'boom'))->from('users');
 		$this->assertEquals('select foo, bar, baz, boom from users', $builder->toSql());
 	}
-
 
 	public function testBasicSelectWithPrefix()
 	{
@@ -36,14 +33,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from prefix_users', $builder->toSql());
 	}
 
-
 	public function testBasicSelectDistinct()
 	{
 		$builder = $this->getBuilder();
 		$builder->distinct()->select('foo', 'bar')->from('users');
 		$this->assertEquals('select distinct foo, bar from users', $builder->toSql());
 	}
-
 
 	public function testSelectWithCaching()
 	{
@@ -54,9 +49,9 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$query = $query->remember(5);
 
 		$driver->shouldReceive('remember')
-						 ->once()
-						 ->with($query->getCacheKey(), 5, m::type('Closure'))
-						 ->andReturnUsing(function($key, $minutes, $callback) { return $callback(); });
+			 ->once()
+			 ->with($query->getCacheKey(), 5, m::type('Closure'))
+			 ->andReturnUsing(function($key, $minutes, $callback) { return $callback(); });
 
 
 		$this->assertEquals($query->get(), array('results'));
@@ -71,9 +66,9 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$query = $query->rememberForever();
 
 		$driver->shouldReceive('rememberForever')
-												->once()
-												->with($query->getCacheKey(), m::type('Closure'))
-												->andReturnUsing(function($key, $callback) { return $callback(); });
+			->once()
+			->with($query->getCacheKey(), m::type('Closure'))
+			->andReturnUsing(function($key, $callback) { return $callback(); });
 
 
 
@@ -109,14 +104,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select foo as bar from users', $builder->toSql());
 	}
 
-
 	public function testBasicTableWrapping()
 	{
 		$builder = $this->getBuilder();
 		$builder->select('*')->from('public.users');
 		$this->assertEquals('select * from public.users', $builder->toSql());
 	}
-
 
 	public function testBasicWheres()
 	{
@@ -125,7 +118,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where id = ?', $builder->toSql());
 		$this->assertEquals(array(0 => 1), $builder->getBindings());
 	}
-
 
 	public function testWhereBetweens()
 	{
@@ -140,7 +132,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(0 => 1, 1 => 2), $builder->getBindings());
 	}
 
-
 	public function testBasicOrWheres()
 	{
 		$builder = $this->getBuilder();
@@ -148,7 +139,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where id = ? or email = ?', $builder->toSql());
 		$this->assertEquals(array(0 => 1, 1 => 'foo'), $builder->getBindings());
 	}
-
 
 	public function testRawWheres()
 	{
@@ -166,7 +156,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(0 => 1, 1 => 'foo'), $builder->getBindings());
 	}
 
-
 	public function testBasicWhereIns()
 	{
 		$builder = $this->getBuilder();
@@ -179,7 +168,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where id = ? or id in (?, ?, ?)', $builder->toSql());
 		$this->assertEquals(array(0 => 1, 1 => 1, 2 => 2, 3 => 3), $builder->getBindings());
 	}
-
 
 	public function testBasicWhereNotIns()
 	{
@@ -194,7 +182,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(0 => 1, 1 => 1, 2 => 2, 3 => 3), $builder->getBindings());
 	}
 
-
 	public function testUnions()
 	{
 		$builder = $this->getBuilder();
@@ -203,7 +190,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where id = ? union select * from users where id = ?', $builder->toSql());
 		$this->assertEquals(array(0 => 1, 1 => 2), $builder->getBindings());
 	}
-
 
 	public function testUnionAlls()
 	{
@@ -253,7 +239,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(25), $builder->getBindings());
 	}
 
-
 	public function testBasicWhereNulls()
 	{
 		$builder = $this->getBuilder();
@@ -266,7 +251,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where id = ? or id is null', $builder->toSql());
 		$this->assertEquals(array(0 => 1), $builder->getBindings());
 	}
-
 
 	public function testBasicWhereNotNulls()
 	{
@@ -281,14 +265,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(0 => 1), $builder->getBindings());
 	}
 
-
 	public function testGroupBys()
 	{
 		$builder = $this->getBuilder();
 		$builder->select('*')->from('users')->groupBy('id', 'email');
 		$this->assertEquals('select * from users group by id, email', $builder->toSql());
 	}
-
 
 	public function testOrderBys()
 	{
@@ -301,7 +283,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users order by email asc, age ? desc', $builder->toSql());
 		$this->assertEquals(array('foo' => 'bar'), $builder->getBindings());
 	}
-
 
 	public function testHavings()
 	{
@@ -318,7 +299,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select email as foo_email from users having foo_email > ?', $builder->toSql());
 	}
 
-
 	public function testRawHavings()
 	{
 		$builder = $this->getBuilder();
@@ -329,7 +309,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->select('*')->from('users')->having('baz', '=', 1)->orHavingRaw('user_foo < user_bar');
 		$this->assertEquals('select * from users having baz = ? or user_foo < user_bar', $builder->toSql());
 	}
-
 
 	public function testLimitsAndOffsets()
 	{
@@ -354,7 +333,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from users) t1 ) t2 where t2."rn" between 1 and 15', $builder->toSql());
 	}
 
-
 	public function testWhereShortcut()
 	{
 		$builder = $this->getBuilder();
@@ -362,7 +340,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where id = ? or name = ?', $builder->toSql());
 		$this->assertEquals(array(0 => 1, 1 => 'foo'), $builder->getBindings());
 	}
-
 
 	public function testNestedWheres()
 	{
@@ -375,7 +352,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(0 => 'foo', 1 => 'bar', 2 => 25), $builder->getBindings());
 	}
 
-
 	public function testFullSubSelects()
 	{
 		$builder = $this->getBuilder();
@@ -387,7 +363,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users where email = ? or id = (select max(id) from users where email = ?)', $builder->toSql());
 		$this->assertEquals(array(0 => 'foo', 1 => 'bar'), $builder->getBindings());
 	}
-
 
 	public function testWhereExists()
 	{
@@ -420,7 +395,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from orders where id = ? or not exists (select * from products where products.id = orders.id)', $builder->toSql());
 	}
 
-
 	public function testBasicJoins()
 	{
 		$builder = $this->getBuilder();
@@ -432,7 +406,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users left join photos on users.id = ? inner join photos on users.id = ?', $builder->toSql());
 		$this->assertEquals(array('bar', 'foo'), $builder->getBindings());
 	}
-
 
 	public function testComplexJoin()
 	{
@@ -452,14 +425,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('foo', 'bar'), $builder->getBindings());
 	}
 
-
 	public function testRawExpressionsInSelect()
 	{
 		$builder = $this->getBuilder();
 		$builder->select(new Raw('substr(foo, 6)'))->from('users');
 		$this->assertEquals('select substr(foo, 6) from users', $builder->toSql());
 	}
-
 
 	public function testFindReturnsFirstResultByID()
 	{
@@ -470,7 +441,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('foo' => 'bar'), $results);
 	}
 
-
 	public function testFirstMethodReturnsFirstResult()
 	{
 		$builder = $this->getBuilder();
@@ -479,7 +449,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$results = $builder->from('users')->where('id', '=', 1)->first();
 		$this->assertEquals(array('foo' => 'bar'), $results);
 	}
-
 
 	public function testListMethodsGetsArrayOfColumnValues()
 	{
@@ -501,7 +470,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$results = $builder->from('users')->where('id', '=', 1)->lists('foo', 'id');
 		$this->assertEquals(array(1 => 'bar', 10 => 'baz'), $results);
 	}
-
 
 	public function testImplode()
 	{
@@ -526,7 +494,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('bar,baz', $results);
 	}
 
-
 	public function testPaginateCorrectlyCreatesPaginatorInstance()
 	{
 		$connection = m::mock('Illuminate\Database\ConnectionInterface');
@@ -544,7 +511,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('results'), $builder->paginate(15, array('*')));
 	}
 
-
 	public function testPaginateCorrectlyCreatesPaginatorInstanceForGroupedQuery()
 	{
 		$connection = m::mock('Illuminate\Database\ConnectionInterface');
@@ -559,7 +525,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(array('results'), $builder->groupBy('foo')->paginate(2, array('*')));
 	}
-
 
 	public function testGetPaginationCountGetsResultCount()
 	{
@@ -580,7 +545,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $results);
 	}
 
-
 	public function testPluckMethodReturnsSingleColumn()
 	{
 		$builder = $this->getBuilder();
@@ -589,7 +553,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
 		$this->assertEquals('bar', $results);
 	}
-
 
 	public function testAggregateFunctions()
 	{
@@ -624,7 +587,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $results);
 	}
 
-
 	public function testInsertMethod()
 	{
 		$builder = $this->getBuilder();
@@ -632,7 +594,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$result = $builder->from('users')->insert(array('email' => 'foo'));
 		$this->assertTrue($result);
 	}
-
 
 	public function testInsertGetIdMethod()
 	{
@@ -642,7 +603,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $result);
 	}
 
-
 	public function testInsertGetIdMethodRemovesExpressions()
 	{
 		$builder = $this->getBuilder();
@@ -650,7 +610,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$result = $builder->from('users')->insertGetId(array('email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')), 'id');
 		$this->assertEquals(1, $result);
 	}
-
 
 	public function testInsertMethodRespectsRawBindings()
 	{
@@ -660,7 +619,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($result);
 	}
 
-
 	public function testUpdateMethod()
 	{
 		$builder = $this->getBuilder();
@@ -668,7 +626,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$result = $builder->from('users')->where('id', '=', 1)->update(array('email' => 'foo', 'name' => 'bar'));
 		$this->assertEquals(1, $result);
 	}
-
 
 	public function testUpdateMethodWithJoins()
 	{
@@ -678,7 +635,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $result);
 	}
 
-
 	public function testUpdateMethodRespectsRaw()
 	{
 		$builder = $this->getBuilder();
@@ -686,7 +642,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$result = $builder->from('users')->where('id', '=', 1)->update(array('email' => new Raw('foo'), 'name' => 'bar'));
 		$this->assertEquals(1, $result);
 	}
-
 
 	public function testDeleteMethod()
 	{
@@ -719,14 +674,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('foo', 'bar'), $builder->getBindings());
 	}
 
-
 	public function testProvidingNullOrFalseAsSecondParameterBuildsCorrectly()
 	{
 		$builder = $this->getBuilder();
 		$builder->select('*')->from('users')->where('foo', null);
 		$this->assertEquals('select * from users where foo is null', $builder->toSql());
 	}
-
 
 	public function testDynamicWhere()
 	{
@@ -742,7 +695,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 	}
 
-
 	public function testDynamicWhereIsNotGreedy()
 	{
 		$method     = 'whereIosVersionAndAndroidVersionOrOrientation';
@@ -756,7 +708,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->dynamicWhere($method, $parameters);
 	}
 
-
 	public function testCallTriggersDynamicWhere()
 	{
 		$builder = $this->getBuilder();
@@ -764,7 +715,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($builder, $builder->whereFooAndBar('baz', 'qux'));
 		$this->assertCount(2, $builder->wheres);
 	}
-
 
 	/**
 	 * @expectedException BadMethodCallException
@@ -790,7 +740,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		return $builder->select('*')->from('users')->where('email', 'foo@bar.com');
 	}
 
-
 	public function testOracleLock()
 	{
 		$builder = $this->getBuilder();
@@ -803,7 +752,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from foo where bar = ? lock in share mode', $builder->toSql());
 		$this->assertEquals(array('baz'), $builder->getBindings());
 	}
-
 
 	protected function getBuilder()
 	{
