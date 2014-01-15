@@ -1,4 +1,4 @@
-# Laravel 4 Oracle (OCI8) Database Support
+# Laravel 4 Oracle (OCI8) DB Support
 
 ###Laravel-OCI8
 
