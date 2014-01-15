@@ -16,7 +16,8 @@
         "yajra/laravel-pdo-via-oci8": "dev-master"
     },
     "require-dev": {
-        "mockery/mockery": "0.7.2"
+        "mockery/mockery": "0.7.2",
+        "phpunit/phpunit": "3.7.*"
     },
     "autoload": {
         "psr-0": {
