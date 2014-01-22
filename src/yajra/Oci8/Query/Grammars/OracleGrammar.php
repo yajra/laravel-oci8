@@ -140,4 +140,48 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		return array('truncate table '.$this->wrapTable($query->from) => array());
 	}
 
+	/**
+	 * Compile an insert statement into SQL.
+	 *
+	 * @param  \Illuminate\Database\Query\Builder  $query
+	 * @param  array  $values
+	 * @return string
+	 */
+	public function compileInsert(Builder $query, array $values)
+	{
+		// Essentially we will force every insert to be treated as a batch insert which
+		// simply makes creating the SQL easier for us since we can utilize the same
+		// basic routine regardless of an amount of records given to us to insert.
+		$table = $this->wrapTable($query->from);
+
+		if ( ! is_array(reset($values)))
+		{
+			$values = array($values);
+		}
+
+		$columns = $this->columnize(array_keys(reset($values)));
+
+		// We need to build a list of parameter place-holders of values that are bound
+		// to the query. Each insert should have the exact same amount of parameter
+		// bindings so we can just go off the first list of values in this array.
+		$parameters = $this->parameterize(reset($values));
+
+		$value = array_fill(0, count($values), "($parameters)");
+
+		if (count($value) > 1) {
+			$insertQueries = array();
+			foreach ($value as $parameter) {
+				$parameter = (str_replace(array('(',')'), '', $parameter));
+				$insertQueries[] = "select ". $parameter . " from dual ";
+			}
+			$parameters = implode('union all ', $insertQueries);
+
+
+			return "insert into $table ($columns) $parameters";
+		}
+		$parameters = implode(', ', $value);
+		return "insert into $table ($columns) values $parameters";
+
+	}
+
 }

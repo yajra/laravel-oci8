@@ -599,6 +599,16 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($result);
 	}
 
+	public function testMultipleInsertMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getConnection()->shouldReceive('insert')->once()->with('insert into users (email) select ? from dual union all select ? from dual ', array('foo','foo'))->andReturn(true);
+		$data[] = array('email'=>'foo');
+		$data[] = array('email'=>'foo');
+		$result = $builder->from('users')->insert($data);
+		$this->assertTrue($result);
+	}
+
 	public function testInsertGetIdMethod()
 	{
 		$builder = $this->getBuilder();
