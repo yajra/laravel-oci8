@@ -29,6 +29,26 @@ class Oci8Connection extends Connection {
 	}
 
 	/**
+	 * Get the schema grammar used by the connection.
+	 *
+	 * @return \Illuminate\Database\Query\Grammars\Grammar
+	 */
+	public function getSchemaGrammar()
+	{
+		return $this->getDefaultSchemaGrammar();
+	}
+
+	/**
+	 * Get a schema builder instance for the connection.
+	 *
+	 * @return \Illuminate\Database\Schema\Builder
+	 */
+	public function getSchemaBuilder()
+	{
+		return new Schema\OracleBuilder($this);
+	}
+
+	/**
 	 * function to set oracle's current session date format
 	 * @param string $format
 	 */
@@ -98,6 +118,28 @@ class Oci8Connection extends Connection {
 	public function currentSequenceValue($name)
 	{
 		return $this->lastInsertId($name);
+	}
+
+	/**
+	 * function to create auto increment trigger for a table
+	 * @param  string $table
+	 * @param  string $column
+	 * @return boolean
+	 */
+	public function createAutoIncrementTrigger($table, $column)
+	{
+		if (!$table or !$column) {
+			return 0;
+		}
+		return self::statement("
+			create trigger {$table}_{$column}_trg
+			before insert or update on {$table}
+			for each row
+				begin
+			if inserting and :new.{$column} is null then
+				select {$table}_{$column}_seq.nextval into :new.{$column} from dual;
+			end if;
+			end;");
 	}
 
 }
