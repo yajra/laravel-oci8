@@ -590,7 +590,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo date default sysdate not null )', $statements[0]);
+		$this->assertEquals('alter table users add ( foo date not null )', $statements[0]);
 	}
 
 	public function testAddingTimeStamps()
@@ -600,7 +600,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( created_at date default sysdate not null, updated_at date default sysdate not null )', $statements[0]);
+		$this->assertEquals('alter table users add ( created_at date not null, updated_at date not null )', $statements[0]);
 	}
 
 	public function testAddingBinary()
