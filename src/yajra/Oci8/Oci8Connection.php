@@ -32,7 +32,7 @@ class Oci8Connection extends Connection {
 	 * function to set oracle's current session date format
 	 * @param string $format
 	 */
-	public function setDateFormat($format = 'YYYY-MM-DD HH:MI:SS')
+	public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
 		self::statement("alter session set nls_date_format = '$format'");
 	}
