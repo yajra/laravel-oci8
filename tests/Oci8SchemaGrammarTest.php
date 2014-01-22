@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use Illuminate\Database\Schema\Blueprint;
+use yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 
 class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 
@@ -305,6 +305,26 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(1, count($statements));
 		$this->assertEquals('alter table users add constraint bar primary key (foo)', $statements[0]);
+	}
+
+	public function testAddingPrimaryKeyWithConstraintAutomaticName()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->primary('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add constraint users_foo_primary primary key (foo)', $statements[0]);
+	}
+
+	public function testAddingPrimaryKeyWithConstraintAutomaticNameGreaterThanThirtyCharacters()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->primary('reset_password_code');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add constraint users_reset_password_code_prim primary key (reset_password_code)', $statements[0]);
 	}
 
 	public function testAddingUniqueKey()

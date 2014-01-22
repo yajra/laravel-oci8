@@ -1,5 +1,4 @@
-<?php
-namespace yajra\Oci8\Schema;
+<?php namespace yajra\Oci8\Schema;
 
 use Closure;
 use Illuminate\Database\Schema\Blueprint;
@@ -45,6 +44,18 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 			$db->createAutoIncrementTrigger($table, $col);
 		}
 
+	}
+
+	/**
+	 * Create a new command set with a Closure.
+	 *
+	 * @param  string   $table
+	 * @param  Closure  $callback
+	 * @return \Illuminate\Database\Schema\Blueprint
+	 */
+	protected function createBlueprint($table, Closure $callback = null)
+	{
+		return new OracleBlueprint($table, $callback);
 	}
 
 }
