@@ -57,6 +57,21 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
 	}
 
+	public function testBasicCreateTableWithDefaultValueAndIsNotNull()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->create();
+		$blueprint->integer('id')->primary();
+		$blueprint->string('email')->default('user@test.com');
+
+		$conn = $this->getConnection();
+
+		$statements = $blueprint->toSql($conn, $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('create table users ( id number(10,0) not null, email varchar2(255) default \'user@test.com\' not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+    }
+
 	public function testBasicCreateTableWithPrefixAndPrimary()
 	{
 		$blueprint = new Blueprint('users');
@@ -364,14 +379,14 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo varchar2(100) null default \'bar\' )', $statements[0]);
+		$this->assertEquals('alter table users add ( foo varchar2(100) default \'bar\' null )', $statements[0]);
 
 		$blueprint = new Blueprint('users');
 		$blueprint->string('foo', 100)->nullable()->default(new Illuminate\Database\Query\Expression('CURRENT TIMESTAMP'));
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo varchar2(100) null default CURRENT TIMESTAMP )', $statements[0]);
+		$this->assertEquals('alter table users add ( foo varchar2(100) default CURRENT TIMESTAMP null )', $statements[0]);
 	}
 
 	public function testAddingLongText()

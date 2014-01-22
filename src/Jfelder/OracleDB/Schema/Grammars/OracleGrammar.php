@@ -586,7 +586,12 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function modifyNullable(Blueprint $blueprint, Fluent $column)
 	{
-		return $column->nullable ? ' null' : ' not null';
+		//return $column->nullable ? ' null' : ' not null';
+		$null = $column->nullable ? ' null' : ' not null';
+		if ( ! is_null($column->default) ) {
+			return " default ".$this->getDefaultValue($column->default) . $null;
+		}
+		return $null;
 	}
 
 	/**
@@ -598,10 +603,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function modifyDefault(Blueprint $blueprint, Fluent $column)
 	{
-		if ( ! is_null($column->default))
-		{
-			return " default ".$this->getDefaultValue($column->default)."";
-		}
+		return "";
 	}
 
 	/**
