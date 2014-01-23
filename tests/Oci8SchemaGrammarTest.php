@@ -40,6 +40,25 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('create table users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
     }
 
+	public function testBasicCreateTableWithPrimaryAndForeignKeys()
+	{
+        $blueprint = new Blueprint('users');
+		$blueprint->create();
+		$blueprint->integer('id')->primary();
+		$blueprint->string('email');
+		$blueprint->integer('foo_id');
+		$blueprint->foreign('foo_id')->references('id')->on('orders');
+		$grammar = $this->getGrammar();
+		$grammar->setTablePrefix('');
+
+		$conn = $this->getConnection();
+
+		$statements = $blueprint->toSql($conn, $grammar);
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('create table users ( id number(10,0) not null, email varchar2(255) not null, foo_id number(10,0) not null, constraint users_foo_id_foreign foreign key ( foo_id ) references orders ( id ), constraint users_id_primary primary key ( id ) )', $statements[0]);
+    }
+
 	public function testBasicCreateTableWithDefaultValueAndIsNotNull()
 	{
 		$blueprint = new Blueprint('users');

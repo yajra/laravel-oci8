@@ -25,7 +25,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 *
 	 * @var array
 	 */
-	protected $serials = array('bigInteger', 'integer', 'mediumInteger', 'smallInteger', 'tinyInteger');
+    protected $serials = array('bigInteger', 'integer', 'mediumInteger', 'smallInteger', 'tinyInteger');
 
     /**
 	 * Get the primary key syntax for a table creation statement.
@@ -33,18 +33,18 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
 	 * @return string|null
 	 */
-	protected function addPrimaryKeys(Blueprint $blueprint)
-	{
-		$primary = $this->getCommandByName($blueprint, 'primary');
+    protected function addPrimaryKeys(Blueprint $blueprint)
+    {
+    	$primary = $this->getCommandByName($blueprint, 'primary');
 
-		if ( ! is_null($primary))
-		{
-                        $table = $this->wrapTable($blueprint);
-			$columns = $this->columnize($primary->columns);
+    	if ( ! is_null($primary))
+    	{
+    		$table = $this->wrapTable($blueprint);
+    		$columns = $this->columnize($primary->columns);
 
-			return ", constraint {$primary->index} primary key ( {$columns} )";
-		}
-	}
+    		return ", constraint {$primary->index} primary key ( {$columns} )";
+    	}
+    }
 
 	/**
 	 * Get the foreign key syntax for a table creation statement.
@@ -63,10 +63,10 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		// are building
 		foreach ($foreigns as $foreign)
 		{
-                        $table = $this->wrapTable($blueprint);
-                        $table = $foreign->index;
+			$table = $this->wrapTable($blueprint);
+			$table = $foreign->index;
 
-                        $on = $this->wrapTable($foreign->on);
+			$on = $this->wrapTable($foreign->on);
 
 			$columns = $this->columnize($foreign->columns);
 
@@ -74,13 +74,13 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 			$sql .= ", constraint {$foreign->index} foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
-                        // Once we have the basic foreign key creation statement constructed we can
-                        // build out the syntax for what should happen on an update or delete of
-                        // the affected columns, which will get something like "cascade", etc.
-                        if ( ! is_null($foreign->onDelete))
-                        {
-                            $sql .= " on delete {$foreign->onDelete}";
-                        }
+            // Once we have the basic foreign key creation statement constructed we can
+            // build out the syntax for what should happen on an update or delete of
+            // the affected columns, which will get something like "cascade", etc.
+			if ( ! is_null($foreign->onDelete))
+			{
+				$sql .= " on delete {$foreign->onDelete}";
+			}
 		}
 
 		return $sql;
@@ -99,17 +99,18 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 		$sql = 'create table '.$this->wrapTable($blueprint)." ( $columns";
 
-		// To be able to name the primary/foreign keys when the table is
-		// initially created we will need to check for a primary/foreign
-                // key commands and add the columns to the table's declaration
-                // here so they can be created on the tables.
-
+		/**
+		 * To be able to name the primary/foreign keys when the table is
+		 * initially created we will need to check for a primary/foreign
+		 * key commands and add the columns to the table's declaration
+		 * here so they can be created on the tables.
+		 */
 		$sql .= (string) $this->addForeignKeys($blueprint);
 
 		$sql .= (string) $this->addPrimaryKeys($blueprint);
 
 		return $sql .= ' )';
-	}
+}
 
 	/**
 	 * Compile the query to determine if a table exists.
@@ -127,10 +128,10 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
      * @param  string  $table
      * @return string
      */
-    public function compileColumnExists($table)
-    {
-	    return "select column_name from user_tab_columns where table_name = upper(?) and column_name = upper(?)";
-    }
+	public function compileColumnExists($table)
+	{
+		return "select column_name from user_tab_columns where table_name = upper(?) and column_name = upper(?)";
+	}
 
 	/**
 	 * Compile a create table command.
@@ -145,15 +146,18 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 		$sql = 'alter table '.$this->wrapTable($blueprint)." add ( $columns";
 
-		// SQLite forces primary keys to be added when the table is initially created
-		// so we will need to check for a primary key commands and add the columns
-		// to the table's declaration here so they can be created on the tables.
-		//$sql .= (string) $this->addForeignKeys($blueprint);
+		/**
+		 * To be able to name the primary/foreign keys when the table is
+		 * initially created we will need to check for a primary/foreign
+		 * key commands and add the columns to the table's declaration
+		 * here so they can be created on the tables.
+		 */
+		$sql .= (string) $this->addForeignKeys($blueprint);
 
 		$sql .= (string) $this->addPrimaryKeys($blueprint);
 
 		return $sql .= ' )';
-	}
+}
 
 	/**
 	 * Compile a primary key command.
@@ -164,17 +168,17 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	public function compilePrimary(Blueprint $blueprint, Fluent $command)
 	{
-            $create = $this->getCommandByName($blueprint, 'create');
+		$create = $this->getCommandByName($blueprint, 'create');
 
-            if (is_null($create))
-            {
-		$columns = $this->columnize($command->columns);
+		if (is_null($create))
+		{
+			$columns = $this->columnize($command->columns);
 
-		$table = $this->wrapTable($blueprint);
+			$table = $this->wrapTable($blueprint);
 
-		return "alter table {$table} add constraint {$command->index} primary key ({$columns})";
-            }
-        }
+			return "alter table {$table} add constraint {$command->index} primary key ({$columns})";
+		}
+	}
 
 	/**
 	 * Compile a foreign key command.
@@ -185,52 +189,52 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	public function compileForeign(Blueprint $blueprint, Fluent $command)
 	{
-            $create = $this->getCommandByName($blueprint, 'create');
+		$create = $this->getCommandByName($blueprint, 'create');
 
-            if (is_null($create))
-            {
-                $table = $this->wrapTable($blueprint);
+		if (is_null($create))
+		{
+			$table = $this->wrapTable($blueprint);
 
-                $on = $this->wrapTable($command->on);
+			$on = $this->wrapTable($command->on);
 
                 // We need to prepare several of the elements of the foreign key definition
                 // before we can create the SQL, such as wrapping the tables and convert
                 // an array of columns to comma-delimited strings for the SQL queries.
-                $columns = $this->columnize($command->columns);
+			$columns = $this->columnize($command->columns);
 
-                $onColumns = $this->columnize((array) $command->references);
+			$onColumns = $this->columnize((array) $command->references);
 
-                $sql = "alter table {$table} add constraint {$command->index} ";
+			$sql = "alter table {$table} add constraint {$command->index} ";
 
-                $sql .= "foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
+			$sql .= "foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
                 // Once we have the basic foreign key creation statement constructed we can
                 // build out the syntax for what should happen on an update or delete of
                 // the affected columns, which will get something like "cascade", etc.
-                if ( ! is_null($command->onDelete))
-                {
-                    $sql .= " on delete {$command->onDelete}";
-                }
+			if ( ! is_null($command->onDelete))
+			{
+				$sql .= " on delete {$command->onDelete}";
+			}
 
-                return $sql;
-            }
-        }
+			return $sql;
+		}
+	}
 
-        /**
+    /**
 	 * Compile a unique key command.
 	 *
 	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
 	 * @param  Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
-	public function compileUnique(Blueprint $blueprint, Fluent $command)
-	{
-		$columns = $this->columnize($command->columns);
+    public function compileUnique(Blueprint $blueprint, Fluent $command)
+    {
+    	$columns = $this->columnize($command->columns);
 
-		$table = $this->wrapTable($blueprint);
+    	$table = $this->wrapTable($blueprint);
 
-		return "alter table {$table} add constraint {$command->index} unique ( {$columns} )";
-	}
+    	return "alter table {$table} add constraint {$command->index} unique ( {$columns} )";
+    }
 
 	/**
 	 * Compile a plain index key command.
@@ -348,7 +352,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		return "alter table {$from} rename to ".$this->wrapTable($command->to);
 	}
 
-        /**
+    /**
 	 * Compile a rename column command.
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
@@ -356,14 +360,14 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 * @param  \Illuminate\Database\Connection  $connection
 	 * @return array
 	 */
-	public function compileRenameColumn(Blueprint $blueprint, Fluent $command, Connection $connection)
-	{
-		$table = $this->wrapTable($blueprint);
+    public function compileRenameColumn(Blueprint $blueprint, Fluent $command, Connection $connection)
+    {
+    	$table = $this->wrapTable($blueprint);
 
-                $rs[0] = 'alter table '.$table.' rename column '.$command->from.' to '.$command->to;
+    	$rs[0] = 'alter table '.$table.' rename column '.$command->from.' to '.$command->to;
 
-                return (array) $rs;
-	}
+    	return (array) $rs;
+    }
 
 	/**
 	 * Create the column definition for a string type.
@@ -475,6 +479,12 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		return "number({$column->total}, {$column->places})";
 	}
 
+	/**
+	 * Create the column definition for a double type.
+	 *
+	 * @param  Illuminate\Support\Fluent  $column
+	 * @return string
+	 */
 	protected function typeDouble(Fluent $column)
 	{
 		return "number({$column->total}, {$column->places})";
@@ -613,7 +623,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	{
 		if (in_array($column->type, $this->serials) && $column->autoIncrement)
 		{
-            $blueprint->primary($column->name);
+			$blueprint->primary($column->name);
 		}
 	}
 
