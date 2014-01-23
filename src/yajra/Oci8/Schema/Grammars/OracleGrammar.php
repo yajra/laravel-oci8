@@ -554,6 +554,11 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function typeTimestamp(Fluent $column)
 	{
+		// if timestamp is not nullable,
+		// set default value to sysdate to avoid null date error
+		if (!isset($column->nullable))
+			return 'date default sysdate';
+
 		return 'date';
 	}
 
