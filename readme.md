@@ -40,6 +40,7 @@ Then setup a valid database configuration using the driver "pdo-via-oci8". Confi
 
 ```php
 'oracle' => array(
+    'driver' => 'pdo-via-oci8',
     'host' => 'oracle.host',
     'port' => '1521',
     'database' => 'xe',
@@ -48,12 +49,6 @@ Then setup a valid database configuration using the driver "pdo-via-oci8". Confi
     'charset' => '',
     'prefix' => '',
 )
-```
-
-Finally you need to migrate the table required for lastInsertId function:
-```
-$ php artisan migrate:install
-$ php artisan migrate --package=yajra/laravel-pdo-via-oci8
 ```
 
 And run your laravel installation...
