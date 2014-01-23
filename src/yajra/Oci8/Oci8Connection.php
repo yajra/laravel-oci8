@@ -148,7 +148,7 @@ class Oci8Connection extends Connection {
 				begin
 			if inserting and :new.{$column} is null then
 				select {$table}_{$column}_seq.nextval into :new.{$column} from dual;
-				insert into sequences_values (tablename, columnname, lastvalue) values ('$table}','{$column}',{$table}_{$column}_seq.currval);
+				insert into sequences_values (tablename, columnname, lastvalue) values ('{$table}','{$column}',{$table}_{$column}_seq.currval);
 			end if;
 			end;");
 	}
