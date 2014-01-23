@@ -67,21 +67,31 @@ class Oci8Connection extends Connection {
 		if (!$name) {
 			return false;
 		}
-		return self::statement('CREATE SEQUENCE '. $name);
+		return self::statement('create sequence '. $name);
 	}
 
 	/**
-	 * function to drop oracle sequence
-	 * @param  strine $name
+	 * function to safely drop sequence db object
+	 * @param  string $name
 	 * @return boolean
 	 */
 	public function dropSequence($name)
 	{
 		if (!$name) {
-			return false;
+			return 0;
 		}
-		return self::statement('DROP SEQUENCE '. $name);
+		return self::statement("
+			declare
+				e exception;
+				pragma exception_init(e,-02289);
+			begin
+				execute immediate 'drop sequence {$name}';
+			exception
+			when e then
+				null;
+			end;");
 	}
+
 
 	/**
 	 * function to get oracle sequence last inserted id
@@ -138,7 +148,30 @@ class Oci8Connection extends Connection {
 				begin
 			if inserting and :new.{$column} is null then
 				select {$table}_{$column}_seq.nextval into :new.{$column} from dual;
+				insert into sequences_values (tablename, columnname, lastvalue) values ('$table}','{$column}',{$table}_{$column}_seq.currval);
 			end if;
+			end;");
+	}
+
+	/**
+	 * function to safely drop trigger db object
+	 * @param  string $name
+	 * @return boolean
+	 */
+	public function dropTrigger($name)
+	{
+		if (!$name) {
+			return 0;
+		}
+		return self::statement("
+			declare
+				e exception;
+				pragma exception_init(e,-4080);
+			begin
+				execute immediate 'drop trigger {$name}';
+			exception
+			when e then
+				null;
 			end;");
 	}
 
