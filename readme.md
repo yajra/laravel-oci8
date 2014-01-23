@@ -36,18 +36,26 @@ Once Composer has installed or updated your packages you need to register the se
 'yajra\Oci8\Oci8ServiceProvider'
 ```
 
-Finally you need to setup a valid database configuration using the driver "pdo-via-oci8". Configure your connection as usual with:
+Then setup a valid database configuration using the driver "pdo-via-oci8". Configure your connection as usual with:
 
 ```php
-'connection-name' => array(
-    'host' => 'something',
-    'port' => 'something',
-    'username' => 'something',
-    'password' => 'something',
-    'charset' => 'something',
-    'prefix' => 'something',
+'oracle' => array(
+    'host' => 'oracle.host',
+    'port' => '1521',
+    'database' => 'xe',
+    'username' => 'hr',
+    'password' => 'hr',
+    'charset' => '',
+    'prefix' => '',
 )
 ```
+
+Finally you need to migrate the table required for lastInsertId function:
+```
+$ php artisan migrate:install
+$ php artisan migrate --package=yajra/laravel-pdo-via-oci8
+```
+
 And run your laravel installation...
 
 ###Examples
