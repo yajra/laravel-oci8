@@ -47,6 +47,34 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	}
 
 	/**
+	 * Drop a table from the schema.
+	 *
+	 * @param  string  $table
+	 * @return \Illuminate\Database\Schema\Blueprint
+	 */
+	public function drop($table)
+	{
+		$blueprint = $this->createBlueprint($table);
+
+		$blueprint->drop();
+
+		$this->build($blueprint);
+
+		// *** auto increment hack rollback ***
+		// drop sequence and trigger object
+		$db = $this->connection;
+		// @todo: get the actual primary column name from table
+		$col = 'id';
+		// if primary key col is set, drop auto increment objects
+		if (isset($col)) {
+	      	// drop sequence for auto increment
+			$db->dropSequence("{$table}_{$col}_seq");
+	        // drop trigger for auto increment work around
+			$db->dropTrigger("{$table}_{$col}_trg");
+		}
+	}
+
+	/**
 	 * Create a new command set with a Closure.
 	 *
 	 * @param  string   $table
