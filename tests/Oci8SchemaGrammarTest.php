@@ -214,14 +214,14 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users drop column ( foo )', $statements[0]);
+		$this->assertEquals('alter table users drop ( foo )', $statements[0]);
 
 		$blueprint = new Blueprint('users');
 		$blueprint->dropColumn(array('foo', 'bar'));
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users drop column ( foo, bar )', $statements[0]);
+		$this->assertEquals('alter table users drop ( foo, bar )', $statements[0]);
 	}
 
 	public function testDropPrimary()
@@ -271,7 +271,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users drop column ( created_at, updated_at )', $statements[0]);
+		$this->assertEquals('alter table users drop ( created_at, updated_at )', $statements[0]);
 	}
 
     public function testRenameTable()

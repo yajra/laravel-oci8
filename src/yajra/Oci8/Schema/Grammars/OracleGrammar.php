@@ -273,7 +273,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 		$table = $this->wrapTable($blueprint);
 
-		return 'alter table '.$table.' drop column ( '.implode(', ', $columns) . ' )';
+		return 'alter table '.$table.' drop ( '.implode(', ', $columns) . ' )';
 	}
 
 	/**
