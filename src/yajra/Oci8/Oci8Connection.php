@@ -64,9 +64,9 @@ class Oci8Connection extends Connection {
 	 */
 	public function createSequence($name)
 	{
-		if (!$name) {
+		if (!$name)
 			return false;
-		}
+
 		return self::statement('create sequence '. $name);
 	}
 
@@ -77,9 +77,9 @@ class Oci8Connection extends Connection {
 	 */
 	public function dropSequence($name)
 	{
-		if (!$name) {
+		if (!$name)
 			return 0;
-		}
+
 		return self::statement("
 			declare
 				e exception;
@@ -100,9 +100,9 @@ class Oci8Connection extends Connection {
 	 */
 	public function lastInsertId($name)
 	{
-		if (!$name) {
+		if (!$name)
 			return 0;
-		}
+
 		$data = self::select("SELECT $name.CURRVAL as id FROM DUAL");
 		return $data[0]->id;
 	}
@@ -113,9 +113,9 @@ class Oci8Connection extends Connection {
 	 * @return integer
 	 */
 	public function nextSequenceValue($name) {
-		if (!$name) {
+		if (!$name)
 			return 0;
-		}
+
 		$data = self::select("SELECT $name.NEXTVAL as id FROM DUAL");
 		return $data[0]->id;
 	}
@@ -138,9 +138,9 @@ class Oci8Connection extends Connection {
 	 */
 	public function createAutoIncrementTrigger($table, $column)
 	{
-		if (!$table or !$column) {
+		if (!$table or !$column)
 			return 0;
-		}
+
 		return self::statement("
 			create trigger {$table}_{$column}_trg
 			before insert or update on {$table}
@@ -159,9 +159,9 @@ class Oci8Connection extends Connection {
 	 */
 	public function dropTrigger($name)
 	{
-		if (!$name) {
+		if (!$name)
 			return 0;
-		}
+
 		return self::statement("
 			declare
 				e exception;
@@ -172,6 +172,33 @@ class Oci8Connection extends Connection {
 			when e then
 				null;
 			end;");
+	}
+
+	/**
+	 * get table's primary key
+	 * @param  string $table
+	 * @return string
+	 */
+	public function getPrimaryKey($table)
+	{
+		if (!$table)
+			return '';
+
+		$data = self::select("
+			SELECT cols.column_name
+			FROM all_constraints cons, all_cons_columns cols
+			WHERE cols.table_name = upper('{$table}')
+				AND cons.constraint_type = 'P'
+				AND cons.constraint_name = cols.constraint_name
+				AND cons.owner = cols.owner
+				AND cols.position = 1
+			ORDER BY cols.table_name, cols.position
+			");
+
+		if (count($data))
+			return $data[0]->column_name;
+
+		return '';
 	}
 
 }

@@ -54,17 +54,11 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	 */
 	public function drop($table)
 	{
-		$blueprint = $this->createBlueprint($table);
-
-		$blueprint->drop();
-
-		$this->build($blueprint);
-
 		// *** auto increment hack rollback ***
 		// drop sequence and trigger object
 		$db = $this->connection;
-		// @todo: get the actual primary column name from table
-		$col = 'id';
+		// get the actual primary column name from table
+		$col = $db->getPrimaryKey($table);
 		// if primary key col is set, drop auto increment objects
 		if (isset($col)) {
 	      	// drop sequence for auto increment
@@ -72,6 +66,13 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	        // drop trigger for auto increment work around
 			$db->dropTrigger("{$table}_{$col}_trg");
 		}
+
+		$blueprint = $this->createBlueprint($table);
+
+		$blueprint->drop();
+
+		$this->build($blueprint);
+
 	}
 
 	/**
