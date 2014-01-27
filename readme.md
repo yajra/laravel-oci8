@@ -107,6 +107,9 @@ DB::createSequence('seq_name');
 // deleting a sequence
 DB::dropSequence('seq_name');
 
+// check if a sequence
+DB::checkSequence('seq_name');
+
 // get new id from sequence
 $id = DB::nextSequenceValue('seq_name')
 

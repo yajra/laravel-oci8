@@ -77,7 +77,8 @@ class Oci8Connection extends Connection {
 	 */
 	public function dropSequence($name)
 	{
-		if (!$name)
+		// check if a valid name and sequence exists
+		if (!$name or !self::checkSequence($name))
 			return 0;
 
 		return self::statement("
@@ -100,10 +101,11 @@ class Oci8Connection extends Connection {
 	 */
 	public function lastInsertId($name)
 	{
-		if (!$name)
+		// check if a valid name and sequence exists
+		if (!$name or !self::checkSequence($name))
 			return 0;
 
-		$data = self::select("SELECT $name.CURRVAL as id FROM DUAL");
+		$data = self::select("select {$name}.currval from dual");
 		return $data[0]->id;
 	}
 
@@ -199,6 +201,24 @@ class Oci8Connection extends Connection {
 			return $data[0]->column_name;
 
 		return '';
+	}
+
+	/**
+	 * function to check if sequence exists
+	 * @param  string $name
+	 * @return boolean
+	 */
+	public function checkSequence($name)
+	{
+		if (!$name)
+			return false;
+
+		return self::select("select *
+			from all_sequences
+			where
+				sequence_name=upper('{$name}')
+				and sequence_owner=upper(user)
+			");
 	}
 
 }
