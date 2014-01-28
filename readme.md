@@ -63,8 +63,17 @@ $results = DB::connection('oracle')->select('select * from users where id = ?', 
 
 Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in OracleDB's config file.
 
-See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
+#### Inserting Records Into A Table With An Auto-Incrementing ID
 
+```php
+	$id = DB::connection('oracle')->table('users')->insertGetId(
+		array('email' => 'john@example.com', 'votes' => 0), 'userid'
+	);
+```
+
+> **Note:** When using the insertGetId method, you can specify the auto-incrementing column name as the second parameter in insertGetId function. It will default to "id" if not specified.
+
+See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
 
 ###License
 

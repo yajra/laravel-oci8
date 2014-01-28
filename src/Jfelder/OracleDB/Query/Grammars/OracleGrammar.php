@@ -34,6 +34,20 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		return trim($this->concatenate($components));
 	}
 
+	/**
+	 * Compile an insert and get ID statement into SQL.
+	 *
+	 * @param  \Illuminate\Database\Query\Builder  $query
+	 * @param  array   $values
+	 * @param  string  $sequence
+	 * @return string
+	 */
+	public function compileInsertGetId(Builder $query, $values, $sequence)
+	{
+		if (is_null($sequence)) $sequence = 'id';
+
+		return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence).' into ?';
+	}
         
         /**
 	 * Compile the lock into SQL.

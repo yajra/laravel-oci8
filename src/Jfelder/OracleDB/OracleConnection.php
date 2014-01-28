@@ -7,7 +7,7 @@ class OracleConnection extends Connection {
 	/**
 	 * Get the default query grammar instance.
 	 *
-	 * @return Illuminate\Database\Query\Grammars\Grammars\Grammar
+	 * @return Jfelder\OracleDB\Query\Grammars\OracleGrammar
 	 */
 	protected function getDefaultQueryGrammar()
 	{
@@ -17,10 +17,21 @@ class OracleConnection extends Connection {
 	/**
 	 * Get the default schema grammar instance.
 	 *
-	 * @return Illuminate\Database\Schema\Grammars\Grammar
+	 * @return Jfelder\OracleDB\Schema\Grammars\OracleGrammar
 	 */
 	protected function getDefaultSchemaGrammar()
 	{
 		return $this->withTablePrefix(new Schema\Grammars\OracleGrammar);
 	}
+
+	/**
+	 * Get the default post processor instance.
+	 *
+	 * @return Jfelder\OracleDB\Query\Processors\OracleProcessor
+	 */
+	protected function getDefaultPostProcessor()
+	{
+		return new Query\Processors\OracleProcessor;
+	}
+
 }
