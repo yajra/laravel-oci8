@@ -2,7 +2,7 @@
 
 ###OracleDB (updated for 4.1)
 
-[![Latest Stable Version](https://poser.pugx.org/jfelder/oracledb/v/stable.png)](https://packagist.org/packages/jfelder/oracledb) [![Total Downloads](https://poser.pugx.org/jfelder/oracledb/downloads.png)](https://packagist.org/packages/jfelder/oracledb) [![Build Status](https://travis-ci.org/jfelder/Laravel-OracleDB.png)](https://travis-ci.org/jfelder/Laravel-OracleDB)
+[![Latest Stable Version](https://poser.pugx.org/jfelder/oracledb/v/stable.png)](https://packagist.org/packages/jfelder/oracledb) [![Total Downloads](https://poser.pugx.org/jfelder/oracledb/downloads.png)](https://packagist.org/packages/jfelder/oracledb) [![Build Status](https://travis-ci.org/jfelder/Laravel-OracleDB.png)](https://travis-ci.org/jfelder/Laravel-OracleDB)[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/jfelder/Laravel-OracleDB/badges/quality-score.png?s=fe9114220bc714cf188fdfa6a15be3a75cf86236)](https://scrutinizer-ci.com/g/jfelder/Laravel-OracleDB/)
 
 
 OracleDB is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). OracleDB is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses the [PDO_OCI] (http://www.php.net/manual/en/ref.pdo-oci.php) extension. Thanks to @taylorotwell.
