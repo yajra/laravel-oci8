@@ -73,8 +73,6 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 */
 	protected function compileAnsiOffset(Builder $query, $components)
 	{
-		$start = $query->offset + 1;
-
 		$constraint = $this->compileRowConstraint($query);
 
 		$sql = $this->concatenate($components);

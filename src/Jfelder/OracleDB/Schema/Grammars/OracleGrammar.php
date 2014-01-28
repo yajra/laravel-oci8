@@ -47,7 +47,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	public function compileColumnExists($table)
 	{
 		return "select column_name from user_tab_columns where table_name = upper(?) and column_name = upper(?)";
-                
 	}
 
         
@@ -63,7 +62,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
                                 
 		if ( ! is_null($primary))
 		{
-                        $table = $this->wrapTable($blueprint);
 			$columns = $this->columnize($primary->columns);
 
 			return ", constraint {$primary->index} primary key ( {$columns} )";
@@ -87,9 +85,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		// are building
 		foreach ($foreigns as $foreign)
 		{
-                        $table = $this->wrapTable($blueprint);
-                        $table = $foreign->index;
-
                         $on = $this->wrapTable($foreign->on);
 
 			$columns = $this->columnize($foreign->columns);
@@ -288,8 +283,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
 	{
-		$table = $blueprint->getTable();
-
 		$table = $this->wrapTable($blueprint);
 
 		return "alter table {$table} drop constraint {$command->index}";
@@ -318,8 +311,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	public function compileDropIndex(Blueprint $blueprint, Fluent $command)
 	{
-		$table = $this->wrapTable($blueprint);
-
 		return "drop index {$command->index}";
 	}
 
@@ -346,9 +337,9 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	public function compileRename(Blueprint $blueprint, Fluent $command)
 	{
-		$from = $this->wrapTable($blueprint);
+		$table = $this->wrapTable($blueprint);
 
-		return "alter table {$from} rename to ".$this->wrapTable($command->to);
+		return "alter table {$table} rename to ".$this->wrapTable($command->to);
 	}
 
         /**
@@ -363,9 +354,9 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	{
 		$table = $this->wrapTable($blueprint);
 
-                $rs[0] = 'alter table '.$table.' rename column '.$command->from.' to '.$command->to;
+                $rs = array('alter table '.$table.' rename column '.$command->from.' to '.$command->to);
 		
-                return (array) $rs;
+                return $rs;
 	}
 
 	/**
@@ -586,7 +577,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function modifyNullable(Blueprint $blueprint, Fluent $column)
 	{
-		//return $column->nullable ? ' null' : ' not null';
 		$null = $column->nullable ? ' null' : ' not null';
 		if ( ! is_null($column->default) ) {
 			return " default ".$this->getDefaultValue($column->default) . $null;
