@@ -12,10 +12,15 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 
 **Please report any bugs you may find.**
 
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Examples](#examples)
 - [Support](#support)
 - [Credits](#credits)
+
+###Requirements
+- PHP >= 5.3
+- PHP [OCI8](http://php.net/oci8) extension
 
 ###Installation
 
