@@ -16,8 +16,6 @@ class OracleProcessor extends Processor {
 	 */
 	public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
 	{
-		$sequence = $sequence ?: 'id';
-
                 $counter = 0;
                 $last_insert_id = 0;
                 
