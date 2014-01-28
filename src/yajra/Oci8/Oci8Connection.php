@@ -115,8 +115,7 @@ class Oci8Connection extends Connection {
 	 * @return integer
 	 */
 	public function nextSequenceValue($name) {
-		// check if a valid name and sequence exists
-		if (!$name or !self::checkSequence($name))
+		if (!$name)
 			return 0;
 
 		$data = self::select("SELECT $name.NEXTVAL as id FROM DUAL");
