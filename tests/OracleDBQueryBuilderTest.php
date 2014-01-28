@@ -71,11 +71,9 @@ class DatabaseQueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$query = $query->rememberForever();
 
 		$driver->shouldReceive('rememberForever')
-												->once()
-												->with($query->getCacheKey(), m::type('Closure'))
-												->andReturnUsing(function($key, $callback) { return $callback(); });
-
-
+			->once()
+			->with($query->getCacheKey(), m::type('Closure'))
+			->andReturnUsing(function($key, $callback) { return $callback(); });
 
 		$this->assertEquals($query->get(), array('results'));
 	}
@@ -641,7 +639,7 @@ class DatabaseQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testInsertGetIdMethod()
 	{
 		$builder = $this->getBuilder();
-		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email) values (?)', array('foo'), 'id')->andReturn(1);
+		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email) values (?) returning id into ?', array('foo'), 'id')->andReturn(1);
 		$result = $builder->from('users')->insertGetId(array('email' => 'foo'), 'id');
 		$this->assertEquals(1, $result);
 	}
@@ -650,7 +648,7 @@ class DatabaseQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testInsertGetIdMethodRemovesExpressions()
 	{
 		$builder = $this->getBuilder();
-		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email, bar) values (?, bar)', array('foo'), 'id')->andReturn(1);
+		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email, bar) values (?, bar) returning id into ?', array('foo'), 'id')->andReturn(1);
 		$result = $builder->from('users')->insertGetId(array('email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')), 'id');
 		$this->assertEquals(1, $result);
 	}
@@ -812,7 +810,8 @@ class DatabaseQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	protected function getBuilder()
 	{
 		$grammar = new Jfelder\OracleDB\Query\Grammars\OracleGrammar;
-		$processor = m::mock('Illuminate\Database\Query\Processors\Processor');
+		//$processor = new Jfelder\OracleDB\Query\Processors\OracleProcessor;
+		$processor = m::mock('Jfelder\OracleDB\Query\Processors\OracleProcessor');
 		return new Builder(m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor);
 	}
 
