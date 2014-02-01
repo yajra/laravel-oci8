@@ -26,7 +26,11 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
      */
     public function createConnection($dsn, array $config, array $options)
     {
-        return parent::createConnection($dsn, $config, $options);                    
+        if($config['driver'] == 'oci') {
+            return new \Jfelder\OracleDB\OCI_PDO\OCI($dsn, $config['username'], $config['password'], $options, $config['charset']);
+        } else {
+            return parent::createConnection($dsn, $config, $options);                    
+        }
     }
 
     /**
@@ -59,7 +63,8 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
 
         $dsn = $config['tns'];
 
-        $dsn = "oci:dbname=".$dsn.(empty($config['charset']) ? "" : ";charset=".$config['charset']);
+        if($config['driver'] == 'pdo') 
+            $dsn = "oci:dbname=".$dsn.(empty($config['charset']) ? "" : ";charset=".$config['charset']);
 
         return $dsn; 
     }        

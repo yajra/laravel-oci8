@@ -16,7 +16,7 @@ class OracleProcessor extends Processor {
 	 */
 	public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
 	{
-                $counter = 1;
+                $counter = 0;
                 $last_insert_id = 0;
                 
                 // get PDO statment object
@@ -35,6 +35,11 @@ class OracleProcessor extends Processor {
                         $param = \PDO::PARAM_NULL;
                     else
                         $param = \PDO::PARAM_STR;
+                    
+                    // change offset for OCI binding
+                    if (get_class($query->getConnection()->getPdo()) != 'Jfelder\OracleDB\OCI_PDO\OCI' && $counter == 0) {
+                      $counter++;
+                    }
 
                     $stmt->bindValue($counter++, $values[$k], $param);
                 }
