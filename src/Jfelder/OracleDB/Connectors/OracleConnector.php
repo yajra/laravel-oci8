@@ -61,11 +61,6 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
         if (empty($config['tns'])) 
             $config['tns'] = "(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']}))(CONNECT_DATA =(SID = {$config['database']})))";
 
-        $dsn = $config['tns'];
-
-        if($config['driver'] == 'pdo') 
-            $dsn = "oci:dbname=".$dsn.(empty($config['charset']) ? "" : ";charset=".$config['charset']);
-
-        return $dsn; 
+        return ($config['driver'] == 'pdo' ? 'oci:dbname=' : '').$config['tns'].(empty($config['charset']) ? "" : ";charset=".$config['charset']); 
     }        
 }
