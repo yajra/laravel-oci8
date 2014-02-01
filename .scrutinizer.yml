@@ -4,7 +4,7 @@ filter:
 before_commands:
     - 'composer install --dev --prefer-source'
 tools:
-    php_code_coverage: true
+    external_code_coverage: true
     php_hhvm: true
     php_cs_fixer: true
     php_mess_detector: true

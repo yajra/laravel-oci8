@@ -29,10 +29,10 @@ class OCIStatement extends \PDOStatement
      * @var array
      */
     protected $datatypes = array(
-        \PDO::PARAM_BOOL => 3, 
-        \PDO::PARAM_NULL => 3,
-        \PDO::PARAM_INT => 3,
-        \PDO::PARAM_STR => 1,
+        \PDO::PARAM_BOOL => SQLT_INT, 
+        \PDO::PARAM_NULL => SQLT_INT,
+        \PDO::PARAM_INT => SQLT_INT,
+        \PDO::PARAM_STR => SQLT_CHR,
     );
     
     /**
