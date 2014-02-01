@@ -1,5 +1,13 @@
 <?php
 
+defined('SQLT_INT') or define('SQLT_INT', 3);
+defined('SQLT_CHR') or define('SQLT_CHR', 1);
+defined('OCI_FETCHSTATEMENT_BY_ROW') or define('OCI_FETCHSTATEMENT_BY_ROW', 32);
+defined('OCI_ASSOC') or define('OCI_ASSOC', 1);
+defined('OCI_COMMIT_ON_SUCCESS') or define('OCI_COMMIT_ON_SUCCESS', 32);
+defined('OCI_NO_AUTO_COMMIT') or define('OCI_NO_AUTO_COMMIT', 0);
+
+
 use Mockery as m;
 
 class OracleDBProcessorTest extends PHPUnit_Framework_TestCase 

@@ -33,7 +33,7 @@ class OCI extends \PDO
      * 
      * @var int
      */
-    protected $mode = OCI_COMMIT_ON_SUCCESS;
+    protected $mode = \OCI_COMMIT_ON_SUCCESS;
 
     public function __construct ( $dsn, $username = null, $password = null, $driver_options = array(), $charset = '' ) 
     {
@@ -63,7 +63,7 @@ class OCI extends \PDO
             throw new OCIException(array('code'=>0, 'message'=>"Already in a transaction",'sqltext'=>''));
         }
         
-        $this->transaction = $this->setExecuteMode(OCI_NO_AUTO_COMMIT);
+        $this->transaction = $this->setExecuteMode(\OCI_NO_AUTO_COMMIT);
         return true;
     }
     
@@ -170,13 +170,13 @@ class OCI extends \PDO
 
     public function flipExecuteMode() 
     {
-        $this->setExecuteMode($this->getExecuteMode() == OCI_COMMIT_ON_SUCCESS ? OCI_NO_AUTO_COMMIT : OCI_COMMIT_ON_SUCCESS);
+        $this->setExecuteMode($this->getExecuteMode() == \OCI_COMMIT_ON_SUCCESS ? \OCI_NO_AUTO_COMMIT : \OCI_COMMIT_ON_SUCCESS);
         return true;
     }
 
     public function setExecuteMode($mode) 
     {
-        if($mode == OCI_COMMIT_ON_SUCCESS || $mode == OCI_NO_AUTO_COMMIT) {
+        if($mode == \OCI_COMMIT_ON_SUCCESS || $mode == \OCI_NO_AUTO_COMMIT) {
             $this->mode = $mode;
             return true;
         }

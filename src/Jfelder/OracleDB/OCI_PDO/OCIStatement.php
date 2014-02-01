@@ -29,10 +29,10 @@ class OCIStatement extends \PDOStatement
      * @var array
      */
     protected $datatypes = array(
-        \PDO::PARAM_BOOL => SQLT_INT, 
-        \PDO::PARAM_NULL => SQLT_INT,
-        \PDO::PARAM_INT => SQLT_INT,
-        \PDO::PARAM_STR => SQLT_CHR,
+        \PDO::PARAM_BOOL => \SQLT_INT, 
+        \PDO::PARAM_NULL => \SQLT_INT,
+        \PDO::PARAM_INT => \SQLT_INT,
+        \PDO::PARAM_STR => \SQLT_CHR,
     );
     
     /**
@@ -175,7 +175,7 @@ class OCIStatement extends \PDOStatement
     {
         $this->setAttribute('fetch_style', $fetch_style);
 
-        $rs = oci_fetch_all($this->stmt, $temprs, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+        $rs = oci_fetch_all($this->stmt, $temprs, 0, -1, \OCI_FETCHSTATEMENT_BY_ROW + \OCI_ASSOC);
         
         if ($rs !== false) {
             // convert to type requested from PDO options
@@ -252,7 +252,7 @@ class OCIStatement extends \PDOStatement
             //      if (is_object($value) ) {
             //          $rs[$field] = $value->load();
 
-            if ($this->conn->getAttribute(\PDO::ATTR_CASE) == \PDO::CASE_LOWER) $rec = array_change_key_case($rec, CASE_LOWER);
+            if ($this->conn->getAttribute(\PDO::ATTR_CASE) == \PDO::CASE_LOWER) $rec = array_change_key_case($rec, \CASE_LOWER);
             $rec = ($this->getAttribute('fetch_style') != \PDO::FETCH_CLASS) ? $rec : (object) $rec;
         }
         return $rec;
