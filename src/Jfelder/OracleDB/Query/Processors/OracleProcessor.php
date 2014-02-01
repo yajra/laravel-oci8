@@ -16,7 +16,7 @@ class OracleProcessor extends Processor {
 	 */
 	public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
 	{
-                $counter = 0;
+                $counter = 1;
                 $last_insert_id = 0;
                 
                 // get PDO statment object
@@ -24,25 +24,23 @@ class OracleProcessor extends Processor {
                 
                 // bind each parameter from the values array to their location
                 // these are 1-based so ++ has to be before bindValue
-                foreach($values as $value)
+                foreach($values as $k => $v)
                 {
-                    $counter++;
-                    
                     // try to determine type of result
-                    if(is_int($value))
+                    if(is_int($v))
                         $param = \PDO::PARAM_INT;
-                    elseif(is_bool($value))
+                    elseif(is_bool($v))
                         $param = \PDO::PARAM_BOOL;
-                    elseif(is_null($value))
+                    elseif(is_null($v))
                         $param = \PDO::PARAM_NULL;
                     else
                         $param = \PDO::PARAM_STR;
-                    
-                    $stmt->bindValue($counter, ($value), $param);
+
+                    $stmt->bindValue($counter++, $values[$k], $param);
                 }
-                
+
                 // bind output param for the returning cluase
-                $stmt->bindParam(++$counter, $last_insert_id, \PDO::PARAM_INT|\PDO::PARAM_INPUT_OUTPUT, 8);
+                $stmt->bindParam($counter, $last_insert_id, \PDO::PARAM_INT|\PDO::PARAM_INPUT_OUTPUT, 8);
 
                 // execute statement
                 $stmt->execute();

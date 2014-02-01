@@ -4,13 +4,14 @@ return array(
 	'connections' => array(
 
 		'oracle' => array(
-			'driver'   => 'oci',
-                        'tns'      => '',
-                        'host'     => 'localhost',
-                        'port'     => '1521',
-                        'database' => 'database',
-                        'username' => 'root',
-                        'password' => '', 
+			'driver'   => 'pdo',
+			'tns'      => '',
+			'host'     => '',
+			'port'     => '1521',
+			'database' => '',
+			'username' => '',
+			'password' => '',
+                        'charset'  => 'WE8ISO8859P1',
                         'prefix'   => '',
 		),
 
