@@ -72,11 +72,13 @@ class OCI extends \PDO
         if($this->inTransaction()) {
             //commit trans
             $r = oci_commit($this->conn);
-            if (!r) {
-                $e = oci_error($conn);
+            if (!$r) {
+                $e = oci_error($this->conn);
                 throw new OCIException($e);
             }
             $this->transaction = ! $this->flipExecuteMode();
+            
+            return true;
         }
         
         return false;
@@ -86,14 +88,10 @@ class OCI extends \PDO
     {}
     
     public function errorInfo ()
-    {
-        return array();
-    }
+    {}
     
     public function exec ($statement)
-    {
-        return (int) 1;
-    }
+    {}
     
     public function getAttribute ($attribute)
     {
@@ -104,9 +102,7 @@ class OCI extends \PDO
     }
     
     public static function getAvailableDrivers ()
-    {
-        return array();
-    }
+    {}
     
     public function inTransaction ()
     {
@@ -137,24 +133,26 @@ class OCI extends \PDO
     }
 
     public function query ($statement)
-    {
-        return "PDOStatement";
-    }
+    {}
 
     public function quote ($string, $parameter_type = \PDO::PARAM_STR )
-    {
-        return "string";
-    }
+    {}
 
     public function rollBack()
     {
         if($this->inTransaction()) {
             //rollback trans
-            oci_rollback($this->conn);
+            $r = oci_rollback($this->conn);
+            if (!$r) {
+                $e = oci_error($this->conn);
+                throw new OCIException($e);
+            }
             $this->transaction = ! $this->flipExecuteMode();
+            
+            return true;
         } 
         
-        throw new OCIException(array('code'=>0, 'message'=>"Not in a transaction.", 'sql'=>""));
+        return false;
     }
 
     public function setAttribute ($attribute, $value)
@@ -176,7 +174,7 @@ class OCI extends \PDO
 
     public function setExecuteMode($mode) 
     {
-        if($mode == \OCI_COMMIT_ON_SUCCESS || $mode == \OCI_NO_AUTO_COMMIT) {
+        if($mode === \OCI_COMMIT_ON_SUCCESS || $mode === \OCI_NO_AUTO_COMMIT) {
             $this->mode = $mode;
             return true;
         }

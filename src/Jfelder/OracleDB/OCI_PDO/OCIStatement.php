@@ -48,7 +48,7 @@ class OCIStatement extends \PDOStatement
         $resource_type = strtolower(get_resource_type($stmt));
 
         if ($resource_type != 'oci8 statement') {
-            throw new \PDOException("Invalid resource received: {$resource_type}");
+            throw new OCIException(array('code'=>0,'message'=>"Invalid resource received: {$resource_type}", 'sqltext'=>""));
         }
 
         $this->stmt = $stmt;
@@ -62,9 +62,7 @@ class OCIStatement extends \PDOStatement
     }
 
     public function bindColumn ($column , &$param, $type = null, $maxlen = null, $driverdata = null)
-    {
-        return true;
-    }
+    {}
 
     public function bindParam ($parameter , &$variable, $data_type = \PDO::PARAM_STR, $length = -1, $driver_options = null)
     {
@@ -100,7 +98,7 @@ class OCIStatement extends \PDOStatement
         }
         
         if(!isset($this->datatypes[$data_type])) {
-            throw new \PDOException("Unknown data type in oci_bind_by_name: {$data_type}");
+            throw new \InvalidArgumentException("Unknown data type in oci_bind_by_name: {$data_type}");
         }
 
         //Bind the parameter
@@ -110,9 +108,7 @@ class OCIStatement extends \PDOStatement
     }
 
     public function closeCursor()
-    {
-        return true;
-    }
+    {}
 
     public function columnCount()
     {
@@ -120,18 +116,13 @@ class OCIStatement extends \PDOStatement
     }
 
     public function debugDumpParams()
-    {
-    }
+    {    }
 
     public function errorCode()
-    {
-        return "string";
-    }
+    {}
 
     public function errorInfo()
-    {
-        return array();
-    }
+    {}
 
     public function execute ($input_parameters = null)
     {
@@ -225,9 +216,7 @@ class OCIStatement extends \PDOStatement
     }
 
     public function nextRowset()
-    {
-        return true;
-    }
+    {}
 
     public function rowCount()
     {
