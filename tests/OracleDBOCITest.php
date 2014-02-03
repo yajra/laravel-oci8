@@ -77,13 +77,11 @@ class OracleDBOCITest extends \PHPUnit_Framework_TestCase
     
     public function testDestructor ()
     {
-        // need to mock oci_close
         global $OCITransactionStatus;
         $OCITransactionStatus = true;
         $oci = new OCI('dsn');
         unset($oci);
         $this->assertFalse($OCITransactionStatus);
-                
     }
     
     public function testBeginTransaction()

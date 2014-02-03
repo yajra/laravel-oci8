@@ -2,7 +2,10 @@
 
 if(!class_exists('TestOCIStub')) {
     class TestOCIStub extends Jfelder\OracleDB\OCI_PDO\OCI {
-            public function __construct() { $this->conn = true; }
+            public function __construct($dsn = '', $username = null, $password = null, $driver_options = array(), $charset = '' ) { 
+                $this->attributes = $driver_options + $this->attributes;
+                $this->conn = true; 
+            }
             public function __destruct() {}
     }
 }

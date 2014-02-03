@@ -164,6 +164,10 @@ class OCIStatement extends \PDOStatement
 
     public function fetchAll ($fetch_style = \PDO::FETCH_CLASS, $fetch_argument = null, $ctor_args = array())
     {
+        if ($fetch_style != \PDO::FETCH_CLASS && $fetch_style != \PDO::FETCH_ASSOC) {
+            throw new \InvalidArgumentException("Invalid fetch style requested: {$fetch_style}. Only PDO::FETCH_CLASS and PDO::FETCH_ASSOC suported.");
+        }
+
         $this->setAttribute('fetch_style', $fetch_style);
 
         $rs = oci_fetch_all($this->stmt, $temprs, 0, -1, \OCI_FETCHSTATEMENT_BY_ROW + \OCI_ASSOC);
@@ -182,7 +186,10 @@ class OCIStatement extends \PDOStatement
 
     public function fetchColumn ($column_number = 0)
     {
-        $rs = $this->fetch(\PDO::FETCH_ASSOC);
+        if(!is_int($column_number))
+            throw new OCIException(array('code'=>0,'message'=>"Invalid Column type specfied: {$column_number}. Expecting an int.", 'sqltext'=>""));
+        
+        $rs = $this->fetch(\PDO::FETCH_NUM);
         return isset($rs[$column_number]) ? $rs[$column_number] : false;
     }
 
