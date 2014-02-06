@@ -14,6 +14,7 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Starter Kit](#starter-kit)
 - [Examples](#examples)
 - [Support](#support)
 - [Credits](#credits)
@@ -57,6 +58,13 @@ Then setup a valid database configuration using the driver "pdo-via-oci8". Confi
 ```
 
 And run your laravel installation...
+
+###Starter-Kit
+To help you kickstart with Laravel, you may want to use the starter kit package below:
+* [Laravel 4 Starter Kit](https://github.com/yajra/laravel4-starter-kit)
+* [Laravel 4.1 Starter Kit](https://github.com/yajra/laravel-4.1-starter-kit)
+
+Starter kit package above were forked from [brunogaspar/laravel4-starter-kit](https://github.com/brunogaspar/laravel4-starter-kit). No need to re-invent the wheel.
 
 ###Examples
 
@@ -137,29 +145,6 @@ DB::setDateFormat('MM/DD/YYYY');
 Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
 
 See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
-
-###Query Builder
-You can use the Query Builder functionality exactly the same as you would with the default DB class in Laravel 4.
-Every query on [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) has been tested to ensure that it works.
-
-Offset & Limit
-```php
-$users = DB::table('users')->skip(10)->take(5)->get();
-```
-
-See [Laravel 4 Database Query Builder Docs](http://four.laravel.com/docs/queries) for more information.
-
-###Eloquent
-
-See [Laravel 4 Eloquent Docs](http://four.laravel.com/docs/eloquent) for more information.
-
-###Schema (WIP)
-
-See [Laravel 4 Schema Docs](http://four.laravel.com/docs/schema) for more information.
-
-###Migrations (WIP)
-
-See [Laravel 4 Migrations Docs](http://four.laravel.com/docs/migrations) for more information.
 
 ###License
 
