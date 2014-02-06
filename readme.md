@@ -122,10 +122,13 @@ DB::select('select * from mylobs');
 // Initialize empty array
 $posts = array();
 
+$common = array(
+    'user_id' => 1,
+);
+
 // Blog post 1
 $date = new DateTime;
 $posts[] = array_merge($common, array(
-    'user_id' => 1,
     'title'      => 'Lorem ipsum dolor sit amet',
     'slug'       => 'lorem-ipsum-dolor-sit-amet',
     'content'    => 'lorem-ipsum-dolor-sit-amet',
@@ -136,7 +139,6 @@ $posts[] = array_merge($common, array(
 // Blog post 2
 $date = new DateTime;
 $posts[] = array_merge($common, array(
-    'user_id' => 1,
     'title'      => 'Vivendo suscipiantur vim te vix',
     'slug'       => 'vivendo-suscipiantur-vim-te-vix',
     'content'    => 'vivendo-suscipiantur-vim-te-vix',
@@ -188,7 +190,7 @@ $id = DB::lastInsertId('seq_name');
 $id = DB::currentSequenceValue('seq_name');
 ```
 
-Date Formatting (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
+***Date Formatting*** (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
 ```php
 // set oracle session date format
 DB::setDateFormat('MM/DD/YYYY');
