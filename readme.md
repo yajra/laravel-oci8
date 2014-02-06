@@ -14,6 +14,7 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Auto-Increment Support](#auto-increment-support)
 - [Starter Kit](#starter-kit)
 - [Examples](#examples)
 - [Support](#support)
@@ -61,14 +62,42 @@ And run your laravel installation...
 
 ###Starter-Kit
 To help you kickstart with Laravel, you may want to use the starter kit package below:
-* [Laravel 4 Starter Kit](https://github.com/yajra/laravel4-starter-kit)
-* [Laravel 4.1 Starter Kit](https://github.com/yajra/laravel-4.1-starter-kit)
+- [Laravel 4 Starter Kit](https://github.com/yajra/laravel4-starter-kit)
+- [Laravel 4.1 Starter Kit](https://github.com/yajra/laravel-4.1-starter-kit)
 
 Starter kit package above were forked from [brunogaspar/laravel4-starter-kit](https://github.com/brunogaspar/laravel4-starter-kit). No need to re-invent the wheel.
 
+###Auto-Increment Support
+To support auto-increment in Laravel-OCI8, you must meet the following requirements:
+- Table must have a corresponding sequence with this format ```{$table}_{$column}_seq```
+- Sequence next value are executed before the insert query. ```DB::nextSequenceValue("{$table}_{$column}_seq")```
+
+***Note:*** If you will use [Laravel Migration](http://laravel.com/docs/migrations) feature, the required sequence and a trigger will automatically be created.
+```php
+Schema::create('posts', function($table)
+{
+    $table->increments('id')->unsigned();
+    $table->integer('user_id')->unsigned();
+    $table->string('title');
+    $table->string('slug');
+    $table->text('content');
+    $table->string('meta_title')->nullable();
+    $table->string('meta_description')->nullable();
+    $table->string('meta_keywords')->nullable();
+    $table->timestamps();
+});
+```
+
+This script will trigger Laravel-OCI8 to create the following DB objects
+- posts (table)
+- posts_id_seq (sequence)
+- posts_id_trg (trigger)
+
+Check the starter kit provided to see how it works.
+
 ###Examples
 
-Configuration (database.php)
+***Configuration*** (database.php)
 ```php
 'default' => 'oracle',
 
@@ -83,13 +112,43 @@ Configuration (database.php)
     'prefix' => '',
 )
 ```
-
-Basic query
+***Basic Select Statement***
 ```php
 DB::select('select * from mylobs');
 ```
 
-The lovely Oracle BLOB >.<
+***Eloquent***
+```php
+// Initialize empty array
+$posts = array();
+
+// Blog post 1
+$date = new DateTime;
+$posts[] = array_merge($common, array(
+    'user_id' => 1,
+    'title'      => 'Lorem ipsum dolor sit amet',
+    'slug'       => 'lorem-ipsum-dolor-sit-amet',
+    'content'    => 'lorem-ipsum-dolor-sit-amet',
+    'created_at' => $date->modify('-10 day'),
+    'updated_at' => $date->modify('-10 day'),
+));
+
+// Blog post 2
+$date = new DateTime;
+$posts[] = array_merge($common, array(
+    'user_id' => 1,
+    'title'      => 'Vivendo suscipiantur vim te vix',
+    'slug'       => 'vivendo-suscipiantur-vim-te-vix',
+    'content'    => 'vivendo-suscipiantur-vim-te-vix',
+    'created_at' => $date->modify('-4 day'),
+    'updated_at' => $date->modify('-4 day'),
+));
+
+// Insert the blog posts
+Post::insert($posts);
+```
+
+***Oracle Blob***
 
 Querying a blob field will now load the value instead of the OCI-Lob object. See [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) for blob conversion details.
 ```php
@@ -112,26 +171,21 @@ DB::transaction(function($conn){
 });
 ```
 
-Oracle Sequence Examples
+***Oracle Sequence***
 ```php
 // creating a sequence
 DB::createSequence('seq_name');
-
 // deleting a sequence
 DB::dropSequence('seq_name');
-
 // check if a sequence
 DB::checkSequence('seq_name');
-
 // get new id from sequence
 $id = DB::nextSequenceValue('seq_name')
-
 // get last inserted id
 // Note: you must execute an insert statement using a sequence to be able to use this function
 $id = DB::lastInsertId('seq_name');
 // or
 $id = DB::currentSequenceValue('seq_name');
-
 ```
 
 Date Formatting (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
