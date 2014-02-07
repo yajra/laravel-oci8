@@ -11,8 +11,8 @@ return array(
 			'database' => '',
 			'username' => '',
 			'password' => '',
-                        'charset'  => 'WE8ISO8859P1',
-                        'prefix'   => '',
+			'charset'  => 'WE8ISO8859P1',
+			'prefix'   => '',
 		),
 
 	),

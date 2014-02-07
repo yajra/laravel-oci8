@@ -1,31 +1,10 @@
 <?php
-namespace {
-    $OCIStatementStatus = true;
-}
 namespace Jfelder\OracleDB\OCI_PDO {  
-    if (!function_exists("Jfelder\OracleDB\OCI_PDO\oci_error")) { 
-        function oci_error($var="") { return array('code'=>0,'message'=>'', 'sqltext'=>''); } 
-    }
-    function get_resource_type($a) { global $OCIStatementStatus; return $OCIStatementStatus ? 'oci8 statement' : 'invalid'; }
-    function oci_bind_by_name($a, $b, &$c, $d, $e) { global $OCIStatementStatus; $c = 'oci_bind_by_name'; return $OCIStatementStatus; } 
-    function oci_num_fields($var) { return 1;} 
-    function oci_free_statement($var) { global $OCIStatementStatus; $OCIStatementStatus = false; }
-    function oci_execute($a, $b) { global $OCIStatementStatus; return $OCIStatementStatus; }
-    function oci_fetch_assoc($a) { global $OCIStatementStatus; return $OCIStatementStatus ? array('FNAME' => 'Test', 'LNAME' => 'Testerson', 'EMAIL' => 'tester@testing.com') : false; }
-    function oci_fetch_row($a) { global $OCIStatementStatus; return $OCIStatementStatus ? array(0 => 'Test', 1 => 'Testerson', 2 => 'tester@testing.com') : false; }
-    function oci_fetch_array($a) { global $OCIStatementStatus; return $OCIStatementStatus ? array(0 => 'Test', 1 => 'Testerson', 2 => 'tester@testing.com', 'FNAME' => 'Test', 'LNAME' => 'Testerson', 'EMAIL' => 'tester@testing.com') : false; }
-    function oci_fetch_all($a, &$b) { global $OCIStatementStatus; $b = array(array('FNAME' => 'Test', 'LNAME' => 'Testerson', 'EMAIL' => 'tester@testing.com')); return $OCIStatementStatus; }
-    function oci_field_type($a, $b) { return 1; }
-    function oci_field_type_raw($a, $b) { return 1; }
-    function oci_field_name($a, $b) { return 1; }
-    function oci_field_size($a, $b) { return 1; }
-    function oci_field_precision($a, $b) { return 1; }
-    function oci_num_rows($a) { return 1; }
-    
 
 use \Mockery as m;
 
 include 'mocks/OCIMocks.php';
+include 'mocks/OCIFunctions.php';
 
 class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase 
 {
@@ -37,10 +16,15 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
               'The oci8 extension is not available.'
             );
         } else {
-            //$this->oci = m::mock(new \TestOCIStub());
-            //$this->stmt = m::mock(new \TestOCIStatementStub(true, $this->oci, array('fake'=>'attribute')));
+            global $OCIStatementStatus, $OCIExecuteStatus, $OCIFetchStatus, $OCIBindChangeStatus;
+
+            $OCIStatementStatus = true;
+            $OCIExecuteStatus = true;
+            $OCIFetchStatus = true;
+            $OCIBindChangeStatus = false;
+
             $this->oci = m::mock(new \TestOCIStub('', null, null, array(\PDO::ATTR_CASE => \PDO::CASE_LOWER)));
-            $this->stmt = m::mock(new \TestOCIStatementStub(true, $this->oci, array('fake'=>'attribute')));
+            $this->stmt = m::mock(new \TestOCIStatementStub('oci statement', $this->oci, '', array('fake'=>'attribute')));
             
             //fake result sets for all the fetch calls
             $this->resultUpperArray = array('FNAME' => 'Test', 'LNAME' => 'Testerson', 'EMAIL' => 'tester@testing.com');
@@ -72,10 +56,8 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
 
     public function testConstructor ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = true;
         $oci = new \TestOCIStub();
-        $ocistmt = new OCIStatement(array(), $oci);
+        $ocistmt = new OCIStatement('oci8 statement', $oci);
         
         // use reflection to test values of protected properties
         $reflection = new \ReflectionClass($ocistmt);
@@ -83,12 +65,14 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
         // stmt property
         $property = $reflection->getProperty('stmt');
         $property->setAccessible(true);
-        $this->assertEquals(array(), $property->getValue($ocistmt));
+        $this->assertEquals('oci8 statement', $property->getValue($ocistmt));
         
+        //conn property
         $property = $reflection->getProperty('conn');
         $property->setAccessible(true);
         $this->assertEquals($oci, $property->getValue($ocistmt));
 
+        //attributes property
         $property = $reflection->getProperty('attributes');
         $property->setAccessible(true);
         $this->assertEquals(array(), $property->getValue($ocistmt));
@@ -101,39 +85,98 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
     {
         global $OCIStatementStatus;
         $OCIStatementStatus = false;
-        $ocistmt = new OCIStatement(array(), new \TestOCIStub());
+        $ocistmt = new OCIStatement('oci8 statement', new \TestOCIStub());
     }
     
     public function testDestructor ()
     {
         global $OCIStatementStatus;
-        $OCIStatementStatus = true;
-        $ocistmt = new OCIStatement(array(), new \TestOCIStub());
+        $ocistmt = new OCIStatement('oci8 statement', new \TestOCIStub());
         unset($ocistmt);
         $this->assertFalse($OCIStatementStatus);
     }
     
-    // method not yet implemented
-    public function testBindColumn ()
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testBindColumnWithColumnName ()
     {
-        $this->markTestSkipped('Test not yet Implemented');
+        $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
+        $holder = "";
+        $stmt->bindColumn('holder', $holder, \PDO::PARAM_STR);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testBindColumnWithColumnNumberLessThanOne ()
+    {
+        $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
+        $holder = "";
+        $stmt->bindColumn(0, $holder, \PDO::PARAM_STR);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testBindColumnWithInvalidDataType ()
+    {
+        $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
+        $holder = "";
+        $stmt->bindColumn(1, $holder, \PDO::PARAM_INPUT_OUTPUT);
+    }
+
+    public function testBindColumnSuccess ()
+    {
+        $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
+        $holder = "";
+        $this->assertTrue($stmt->bindColumn(1, $holder, \PDO::PARAM_STR, 40));
+
+        $reflection = new \ReflectionClass($stmt);
+
+        // bindings property
+        $property = $reflection->getProperty('bindings');
+        $property->setAccessible(true);
+        $this->assertEquals(array(1 => array('var' => $holder, 'data_type' => \PDO::PARAM_STR, 'max_length' => 40, 'driverdata' => null)), $property->getValue($stmt));
+
+
     }
 
     public function testBindParamWithValidDataType ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = true;
+        global $OCIBindChangeStatus;
+        $OCIBindChangeStatus = true;
         $variable = "";
         
-        $stmt = new \TestOCIStatementStub(true, new \TestOCIStub(), array());
+        $stmt = new \TestOCIStatementStub(true, new \TestOCIStub(), '', array());
         $this->assertTrue($stmt->bindParam('param', $variable));
+        $this->assertEquals('oci_bind_by_name', $variable);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testBindParamWithInvalidDataType ()
+    {
+        $variable = "";
+        
+        $stmt = new \TestOCIStatementStub(true, new \TestOCIStub(), '', array());
+        $this->assertTrue($stmt->bindParam('param', $variable, 'hello'));
+    }
+
+    public function testBindParamWithReturnDataType ()
+    {
+        global $OCIBindChangeStatus;
+        $OCIBindChangeStatus = true;
+        $variable = "";
+        
+        $stmt = new \TestOCIStatementStub(true, new \TestOCIStub(), '', array());
+        $this->assertTrue($stmt->bindParam('param', $variable, \PDO::PARAM_INPUT_OUTPUT));
         $this->assertEquals('oci_bind_by_name', $variable);
     }
 
     public function testBindValueWithValidDataType ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = true;
         $this->assertTrue($this->stmt->bindValue('param', 'hello'));
     }
 
@@ -148,7 +191,7 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
     // method not yet implemented
     public function testCloseCursor()
     {
-        $this->markTestSkipped('Test not yet Implemented');
+        $this->assertTrue($this->stmt->closeCursor());
     }
 
     public function testColumnCount()
@@ -156,57 +199,116 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->stmt->columnCount());
     }
 
-    // method not yet implemented
     public function testDebugDumpParams()
     {
-        $this->markTestSkipped('Test not yet Implemented');
-    }
+        global $OCIBindChangeStatus;
+        $OCIBindChangeStatus = false;
 
-    // method not yet implemented
-    public function testErrorCode()
+        $this->assertEquals(print_r(array('sql' => '', 'params' => array()), true), $this->stmt->debugDumpParams());
+        $stmt = new \TestOCIStatementStub(true, true, 'select * from table where id = :0 and name = :1', array());
+        $var = 'Hello';
+        
+        $stmt->bindParam(0, $var, \PDO::PARAM_INPUT_OUTPUT);
+        $stmt->bindValue(1, 'hi');
+        $this->assertEquals(print_r(array('sql' => 'select * from table where id = :0 and name = :1', 
+            'params' => array(
+                array('paramno' => 0,
+                    'name' => ':0', 
+                    'value' => $var,
+                    'is_param' => 1, 
+                    'param_type' => \PDO::PARAM_INPUT_OUTPUT
+                ), 
+                array('paramno' => 1,
+                    'name' => ':1', 
+                    'value' => 'hi',
+                    'is_param' => 1, 
+                    'param_type' => \PDO::PARAM_STR
+                )
+            )), true), $stmt->debugDumpParams()
+        );
+    }
+    
+    public function testErrorCode ()
     {
-        $this->markTestSkipped('Test not yet Implemented');
-    }
+        $ocistmt = new \TestOCIStatementStub(true, '', '', array());
+        $this->assertNull($ocistmt->errorCode());
 
-    // method not yet implemented
-    public function testErrorInfo()
+        // use reflection to test values of protected properties
+        $reflection = new \ReflectionClass($ocistmt);
+        
+        // setErrorInfo
+        $method = $reflection->getMethod('setErrorInfo');
+        $method->setAccessible(true);
+        $method->invoke($ocistmt, '11111', '2222', 'Testing the errors');
+        
+        $this->assertEquals('11111', $ocistmt->errorCode());        
+    }
+    
+    public function testErrorInfo ()
     {
-        $this->markTestSkipped('Test not yet Implemented');
-    }
+        $ocistmt = new \TestOCIStatementStub(true, '', '', array());
+        $this->assertEquals(array(0 => '', 1 => null, 2 => null), $ocistmt->errorInfo());
 
+        // use reflection to test values of protected properties
+        $reflection = new \ReflectionClass($ocistmt);
+        
+        // setErrorInfo
+        $method = $reflection->getMethod('setErrorInfo');
+        $method->setAccessible(true);
+        $method->invoke($ocistmt, '11111', '2222', 'Testing the errors');
+        
+        $this->assertEquals(array(0 => '11111', 1 => '2222', 2 => 'Testing the errors'), $ocistmt->errorInfo());        
+    }
+    
     public function testExecutePassesWithParameters ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = true;
         $this->assertTrue($this->stmt->execute(array(0=>1)));
     }
 
     public function testExecutePassesWithoutParameters ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = true;
         $this->assertTrue($this->stmt->execute());
     }
 
     public function testExecuteFailesWithParameters ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = false;
+        global $OCIExecuteStatus;
+        $OCIExecuteStatus = false;
         $this->assertFalse($this->stmt->execute(array(0=>1)));
+        $this->assertEquals('07000',$this->stmt->errorCode());
     }
 
     public function testExecuteFailesWithoutParameters ()
     {
-        global $OCIStatementStatus;
-        $OCIStatementStatus = false;
+        global $OCIExecuteStatus;
+        $OCIExecuteStatus = false;
         $this->assertFalse($this->stmt->execute());
+        $this->assertEquals('07000',$this->stmt->errorCode());
+    }
+
+    public function testFetchWithBindColumn()
+    {
+        $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
+        $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
+        $holder = "dad";
+        $this->assertTrue($stmt->bindColumn(1, $holder, \PDO::PARAM_STR, 40));
+
+        $reflection = new \ReflectionClass($stmt);
+
+        // bindings property
+        $property = $reflection->getProperty('bindings');
+        $property->setAccessible(true);
+        $this->assertEquals(array(1 => array('var' => $holder, 'data_type' => \PDO::PARAM_STR, 'max_length' => 40, 'driverdata' => null)), $property->getValue($stmt));
+
+        $obj = $stmt->fetch(\PDO::FETCH_CLASS);
+
+        $this->assertEquals(array(1 => array('var' => $holder, 'data_type' => \PDO::PARAM_STR, 'max_length' => 40, 'driverdata' => null)), $property->getValue($stmt));
+
+        $this->assertEquals($obj->fname, $holder);
     }
 
     public function testFetchSuccessReturnArray ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = true;
-        
         // return lower case
         $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
         $this->assertEquals($this->resultLowerArray, $this->stmt->fetch(\PDO::FETCH_ASSOC));
@@ -227,9 +329,6 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
 
     public function testFetchSuccessReturnObject ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = true;
-
         // return lower cased keyed object
         $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
         $this->assertEquals($this->resultLowerObject, $this->stmt->fetch(\PDO::FETCH_CLASS));
@@ -242,19 +341,17 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
         $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_NATURAL);
         $this->assertEquals($this->resultUpperObject, $this->stmt->fetch(\PDO::FETCH_CLASS));
     }
-
+    
     public function testFetchFail ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = false;
+        global $OCIFetchStatus; 
+        $OCIFetchStatus = false;
         $this->assertFalse($this->stmt->fetch());
+        $this->assertEquals('07000',$this->stmt->errorCode());
     }
 
     public function testFetchAllSuccessReturnArray ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = true;
-        
         // return lower case
         $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
         $this->assertEquals($this->resultAllLowerArray, $this->stmt->fetchAll(\PDO::FETCH_ASSOC));
@@ -270,9 +367,6 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
 
     public function testFetchAllSuccessReturnObject ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = true;
-
         // return lower cased keyed object
         $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
         $this->assertEquals($this->resultAllLowerObject, $this->stmt->fetchAll(\PDO::FETCH_CLASS));
@@ -288,9 +382,10 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
 
     public function testFetchAllFail ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = false;
+        global $OCIFetchStatus; 
+        $OCIFetchStatus = false;
         $this->assertFalse($this->stmt->fetchAll());
+        $this->assertEquals('07000',$this->stmt->errorCode());
     }
 
     /**
@@ -298,16 +393,11 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
      */
     public function testFetchAllFailWithInvalidFetchStyle ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = false;
-        $this->assertFalse($this->stmt->fetchAll(\PDO::FETCH_BOTH));
+        $this->stmt->fetchAll(\PDO::FETCH_BOTH);
     }
 
     public function testFetchColumnWithColumnNumber ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = true;
-
         $this->assertEquals($this->resultNumArray[1], $this->stmt->fetchColumn(1));
     }
 
@@ -321,9 +411,6 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
 
     public function testFetchObject ()
     {
-        global $OCIStatementStatus; 
-        $OCIStatementStatus = true;
-
         // return lower cased keyed object
         $this->oci->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
         $this->assertEquals($this->resultLowerObject, $this->stmt->fetchObject());
@@ -364,10 +451,9 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
         $this->stmt->getColumnMeta('ColumnName');
     }
 
-    // method not yet implemented
     public function testNextRowset()
     {
-        $this->markTestSkipped('Test not yet Implemented');
+        $this->assertTrue($this->stmt->nextRowset());
     }
 
     public function testRowCount()
@@ -381,10 +467,9 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('setAttribute', $this->stmt->getAttribute('testing'));    
     }
 
-    // method not yet implemented
     public function testSetFetchMode ()
     {
-        $this->markTestSkipped('Test not yet Implemented');
+        $this->assertTrue($this->stmt->setFetchMode(\PDO::FETCH_CLASS));
     }
 }
 }

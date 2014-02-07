@@ -26,7 +26,7 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
      */
     public function createConnection($dsn, array $config, array $options)
     {
-        if($config['driver'] == 'oci') {
+        if($config['driver'] == 'oci8') {
             return new \Jfelder\OracleDB\OCI_PDO\OCI($dsn, $config['username'], $config['password'], $options, $config['charset']);
         } else {
             return parent::createConnection($dsn, $config, $options);                    
@@ -58,9 +58,16 @@ class OracleConnector extends \Illuminate\Database\Connectors\Connector implemen
      */
     protected function getDsn(array $config)
     {
-        if (empty($config['tns'])) 
+        if (empty($config['tns'])) {
             $config['tns'] = "(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']}))(CONNECT_DATA =(SID = {$config['database']})))";
+        }
 
-        return ($config['driver'] == 'pdo' ? 'oci:dbname=' : '').$config['tns'].(empty($config['charset']) ? "" : ";charset=".$config['charset']); 
+        $rv = $config['tns'];
+
+        if ($config['driver'] != 'oci8') {
+            $rv = 'oci:dbname=' . $rv . (empty($config['charset']) ? "" : ";charset=".$config['charset']); 
+        }
+
+        return $rv; 
     }        
 }

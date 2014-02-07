@@ -6,13 +6,6 @@ class OCIException extends PDOException
 {
 
     /**
-     * The SQL for the query.
-     *
-     * @var string
-     */
-    protected $sql;
-
-    /**
      * Create a new query exception instance.
      *
      * @param  string  $sql
@@ -20,12 +13,11 @@ class OCIException extends PDOException
      * @param  array $previous
      * @return void
      */
-    public function __construct($previous)
+    public function __construct($e)
     {
-        $this->previous = $previous;
-        $this->code = $previous["code"];
-        $this->message = $previous["message"];
-        $this->sql = $previous["sqltext"];
+        $this->errorInfo = $e;
+        $this->code = $e[1];
+        $this->message = "SQLSTATE[$e[0]] " . $e[2];
     }
 
 }

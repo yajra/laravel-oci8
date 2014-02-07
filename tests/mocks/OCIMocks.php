@@ -4,7 +4,7 @@ if(!class_exists('TestOCIStub')) {
     class TestOCIStub extends Jfelder\OracleDB\OCI_PDO\OCI {
             public function __construct($dsn = '', $username = null, $password = null, $driver_options = array(), $charset = '' ) { 
                 $this->attributes = $driver_options + $this->attributes;
-                $this->conn = true; 
+                $this->conn = 'oci8'; 
             }
             public function __destruct() {}
     }
@@ -12,7 +12,7 @@ if(!class_exists('TestOCIStub')) {
 
 if(!class_exists('TestOCIStatementStub')) {
     class TestOCIStatementStub extends Jfelder\OracleDB\OCI_PDO\OCIStatement {
-            public function __construct($stmt, $conn, $options) { $this->stmt = $stmt; $this->conn = $conn; $this->attributes = $options; }
+            public function __construct($stmt, $conn, $sql, $options) { $this->stmt = $stmt; $this->conn = $conn; $this->sql = $sql; $this->attributes = $options; }
             public function __destruct() {}
     }
 }
@@ -21,7 +21,7 @@ if(!class_exists('ProcessorTestOCIStub')) {
     class ProcessorTestOCIStub extends Jfelder\OracleDB\OCI_PDO\OCI {
             public function __construct() {}
             public function __destruct() {}
-            public function prepare($statement, $driver_options = array()) {}
+            public function prepare($statement, $driver_options = array(), $autoIdColumn = null) {}
     }
 }
 
