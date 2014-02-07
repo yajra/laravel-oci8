@@ -612,7 +612,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testInsertGetIdMethod()
 	{
 		$builder = $this->getBuilder();
-		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email) values (?)', array('foo'), 'id')->andReturn(1);
+		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email) values (?) returning id into ?', array('foo'), 'id')->andReturn(1);
 		$result = $builder->from('users')->insertGetId(array('email' => 'foo'), 'id');
 		$this->assertEquals(1, $result);
 	}
@@ -620,7 +620,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testInsertGetIdMethodRemovesExpressions()
 	{
 		$builder = $this->getBuilder();
-		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email, bar) values (?, bar)', array('foo'), 'id')->andReturn(1);
+		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email, bar) values (?, bar) returning id into ?', array('foo'), 'id')->andReturn(1);
 		$result = $builder->from('users')->insertGetId(array('email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')), 'id');
 		$this->assertEquals(1, $result);
 	}
@@ -747,7 +747,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$connection->shouldReceive('getCacheManager')->once()->andReturn($cache);
 		$cache->shouldReceive('driver')->once()->andReturn($driver);
 		$grammar = new Illuminate\Database\Query\Grammars\Grammar;
-		$processor = m::mock('Illuminate\Database\Query\Processors\Processor');
+		$processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
 
 		$builder = $this->getMock('Illuminate\Database\Query\Builder', array('getFresh'), array($connection, $grammar, $processor));
 		$builder->expects($this->once())->method('getFresh')->with($this->equalTo(array('*')))->will($this->returnValue(array('results')));
@@ -770,7 +770,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 	protected function getBuilder()
 	{
 		$grammar = new yajra\Oci8\Query\Grammars\OracleGrammar;
-		$processor = m::mock('Illuminate\Database\Query\Processors\Processor');
+		$processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
 		return new Builder(m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor);
 	}
 

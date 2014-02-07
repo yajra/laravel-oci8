@@ -14,8 +14,8 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Auto-Increment Support](#auto-increment-support)
 - [Starter Kit](#starter-kit)
+- [Auto-Increment Support](#auto-increment-support)
 - [Examples](#examples)
 - [Support](#support)
 - [Credits](#credits)
@@ -72,7 +72,8 @@ To support auto-increment in Laravel-OCI8, you must meet the following requireme
 - Table must have a corresponding sequence with this format ```{$table}_{$column}_seq```
 - Sequence next value are executed before the insert query. ```DB::nextSequenceValue("{$table}_{$column}_seq")```
 
-***Note:*** If you will use [Laravel Migration](http://laravel.com/docs/migrations) feature, the required sequence and a trigger will automatically be created.
+> **Note:** If you will use [Laravel Migration](http://laravel.com/docs/migrations) feature, the required sequence and a trigger will automatically be created.
+
 ```php
 Schema::create('posts', function($table)
 {
@@ -93,11 +94,21 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 - posts_id_seq (sequence)
 - posts_id_trg (trigger)
 
-Check the starter kit provided to see how it works.
+> Check the starter kit provided to see how it works.
+
+#### Inserting Records Into A Table With An Auto-Incrementing ID
+
+```php
+  $id = DB::connection('oracle')->table('users')->insertGetId(
+      array('email' => 'john@example.com', 'votes' => 0), 'userid'
+  );
+```
+
+> **Note:** When using the insertGetId method, you can specify the auto-incrementing column name as the second parameter in insertGetId function. It will default to "id" if not specified.
 
 ###Examples
 
-***Configuration*** (database.php)
+**Configuration** (database.php)
 ```php
 'default' => 'oracle',
 
@@ -112,12 +123,12 @@ Check the starter kit provided to see how it works.
     'prefix' => '',
 )
 ```
-***Basic Select Statement***
+**Basic Select Statement**
 ```php
 DB::select('select * from mylobs');
 ```
 
-***Eloquent***
+**Eloquent (multiple insert)**
 ```php
 // Initialize empty array
 $posts = array();
@@ -150,7 +161,20 @@ $posts[] = array_merge($common, array(
 Post::insert($posts);
 ```
 
-***Oracle Blob***
+**Eloquent getting auto-increment inserted id**
+```php
+$post = new Post;
+$post->user_id = 1;
+$post->title = 'title';
+$post->slug = 'slug';
+$post->content = 'content';
+$post->save();
+
+// to get the inserted id
+$id = $post->id;
+```
+
+**Oracle Blob**
 
 Querying a blob field will now load the value instead of the OCI-Lob object. See [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) for blob conversion details.
 ```php
@@ -173,7 +197,7 @@ DB::transaction(function($conn){
 });
 ```
 
-***Oracle Sequence***
+**Oracle Sequence**
 ```php
 // creating a sequence
 DB::createSequence('seq_name');
@@ -190,7 +214,7 @@ $id = DB::lastInsertId('seq_name');
 $id = DB::currentSequenceValue('seq_name');
 ```
 
-***Date Formatting*** (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
+**Date Formatting** (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
 ```php
 // set oracle session date format
 DB::setDateFormat('MM/DD/YYYY');

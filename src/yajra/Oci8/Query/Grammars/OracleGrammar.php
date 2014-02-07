@@ -18,12 +18,12 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 * @param  bool|string  $value
 	 * @return string
 	 */
-	protected function compileLock(Builder $query, $value)
-	{
-		if (is_string($value)) return $value;
+    protected function compileLock(Builder $query, $value)
+    {
+    	if (is_string($value)) return $value;
 
-		return $value ? 'for update' : 'lock in share mode';
-	}
+    	return $value ? 'for update' : 'lock in share mode';
+    }
 
 	/**
 	 * Compile a select query into SQL.
@@ -68,7 +68,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		// given limit and offset value that we just put on as a query constraint.
 		$temp = $this->compileTableExpression($sql, $constraint, $query);
 
-                return $temp;
+		return $temp;
 	}
 
 	/**
@@ -100,11 +100,11 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
  	 */
 	protected function compileTableExpression($sql, $constraint, $query)
 	{
-            if ($query->limit > 0) {
-                return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
-            } else {
-                return "select * from ({$sql}) where rownum {$constraint}";
-            }
+		if ($query->limit > 0) {
+			return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+		} else {
+			return "select * from ({$sql}) where rownum {$constraint}";
+		}
 	}
 
 	/**
@@ -184,6 +184,21 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		$parameters = implode(', ', $value);
 		return "insert into $table ($columns) values $parameters";
 
+	}
+
+	/**
+	  * Compile an insert and get ID statement into SQL.
+	  *
+	  * @param  \Illuminate\Database\Query\Builder  $query
+	  * @param  array   $values
+	  * @param  string  $sequence
+	  * @return string
+	  */
+	public function compileInsertGetId(Builder $query, $values, $sequence)
+	{
+		if (is_null($sequence)) $sequence = 'id';
+
+		return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence).' into ?';
 	}
 
 }
