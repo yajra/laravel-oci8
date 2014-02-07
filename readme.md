@@ -2,10 +2,10 @@
 
 ###OracleDB (updated for 4.1)
 
-[![Latest Stable Version](https://poser.pugx.org/jfelder/oracledb/v/stable.png)](https://packagist.org/packages/jfelder/oracledb) [![Total Downloads](https://poser.pugx.org/jfelder/oracledb/downloads.png)](https://packagist.org/packages/jfelder/oracledb) [![Build Status](https://travis-ci.org/jfelder/Laravel-OracleDB.png)](https://travis-ci.org/jfelder/Laravel-OracleDB) [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/jfelder/Laravel-OracleDB/badges/quality-score.png?s=fe9114220bc714cf188fdfa6a15be3a75cf86236)](https://scrutinizer-ci.com/g/jfelder/Laravel-OracleDB/) [![Code Coverage](https://scrutinizer-ci.com/g/jfelder/Laravel-OracleDB/badges/coverage.png?s=7b59f23464012185d65817721ac75de34b350c20)](https://scrutinizer-ci.com/g/jfelder/Laravel-OracleDB/)
+[![Latest Stable Version](https://poser.pugx.org/jfelder/oracledb/v/stable.png)](https://packagist.org/packages/jfelder/oracledb) [![Total Downloads](https://poser.pugx.org/jfelder/oracledb/downloads.png)](https://packagist.org/packages/jfelder/oracledb) [![Build Status](https://travis-ci.org/jfelder/Laravel-OracleDB.png)](https://travis-ci.org/jfelder/Laravel-OracleDB) 
 
 
-OracleDB is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). OracleDB is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses the [PDO_OCI] (http://www.php.net/manual/en/ref.pdo-oci.php) extension. Thanks to @taylorotwell.
+OracleDB is an Oracle Database Driver package for [Laravel 4](http://laravel.com/) - thanks @taylorotwell. OracleDB is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses either the [PDO_OCI] (http://www.php.net/manual/en/ref.pdo-oci.php) extension or the [OCI8 Functions](http://www.php.net/manual/en/ref.oci8.php) wrapped into the PDO namespace.
 
 **Please report any bugs you may find.**
 
@@ -50,6 +50,8 @@ In this file you may define all of your oracle database connections. If you want
 default connection, enter the name you gave the connection into the "Default Database Connection Name" section in 'app/config/database.php'.
 
 Once you have configured the OracleDB database connection(s), you may run queries using the 'DB' class as normal.
+
+#### NEW: To use the oci8 library, enter "oci8" as the driver and the code will automatically use the oci8 library instead of the pdo_oci library. Any other value will result in the pdo_oci library being used.
 
 ```php
 $results = DB::select('select * from users where id = ?', array(1));
