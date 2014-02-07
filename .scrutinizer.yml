@@ -6,6 +6,10 @@ before_commands:
 tools:
     external_code_coverage: true
     php_cs_fixer: true
+    php_cs_fixer: 
+        enabled: true
+        config:
+            level: psr2
     php_mess_detector: true
     php_code_sniffer: true
     sensiolabs_security_checker: true
