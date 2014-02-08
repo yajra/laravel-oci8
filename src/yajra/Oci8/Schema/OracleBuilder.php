@@ -36,6 +36,9 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 			}
 		}
 
+		// add table prefix to table name
+		$prefix = $db->getTablePrefix();
+		$table = $prefix.$table;
 		// if primary key col is set, create auto increment objects
 		if (isset($col)) {
 	      	// create sequence for auto increment
@@ -57,14 +60,16 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 		// *** auto increment hack rollback ***
 		// drop sequence and trigger object
 		$db = $this->connection;
+		// get table prefix
+		$prefix = $db->getTablePrefix();
 		// get the actual primary column name from table
-		$col = $db->getPrimaryKey($table);
+		$col = $db->getPrimaryKey($prefix.$table);
 		// if primary key col is set, drop auto increment objects
 		if (isset($col)) {
 	      	// drop sequence for auto increment
-			$db->dropSequence("{$table}_{$col}_seq");
+			$db->dropSequence("{$prefix}{$table}_{$col}_seq");
 	        // drop trigger for auto increment work around
-			$db->dropTrigger("{$table}_{$col}_trg");
+			$db->dropTrigger("{$prefix}{$table}_{$col}_trg");
 		}
 
 		$blueprint = $this->createBlueprint($table);
