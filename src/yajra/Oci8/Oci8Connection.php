@@ -115,7 +115,7 @@ class Oci8Connection extends Connection {
 		if (!$name or !self::checkSequence($name))
 			return 0;
 
-		$data = self::select("select {$name}.currval from dual");
+		$data = self::select("select {$name}.currval as id from dual");
 		return $data[0]->id;
 	}
 
