@@ -9,6 +9,12 @@ use Illuminate\Database\Schema\Blueprint;
 class OracleBlueprint extends Blueprint {
 
 	/**
+	 * Database prefix variable
+	 * @var string
+	 */
+	protected $prefix;
+
+	/**
 	 * Create a default index name for the table.
 	 *
 	 * @param  string  $type
@@ -17,10 +23,15 @@ class OracleBlueprint extends Blueprint {
 	 */
 	protected function createIndexName($type, array $columns)
 	{
-		$index = strtolower($this->table.'_'.implode('_', $columns).'_'.$type);
+		$index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
 
 		// max index name length is 30 chars
 		return substr(str_replace(array('-', '.'), '_', $index), 0, 30);
+	}
+
+	public function setTablePrefix($prefix = '')
+	{
+		$this->prefix = $prefix;
 	}
 
 }

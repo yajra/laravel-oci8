@@ -89,8 +89,9 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	 */
 	protected function createBlueprint($table, Closure $callback = null)
 	{
-		return new OracleBlueprint($table, $callback);
+		$blueprint = new OracleBlueprint($table, $callback);
+		$blueprint->setTablePrefix($this->connection->getTablePrefix());
+		return $blueprint;
 	}
 
 }
-
