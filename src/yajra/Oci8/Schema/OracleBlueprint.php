@@ -17,10 +17,15 @@ class OracleBlueprint extends Blueprint {
 	 */
 	protected function createIndexName($type, array $columns)
 	{
+		// work around when working with db prefix
+		// will result to same unique name
+		$random = rand(0,99);
+
+		// create index name
 		$index = strtolower($this->table.'_'.implode('_', $columns).'_'.$type);
 
 		// max index name length is 30 chars
-		return substr(str_replace(array('-', '.'), '_', $index), 0, 30);
+		return substr(str_replace(array('-', '.'), '_', $index), 0, 28) . $random;
 	}
 
 }
