@@ -6,10 +6,6 @@
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 
-The [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) package is a simple userspace driver for PDO that uses the tried and
-tested [OCI8](http://php.net/oci8) functions instead of using the still experimental and not all that functionnal
-[PDO_OCI](http://www.php.net/manual/en/ref.pdo-oci.php) library.
-
 **Please report any bugs you may find.**
 
 - [Requirements](#requirements)
@@ -176,7 +172,7 @@ $id = $post->id;
 
 **Oracle Blob**
 
-Querying a blob field will now load the value instead of the OCI-Lob object. See [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) for blob conversion details.
+Querying a blob field will now load the value instead of the OCI-Lob object.
 ```php
 $data = DB::table('mylobs')->get();
 foreach ($data as $row) {
