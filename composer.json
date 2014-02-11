@@ -19,10 +19,5 @@
         "mockery/mockery": "0.7.2",
         "phpunit/phpunit": "3.7.*"
     },
-    "autoload": {
-        "psr-0": {
-            "yajra\\Oci8": "src/"
-        }
-    },
     "minimum-stability": "dev"
 }

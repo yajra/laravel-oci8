@@ -4,10 +4,6 @@ use Illuminate\Database\Connection;
 
 class Oci8Connection extends Connection {
 
-	// make PDO object public to support raw queries
-	// using pdo object
-	public $pdo;
-
 	/**
 	 * Get the default query grammar instance.
 	 *
