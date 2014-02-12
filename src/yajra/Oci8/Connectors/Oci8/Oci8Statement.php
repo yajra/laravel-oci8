@@ -12,7 +12,6 @@ namespace yajra\Oci8\Connectors\Oci8;
 
 use \PDOStatement;
 use yajra\Oci8\Connectors\Oci8;
-use yajra\Oci8\Connectors\Oci8\Oci8Exception;
 
 /**
  * Oci8 Statement class to mimic the interface of the PDOStatement class

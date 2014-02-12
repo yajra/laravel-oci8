@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2013 Arjay Angeles (http://github.com/yajra)
  * @license MIT
  */
-namespace yajra\Oci8\Connectors\Oci8\Exceptions;
+namespace yajra\Oci8\Connectors\Oci8;
 
 use \PDOException;
 
