@@ -17,13 +17,11 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
 	}
 
   	/**
-  	 * @todo add test to check connection
 	 * @dataProvider OracleConnectProvider
 	 */
-	/***
 	public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
 	{
-		$connector = $this->getMock('yajra\Oci8\Connectors\Oci8Connector', array('createConnection', 'getOptions'));
+		$connector = $this->getMock('yajra\Oci8\Connectors\OracleConnector', array('createConnection','getOptions'));
 		$connection = m::mock('stdClass');
 		$connector->expects($this->once())->method('getOptions')->with($this->equalTo($config))->will($this->returnValue(array('options')));
 		$connector->expects($this->once())->method('createConnection')->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(array('options')))->will($this->returnValue($connection));
@@ -35,20 +33,23 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
     public function OracleConnectProvider()
 	{
 		return array(
-			array('oci:dbname=//localhost:1521/orcl', array('host' => '//localhost', 'port' => '1521', 'database' => 'orcl')),
-			array('oci:dbname=localhost:1521/orcl', array('host' => 'localhost', 'port' => '1521', 'database' => 'orcl')),
-			array('oci:dbname=//localhost:1521/orcl;charset=utf8', array('host' => '//localhost', 'port' => '1521', 'database' => 'orcl', 'charset' => 'utf8')),
-			array('oci:dbname=localhost:1521/orcl;charset=utf8', array('host' => 'localhost', 'port' => '1521', 'database' => 'orcl', 'charset' => 'utf8')),
-			array('oci:dbname=//localhost/orcl', array('host' => '//localhost', 'database' => 'orcl')),
-			array('oci:dbname=localhost/orcl', array('host' => 'localhost', 'database' => 'orcl')),
-			array('oci:dbname=//localhost/orcl;charset=utf8', array('host' => '//localhost', 'database' => 'orcl', 'charset' => 'utf8')),
-			array('oci:dbname=localhost/orcl;charset=utf8', array('host' => 'localhost', 'database' => 'orcl', 'charset' => 'utf8')),
-			array('oci:dbname=//localhost/orcl', array('database' => '//localhost/orcl')),
-			array('oci:dbname=//localhost/orcl;charset=utf8', array('database' => '//localhost/orcl', 'charset' => 'utf8')),
-			array('oci:dbname=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)))', array('tns' => '(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)))')),
-			array('oci:dbname=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)));charset=utf8', array('tns' => '(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))(CONNECT_DATA =(SID = ORCL)))', 'charset' => 'utf8')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oci8', 'host' => 'localhost', 'port' => '1234', 'database' => 'ORCL', 'tns' => '')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'pdo-via-oci8', 'host' => 'localhost', 'port' => '1234', 'database' => 'ORCL', 'tns' => '')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'pdo-via-oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 9876)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oci8', 'host' => 'localhost', 'port' => '9876', 'database' => 'ORCL', 'tns' => '')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'pdo-via-oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 9876)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'pdo-via-oci8', 'host' => 'localhost', 'port' => '9876', 'database' => 'ORCL', 'tns' => '')),
 		);
 	}
-	*/
 
 }

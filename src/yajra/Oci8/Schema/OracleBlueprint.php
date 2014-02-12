@@ -29,6 +29,10 @@ class OracleBlueprint extends Blueprint {
 		return substr(str_replace(array('-', '.'), '_', $index), 0, 30);
 	}
 
+	/**
+	 * set table prefix settings
+	 * @param string $prefix
+	 */
 	public function setTablePrefix($prefix = '')
 	{
 		$this->prefix = $prefix;

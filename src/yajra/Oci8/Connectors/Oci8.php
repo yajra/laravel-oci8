@@ -10,6 +10,10 @@
  */
 namespace yajra\Oci8\Connectors;
 
+use \PDO;
+use yajra\Oci8\Connectors\Oci8\Oci8Exception;
+use yajra\Oci8\Connectors\Oci8\Oci8Statement;
+
 /**
  * Oci8 class to mimic the interface of the PDO class
  *
@@ -17,7 +21,7 @@ namespace yajra\Oci8\Connectors;
  * that instanceof checks and type-hinting of existing code will work
  * seamlessly.
  */
-class Oci8 extends \PDO
+class Oci8 extends PDO
 {
 
     /**
@@ -25,112 +29,58 @@ class Oci8 extends \PDO
      *
      * @var resource
      */
-    public $_dbh;
+    public $connection;
 
     /**
      * Driver options
      *
      * @var array
      */
-    protected $_options = array();
+    protected $options = array();
 
     /**
      * Whether currently in a transaction
      *
      * @var bool
      */
-    protected $_isTransaction = false;
+    protected $isTransaction = false;
 
     /**
      * insert query statement table variable
      *
      * @var string
      */
-    protected $_table;
+    protected $table;
 
     /**
      * Constructor
      *
      * @param string $dsn
-     * @param string $username
-     * @param string $passwd
+     * @param array $config
      * @param array $options
      * @return void
      */
-    public function __construct($dsn, $username = null, $password = null, array $options = array())
+    public function __construct($dsn, array $config, array $options = array())
     {
-        //Parse the DSN
-        $parsedDsn = self::parseDsn($dsn, array('charset'));
-
-        //Get SID name
-        $sidString = (isset($parsedDsn['sid'])) ? '(SID = '.$parsedDsn['sid'].')' : '';
-
-        if( strpos($parsedDsn['hostname'],",") !== FALSE ){
-
-            $hostname = explode(',',$parsedDsn['hostname']);
-            $count    = count($hostname);
-            $address  = "";
-
-            for($i = 0;$i < $count; $i++){
-               $address .= '(ADDRESS = (PROTOCOL = TCP)(HOST = '.$hostname[$i].')(PORT = '.$parsedDsn['port'].'))';
-            }
-
-             //Create a description to locate the database to connect to
-            $description = '(DESCRIPTION =
-                '.$address.'
-                (LOAD_BALANCE = yes)
-                (FAILOVER = on)
-                (CONNECT_DATA =
-                        '.$sidString.'
-                        (SERVER = DEDICATED)
-                        (SERVICE_NAME = '.$parsedDsn['dbname'].')
-                )
-            )';
-
-        } else {
-
-             //Create a description to locate the database to connect to
-             $description = '(DESCRIPTION =
-                    (ADDRESS_LIST =
-                        (ADDRESS = (PROTOCOL = TCP)(HOST = '.$parsedDsn['hostname'].')
-                        (PORT = '.$parsedDsn['port'].'))
-                    )
-                    (CONNECT_DATA =
-                            '.$sidString.'
-                            (SERVICE_NAME = '.$parsedDsn['dbname'].')
-                    )
-                )';
-
-        }
+        // get credentials
+        $username = $config['username'];
+        $password = $config['password'];
 
         //Attempt a connection
-        if (isset($options[\PDO::ATTR_PERSISTENT])
-            && $options[\PDO::ATTR_PERSISTENT]) {
-
-            $this->_dbh = @oci_pconnect(
-                $username,
-                $password,
-                $description,
-                $parsedDsn['charset']);
-
+        if (isset($options[\PDO::ATTR_PERSISTENT]) && $options[\PDO::ATTR_PERSISTENT]) {
+            $this->connection = @oci_pconnect($username, $password, $dsn, $config['charset']);
         } else {
-
-            $this->_dbh = @oci_connect(
-                $username,
-                $password,
-                $description,
-                $parsedDsn['charset']);
-
+            $this->connection = @oci_connect($username, $password, $dsn, $config['charset']);
         }
 
         //Check if connection was successful
-        if (!$this->_dbh) {
+        if (!$this->connection) {
             $e = oci_error();
-            throw new \PDOException($e['message']);
+            throw new Oci8Exception($e['message']);
         }
 
         //Save the options
-        $this->_options = $options;
+        $this->options = $options;
 
     }
 
@@ -145,7 +95,7 @@ class Oci8 extends \PDO
     {
 
         // Get instance options
-        if($options == null) $options = $this->_options;
+        if($options == null) $options = $this->options;
         //Replace ? with a pseudo named parameter
         $newStatement = null;
         $parameter = 0;
@@ -164,22 +114,22 @@ class Oci8 extends \PDO
         if (strpos(strtolower($statement), 'insert into')!==false) {
             preg_match('/insert into (.*?) /', strtolower($statement), $matches);
             // store insert into table name
-            $this->_table = $matches[1];
+            $this->table = $matches[1];
         }
 
         //Prepare the statement
-        $sth = @oci_parse($this->_dbh, $statement);
+        $sth = @oci_parse($this->connection, $statement);
 
         if (!$sth) {
-            $e = oci_error($this->_dbh);
-            throw new \PDOException($e['message']);
+            $e = oci_error($this->connection);
+            throw new Oci8Exception($e['message']);
         }
 
         if (!is_array($options)) {
             $options = array();
         }
 
-        return new Oci8\Statement($sth, $this, $options);
+        return new Oci8Statement($sth, $this, $options);
     }
 
     /**
@@ -190,10 +140,10 @@ class Oci8 extends \PDO
     public function beginTransaction()
     {
         if ($this->isTransaction()) {
-            throw new \PDOException('There is already an active transaction');
+            throw new Oci8Exception('There is already an active transaction');
         }
 
-        $this->_isTransaction = true;
+        $this->isTransaction = true;
         return true;
     }
 
@@ -204,7 +154,7 @@ class Oci8 extends \PDO
      */
     public function isTransaction()
     {
-        return $this->_isTransaction;
+        return $this->isTransaction;
     }
 
     /**
@@ -215,11 +165,11 @@ class Oci8 extends \PDO
     public function commit()
     {
         if (!$this->isTransaction()) {
-            throw new \PDOException('There is no active transaction');
+            throw new Oci8Exception('There is no active transaction');
         }
 
-        if (oci_commit($this->_dbh)) {
-            $this->_isTransaction = false;
+        if (oci_commit($this->connection)) {
+            $this->isTransaction = false;
             return true;
         }
 
@@ -234,11 +184,11 @@ class Oci8 extends \PDO
     public function rollBack()
     {
         if (!$this->isTransaction()) {
-            throw new \PDOException('There is no active transaction');
+            throw new Oci8Exception('There is no active transaction');
         }
 
-        if (oci_rollback($this->_dbh)) {
-            $this->_isTransaction = false;
+        if (oci_rollback($this->connection)) {
+            $this->isTransaction = false;
             return true;
         }
 
@@ -254,7 +204,7 @@ class Oci8 extends \PDO
      */
     public function setAttribute($attribute, $value)
     {
-        $this->_options[$attribute] = $value;
+        $this->options[$attribute] = $value;
         return true;
     }
 
@@ -282,10 +232,7 @@ class Oci8 extends \PDO
      * @return Pdo_Oci8_Statement
      * @todo Implement support for $fetchType, $typeArg, and $ctorArgs.
      */
-    public function query($query,
-                          $fetchType = null,
-                          $typeArg = null,
-                          array $ctorArgs = array())
+    public function query($query, $fetchType = null, $typeArg = null, array $ctorArgs = array())
     {
         $stmt = $this->prepare($query);
         $stmt->execute();
@@ -305,7 +252,7 @@ class Oci8 extends \PDO
      */
     public function lastInsertId($name = null)
     {
-        $sequence = $this->_table . "_" . $name . "_seq";
+        $sequence = $this->table . "_" . $name . "_seq";
         if (!$this->checkSequence($sequence))
             return 0;
 
@@ -337,7 +284,7 @@ class Oci8 extends \PDO
      */
     public function errorInfo()
     {
-        $e = oci_error($this->_dbh);
+        $e = oci_error($this->connection);
 
         if (is_array($e)) {
             return array(
@@ -357,8 +304,8 @@ class Oci8 extends \PDO
      */
     public function getAttribute($attribute)
     {
-        if (isset($this->_options[$attribute])) {
-            return $this->_options[$attribute];
+        if (isset($this->options[$attribute])) {
+            return $this->options[$attribute];
         }
         return null;
     }
@@ -373,7 +320,7 @@ class Oci8 extends \PDO
      */
     public function getNewCursor()
     {
-        return oci_new_cursor($this->_dbh);
+        return oci_new_cursor($this->connection);
     }
 
     /**
@@ -386,7 +333,7 @@ class Oci8 extends \PDO
      */
     public function getNewDescriptor($type = OCI_D_LOB)
     {
-        return oci_new_descriptor($this->_dbh, $type);
+        return oci_new_descriptor($this->connection, $type);
     }
 
     /**
@@ -414,120 +361,6 @@ class Oci8 extends \PDO
     public function quote($string, $paramType = \PDO::PARAM_STR)
     {
         return "'" . str_replace("'", "''", $string) . "'";
-    }
-
-    /**
-     * Parses a DSN string according to the rules in the PHP manual
-     *
-     * @param string $dsn
-     * @todo Extract this to a DSN Parser object and inject result into PDO class
-     * @todo Change return value of array() when invalid to thrown exception
-     * @todo Change returned value to object with default values and properties
-     * @todo Refactor to use an URI content resolver instead of file_get_contents() that could support caching for example
-     * @param array $params
-     * @return array
-     * @link http://www.php.net/manual/en/pdo.construct.php
-     */
-    public static function parseDsn($dsn, array $params)
-    {
-
-        //If there is a colon, it means it's a parsable DSN
-        //Doesn't mean it's valid, but at least, it's parsable
-        if (strpos($dsn, ':') !== false) {
-
-            //The driver is the first part of the dsn, then comes the variables
-            $driver = null;
-            $vars = null;
-            @list($driver, $vars) = explode(':', $dsn, 2);
-
-            //Based on the driver, the processing changes
-            switch($driver)
-            {
-                case 'uri':
-
-                    //If the driver is a URI, we get the file content at that URI and parse it
-                    return self::parseDsn(file_get_contents($vars), $params);
-
-                case 'oci':
-
-                    //Remove the leading //
-                    if(substr($vars, 0, 2) !== '//')
-                    {
-                        return array();
-                    }
-                    $vars = substr($vars, 2);
-
-                    //If there is a / in the initial vars, it means we have hostname:port configuration to read
-                    $hostname = 'localhost';
-                    $port = 1521;
-                    if(strpos($vars, '/') !== false)
-                    {
-
-                        //Extract the hostname port from the $vars
-                        $hostnamePost = null;
-                        @list($hostnamePort, $vars) = explode('/', $vars, 2);
-
-                        //Parse the hostname port into two variables, set the default port if invalid
-                        @list($hostname, $port) = explode(':', $hostnamePort, 2);
-                        if(!is_numeric($port) || is_null($port))
-                        {
-                            $port = 1521;
-                        }
-                        else
-                        {
-                            $port = (int)$port;
-                        }
-
-                    }
-
-                    //Extract the dbname/service name from the first part, the rest are parameters
-                    @list($dbname, $vars) = explode(';', $vars, 2);
-                    $returnParams = array();
-                    foreach(explode(';', $vars) as $var)
-                    {
-
-                        //Get the key/value pair
-                        @list($key, $value) = explode('=', $var, 2);
-
-                        //If the key is not a valid parameter, discard
-                        if(!in_array($key, $params))
-                        {
-                            continue;
-                        }
-
-                        //Key that key/value pair
-                        $returnParams[$key] = $value;
-
-                    }
-
-                    // Dbname may also contain SID
-                    if(strpos($dbname,'/SID/') !== false)
-                    {
-                        list($dbname, $sidKey, $sidValue) = explode('/',$dbname);
-                    }
-
-                    //Condense the parameters, hostname, port, dbname into $returnParams
-                    $returnParams['hostname'] = $hostname;
-                    $returnParams['port'] = $port;
-                    $returnParams['dbname'] = $dbname;
-                    if(isset($sidValue)) $returnParams['sid'] = $sidValue;
-
-                    //Return the resulting configuration
-                    return $returnParams;
-
-            }
-
-        //If there is no colon, it means it's a DSN name in php.ini
-        } elseif (strlen(trim($dsn)) > 0) {
-
-            // The DSN passed in must be an alias set in php.ini
-            return self::parseDsn(ini_get("pdo.dsn.".$dsn), $params);
-
-        }
-
-        //Not valid, return an empty array
-        return array();
-
     }
 
     /**

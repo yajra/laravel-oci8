@@ -10,14 +10,16 @@
  */
 namespace yajra\Oci8\Connectors\Oci8\Exceptions;
 
-use Illuminate\Database;
+use \PDOException;
 
-class SqlException extends \PDOException
+class Oci8Exception extends PDOException
 {
-  /**
+
+ 	/**
 	 * The variable for error information.
 	 *
 	 * @var errorInfo
 	 */
 	public $errorInfo;
+
 }

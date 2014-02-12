@@ -10,7 +10,9 @@
  */
 namespace yajra\Oci8\Connectors\Oci8;
 
+use \PDOStatement;
 use yajra\Oci8\Connectors\Oci8;
+use yajra\Oci8\Connectors\Oci8\Oci8Exception;
 
 /**
  * Oci8 Statement class to mimic the interface of the PDOStatement class
@@ -19,7 +21,7 @@ use yajra\Oci8\Connectors\Oci8;
  * this so that instanceof check and type-hinting of existing code will work
  * seamlessly.
  */
-class Statement extends \PDOStatement
+class Oci8Statement extends PDOStatement
 {
 
     /**
@@ -27,21 +29,21 @@ class Statement extends \PDOStatement
      *
      * @var resource
      */
-    protected $_sth;
+    protected $statement;
 
     /**
      * PDO Oci8 driver
      *
      * @var Pdo_Oci8
      */
-    protected $_pdoOci8;
+    protected $connection;
 
     /**
      * Contains the current data
      *
      * @var array
      */
-    protected $_current;
+    protected $result;
 
     /**
      * Contains the current key
@@ -62,28 +64,28 @@ class Statement extends \PDOStatement
      *
      * @var array
      */
-    protected $_options = array();
+    protected $options = array();
 
     /**
      * Constructor
      *
      * @param resource $sth Statement handle created with oci_parse()
-     * @param Pdo_Oci8 $pdoOci8 The Pdo_Oci8 object for this statement
+     * @param connection $connection The connection object for this statement
      * @param array $options Options for the statement handle
      * @return void
      */
-    public function __construct($sth, Oci8 $pdoOci8,array $options = array())
+    public function __construct($sth, Oci8 $connection, array $options = array())
     {
         if (strtolower(get_resource_type($sth)) != 'oci8 statement')
         {
-            throw new \PDOException(
+            throw new Oci8Exception(
                 'Resource expected of type oci8 statement; '
                 . (string) get_resource_type($sth) . ' received instead');
         }
 
-        $this->_sth = $sth;
-        $this->_pdoOci8 = $pdoOci8;
-        $this->_options = $options;
+        $this->statement = $sth;
+        $this->connection = $connection;
+        $this->options = $options;
     }
 
     /**
@@ -95,7 +97,7 @@ class Statement extends \PDOStatement
     public function execute($inputParams = null)
     {
         $mode = OCI_COMMIT_ON_SUCCESS;
-        if ($this->_pdoOci8->isTransaction()) {
+        if ($this->connection->isTransaction()) {
             $mode = OCI_DEFAULT;
         }
 
@@ -106,12 +108,15 @@ class Statement extends \PDOStatement
             }
         }
 
-        $result = @oci_execute($this->_sth, $mode);
+        $result = @oci_execute($this->statement, $mode);
         if($result != true)
         {
-            $oci_error = ocierror($this->_sth);
-            throw new Oci8\Exceptions\SqlException($oci_error['message'], $oci_error['code']);
+            $oci_error = ocierror($this->statement);
+            throw new Oci8Exception($oci_error['message'], $oci_error['code']);
         }
+        // set result variable holder value
+        $this->result = $result;
+
         return $result;
     }
 
@@ -130,7 +135,7 @@ class Statement extends \PDOStatement
         switch($fetchStyle)
         {
             case \PDO::FETCH_BOTH:
-                $rs = oci_fetch_array($this->_sth); // add OCI_BOTH?
+                $rs = oci_fetch_array($this->statement); // add OCI_BOTH?
                 if($toLowercase) $rs = array_change_key_case($rs);
                 if ($this->returnLobs)
                 {
@@ -144,7 +149,7 @@ class Statement extends \PDOStatement
                 return $value;
 
             case \PDO::FETCH_ASSOC:
-                $rs = oci_fetch_assoc($this->_sth);
+                $rs = oci_fetch_assoc($this->statement);
                 if($toLowercase) $rs = array_change_key_case($rs);
                 if ($this->returnLobs)
                 {
@@ -157,10 +162,10 @@ class Statement extends \PDOStatement
                 return $rs;
 
             case \PDO::FETCH_NUM:
-                return oci_fetch_row($this->_sth);
+                return oci_fetch_row($this->statement);
 
                 case \PDO::FETCH_CLASS:
-                $rs = oci_fetch_assoc($this->_sth);
+                $rs = oci_fetch_assoc($this->statement);
                 if($rs === false)
                 {
                     return false;
@@ -221,19 +226,19 @@ class Statement extends \PDOStatement
             $oci_type =  OCI_B_BLOB;
 
             // create a new descriptor for blob
-            $variable = $this->_pdoOci8->getNewDescriptor();
+            $variable = $this->connection->getNewDescriptor();
             break;
 
             case \PDO::PARAM_STMT:
             $oci_type =  OCI_B_CURSOR;
 
             //Result sets require a cursor
-            $variable = $this->_pdoOci8->getNewCursor();
+            $variable = $this->connection->getNewCursor();
             break;
         }
 
         //Bind the parameter
-        $result = oci_bind_by_name($this->_sth, $parameter, $variable, $maxLength, $oci_type);
+        $result = oci_bind_by_name($this->statement, $parameter, $variable, $maxLength, $oci_type);
         return $result;
 
     }
@@ -276,7 +281,7 @@ class Statement extends \PDOStatement
      */
     public function rowCount()
     {
-        return oci_num_rows($this->_sth);
+        return oci_num_rows($this->statement);
     }
 
     /**
@@ -343,7 +348,7 @@ class Statement extends \PDOStatement
      */
     public function errorInfo()
     {
-        $e = oci_error($this->_sth);
+        $e = oci_error($this->statement);
 
         if (is_array($e)) {
             return array(
@@ -365,7 +370,7 @@ class Statement extends \PDOStatement
      */
     public function setAttribute($attribute, $value)
     {
-        $this->_options[$attribute] = $value;
+        $this->options[$attribute] = $value;
         return true;
     }
 
@@ -376,8 +381,8 @@ class Statement extends \PDOStatement
      */
     public function getAttribute($attribute)
     {
-        if (isset($this->_options[$attribute])) {
-            return $this->_options[$attribute];
+        if (isset($this->options[$attribute])) {
+            return $this->options[$attribute];
         }
         return null;
     }
@@ -389,7 +394,7 @@ class Statement extends \PDOStatement
      */
     public function columnCount()
     {
-        return oci_num_fields($this->_sth);
+        return oci_num_fields($this->statement);
     }
 
     /**
@@ -419,13 +424,13 @@ class Statement extends \PDOStatement
         }
 
         $meta = array();
-        $meta['native_type'] = oci_field_type($this->_sth, $column);
-        $meta['driver:decl_type'] = oci_field_type_raw($this->_sth, $column);
+        $meta['native_type'] = oci_field_type($this->statement, $column);
+        $meta['driver:decl_type'] = oci_field_type_raw($this->statement, $column);
         $meta['flags'] = array();
-        $meta['name'] = oci_field_name($this->_sth, $column);
+        $meta['name'] = oci_field_name($this->statement, $column);
         $meta['table'] = null;
-        $meta['len'] = oci_field_size($this->_sth, $column);
-        $meta['precision'] = oci_field_precision($this->_sth, $column);
+        $meta['len'] = oci_field_size($this->statement, $column);
+        $meta['precision'] = oci_field_precision($this->statement, $column);
         $meta['pdo_type'] = null;
 
         return $meta;
