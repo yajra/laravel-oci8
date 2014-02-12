@@ -746,7 +746,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$connection->shouldReceive('getName')->andReturn('connection_name');
 		$connection->shouldReceive('getCacheManager')->once()->andReturn($cache);
 		$cache->shouldReceive('driver')->once()->andReturn($driver);
-		$grammar = new Illuminate\Database\Query\Grammars\Grammar;
+		$grammar = new yajra\Oci8\Query\Grammars\OracleGrammar;
 		$processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
 
 		$builder = $this->getMock('Illuminate\Database\Query\Builder', array('getFresh'), array($connection, $grammar, $processor));

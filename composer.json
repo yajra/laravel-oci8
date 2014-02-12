@@ -12,12 +12,16 @@
     "require": {
         "php": ">=5.3.0",
         "illuminate/support": "4.*",
-        "illuminate/database": "4.*",
-        "yajra/laravel-pdo-via-oci8": "0.2.*"
+        "illuminate/database": "4.*"
     },
     "require-dev": {
         "mockery/mockery": "0.7.2",
         "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "yajra\\Oci8": "src/"
+        }
     },
     "minimum-stability": "dev"
 }
