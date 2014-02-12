@@ -201,4 +201,44 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence).' into ?';
 	}
 
+	/**
+	  * Compile an insert with blob field statement into SQL.
+	  *
+	  * @param  \Illuminate\Database\Query\Builder  $query
+	  * @param  array   $values
+	  * @param  array   $binaries
+	  * @param  string   $sequence
+	  * @return string
+	  */
+	public function compileInsertLob(Builder $query, $values, $binaries, $sequence)
+	{
+		if (is_null($sequence)) $sequence = 'id';
+
+		$table = $this->wrapTable($query->from);
+
+		if ( ! is_array(reset($values)))
+		{
+			$values = array($values);
+		}
+
+		if ( ! is_array(reset($binaries)))
+		{
+			$binaries = array($binaries);
+		}
+
+		$columns = $this->columnize(array_keys(reset($values)));
+		$binaryColumns = $this->columnize(array_keys(reset($binaries)));
+		$columns .= ', ' . $binaryColumns;
+
+		$parameters = $this->parameterize(reset($values));
+		$binaryParameters = $this->parameterize(reset($binaries));
+
+		$value = array_fill(0, count($values), "$parameters");
+		$binaryValue = array_fill(0, count($binaries), str_replace('?', 'EMPTY_BLOB()',$binaryParameters));
+
+		$value = array_merge($value, $binaryValue);
+		$parameters = implode(', ', $value);
+		return "insert into $table ($columns) values ($parameters)".' returning '.$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
+	}
+
 }

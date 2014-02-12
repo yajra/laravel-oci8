@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use Illuminate\Database\Query\Builder;
+use yajra\Oci8\Query\OracleBuilder as Builder;
 use Illuminate\Database\Query\Expression as Raw;
 
 class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
@@ -614,6 +614,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder = $this->getBuilder();
 		$builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into users (email) values (?) returning id into ?', array('foo'), 'id')->andReturn(1);
 		$result = $builder->from('users')->insertGetId(array('email' => 'foo'), 'id');
+		$this->assertEquals(1, $result);
+	}
+
+	public function testInsertLobMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getProcessor()->shouldReceive('processInsertLob')->once()->with($builder, 'insert into users (email, blob) values (?, EMPTY_BLOB()) returning blob, id into ?, ?', array('foo'), array('test data'))->andReturn(1);
+		$result = $builder->from('users')->insertLob(array('email' => 'foo'), array('blob' => 'test data'), 'id');
 		$this->assertEquals(1, $result);
 	}
 

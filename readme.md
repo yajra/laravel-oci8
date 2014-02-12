@@ -123,7 +123,9 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 ```php
 DB::select('select * from mylobs');
 ```
-
+***********
+**Eloquent Examples**
+***********
 **Eloquent (multiple insert)**
 ```php
 // Initialize empty array
@@ -169,9 +171,9 @@ $post->save();
 // to get the inserted id
 $id = $post->id;
 ```
-
+***********
 **Oracle Blob**
-
+***********
 Querying a blob field will now load the value instead of the OCI-Lob object.
 ```php
 $data = DB::table('mylobs')->get();
@@ -179,7 +181,7 @@ foreach ($data as $row) {
     echo $row->blobdata . '<br>';
 }
 ```
-Inserting a blob
+**Inserting a blob via transaction**
 ```php
 DB::transaction(function($conn){
     $pdo = $conn->getPdo();
@@ -193,7 +195,18 @@ DB::transaction(function($conn){
 });
 ```
 
+**Inserting Records Into A Table With Blob And Auto-Incrementing ID**
+```php
+$id = DB::table('mylobs')->insertLob(
+    array('name' => 'Insert Binary Test'),
+    array('blobfield'=>'Lorem ipsum Minim occaecat in velit.')
+    );
+```
+> **Note:** When using the insertLob method, you can specify the auto-incrementing column name as the third parameter in insertLob function. It will default to "id" if not specified.
+
+***********
 **Oracle Sequence**
+***********
 ```php
 // creating a sequence
 DB::createSequence('seq_name');
@@ -209,8 +222,10 @@ $id = DB::lastInsertId('seq_name');
 // or
 $id = DB::currentSequenceValue('seq_name');
 ```
-
-**Date Formatting** (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
+***********
+**Date Formatting**
+***********
+> (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
 ```php
 // set oracle session date format
 DB::setDateFormat('MM/DD/YYYY');

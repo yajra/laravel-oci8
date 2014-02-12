@@ -55,6 +55,21 @@ class Oci8Connection extends Connection {
 	}
 
 	/**
+	 * Begin a fluent query against a database table.
+	 *
+	 * @param  string  $table
+	 * @return yajra\Oci8\Query\OracleBuilder
+	 */
+	public function table($table)
+	{
+		$processor = $this->getPostProcessor();
+
+		$query = new Query\OracleBuilder($this, $this->getQueryGrammar(), $processor);
+
+		return $query->from($table);
+	}
+
+	/**
 	 * function to set oracle's current session date format
 	 * @param string $format
 	 */
