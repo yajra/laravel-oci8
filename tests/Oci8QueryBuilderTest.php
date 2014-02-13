@@ -625,6 +625,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $result);
 	}
 
+	public function testUpdateLobMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getProcessor()->shouldReceive('processUpdateLob')->once()->with($builder, 'update users set email = ? where id = ? returning blob into ?', array('foo',1), array('test data'))->andReturn(1);
+		$result = $builder->from('users')->where('id','=',1)->updateLob(array('email' => 'foo'), array('blob' => 'test data'));
+		$this->assertEquals(1, $result);
+	}
+
 	public function testInsertGetIdMethodRemovesExpressions()
 	{
 		$builder = $this->getBuilder();

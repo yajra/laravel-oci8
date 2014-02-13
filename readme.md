@@ -204,6 +204,14 @@ $id = DB::table('mylobs')->insertLob(
 ```
 > **Note:** When using the insertLob method, you can specify the auto-incrementing column name as the third parameter in insertLob function. It will default to "id" if not specified.
 
+**Updating Records With A Blob**
+```php
+$status = DB::table('mylobs')->whereId(1)->updateLob(
+    array('name'=>'demo update blob'),
+    array('blobfield'=>'blob content here')
+    );
+```
+
 ***********
 **Oracle Sequence**
 ***********

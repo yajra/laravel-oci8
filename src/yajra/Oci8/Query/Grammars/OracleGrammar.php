@@ -241,4 +241,57 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		return "insert into $table ($columns) values ($parameters)".' returning '.$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
 	}
 
+	/**
+	 * Compile an update statement into SQL.
+	 *
+	 * @param  \Illuminate\Database\Query\Builder  $query
+	 * @param  array  $values
+	 * @param  array  $binaries
+	 * @return string
+	 */
+	public function compileUpdateLob(Builder $query, array $values, array $binaries)
+	{
+		$table = $this->wrapTable($query->from);
+
+		// Each one of the columns in the update statements needs to be wrapped in the
+		// keyword identifiers, also a place-holder needs to be created for each of
+		// the values in the list of bindings so we can make the sets statements.
+		$columns = array();
+
+		foreach ($values as $key => $value)
+		{
+			$columns[] = $this->wrap($key).' = '.$this->parameter($value);
+		}
+
+		$columns = implode(', ', $columns);
+
+		// set blob variables
+		if ( ! is_array(reset($binaries)))
+		{
+			$binaries = array($binaries);
+		}
+		$binaryColumns = $this->columnize(array_keys(reset($binaries)));
+		$binaryParameters = $this->parameterize(reset($binaries));
+
+		// If the query has any "join" clauses, we will setup the joins on the builder
+		// and compile them so we can attach them to this update, as update queries
+		// can get join statements to attach to other tables when they're needed.
+		if (isset($query->joins))
+		{
+			$joins = ' '.$this->compileJoins($query, $query->joins);
+		}
+		else
+		{
+			$joins = '';
+		}
+
+		// Of course, update queries may also be constrained by where clauses so we'll
+		// need to compile the where clauses and attach it to the query so only the
+		// intended records are updated by the SQL statements we generate to run.
+		$where = $this->compileWheres($query);
+
+		return trim("update {$table}{$joins} set $columns $where returning {$binaryColumns} into {$binaryParameters}");
+	}
+
+
 }

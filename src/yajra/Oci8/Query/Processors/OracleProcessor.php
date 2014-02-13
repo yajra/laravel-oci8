@@ -8,7 +8,7 @@ class OracleProcessor extends Processor {
     /**
      * Process an "insert get ID" query.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  yajra\Oci8\Query\OracleBuilder  $query
      * @param  string  $sql
      * @param  array   $values
      * @param  string  $sequence
@@ -53,13 +53,13 @@ class OracleProcessor extends Processor {
     /**
      * Process an "insert get ID" query.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  yajra\Oci8\Query\OracleBuilder  $query
      * @param  string  $sql
      * @param  array   $values
      * @param  array  $binaries
      * @return int
      */
-    public function processInsertLob(Builder $query, $sql, $values, $binaries)
+    public function processInsertLob(Builder $query, $sql, array $values, array $binaries)
     {
         $counter = 0;
         $lob = array();
@@ -116,6 +116,70 @@ class OracleProcessor extends Processor {
         $query->getConnection()->getPdo()->commit();
 
         return (int) $last_insert_id;
+    }
+
+    /**
+     * Process an update query with BLOB
+     *
+     * @param  yajra\Oci8\Query\OracleBuilder  $query
+     * @param  string  $sql
+     * @param  array   $values
+     * @param  array  $binaries
+     * @return int
+     */
+    public function processUpdateLob(Builder $query, $sql, array $values, array $binaries)
+    {
+        $counter = 0;
+        $lob = array();
+
+        // begin transaction
+        $query->getConnection()->getPdo()->beginTransaction();
+
+        // get PDO statement object
+        $stmt = $query->getConnection()->getPdo()->prepare($sql);
+
+        // bind each parameter from the values array to their location
+        foreach($values as $value)
+        {
+            // try to determine type of result
+            if(is_int($value))
+               $param = \PDO::PARAM_INT;
+            elseif(is_bool($value))
+               $param = \PDO::PARAM_BOOL;
+            elseif(is_null($value))
+               $param = \PDO::PARAM_NULL;
+            else
+               $param = \PDO::PARAM_STR;
+
+            $stmt->bindValue($counter, ($value), $param);
+            // increment counter
+            $counter++;
+        }
+
+        for ($i=0; $i < count($binaries); $i++) {
+            // bind blob decriptor
+            $stmt->bindParam($counter, $lob[$i], \PDO::PARAM_LOB);
+            $counter++;
+        }
+
+        // execute statement
+        if ( !$stmt->execute() ) {
+            $query->getConnection()->getPdo()->rollBack();
+            return false;
+        }
+
+        for ($i=0; $i < count($binaries); $i++) {
+            // save blob content
+            if ( !$lob[$i]->save($binaries[$i]) ) {
+                $query->getConnection()->getPdo()->rollBack();
+                return false;
+            }
+        }
+
+        // commit statements
+        $query->getConnection()->getPdo()->commit();
+
+        return true;
     }
 
 }
