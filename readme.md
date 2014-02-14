@@ -2,7 +2,7 @@
 
 ###Laravel-OCI8
 
-[![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.png)](https://packagist.org/packages/yajra/laravel-oci8) [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/downloads.png)](https://packagist.org/packages/yajra/laravel-oci8) [![Build Status](https://travis-ci.org/yajra/laravel-oci8.png)](https://travis-ci.org/yajra/laravel-oci8)
+[![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.png)](https://packagist.org/packages/yajra/laravel-oci8) [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/downloads.png)](https://packagist.org/packages/yajra/laravel-oci8) [![Build Status](https://travis-ci.org/yajra/laravel-oci8.png?branch=master)](https://travis-ci.org/yajra/laravel-oci8)
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 
