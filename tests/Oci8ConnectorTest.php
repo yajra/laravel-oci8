@@ -34,6 +34,10 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
 	{
 		return array(
             array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oracle', 'host' => 'localhost', 'port' => '1234', 'database' => 'ORCL', 'tns' => '')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oracle', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SID = ORCL)))',
                 array('driver' => 'oci8', 'host' => 'localhost', 'port' => '1234', 'database' => 'ORCL', 'tns' => '')),
             array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 array('driver' => 'oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))')),
@@ -49,6 +53,8 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
                 array('driver' => 'pdo-via-oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))')),
             array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 9876)) (CONNECT_DATA =(SID = ORCL)))',
                 array('driver' => 'pdo-via-oci8', 'host' => 'localhost', 'port' => '9876', 'database' => 'ORCL', 'tns' => '')),
+            array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))',
+                array('driver' => 'oracle', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 6789)) (CONNECT_DATA =(SID = ORCL)))')),
 		);
 	}
 

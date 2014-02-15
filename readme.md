@@ -6,6 +6,10 @@
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 
+The [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) package is a simple userspace driver for PDO that uses the tried and
+tested [OCI8](http://php.net/oci8) functions instead of using the still experimental and not all that functional
+[PDO_OCI](http://www.php.net/manual/en/ref.pdo-oci.php) library.
+
 **Please report any bugs you may find.**
 
 - [Requirements](#requirements)
