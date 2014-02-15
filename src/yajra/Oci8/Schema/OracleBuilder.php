@@ -2,7 +2,6 @@
 
 use Closure;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Connection;
 
 class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 
@@ -25,9 +24,9 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 
 		// *** auto increment hack ***
 		// create sequence and trigger object
-		$db = $this->connection;
 		$columns = $blueprint->getColumns();
 
+		$col = "";
 		// search for primary key / autoIncrement column
 		foreach ($columns as $column) {
 			// if column is autoIncrement set the primary col name
@@ -37,14 +36,14 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 		}
 
 		// add table prefix to table name
-		$prefix = $db->getTablePrefix();
-		$table = $prefix.$table;
+		$prefix = $this->connection->getTablePrefix();
+		$table = $prefix . $table;
 		// if primary key col is set, create auto increment objects
 		if (isset($col)) {
 	      	// create sequence for auto increment
-			$db->createSequence("{$table}_{$col}_seq");
+			$this->connection->createSequence("{$table}_{$col}_seq");
 	        // create trigger for auto increment work around
-			$db->createAutoIncrementTrigger($table, $col);
+			$this->connection->createAutoIncrementTrigger($table, $col);
 		}
 
 	}
@@ -59,17 +58,15 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	{
 		// *** auto increment hack rollback ***
 		// drop sequence and trigger object
-		$db = $this->connection;
-		// get table prefix
-		$prefix = $db->getTablePrefix();
+		$prefix = $this->connection->getTablePrefix();
 		// get the actual primary column name from table
-		$col = $db->getPrimaryKey($prefix.$table);
+		$col = $this->connection->getPrimaryKey($prefix.$table);
 		// if primary key col is set, drop auto increment objects
 		if (isset($col)) {
 	      	// drop sequence for auto increment
-			$db->dropSequence("{$prefix}{$table}_{$col}_seq");
+			$this->connection->dropSequence("{$prefix}{$table}_{$col}_seq");
 	        // drop trigger for auto increment work around
-			$db->dropTrigger("{$prefix}{$table}_{$col}_trg");
+			$this->connection->dropTrigger("{$prefix}{$table}_{$col}_trg");
 		}
 
 		$blueprint = $this->createBlueprint($table);

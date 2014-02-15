@@ -7,7 +7,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get the default query grammar instance.
 	 *
-	 * @return yajra\Oci8\Query\Grammars\OracleGrammar
+	 * @return \Illuminate\Database\Grammar
 	 */
 	protected function getDefaultQueryGrammar()
 	{
@@ -17,7 +17,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get the default schema grammar instance.
 	 *
-	 * @return yajra\Oci8\Schema\Grammars\Grammar
+	 * @return \Illuminate\Database\Grammar
 	 */
 	protected function getDefaultSchemaGrammar()
 	{
@@ -27,7 +27,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get the schema grammar used by the connection.
 	 *
-	 * @return yajra\Oci8\Query\Grammars\OracleGrammar
+	 * @return \Illuminate\Database\Grammar
 	 */
 	public function getSchemaGrammar()
 	{
@@ -37,7 +37,7 @@ class Oci8Connection extends Connection {
 	/**
  	 * Get the default post processor instance.
  	 *
- 	 * @return yajra\Oci8\Query\Processors\OracleProcessor
+ 	 * @return Query\Processors\OracleProcessor
  	 */
  	protected function getDefaultPostProcessor()
  	{
@@ -47,7 +47,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get a schema builder instance for the connection.
 	 *
-	 * @return yajra\Oci8\Schema\OracleBuilder
+	 * @return Schema\OracleBuilder
 	 */
 	public function getSchemaBuilder()
 	{
@@ -58,7 +58,7 @@ class Oci8Connection extends Connection {
 	 * Begin a fluent query against a database table.
 	 *
 	 * @param  string  $table
-	 * @return yajra\Oci8\Query\OracleBuilder
+	 * @return \Illuminate\Database\Query\Builder
 	 */
 	public function table($table)
 	{
@@ -117,7 +117,7 @@ class Oci8Connection extends Connection {
 
 	/**
 	 * function to get oracle sequence last inserted id
-	 * @param  strine $name
+	 * @param  string $name
 	 * @return integer
 	 */
 	public function lastInsertId($name)

@@ -1,8 +1,9 @@
 <?php namespace yajra\Oci8\Query\Grammars;
 
-use \Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Query\Builder;
 
-class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
+class OracleGrammar extends Grammar {
 
 	/**
 	 * The keyword identifier wrapper format.
@@ -57,8 +58,6 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 */
 	protected function compileAnsiOffset(Builder $query, $components)
 	{
-		$start = $query->offset + 1;
-
 		$constraint = $this->compileRowConstraint($query);
 
 		$sql = $this->concatenate($components);
@@ -96,6 +95,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 *
 	 * @param  string  $sql
 	 * @param  string  $constraint
+	 * @param Builder $query
 	 * @return string
  	 */
 	protected function compileTableExpression($sql, $constraint, $query)
@@ -210,7 +210,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	  * @param  string   $sequence
 	  * @return string
 	  */
-	public function compileInsertLob(Builder $query, $values, $binaries, $sequence)
+	public function compileInsertLob(Builder $query, $values, $binaries, $sequence = null)
 	{
 		if (is_null($sequence)) $sequence = 'id';
 
@@ -247,10 +247,12 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 	 * @param  \Illuminate\Database\Query\Builder  $query
 	 * @param  array  $values
 	 * @param  array  $binaries
+	 * @param  string  $sequence
 	 * @return string
 	 */
-	public function compileUpdateLob(Builder $query, array $values, array $binaries)
+	public function compileUpdateLob(Builder $query, array $values, array $binaries, $sequence = null)
 	{
+		if (is_null($sequence)) $sequence = 'id';
 		$table = $this->wrapTable($query->from);
 
 		// Each one of the columns in the update statements needs to be wrapped in the
@@ -290,7 +292,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		// intended records are updated by the SQL statements we generate to run.
 		$where = $this->compileWheres($query);
 
-		return trim("update {$table}{$joins} set $columns $where returning {$binaryColumns} into {$binaryParameters}");
+		return trim("update {$table}{$joins} set $columns $where returning {$binaryColumns}, {$sequence} into {$binaryParameters}, ?");
 	}
 
 

@@ -1,10 +1,6 @@
 <?php namespace yajra\Oci8\Query;
 
-use Closure;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
-use yajra\Oci8\Query\Grammars\OracleGrammar as Grammar;
-use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 
 class OracleBuilder extends Builder {
 
@@ -23,7 +19,7 @@ class OracleBuilder extends Builder {
 		$values = $this->cleanBindings($values);
 		$binaries = $this->cleanBindings($binaries);
 
-		return $this->processor->processInsertLob($this, $sql, $values, $binaries);
+		return $this->processor->saveLob($this, $sql, $values, $binaries);
 	}
 
 	/**
@@ -33,16 +29,16 @@ class OracleBuilder extends Builder {
 	 * @param  array   $binaries
 	 * @return boolean
 	 */
-	public function updateLob(array $values, array $binaries)
+	public function updateLob(array $values, array $binaries, $sequence = null)
 	{
 		$bindings = array_values(array_merge($values, $this->bindings));
 
-		$sql = $this->grammar->compileUpdateLob($this, $values, $binaries);
+		$sql = $this->grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
 		$values = $this->cleanBindings($bindings);
 		$binaries = $this->cleanBindings($binaries);
 
-		return $this->processor->processUpdateLob($this, $sql, $values, $binaries);
+		return $this->processor->saveLob($this, $sql, $values, $binaries);
 	}
 
 }

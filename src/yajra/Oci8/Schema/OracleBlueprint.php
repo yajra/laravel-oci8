@@ -1,9 +1,5 @@
 <?php namespace yajra\Oci8\Schema;
 
-use Closure;
-use Illuminate\Support\Fluent;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Database\Schema\Blueprint;
 
 class OracleBlueprint extends Blueprint {

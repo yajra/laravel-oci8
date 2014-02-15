@@ -1,10 +1,11 @@
 <?php namespace yajra\Oci8\Schema\Grammars;
 
-use \Illuminate\Support\Fluent;
-use \Illuminate\Database\Connection;
-use \Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Grammars\Grammar;
+use Illuminate\Support\Fluent;
+use Illuminate\Database\Connection;
+use Illuminate\Database\Schema\Blueprint;
 
-class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
+class OracleGrammar extends Grammar {
 
 	/**
 	 * The keyword identifier wrapper format.
@@ -39,18 +40,19 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
     	if ( ! is_null($primary))
     	{
-    		$table = $this->wrapTable($blueprint);
     		$columns = $this->columnize($primary->columns);
 
     		return ", constraint {$primary->index} primary key ( {$columns} )";
     	}
+
+    	return "";
     }
 
 	/**
 	 * Get the foreign key syntax for a table creation statement.
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @return string|null
+	 * @return string
 	 */
 	protected function addForeignKeys(Blueprint $blueprint)
 	{
@@ -63,9 +65,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		// are building
 		foreach ($foreigns as $foreign)
 		{
-			$table = $this->wrapTable($blueprint);
-			$table = $foreign->index;
-
 			$on = $this->wrapTable($foreign->on);
 
 			$columns = $this->columnize($foreign->columns);
@@ -89,8 +88,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a create table command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileCreate(Blueprint $blueprint, Fluent $command)
@@ -109,8 +108,9 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 		$sql .= (string) $this->addPrimaryKeys($blueprint);
 
-		return $sql .= ' )';
-}
+		$sql .= ' )';
+		return $sql;
+	}
 
 	/**
 	 * Compile the query to determine if a table exists.
@@ -136,8 +136,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a create table command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileAdd(Blueprint $blueprint, Fluent $command)
@@ -156,14 +156,15 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 		$sql .= (string) $this->addPrimaryKeys($blueprint);
 
-		return $sql .= ' )';
-}
+		$sql .= ' )';
+		return $sql;
+	}
 
 	/**
 	 * Compile a primary key command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compilePrimary(Blueprint $blueprint, Fluent $command)
@@ -185,7 +186,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
 	 * @param  \Illuminate\Support\Fluent  $command
-	 * @return string
+	 * @return string|void
 	 */
 	public function compileForeign(Blueprint $blueprint, Fluent $command)
 	{
@@ -197,9 +198,9 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 			$on = $this->wrapTable($command->on);
 
-                // We need to prepare several of the elements of the foreign key definition
-                // before we can create the SQL, such as wrapping the tables and convert
-                // an array of columns to comma-delimited strings for the SQL queries.
+            // We need to prepare several of the elements of the foreign key definition
+            // before we can create the SQL, such as wrapping the tables and convert
+            // an array of columns to comma-delimited strings for the SQL queries.
 			$columns = $this->columnize($command->columns);
 
 			$onColumns = $this->columnize((array) $command->references);
@@ -223,8 +224,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
     /**
 	 * Compile a unique key command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
     public function compileUnique(Blueprint $blueprint, Fluent $command)
@@ -239,8 +240,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a plain index key command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileIndex(Blueprint $blueprint, Fluent $command)
@@ -255,8 +256,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a drop table command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileDrop(Blueprint $blueprint, Fluent $command)
@@ -267,8 +268,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a drop column command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileDropColumn(Blueprint $blueprint, Fluent $command)
@@ -283,14 +284,12 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a drop primary key command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
 	{
-		$table = $blueprint->getTable();
-
 		$table = $this->wrapTable($blueprint);
 
 		return "alter table {$table} drop constraint {$command->index}";
@@ -299,8 +298,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a drop unique key command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileDropUnique(Blueprint $blueprint, Fluent $command)
@@ -313,22 +312,20 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a drop index command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileDropIndex(Blueprint $blueprint, Fluent $command)
 	{
-		$table = $this->wrapTable($blueprint);
-
 		return "drop index {$command->index}";
 	}
 
 	/**
 	 * Compile a drop foreign key command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileDropForeign(Blueprint $blueprint, Fluent $command)
@@ -341,8 +338,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Compile a rename table command.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $command
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
 	 * @return string
 	 */
 	public function compileRename(Blueprint $blueprint, Fluent $command)
@@ -364,6 +361,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
     {
     	$table = $this->wrapTable($blueprint);
 
+    	$rs = array();
     	$rs[0] = 'alter table '.$table.' rename column '.$command->from.' to '.$command->to;
 
     	return (array) $rs;
@@ -372,7 +370,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a string type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeString(Fluent $column)
@@ -383,12 +381,13 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a text type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeText(Fluent $column)
 	{
-		return "varchar2(4000)";
+        $length = ($column->length) ? $column->length : 4000;
+		return "varchar2({$length})";
 	}
 
 	/**
@@ -416,45 +415,49 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a integer type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeInteger(Fluent $column)
 	{
-		return 'number(10,0)';
+        $length = ($column->length) ? $column->length : 10;
+		return "number({$length},0)";
 	}
 
 	/**
 	 * Create the column definition for a integer type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeBigInteger(Fluent $column)
 	{
-		return 'number(19,0)';
+        $length = ($column->length) ? $column->length : 19;
+		return "number({$length},0)";
 	}
 
 	/**
 	 * Create the column definition for a medium integer type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeMediumInteger(Fluent $column)
 	{
-		return 'number(7,0)';
+        $length = ($column->length) ? $column->length : 7;
+		return "number({$length},0)";
 	}
 
 	/**
 	 * Create the column definition for a small integer type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeSmallInteger(Fluent $column)
 	{
-		return 'number(5,0)';
+        $length = ($column->length) ? $column->length : 5;
+		return "number({$length},0)";
 	}
 
 	/**
@@ -465,13 +468,14 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	 */
 	protected function typeTinyInteger(Fluent $column)
 	{
-		return 'number(3,0)';
+        $length = ($column->length) ? $column->length : 3;
+		return "number({$length},0)";
 	}
 
 	/**
 	 * Create the column definition for a float type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeFloat(Fluent $column)
@@ -482,7 +486,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a double type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeDouble(Fluent $column)
@@ -493,7 +497,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a decimal type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeDecimal(Fluent $column)
@@ -504,29 +508,30 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a boolean type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeBoolean(Fluent $column)
 	{
-		return 'char(1)';
+		return "char(1)";
 	}
 
 	/**
 	 * Create the column definition for a enum type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeEnum(Fluent $column)
 	{
-		return "varchar2(255)";
+        $length = ($column->length) ? $column->length : 255;
+        return "varchar2({$length})";
 	}
 
 	/**
 	 * Create the column definition for a date type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeDate(Fluent $column)
@@ -537,7 +542,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a date-time type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeDateTime(Fluent $column)
@@ -548,7 +553,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a time type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeTime(Fluent $column)
@@ -559,7 +564,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a timestamp type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeTimestamp(Fluent $column)
@@ -575,7 +580,7 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Create the column definition for a binary type.
 	 *
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string
 	 */
 	protected function typeBinary(Fluent $column)
@@ -586,13 +591,12 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Get the SQL for a nullable column modifier.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $column
-	 * @return string|null
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $column
+	 * @return string
 	 */
 	protected function modifyNullable(Blueprint $blueprint, Fluent $column)
 	{
-		//return $column->nullable ? ' null' : ' not null';
 		$null = $column->nullable ? ' null' : ' not null';
 		if ( ! is_null($column->default) ) {
 			return " default ".$this->getDefaultValue($column->default) . $null;
@@ -603,20 +607,21 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 	/**
 	 * Get the SQL for a default column modifier.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $column
-	 * @return string|null
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $column
+	 * @return string
 	 */
 	protected function modifyDefault(Blueprint $blueprint, Fluent $column)
 	{
+		// implemented @modifyNullable
 		return "";
 	}
 
 	/**
 	 * Get the SQL for an auto-increment column modifier.
 	 *
-	 * @param  Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  Illuminate\Support\Fluent  $column
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $column
 	 * @return string|null
 	 */
 	protected function modifyIncrement(Blueprint $blueprint, Fluent $column)

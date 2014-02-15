@@ -24,7 +24,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  string  $tns
      * @param  array   $config
      * @param  array   $options
-     * @return PDO
+     * @return \PDO
      */
     public function createConnection($tns, array $config, array $options)
     {
@@ -40,8 +40,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Establish a database connection.
      *
-     * @param  array  $options
-     * @return PDO
+     * @return \PDO
      */
     public function connect(array $config)
     {
