@@ -39,7 +39,7 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 		$prefix = $this->connection->getTablePrefix();
 		$table = $prefix . $table;
 		// if primary key col is set, create auto increment objects
-		if (isset($col)) {
+		if (isset($col) and !empty($col)) {
 	      	// create sequence for auto increment
 			$this->connection->createSequence("{$table}_{$col}_seq");
 	        // create trigger for auto increment work around
@@ -62,7 +62,7 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 		// get the actual primary column name from table
 		$col = $this->connection->getPrimaryKey($prefix.$table);
 		// if primary key col is set, drop auto increment objects
-		if (isset($col)) {
+		if (isset($col) and !empty($col)) {
 	      	// drop sequence for auto increment
 			$this->connection->dropSequence("{$prefix}{$table}_{$col}_seq");
 	        // drop trigger for auto increment work around
