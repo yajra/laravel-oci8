@@ -72,7 +72,11 @@ To support auto-increment in Laravel-OCI8, you must meet the following requireme
 - Table must have a corresponding sequence with this format ```{$table}_{$column}_seq```
 - Sequence next value are executed before the insert query. ```DB::nextSequenceValue("{$table}_{$column}_seq")```
 
-> **Note:** If you will use [Laravel Migration](http://laravel.com/docs/migrations) feature, the required sequence and a trigger will automatically be created.
+***********
+
+> **Note:** If you will use [Laravel Migration](http://laravel.com/docs/migrations) feature, the required sequence and a trigger will automatically be created. Please also note that **trigger, sequence and indexes name will be truncated to 30 chars** when created via [Schema Builder](http://laravel.com/docs/schema) hence there might be cases where the naming convention would not be followed. I suggest that you limit your object name not to exceed 20 chars as the builder added some naming convention on it like _seq, _trg, _unique, etc...
+
+***********
 
 ```php
 Schema::create('posts', function($table)
