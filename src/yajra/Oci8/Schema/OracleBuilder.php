@@ -35,15 +35,16 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 			}
 		}
 
-		// add table prefix to table name
-		$prefix = $this->connection->getTablePrefix();
-		$table = $prefix . $table;
 		// if primary key col is set, create auto increment objects
 		if (isset($col) and !empty($col)) {
-	      	// create sequence for auto increment
-			$this->connection->createSequence("{$table}_{$col}_seq");
+			// add table prefix to table name
+			$prefix = $this->connection->getTablePrefix();
+			// create sequence for auto increment
+			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
+			$this->connection->createSequence($sequenceName);
 	        // create trigger for auto increment work around
-			$this->connection->createAutoIncrementTrigger($table, $col);
+	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
+			$this->connection->createAutoIncrementTrigger($table, $col, $triggerName, $sequenceName);
 		}
 
 	}
@@ -64,9 +65,11 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 		// if primary key col is set, drop auto increment objects
 		if (isset($col) and !empty($col)) {
 	      	// drop sequence for auto increment
-			$this->connection->dropSequence("{$prefix}{$table}_{$col}_seq");
+			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
+			$this->connection->dropSequence($sequenceName);
 	        // drop trigger for auto increment work around
-			$this->connection->dropTrigger("{$prefix}{$table}_{$col}_trg");
+	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
+			$this->connection->dropTrigger($triggerName);
 		}
 
 		$blueprint = $this->createBlueprint($table);
@@ -89,6 +92,20 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 		$blueprint = new OracleBlueprint($table, $callback);
 		$blueprint->setTablePrefix($this->connection->getTablePrefix());
 		return $blueprint;
+	}
+
+	/**
+	 * Create an object name that limits to 30chars
+	 * @param  string $prefix
+	 * @param  string $table
+	 * @param  string $col
+	 * @param  string $type
+	 * @return string
+	 */
+	private function createObjectName($prefix, $table, $col, $type)
+	{
+		// max object name length is 30 chars
+		return substr($prefix . $table . '_' . $col . '_' . $type, 0, 30);
 	}
 
 }

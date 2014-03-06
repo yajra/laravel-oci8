@@ -157,20 +157,22 @@ class Oci8Connection extends Connection {
 	 * function to create auto increment trigger for a table
 	 * @param  string $table
 	 * @param  string $column
+	 * @param  string $triggerName
+	 * @param  string $sequenceName
 	 * @return boolean
 	 */
-	public function createAutoIncrementTrigger($table, $column)
+	public function createAutoIncrementTrigger($table, $column, $triggerName, $sequenceName)
 	{
-		if (!$table or !$column)
+		if (!$table or !$column or !$triggerName or !$sequenceName)
 			return 0;
 
 		return self::statement("
-			create trigger {$table}_{$column}_trg
+			create trigger $triggerName
 			before insert or update on {$table}
 			for each row
 				begin
 			if inserting and :new.{$column} is null then
-				select {$table}_{$column}_seq.nextval into :new.{$column} from dual;
+				select {$sequenceName}.nextval into :new.{$column} from dual;
 			end if;
 			end;");
 	}
