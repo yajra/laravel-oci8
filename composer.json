@@ -1,7 +1,7 @@
 {
     "name": "jfelder/oracledb",
     "description": "Oracle DB driver for Laravel 4",
-    "keywords": ["oracle", "laravel", "pdo_oci"],
+    "keywords": ["oracle", "laravel", "pdo_oci", "oci8"],
     "license": "MIT",
     "authors": [
         {
