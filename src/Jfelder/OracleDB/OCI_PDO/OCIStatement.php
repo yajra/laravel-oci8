@@ -527,7 +527,7 @@ class OCIStatement extends \PDOStatement
             $code = 'JF000';
         
         if(is_null($error)){
-            $e = oci_error($this->conn);
+            $e = oci_error($this->stmt);
             $error = $e['code'];
             $message = $e['message'] . (empty($e['sqltext']) ? '' : ' - SQL: '.$e['sqltext']);
         }
