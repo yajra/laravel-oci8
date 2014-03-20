@@ -142,7 +142,7 @@ class OCIStatement extends \PDOStatement
         $this->addParameter($parameter, $variable, $data_type, $length, $driver_options);
 
         if(!isset($this->datatypes[$data_type])) {
-            if($data_type < 0) {
+            if($data_type == \PDO::PARAM_INT|\PDO::PARAM_INPUT_OUTPUT) {
                 $data_type = \PDO::PARAM_STR;
                 $length = $length > 40 ? $length : 40;
             } else {
