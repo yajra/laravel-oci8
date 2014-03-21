@@ -110,6 +110,11 @@ class OracleProcessor extends Processor {
         }
 
         for ($i=0; $i < count($binaries); $i++) {
+            // Discard the existing LOB contents
+            if ( !$lob[$i]->truncate() ) {
+                $query->getConnection()->getPdo()->rollBack();
+                return false;
+            }
             // save blob content
             if ( !$lob[$i]->save($binaries[$i]) ) {
                 $query->getConnection()->getPdo()->rollBack();
