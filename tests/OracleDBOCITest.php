@@ -402,6 +402,11 @@ class OracleDBOCITest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(\OCI_COMMIT_ON_SUCCESS, $this->oci->getExecuteMode());
     }
 
+    public function testGetOCIResource() 
+    {
+        $this->assertEquals('oci8', $this->oci->getOCIResource());
+    }
+
     public function testSetExecuteModeWithValidMode() 
     {
         $this->oci->setExecuteMode(\OCI_COMMIT_ON_SUCCESS);

@@ -35,6 +35,7 @@ class OCIStatement extends \PDOStatement
         \PDO::PARAM_NULL => \SQLT_INT,
         \PDO::PARAM_INT => \SQLT_INT,
         \PDO::PARAM_STR => \SQLT_CHR,
+        \PDO::PARAM_INPUT_OUTPUT => \SQLT_CHR,
     );
 
     /**
@@ -142,7 +143,7 @@ class OCIStatement extends \PDOStatement
         $this->addParameter($parameter, $variable, $data_type, $length, $driver_options);
 
         if(!isset($this->datatypes[$data_type])) {
-            if($data_type == \PDO::PARAM_INT|\PDO::PARAM_INPUT_OUTPUT) {
+            if($data_type === (\PDO::PARAM_INT|\PDO::PARAM_INPUT_OUTPUT)) {
                 $data_type = \PDO::PARAM_STR;
                 $length = $length > 40 ? $length : 40;
             } else {
@@ -476,6 +477,17 @@ class OCIStatement extends \PDOStatement
             'param_type' => $data_type
         );
     }
+
+    /**
+     * Returns the oci8 statement handle for use with other oci_ functions
+     *
+     * @return oci8 statment The oci8 statment handle
+     */
+    public function getOCIResource()
+    {
+        return $this->stmt;
+    }
+
 
     /**
      * Single location to process all the bindings on a resultset

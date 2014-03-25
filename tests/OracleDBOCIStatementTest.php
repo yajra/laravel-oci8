@@ -24,7 +24,7 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
             $OCIBindChangeStatus = false;
 
             $this->oci = m::mock(new \TestOCIStub('', null, null, array(\PDO::ATTR_CASE => \PDO::CASE_LOWER)));
-            $this->stmt = m::mock(new \TestOCIStatementStub('oci statement', $this->oci, '', array('fake'=>'attribute')));
+            $this->stmt = m::mock(new \TestOCIStatementStub('oci8 statement', $this->oci, '', array('fake'=>'attribute')));
             
             //fake result sets for all the fetch calls
             $this->resultUpperArray = array('FNAME' => 'Test', 'LNAME' => 'Testerson', 'EMAIL' => 'tester@testing.com');
@@ -123,7 +123,7 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
     {
         $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
         $holder = "";
-        $stmt->bindColumn(1, $holder, \PDO::PARAM_INPUT_OUTPUT);
+        $stmt->bindColumn(1, $holder, -5);
     }
 
     public function testBindColumnSuccess ()
@@ -470,6 +470,11 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
     public function testSetFetchMode ()
     {
         $this->assertTrue($this->stmt->setFetchMode(\PDO::FETCH_CLASS));
+    }
+
+    public function testGetOCIResource() 
+    {
+        $this->assertEquals('oci8 statement', $this->stmt->getOCIResource());
     }
 }
 }

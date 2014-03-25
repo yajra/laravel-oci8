@@ -369,6 +369,16 @@ class OCI extends \PDO
     }
 
     /**
+     * Returns the oci8 connection handle for use with other oci_ functions
+     *
+     * @return oci8 The oci8 connection handle
+     */
+    public function getOCIResource()
+    {
+        return $this->conn;
+    }
+
+    /**
      * Set the PDO errorInfo array values
      *
      * @param string $code SQLSTATE identifier
