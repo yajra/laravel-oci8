@@ -123,7 +123,7 @@ class OracleDBOCIStatementTest extends \PHPUnit_Framework_TestCase
     {
         $stmt = new \TestOCIStatementStub('oci8 statement', $this->oci, 'sql', array());
         $holder = "";
-        $stmt->bindColumn(1, $holder, -5);
+        $stmt->bindColumn(1, $holder, 'hello');
     }
 
     public function testBindColumnSuccess ()

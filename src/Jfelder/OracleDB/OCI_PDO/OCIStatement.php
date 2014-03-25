@@ -36,6 +36,7 @@ class OCIStatement extends \PDOStatement
         \PDO::PARAM_INT => \SQLT_INT,
         \PDO::PARAM_STR => \SQLT_CHR,
         \PDO::PARAM_INPUT_OUTPUT => \SQLT_CHR,
+        \PDO::PARAM_LOB => \OCI_B_BLOB,
     );
 
     /**
