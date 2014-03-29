@@ -27,7 +27,7 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 
 	/**
 	 * create sequence and trigger for autoIncrement support
-	 * @param  string $blueprint
+	 * @param  \Illuminate\Database\Schema\Blueprint $blueprint
 	 * @param  string $table
 	 * @return null
 	 */
