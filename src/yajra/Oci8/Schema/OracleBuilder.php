@@ -22,7 +22,17 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 
 		$this->build($blueprint);
 
-		// *** auto increment hack ***
+		$this->createAutoIncrementObjects($blueprint, $table);
+	}
+
+	/**
+	 * create sequence and trigger for autoIncrement support
+	 * @param  string $blueprint
+	 * @param  string $table
+	 * @return null
+	 */
+	protected function createAutoIncrementObjects($blueprint, $table)
+	{
 		// create sequence and trigger object
 		$columns = $blueprint->getColumns();
 
@@ -57,7 +67,28 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	 */
 	public function drop($table)
 	{
-		// *** auto increment hack rollback ***
+		$this->dropAutoIncrementObjects($table);
+		parent::drop($table);
+	}
+
+	/**
+	 * Indicate that the table should be dropped if it exists.
+	 *
+	 * @return \Illuminate\Support\Fluent
+	 */
+	public function dropIfExists($table)
+	{
+		$this->dropAutoIncrementObjects($table);
+		parent::dropIfExists($table);
+	}
+
+	/**
+	 * drop sequence and triggers if exists, autoincrement objects
+	 * @param  string $table
+	 * @return null
+	 */
+	protected function dropAutoIncrementObjects($table)
+	{
 		// drop sequence and trigger object
 		$prefix = $this->connection->getTablePrefix();
 		// get the actual primary column name from table
@@ -71,13 +102,6 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
 			$this->connection->dropTrigger($triggerName);
 		}
-
-		$blueprint = $this->createBlueprint($table);
-
-		$blueprint->drop();
-
-		$this->build($blueprint);
-
 	}
 
 	/**
