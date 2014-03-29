@@ -222,6 +222,23 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('drop table users', $statements[0]);
 	}
 
+	public function testDropTableIfExists()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->dropIfExists();
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$dropStatement = "declare c int;
+			begin
+			   select count(*) into c from user_tables where table_name = upper('users');
+			   if c = 1 then
+			      execute immediate 'drop table users';
+			   end if;
+			end;";
+		$this->assertEquals($dropStatement, $statements[0]);
+	}
+
 	public function testDropTableWithPrefix()
 	{
 		$blueprint = new Blueprint('users');

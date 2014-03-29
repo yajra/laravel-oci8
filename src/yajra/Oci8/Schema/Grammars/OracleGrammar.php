@@ -266,6 +266,25 @@ class OracleGrammar extends Grammar {
 	}
 
 	/**
+	 * Compile a drop table (if exists) command.
+	 *
+	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+	 * @param  \Illuminate\Support\Fluent  $command
+	 * @return string
+	 */
+	public function compileDropIfExists(Blueprint $blueprint, Fluent $command)
+	{
+		$table = $this->wrapTable($blueprint);
+		return "declare c int;
+			begin
+			   select count(*) into c from user_tables where table_name = upper('$table');
+			   if c = 1 then
+			      execute immediate 'drop table $table';
+			   end if;
+			end;";
+	}
+
+	/**
 	 * Compile a drop column command.
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
