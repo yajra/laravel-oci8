@@ -33,6 +33,11 @@ class OracleConnector extends Connector implements ConnectorInterface
             return parent::createConnection($tns, $config, $options);
         }
 
+        // check charset
+        if (!isset($config['charset'])) {
+            $config['charset'] = '';
+        }
+
         $options['charset'] = $config['charset'];
         return new \yajra\Pdo\Oci8($tns, $config['username'], $config['password'], $options);
     }
@@ -83,11 +88,11 @@ class OracleConnector extends Connector implements ConnectorInterface
                 $address  = "";
 
                 for($i = 0;$i < count($host); $i++){
-                   $address .= '(ADDRESS = (PROTOCOL = TCP)(HOST = '.$host[$i].')(PORT = '.$config['port'].'))';
+                   $address .= '(ADDRESS = (PROTOCOL = TCP)(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
                 }
 
                 // create a tns with multiple address connection
-                $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = {$config['database']} (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+                $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
             }
         }
 
