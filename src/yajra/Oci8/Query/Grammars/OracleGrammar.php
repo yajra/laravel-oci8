@@ -238,7 +238,7 @@ class OracleGrammar extends Grammar {
 
 		$value = array_merge($value, $binaryValue);
 		$parameters = implode(', ', $value);
-		return "insert into $table ($columns) values ($parameters)".' returning '.$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
+		return "insert into $table ($columns) values ($parameters) returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
 	}
 
 	/**
@@ -292,7 +292,7 @@ class OracleGrammar extends Grammar {
 		// intended records are updated by the SQL statements we generate to run.
 		$where = $this->compileWheres($query);
 
-		return trim("update {$table}{$joins} set $columns $where returning {$binaryColumns}, {$sequence} into {$binaryParameters}, ?");
+		return "update {$table}{$joins} set $columns $where returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
 	}
 
 

@@ -27,6 +27,7 @@ class OracleBuilder extends Builder {
 	 *
 	 * @param  array   $values
 	 * @param  array   $binaries
+	 * @param  string   $sequence
 	 * @return boolean
 	 */
 	public function updateLob(array $values, array $binaries, $sequence = null)
