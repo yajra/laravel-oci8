@@ -41,4 +41,16 @@ class OracleBuilder extends Builder {
 		return $this->processor->saveLob($this, $sql, $values, $binaries);
 	}
 
+	/**
+	 * Pluck a single column's value from the first result of a query.
+	 *
+	 * @param  string  $column
+	 * @return mixed
+	 */
+	public function pluck($column)
+	{
+		$result = (array) $this->first(array($column));
+		return count($result) > 0 ? $result[$column] : null;
+	}
+
 }
