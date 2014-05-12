@@ -120,8 +120,8 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 		// To be able to name the primary/foreign keys when the table is 
 		// initially created we will need to check for a primary/foreign 
-                // key commands and add the columns to the table's declaration 
-                // here so they can be created on the tables.
+        // key commands and add the columns to the table's declaration 
+        // here so they can be created on the tables.
 
 		$sql .= (string) $this->addForeignKeys($blueprint);
 
@@ -142,11 +142,6 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		$columns = implode(', ', $this->getColumns($blueprint));
 
 		$sql = 'alter table '.$this->wrapTable($blueprint)." add ( $columns";
-
-		// SQLite forces primary keys to be added when the table is initially created
-		// so we will need to check for a primary key commands and add the columns
-		// to the table's declaration here so they can be created on the tables.
-		//$sql .= (string) $this->addForeignKeys($blueprint);
 
 		$sql .= (string) $this->addPrimaryKeys($blueprint);
 

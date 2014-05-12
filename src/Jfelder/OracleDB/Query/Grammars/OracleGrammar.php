@@ -26,7 +26,7 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		// If an offset is present on the query, we will need to wrap the query in
 		// a big "ANSI" offset syntax block. This is very nasty compared to the
 		// other database systems but is necessary for implementing features.
-		if ($query->limit > 0 OR $query->offset > 0)
+		if ($query->limit > 0 || $query->offset > 0)
 		{
 			return $this->compileAnsiOffset($query, $components);
 		}

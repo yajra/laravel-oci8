@@ -192,7 +192,6 @@ class OCIStatement extends \PDOStatement
      * Closes the cursor, enabling the statement to be executed again.
      *
      * @return bool Returns TRUE on success or FALSE on failure.
-     * @todo Implement function
      */
     public function closeCursor()
     {
@@ -413,7 +412,6 @@ class OCIStatement extends \PDOStatement
      * Advances to the next rowset in a multi-rowset statement handle
      * 
      * @return bool Returns TRUE on success or FALSE on failure
-     * @todo Implement method
      */
     public function nextRowset()
     {
@@ -450,7 +448,6 @@ class OCIStatement extends \PDOStatement
      * @param mixed $type Column number, class name or object depending on PDO::FETCH_* constant used
      * @param array $ctorargs Constructor arguments
      * @return bool Returns TRUE on success or FALSE on failure
-     * @todo Implement method
      */
     public function setFetchMode ($mode, $type = null, $ctorargs = array())
     {
