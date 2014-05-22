@@ -651,4 +651,15 @@ class OracleGrammar extends Grammar {
 		}
 	}
 
+	/**
+	 * Wrap a single string in keyword identifiers.
+	 *
+	 * @param  string  $value
+	 * @return string
+	 */
+	protected function wrapValue($value)
+	{
+		return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+	}
+
 }

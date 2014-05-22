@@ -5,7 +5,7 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "yajra - Arjay Angeles",
+            "name": "Arjay Angeles",
             "email": "aqangeles@gmail.com"
         }
     ],
@@ -24,5 +24,5 @@
             "yajra\\Oci8": "src/"
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }
