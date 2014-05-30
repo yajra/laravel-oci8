@@ -13,6 +13,7 @@ return array(
 			'password' => '',
 			'charset'  => 'WE8ISO8859P1',
 			'prefix'   => '',
+			'quoting'  => false,
 		),
 
 	),

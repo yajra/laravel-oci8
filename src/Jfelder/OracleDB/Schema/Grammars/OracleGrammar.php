@@ -3,7 +3,7 @@
 use \Illuminate\Support\Fluent;
 use \Illuminate\Database\Connection;
 use \Illuminate\Database\Schema\Blueprint;
-
+use Config;
 class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 
 	/**
@@ -353,6 +353,21 @@ class OracleGrammar extends \Illuminate\Database\Schema\Grammars\Grammar {
 		
                 return $rs;
 	}
+
+	/**
+ 	 * Wrap a single string in keyword identifiers.
+ 	 *
+ 	 * @param  string  $value
+ 	 * @return string
+ 	 */
+ 	protected function wrapValue($value)
+ 	{
+ 		if (Config::get('oracledb::database.quoting') === true) {
+ 			return parent::wrapValue($value);
+ 		} 
+
+ 		return $value;
+ 	}
 
 	/**
 	 * Create the column definition for a string type.

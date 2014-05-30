@@ -19,7 +19,7 @@ class OracledbServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-                
+
 	}
 
 	/**

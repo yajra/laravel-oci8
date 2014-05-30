@@ -1,15 +1,9 @@
 <?php namespace Jfelder\OracleDB\Query\Grammars;
 
 use \Illuminate\Database\Query\Builder;
+use Config;
 
 class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
-
-	/**
-	 * The keyword identifier wrapper format.
-	 *
-	 * @var string
-	 */
-	protected $wrapper = '%s';
 
 	/**
 	 * Compile a select query into SQL.
@@ -146,4 +140,19 @@ class OracleGrammar extends \Illuminate\Database\Query\Grammars\Grammar {
 		return '';
 	}
 
+	/**
+ 	 * Wrap a single string in keyword identifiers.
+ 	 *
+ 	 * @param  string  $value
+ 	 * @return string
+ 	 */
+ 	protected function wrapValue($value)
+ 	{
+ 		if (Config::get('oracledb::database.quoting') === true) {
+ 			return parent::wrapValue($value);
+ 		} 
+
+ 		return $value;
+ 	}
+ 
 }

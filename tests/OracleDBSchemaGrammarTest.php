@@ -601,13 +601,46 @@ class OracleDBSchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('alter table users add ( foo blob not null )', $statements[0]);
 	}
 
+	public function testBasicSelectUsingQuotes()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->create();
+		$blueprint->increments('id');
+		$blueprint->string('email');
+
+		$conn = $this->getConnection();
+
+		$statements = $blueprint->toSql($conn, $this->getGrammar(true));
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('create table "users" ( "id" number(10,0) not null, "email" varchar2(255) not null, constraint users_id_primary primary key ( "id" ) )', $statements[0]);
+	}
+
+	public function testBasicSelectNotUsingQuotes()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->create();
+		$blueprint->increments('id');
+		$blueprint->string('email');
+
+		$conn = $this->getConnection();
+
+		$statements = $blueprint->toSql($conn, $this->getGrammar(false));
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('create table users ( id number(10,0) not null, email varchar2(255) not null, constraint users_id_primary primary key ( id ) )', $statements[0]);
+	}
+
 	protected function getConnection()
 	{
 		return m::mock('Illuminate\Database\Connection');
 	}
 
-	public function getGrammar()
+	public function getGrammar($quote = false)
 	{
+		global $ConfigReturnValue;
+		$ConfigReturnValue = $quote;
+
 		return new Jfelder\OracleDB\Schema\Grammars\OracleGrammar;
 	}
 

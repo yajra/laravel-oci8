@@ -20,6 +20,14 @@ class OracleDBQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testBasicTableWrappingProtectsQuotationMarks()
+ 	{
+ 		$builder = $this->getBuilder(true);
+ 		$builder->select('*')->from('some"table');
+ 		$this->assertEquals('select * from "some""table"', $builder->toSql());
+ 	}
+ 
+ 
 	public function testAddingSelects()
 	{
 		$builder = $this->getBuilder();
@@ -793,6 +801,30 @@ class OracleDBQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testBasicSelectUsingQuotes()
+	{
+		$builder = $this->getBuilder(true);
+		$builder->select('*')->from('users');
+		$this->assertEquals('select * from "users"', $builder->toSql());
+
+		$builder = $this->getBuilder(true);
+		$builder->select('id')->from('users');
+		$this->assertEquals('select "id" from "users"', $builder->toSql());
+	}
+
+
+	public function testBasicSelectNotUsingQuotes()
+	{
+		$builder = $this->getBuilder(false);
+		$builder->select('*')->from('users');
+		$this->assertEquals('select * from users', $builder->toSql());
+
+		$builder = $this->getBuilder(false);
+		$builder->select('id')->from('users');
+		$this->assertEquals('select id from users', $builder->toSql());
+	}
+
+
 	public function testOracleLock()
 	{
 		$builder = $this->getBuilder();
@@ -807,8 +839,11 @@ class OracleDBQueryBuilderTest extends PHPUnit_Framework_TestCase {
 	}
 
 
-	protected function getBuilder()
+	protected function getBuilder($quote = false)
 	{
+		global $ConfigReturnValue;
+		$ConfigReturnValue = $quote;
+
 		$grammar = new Jfelder\OracleDB\Query\Grammars\OracleGrammar;
 		$processor = m::mock('Jfelder\OracleDB\Query\Processors\OracleProcessor');
 		return new Builder(m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor);
