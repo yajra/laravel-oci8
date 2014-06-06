@@ -57,6 +57,21 @@ Then setup a valid database configuration using the driver "pdo-via-oci8". Confi
     'prefix' => '',
 )
 ```
+>If your database uses SERVICE NAME alias, use the config below:
+```php
+'oracle' => array(
+    'driver' => 'pdo-via-oci8',
+    'host' => 'oracle.host',
+    'port' => '1521',
+    'database' => 'xe',
+    'service_name' => 'sid_alias',
+    'username' => 'hr',
+    'password' => 'hr',
+    'charset' => '',
+    'prefix' => '',
+)
+```
+
 
 And run your laravel installation...
 

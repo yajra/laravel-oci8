@@ -76,9 +76,17 @@ class OracleConnector extends Connector implements ConnectorInterface
             $config['host'] = $config['hostname'];
 
         // check tns
-        if (empty($config['tns'])) {
-             //Create a description to locate the database to connect to
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SID = {$config['database']})))";
+        if ( empty($config['tns']) ) {
+            // Create a description to locate the database to connect to
+            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
+            // check if we will use Service Name
+            if( empty($config['service_name']) ) {
+                $service_param = 'SID = '.$config['database'];
+            } else {
+                $service_param = 'SERVICE_NAME = '.$config['service_name'];
+            }
+
+            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
         }
 
         // check multiple connections/host, comma delimiter
