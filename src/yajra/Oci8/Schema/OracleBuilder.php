@@ -54,7 +54,7 @@ class OracleBuilder extends \Illuminate\Database\Schema\Builder {
 			$this->connection->createSequence($sequenceName);
 	        // create trigger for auto increment work around
 	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-			$this->connection->createAutoIncrementTrigger($table, $col, $triggerName, $sequenceName);
+			$this->connection->createAutoIncrementTrigger($prefix . $table, $col, $triggerName, $sequenceName);
 		}
 
 	}
