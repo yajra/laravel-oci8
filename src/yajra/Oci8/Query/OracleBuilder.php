@@ -32,7 +32,7 @@ class OracleBuilder extends Builder {
 	 */
 	public function updateLob(array $values, array $binaries, $sequence = null)
 	{
-		$bindings = array_values(array_merge($values, $this->bindings));
+		$bindings = array_values(array_merge($values, $this->getBindings()));
 
 		$sql = $this->grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
