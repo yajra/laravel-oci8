@@ -55,6 +55,13 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         $connection = $this->createConnection($tns, $config, $options);
 
+        // Like Postgres, Oracle allows the concept of "schema"
+        if (isset($config['schema']))
+        {
+            $schema = $config['schema'];
+            $connection->prepare("ALTER SESSION SET CURRENT_SCHEMA = {$schema}")->execute();
+        }
+
         return $connection;
     }
 
