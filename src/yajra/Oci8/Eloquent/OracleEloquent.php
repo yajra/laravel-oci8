@@ -27,7 +27,7 @@ class OracleEloquent extends Model {
 		if ($this->sequence)
 			return $this->sequence;
 
-		return str_plural(class_basename($this->getModel())) . '_id_seq';
+		return $this->getModel()->getTable() . '_id_seq';
 	}
 
 	/**
