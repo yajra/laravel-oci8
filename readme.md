@@ -116,7 +116,7 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 
 > Check the starter kit provided to see how it works.
 
-#### Inserting Records Into A Table With An Auto-Incrementing ID
+####Inserting Records Into A Table With An Auto-Incrementing ID
 
 ```php
   $id = DB::connection('oracle')->table('users')->insertGetId(
@@ -126,30 +126,7 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 
 > **Note:** When using the insertGetId method, you can specify the auto-incrementing column name as the second parameter in insertGetId function. It will default to "id" if not specified.
 
-###Examples
-
-**Configuration** (database.php)
-```php
-'default' => 'oracle',
-
-'oracle' => array(
-    'driver' => 'pdo-via-oci8',
-    'host' => '127.0.0.1',
-    'port' => '1521',
-    'database' => 'xe', // Service ID
-    'username' => 'schema',
-    'password' => 'password',
-    'charset' => '',
-    'prefix' => '',
-)
-```
-**Basic Select Statement**
-```php
-DB::select('select * from mylobs');
-```
-***********
-**Eloquent Examples**
-***********
+###Eloquent
 **Eloquent (multiple insert)**
 ```php
 // Initialize empty array
@@ -195,9 +172,7 @@ $post->save();
 // to get the inserted id
 $id = $post->id;
 ```
-***********
-**Oracle Blob**
-***********
+###Oracle Blob
 Querying a blob field will now load the value instead of the OCI-Lob object.
 ```php
 $data = DB::table('mylobs')->get();
@@ -238,7 +213,7 @@ $id = DB::table('mylobs')->whereId(1)->updateLob(
 > **Note:** When using the insertLob method, you can specify the auto-incrementing column name as the third parameter in insertLob function. It will default to "id" if not specified.
 
 ###Updating Blob directly using OracleEloquent
-On your model, just add `use yajra\Oci8\Eloquent\OracleEloquent as Eloquent;` and define the fields that are blob via `protected $binaries = ['content'];`
+On your model, just add `use yajra\Oci8\Eloquent\OracleEloquent as Eloquent;` and define the fields that are blob via `protected $binaries = [];`
 
 *Example Model:*
 
@@ -259,7 +234,7 @@ class Post extends Eloquent {
 
 *Usage:*
 ```php
-Route::get('save-post', function()
+Route::post('save-post', function()
 {
     $post = new Post;
     $post->title            = Input::get('title');
@@ -276,9 +251,7 @@ Route::get('save-post', function()
 
 > Limitation: Saving multiple records with a blob field like `Post::insert($posts)` is not yet supported!
 
-***********
-**Oracle Sequence**
-***********
+###Oracle Sequence
 ```php
 // creating a sequence
 DB::createSequence('seq_name');
@@ -294,10 +267,10 @@ $id = DB::lastInsertId('seq_name');
 // or
 $id = DB::currentSequenceValue('seq_name');
 ```
-***********
-**Date Formatting**
-***********
+
+###Date Formatting
 > (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
+
 ```php
 // set oracle session date format
 DB::setDateFormat('MM/DD/YYYY');
@@ -307,7 +280,7 @@ DB::setDateFormat('MM/DD/YYYY');
 
 Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
 
-See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
+See [Laravel 4 Database Basic Docs](http://laravel.com/docs/database) for more information.
 
 ###License
 
