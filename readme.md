@@ -31,7 +31,7 @@ Add `yajra/laravel-oci8` as a requirement to composer.json:
 ```json
 {
     "require": {
-        "yajra/laravel-oci8": "*"
+        "yajra/laravel-oci8": "1.*"
     }
 }
 ```
@@ -43,11 +43,11 @@ Once Composer has installed or updated your packages you need to register the se
 'yajra\Oci8\Oci8ServiceProvider'
 ```
 
-Then setup a valid database configuration using the driver "pdo-via-oci8". Configure your connection as usual with:
+Then setup a valid database configuration using the driver "oracle". Configure your connection as usual with:
 
 ```php
 'oracle' => array(
-    'driver' => 'pdo-via-oci8',
+    'driver' => 'oracle',
     'host' => 'oracle.host',
     'port' => '1521',
     'database' => 'xe',
@@ -60,7 +60,7 @@ Then setup a valid database configuration using the driver "pdo-via-oci8". Confi
 >If your database uses SERVICE NAME alias, use the config below:
 ```php
 'oracle' => array(
-    'driver' => 'pdo-via-oci8',
+    'driver' => 'oracle',
     'host' => 'oracle.host',
     'port' => '1521',
     'database' => 'xe',
@@ -79,6 +79,7 @@ And run your laravel installation...
 To help you kickstart with Laravel, you may want to use the starter kit package below:
 - [Laravel 4 Starter Kit](https://github.com/yajra/laravel4-starter-kit)
 - [Laravel 4.1 Starter Kit](https://github.com/yajra/laravel-4.1-starter-kit)
+- [Laravel 4.2 Starter Kit](https://github.com/yajra/laravel-admin-template)
 
 Starter kit package above were forked from [brunogaspar/laravel4-starter-kit](https://github.com/brunogaspar/laravel4-starter-kit). No need to re-invent the wheel.
 
@@ -235,6 +236,45 @@ $id = DB::table('mylobs')->whereId(1)->updateLob(
     );
 ```
 > **Note:** When using the insertLob method, you can specify the auto-incrementing column name as the third parameter in insertLob function. It will default to "id" if not specified.
+
+###Updating Blob directly using OracleEloquent
+On your model, just add `use yajra\Oci8\Eloquent\OracleEloquent as Eloquent;` and define the fields that are blob via `protected $binaries = ['content'];`
+
+*Example Model:*
+
+```php
+use yajra\Oci8\Eloquent\OracleEloquent as Eloquent;
+
+class Post extends Eloquent {
+
+    // define binary/blob fields
+    protected $binaries = ['content'];
+
+    // define the sequence name used for incrementing
+    // default value would be {table}_{primaryKey}_seq if not set
+    protected $sequence = null;
+
+}
+```
+
+*Usage:*
+```php
+Route::get('save-post', function()
+{
+    $post = new Post;
+    $post->title            = Input::get('title');
+    $post->company_id       = Auth::user()->company->id;
+    $post->slug             = Str::slug(Input::get('title'));
+    // set binary field (content) value directly using model attribute
+    $post->content          = Input::get('content');
+    $post->meta_title       = Input::get('meta-title');
+    $post->meta_description = Input::get('meta-description');
+    $post->meta_keywords    = Input::get('meta-keywords');
+    $post->save();
+});
+```
+
+> Limitation: Saving multiple records with a blob field like `Post::insert($posts)` is not yet supported!
 
 ***********
 **Oracle Sequence**

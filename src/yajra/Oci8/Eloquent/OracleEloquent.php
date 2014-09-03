@@ -10,7 +10,7 @@ class OracleEloquent extends Model {
 	 * List of binary (blob) columns
 	 * @var array
 	 */
-	protected $binaries = [];
+	protected $binaries = array();
 
 	/**
 	 * Sequence name variable
@@ -27,7 +27,7 @@ class OracleEloquent extends Model {
 		if ($this->sequence)
 			return $this->sequence;
 
-		return $this->getModel()->getTable() . '_id_seq';
+		return $this->getTable() . '_' . $this->getKeyName() . '_seq';
 	}
 
 	/**
@@ -225,10 +225,9 @@ class OracleEloquent extends Model {
 	{
 		// If attributes contains binary field
 		// extract binary fields to new array
-		$binaries = [];
+		$binaries = array();
 		if ( $this->checkBinary($attributes) and $this->getConnection() instanceOf \yajra\Oci8\Oci8Connection)
 		{
-			$binaries = [];
 			foreach ($attributes as $key => $value)
 			{
 				if ( in_array($key, $this->binaries) )
