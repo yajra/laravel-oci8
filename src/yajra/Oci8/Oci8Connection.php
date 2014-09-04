@@ -217,6 +217,7 @@ class Oci8Connection extends Connection {
 				AND cons.constraint_name = cols.constraint_name
 				AND cons.owner = cols.owner
 				AND cols.position = 1
+				AND cons.owner = (select user from dual)
 			ORDER BY cols.table_name, cols.position
 			");
 
