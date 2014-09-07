@@ -396,8 +396,7 @@ class OracleGrammar extends Grammar {
 	 */
 	protected function typeText(Fluent $column)
 	{
-        $length = ($column->length) ? $column->length : 4000;
-		return "varchar2({$length})";
+		return "clob";
 	}
 
 	/**
