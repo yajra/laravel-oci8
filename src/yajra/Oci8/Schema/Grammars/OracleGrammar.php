@@ -534,7 +534,7 @@ class OracleGrammar extends Grammar {
 	protected function typeEnum(Fluent $column)
 	{
         $length = ($column->length) ? $column->length : 255;
-        return "varchar2({$length})";
+        return "varchar2({$length}) check ({$column->name} in ('".implode("', '", $column->allowed)."'))";
 	}
 
 	/**
