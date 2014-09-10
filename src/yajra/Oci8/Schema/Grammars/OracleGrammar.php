@@ -134,7 +134,7 @@ class OracleGrammar extends Grammar {
 	}
 
 	/**
-	 * Compile a create table command.
+	 * Compile an add column command.
 	 *
 	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
 	 * @param  \Illuminate\Support\Fluent  $command
@@ -146,18 +146,9 @@ class OracleGrammar extends Grammar {
 
 		$sql = 'alter table '.$this->wrapTable($blueprint)." add ( $columns";
 
-		/**
-		 * To be able to name the primary/foreign keys when the table is
-		 * initially created we will need to check for a primary/foreign
-		 * key commands and add the columns to the table's declaration
-		 * here so they can be created on the tables.
-		 */
-		$sql .= (string) $this->addForeignKeys($blueprint);
-
 		$sql .= (string) $this->addPrimaryKeys($blueprint);
 
-		$sql .= ' )';
-		return $sql;
+		return $sql .= ' )';
 	}
 
 	/**
@@ -405,8 +396,7 @@ class OracleGrammar extends Grammar {
 	 */
 	protected function typeText(Fluent $column)
 	{
-        $length = ($column->length) ? $column->length : 4000;
-		return "varchar2({$length})";
+		return "clob";
 	}
 
 	/**
@@ -544,7 +534,7 @@ class OracleGrammar extends Grammar {
 	protected function typeEnum(Fluent $column)
 	{
         $length = ($column->length) ? $column->length : 255;
-        return "varchar2({$length})";
+        return "varchar2({$length}) check ({$column->name} in ('".implode("', '", $column->allowed)."'))";
 	}
 
 	/**

@@ -275,6 +275,18 @@ class OracleGrammar extends Grammar {
 		$binaryColumns = $this->columnize(array_keys(reset($binaries)));
 		$binaryParameters = $this->parameterize(reset($binaries));
 
+		// create EMPTY_BLOB sql for each binary
+		$binarySql = array();
+		foreach ( (array) $binaryColumns as $binary) {
+			$binarySql[] = "$binary = EMPTY_BLOB()";
+		}
+
+		// prepare binary SQLs
+		if (count($binarySql))
+		{
+			$binarySql = ', ' . implode(',', $binarySql);
+		}
+
 		// If the query has any "join" clauses, we will setup the joins on the builder
 		// and compile them so we can attach them to this update, as update queries
 		// can get join statements to attach to other tables when they're needed.
@@ -292,7 +304,7 @@ class OracleGrammar extends Grammar {
 		// intended records are updated by the SQL statements we generate to run.
 		$where = $this->compileWheres($query);
 
-		return "update {$table}{$joins} set $columns $where returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
+		return "update {$table}{$joins} set $columns$binarySql $where returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
 	}
 
 	/**

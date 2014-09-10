@@ -31,7 +31,7 @@ Add `yajra/laravel-oci8` as a requirement to composer.json:
 ```json
 {
     "require": {
-        "yajra/laravel-oci8": "*"
+        "yajra/laravel-oci8": "1.*"
     }
 }
 ```
@@ -43,11 +43,11 @@ Once Composer has installed or updated your packages you need to register the se
 'yajra\Oci8\Oci8ServiceProvider'
 ```
 
-Then setup a valid database configuration using the driver "pdo-via-oci8". Configure your connection as usual with:
+Then setup a valid database configuration using the driver "oracle". Configure your connection as usual with:
 
 ```php
 'oracle' => array(
-    'driver' => 'pdo-via-oci8',
+    'driver' => 'oracle',
     'host' => 'oracle.host',
     'port' => '1521',
     'database' => 'xe',
@@ -57,6 +57,21 @@ Then setup a valid database configuration using the driver "pdo-via-oci8". Confi
     'prefix' => '',
 )
 ```
+>If your database uses SERVICE NAME alias, use the config below:
+```php
+'oracle' => array(
+    'driver' => 'oracle',
+    'host' => 'oracle.host',
+    'port' => '1521',
+    'database' => 'xe',
+    'service_name' => 'sid_alias',
+    'username' => 'hr',
+    'password' => 'hr',
+    'charset' => '',
+    'prefix' => '',
+)
+```
+
 
 And run your laravel installation...
 
@@ -64,6 +79,7 @@ And run your laravel installation...
 To help you kickstart with Laravel, you may want to use the starter kit package below:
 - [Laravel 4 Starter Kit](https://github.com/yajra/laravel4-starter-kit)
 - [Laravel 4.1 Starter Kit](https://github.com/yajra/laravel-4.1-starter-kit)
+- [Laravel 4.2 Starter Kit](https://github.com/yajra/laravel-admin-template)
 
 Starter kit package above were forked from [brunogaspar/laravel4-starter-kit](https://github.com/brunogaspar/laravel4-starter-kit). No need to re-invent the wheel.
 
@@ -100,7 +116,7 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 
 > Check the starter kit provided to see how it works.
 
-#### Inserting Records Into A Table With An Auto-Incrementing ID
+####Inserting Records Into A Table With An Auto-Incrementing ID
 
 ```php
   $id = DB::connection('oracle')->table('users')->insertGetId(
@@ -110,30 +126,7 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 
 > **Note:** When using the insertGetId method, you can specify the auto-incrementing column name as the second parameter in insertGetId function. It will default to "id" if not specified.
 
-###Examples
-
-**Configuration** (database.php)
-```php
-'default' => 'oracle',
-
-'oracle' => array(
-    'driver' => 'pdo-via-oci8',
-    'host' => '127.0.0.1',
-    'port' => '1521',
-    'database' => 'xe', // Service ID
-    'username' => 'schema',
-    'password' => 'password',
-    'charset' => '',
-    'prefix' => '',
-)
-```
-**Basic Select Statement**
-```php
-DB::select('select * from mylobs');
-```
-***********
-**Eloquent Examples**
-***********
+###Eloquent
 **Eloquent (multiple insert)**
 ```php
 // Initialize empty array
@@ -179,9 +172,7 @@ $post->save();
 // to get the inserted id
 $id = $post->id;
 ```
-***********
-**Oracle Blob**
-***********
+###Oracle Blob
 Querying a blob field will now load the value instead of the OCI-Lob object.
 ```php
 $data = DB::table('mylobs')->get();
@@ -221,9 +212,46 @@ $id = DB::table('mylobs')->whereId(1)->updateLob(
 ```
 > **Note:** When using the insertLob method, you can specify the auto-incrementing column name as the third parameter in insertLob function. It will default to "id" if not specified.
 
-***********
-**Oracle Sequence**
-***********
+###Updating Blob directly using OracleEloquent
+On your model, just add `use yajra\Oci8\Eloquent\OracleEloquent as Eloquent;` and define the fields that are blob via `protected $binaries = [];`
+
+*Example Model:*
+
+```php
+use yajra\Oci8\Eloquent\OracleEloquent as Eloquent;
+
+class Post extends Eloquent {
+
+    // define binary/blob fields
+    protected $binaries = ['content'];
+
+    // define the sequence name used for incrementing
+    // default value would be {table}_{primaryKey}_seq if not set
+    protected $sequence = null;
+
+}
+```
+
+*Usage:*
+```php
+Route::post('save-post', function()
+{
+    $post = new Post;
+    $post->title            = Input::get('title');
+    $post->company_id       = Auth::user()->company->id;
+    $post->slug             = Str::slug(Input::get('title'));
+    // set binary field (content) value directly using model attribute
+    $post->content          = Input::get('content');
+    $post->meta_title       = Input::get('meta-title');
+    $post->meta_description = Input::get('meta-description');
+    $post->meta_keywords    = Input::get('meta-keywords');
+    $post->save();
+});
+```
+
+> Limitation: Saving multiple records with a blob field like `Post::insert($posts)` is not yet supported!
+
+###Oracle Sequence
 ```php
 // creating a sequence
 DB::createSequence('seq_name');
@@ -239,10 +267,10 @@ $id = DB::lastInsertId('seq_name');
 // or
 $id = DB::currentSequenceValue('seq_name');
 ```
-***********
-**Date Formatting**
-***********
+
+###Date Formatting
 > (Note: Oracle's date format is set to ```YYYY-MM-DD HH24:MI:SS``` by default to match PHP's common date format)
+
 ```php
 // set oracle session date format
 DB::setDateFormat('MM/DD/YYYY');
@@ -252,7 +280,7 @@ DB::setDateFormat('MM/DD/YYYY');
 
 Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
 
-See [Laravel 4 Database Basic Docs](http://four.laravel.com/docs/database) for more information.
+See [Laravel 4 Database Basic Docs](http://laravel.com/docs/database) for more information.
 
 ###License
 
