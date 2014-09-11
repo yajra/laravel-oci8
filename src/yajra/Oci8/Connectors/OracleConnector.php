@@ -35,7 +35,7 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         // check charset
         if (!isset($config['charset'])) {
-            $config['charset'] = '';
+            $config['charset'] = 'AL32UTF8';
         }
 
         $options['charset'] = $config['charset'];

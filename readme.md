@@ -269,7 +269,7 @@ $id = DB::currentSequenceValue('seq_name');
 ```
 
 ###Date Formatting
-> (Note: Oracle's `DATE` & `TIMESTAMP` format is set to `YYYY-MM-DD HH:MI:SSXFF AM TZR` by default to match PHP's common date format)
+> (Note: Oracle's `DATE` & `TIMESTAMP` format is set to `YYYY-MM-DD HH24:MI:SS` by default to match PHP's common date format)
 
 ```php
 // set oracle session date format
