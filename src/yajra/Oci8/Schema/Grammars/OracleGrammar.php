@@ -581,9 +581,9 @@ class OracleGrammar extends Grammar {
 		// if timestamp is not nullable,
 		// set default value to sysdate to avoid null date error
 		if (!isset($column->nullable))
-			return 'date default sysdate';
+			return 'timestamp default CURRENT_TIMESTAMP';
 
-		return 'date';
+		return 'timestamp';
 	}
 
 	/**
