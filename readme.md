@@ -1,4 +1,4 @@
-# Laravel 4 Oracle (OCI8) DB Support
+# Laravel 5 Oracle (OCI8) DB Support
 
 ###Laravel-OCI8
 
@@ -26,7 +26,7 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 - [Credits](#credits)
 
 ###Requirements
-- PHP >= 5.3
+- PHP >= 5.4
 - PHP [OCI8](http://php.net/oci8) extension
 
 ###Installation
@@ -36,7 +36,7 @@ Add `yajra/laravel-oci8` as a requirement to composer.json:
 ```json
 {
     "require": {
-        "yajra/laravel-oci8": "1.*"
+        "yajra/laravel-oci8": "dev-develop"
     }
 }
 ```
