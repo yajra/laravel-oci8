@@ -78,9 +78,10 @@ class OracleEloquent extends Model {
 	 * Perform a model update operation.
 	 *
 	 * @param  \Illuminate\Database\Eloquent\Builder  $query
+	 * @param  array $options
 	 * @return bool|null
 	 */
-	protected function performUpdate(Builder $query)
+	protected function performUpdate(Builder $query, array $options)
 	{
 		$dirty = $this->getDirty();
 
@@ -97,7 +98,7 @@ class OracleEloquent extends Model {
 			// First we need to create a fresh query instance and touch the creation and
 			// update timestamp on the model which are maintained by us for developer
 			// convenience. Then we will just continue saving the model instances.
-			if ($this->timestamps)
+			if ($this->timestamps && array_get($options, 'timestamps', true))
 			{
 				$this->updateTimestamps();
 			}
@@ -131,16 +132,17 @@ class OracleEloquent extends Model {
 	 * Perform a model insert operation.
 	 *
 	 * @param  \Illuminate\Database\Eloquent\Builder  $query
+	 * @param  array $options
 	 * @return bool
 	 */
-	protected function performInsert(Builder $query)
+	protected function performInsert(Builder $query, array $options)
 	{
 		if ($this->fireModelEvent('creating') === false) return false;
 
 		// First we'll need to create a fresh query instance and touch the creation and
 		// update timestamps on this model, which are maintained by us for developer
 		// convenience. After, we will just continue saving these model instances.
-		if ($this->timestamps)
+		if ($this->timestamps && array_get($options, 'timestamps', true))
 		{
 			$this->updateTimestamps();
 		}
