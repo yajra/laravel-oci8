@@ -110,7 +110,7 @@ class OracleConnector extends Connector implements ConnectorInterface
                 $address  = "";
 
                 for($i = 0;$i < count($host); $i++){
-                   $address .= '(ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
+                   $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
                 }
 
                 // create a tns with multiple address connection
