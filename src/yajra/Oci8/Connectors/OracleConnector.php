@@ -78,6 +78,13 @@ class OracleConnector extends Connector implements ConnectorInterface
             $config['port'] = '1521';
         }
 
+        // check protocol
+        if (!isset($config['protocol'])) {
+            $config['protocol'] = 'TCP';
+        } else {
+            $config['protocol'] = strtoupper($config['protocol']);
+        }
+
         // check host config
         if (isset($config['hostname']) and !isset($config['host']))
             $config['host'] = $config['hostname'];
@@ -85,7 +92,7 @@ class OracleConnector extends Connector implements ConnectorInterface
         // check tns
         if ( empty($config['tns']) ) {
             // Create a description to locate the database to connect to
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
+            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
             // check if we will use Service Name
             if( empty($config['service_name']) ) {
                 $service_param = 'SID = '.$config['database'];
@@ -93,7 +100,7 @@ class OracleConnector extends Connector implements ConnectorInterface
                 $service_param = 'SERVICE_NAME = '.$config['service_name'];
             }
 
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
+            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
         }
 
         // check multiple connections/host, comma delimiter
@@ -103,7 +110,7 @@ class OracleConnector extends Connector implements ConnectorInterface
                 $address  = "";
 
                 for($i = 0;$i < count($host); $i++){
-                   $address .= '(ADDRESS = (PROTOCOL = TCP)(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
+                   $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
                 }
 
                 // create a tns with multiple address connection
