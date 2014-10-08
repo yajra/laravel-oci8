@@ -2,24 +2,28 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use yajra\Oci8\Oci8Connection;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 
 class OracleEloquent extends Model {
 
 	/**
 	 * List of binary (blob) columns
+	 *
 	 * @var array
 	 */
 	protected $binaries = array();
 
 	/**
 	 * Sequence name variable
+	 *
 	 * @var string
 	 */
 	protected $sequence = null;
 
 	/**
 	 * Get model's sequence name
+	 *
 	 * @return string
 	 */
 	public function getSequenceName()
@@ -32,6 +36,7 @@ class OracleEloquent extends Model {
 
 	/**
 	 * Set sequence name
+	 *
 	 * @param string $name
 	 */
 	public function setSequenceName($name)
@@ -193,7 +198,8 @@ class OracleEloquent extends Model {
 	 */
 	protected function insertAndSetId(Builder $query, $attributes)
 	{
-		if ( $binaries = $this->wrapBinary($attributes) ) {
+		if ( $binaries = $this->wrapBinary($attributes) )
+		{
 			$query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
 			$id = $query->getModel()->getConnection()->lastInsertId( $this->getSequenceName() );
 		}
@@ -207,6 +213,7 @@ class OracleEloquent extends Model {
 
 	/**
 	 * Check if attributes contains binary field
+	 *
 	 * @param  array  $attributes
 	 * @return boolean
 	 */
@@ -223,12 +230,18 @@ class OracleEloquent extends Model {
 		return false;
 	}
 
+	/**
+	 * wrap binaries to each attributes
+	 *
+	 * @param  array $attributes
+	 * @return array
+	 */
 	public function wrapBinary(&$attributes)
 	{
 		// If attributes contains binary field
 		// extract binary fields to new array
 		$binaries = array();
-		if ( $this->checkBinary($attributes) and $this->getConnection() instanceOf \yajra\Oci8\Oci8Connection)
+		if ($this->checkBinary($attributes) and $this->getConnection() instanceOf Oci8Connection)
 		{
 			foreach ($attributes as $key => $value)
 			{

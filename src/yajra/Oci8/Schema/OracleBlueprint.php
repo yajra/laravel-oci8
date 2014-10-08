@@ -6,6 +6,7 @@ class OracleBlueprint extends Blueprint {
 
 	/**
 	 * Database prefix variable
+	 *
 	 * @var string
 	 */
 	protected $prefix;
@@ -27,6 +28,7 @@ class OracleBlueprint extends Blueprint {
 
 	/**
 	 * set table prefix settings
+	 *
 	 * @param string $prefix
 	 */
 	public function setTablePrefix($prefix = '')

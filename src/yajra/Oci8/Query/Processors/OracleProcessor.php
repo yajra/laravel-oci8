@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
+use PDO;
 
 class OracleProcessor extends Processor {
 
@@ -29,17 +30,17 @@ class OracleProcessor extends Processor {
         $this->statement = $query->getConnection()->getPdo()->prepare($sql);
 
         // bind each parameter from the values array to their location
-        foreach($values as $value)
+        foreach ($values as $value)
         {
             // try to determine type of result
-            if(is_int($value))
-               $param = \PDO::PARAM_INT;
-            elseif(is_bool($value))
-               $param = \PDO::PARAM_BOOL;
-            elseif(is_null($value))
-               $param = \PDO::PARAM_NULL;
+            if (is_int($value))
+               $param = PDO::PARAM_INT;
+            elseif (is_bool($value))
+               $param = PDO::PARAM_BOOL;
+            elseif (is_null($value))
+               $param = PDO::PARAM_NULL;
             else
-               $param = \PDO::PARAM_STR;
+               $param = PDO::PARAM_STR;
 
             $this->statement->bindValue($counter, ($value), $param);
             // increment counter
@@ -47,7 +48,7 @@ class OracleProcessor extends Processor {
         }
 
         // bind output param for the returning cluase
-        $this->statement->bindParam($counter, $id, \PDO::PARAM_INT);
+        $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
 
         // execute statement
         $this->statement->execute();
@@ -80,43 +81,48 @@ class OracleProcessor extends Processor {
         foreach($values as $value)
         {
             // try to determine type of result
-            if(is_int($value))
-               $param = \PDO::PARAM_INT;
-            elseif(is_bool($value))
-               $param = \PDO::PARAM_BOOL;
-            elseif(is_null($value))
-               $param = \PDO::PARAM_NULL;
+            if (is_int($value))
+               $param = PDO::PARAM_INT;
+            elseif (is_bool($value))
+               $param = PDO::PARAM_BOOL;
+            elseif (is_null($value))
+               $param = PDO::PARAM_NULL;
             else
-               $param = \PDO::PARAM_STR;
+               $param = PDO::PARAM_STR;
 
             $this->statement->bindValue($counter, ($value), $param);
             // increment counter
             $counter++;
         }
 
-        for ($i=0; $i < count($binaries); $i++) {
+        for ($i=0; $i < count($binaries); $i++)
+        {
             // bind blob decriptor
-            $this->statement->bindParam($counter, $lob[$i], \PDO::PARAM_LOB);
+            $this->statement->bindParam($counter, $lob[$i], PDO::PARAM_LOB);
             $counter++;
         }
 
         // bind output param for the returning clause
-        $this->statement->bindParam($counter, $id, \PDO::PARAM_INT);
+        $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
 
         // execute statement
-        if ( !$this->statement->execute() ) {
+        if (! $this->statement->execute())
+        {
             $query->getConnection()->getPdo()->rollBack();
             return false;
         }
 
-        for ($i=0; $i < count($binaries); $i++) {
+        for ($i=0; $i < count($binaries); $i++)
+        {
             // Discard the existing LOB contents
-            if ( !$lob[$i]->truncate() ) {
+            if (! $lob[$i]->truncate())
+            {
                 $query->getConnection()->getPdo()->rollBack();
                 return false;
             }
             // save blob content
-            if ( !$lob[$i]->save($binaries[$i]) ) {
+            if (! $lob[$i]->save($binaries[$i]))
+            {
                 $query->getConnection()->getPdo()->rollBack();
                 return false;
             }
