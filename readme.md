@@ -23,6 +23,7 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 - [Auto-Increment Support](#auto-increment-support)
 - [Examples](#examples)
 - [Support](#support)
+- [Using the package outside of Laravel](#using-the-package-outside-of-laravel)
 - [Credits](#credits)
 
 ###Requirements
@@ -286,6 +287,60 @@ DB::setDateFormat('MM/DD/YYYY');
 Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
 
 See [Laravel 4 Database Basic Docs](http://laravel.com/docs/database) for more information.
+
+
+###Using the package outside of Laravel
+
+- add `"yajra/laravel-oci8": "1.*"` on your composer then run `composer install`
+- create `database.php` and add the code below
+```php
+require 'vendor/autoload.php';
+
+use Illuminate\Database\Capsule\Manager as Capsule;
+use yajra\Oci8\Connectors\OracleConnector;
+use yajra\Oci8\Oci8Connection;
+
+$capsule = new Capsule;
+
+$manager = $capsule->getDatabaseManager();
+$manager->extend('oracle', function($config)
+{
+    $connector = new OracleConnector();
+    $connection = $connector->connect($config);
+    $db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
+    // set oracle date format to match PHP's date
+    $db->setDateFormat('YYYY-MM-DD HH24:MI:SS');
+    return $db;
+});
+
+$capsule->addConnection(array(
+    'driver'   => 'oracle',
+    'host'     => 'oracle.host',
+    'database' => 'xe',
+    'username' => 'user',
+    'password' => 'password',
+    'prefix'   => '',
+    'port'  => 1521
+));
+
+$capsule->bootEloquent();
+```
+
+- Now we can start working with database tables just like we would if we were using Laravel!
+```php
+include 'database.php';
+
+// Create the User model
+class User extends Illuminate\Database\Eloquent\Model {
+    public $timestamps = false;
+}
+
+// Grab a user with an id of 1
+$user = User::find(1);
+
+echo $user->toJson(); die();
+```
+
 
 ###License
 

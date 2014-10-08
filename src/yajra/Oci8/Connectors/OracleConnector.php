@@ -3,6 +3,8 @@
 use Illuminate\Database\Connectors;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
+use yajra\Pdo\Oci8;
+use PDO;
 
 class OracleConnector extends Connector implements ConnectorInterface
 {
@@ -13,9 +15,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @var array
      */
     protected $options = array(
-        \PDO::ATTR_CASE => \PDO::CASE_LOWER,
-        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-        \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
+        PDO::ATTR_CASE => PDO::CASE_LOWER,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
         );
 
     /**
@@ -24,7 +26,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  string  $tns
      * @param  array   $config
      * @param  array   $options
-     * @return \PDO
+     * @return PDO
      */
     public function createConnection($tns, array $config, array $options)
     {
@@ -39,13 +41,13 @@ class OracleConnector extends Connector implements ConnectorInterface
         }
 
         $options['charset'] = $config['charset'];
-        return new \yajra\Pdo\Oci8($tns, $config['username'], $config['password'], $options);
+        return new Oci8($tns, $config['username'], $config['password'], $options);
     }
 
     /**
      * Establish a database connection.
      *
-     * @return \PDO
+     * @return PDO
      */
     public function connect(array $config)
     {
@@ -74,36 +76,56 @@ class OracleConnector extends Connector implements ConnectorInterface
     protected function getDsn(array $config)
     {
         // check port
-        if (!isset($config['port'])) {
-            $config['port'] = '1521';
+        if (!isset($config['port'])) $config['port'] = '1521';
+
+        // check protocol
+        if (!isset($config['protocol']))
+        {
+            $config['protocol'] = 'TCP';
+        }
+        else
+        {
+            $config['protocol'] = strtoupper($config['protocol']);
+        }
+
+        // check protocol
+        if (!isset($config['protocol'])) {
+            $config['protocol'] = 'TCP';
+        } else {
+            $config['protocol'] = strtoupper($config['protocol']);
         }
 
         // check host config
-        if (isset($config['hostname']) and !isset($config['host']))
-            $config['host'] = $config['hostname'];
+        if (isset($config['hostname']) and !isset($config['host'])) $config['host'] = $config['hostname'];
 
         // check tns
-        if ( empty($config['tns']) ) {
+        if ( empty($config['tns']) )
+        {
             // Create a description to locate the database to connect to
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
+            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
             // check if we will use Service Name
-            if( empty($config['service_name']) ) {
+            if( empty($config['service_name']) )
+            {
                 $service_param = 'SID = '.$config['database'];
-            } else {
+            }
+            else
+            {
                 $service_param = 'SERVICE_NAME = '.$config['service_name'];
             }
 
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
+            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
         }
 
         // check multiple connections/host, comma delimiter
-        if( isset($config['host']) ){
+        if (isset($config['host']))
+        {
             $host = explode(',', $config['host']);
-            if (count($host) > 1) {
+            if (count($host) > 1)
+            {
                 $address  = "";
-
-                for($i = 0;$i < count($host); $i++){
-                   $address .= '(ADDRESS = (PROTOCOL = TCP)(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
+                for($i = 0;$i < count($host); $i++)
+                {
+                   $address .= '(ADDRESS = (PROTOCOL = '.$config["protocol"].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
                 }
 
                 // create a tns with multiple address connection
