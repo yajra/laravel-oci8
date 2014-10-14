@@ -88,14 +88,15 @@ class Oci8Connection extends Connection {
 	/**
 	 * function to create oracle sequence
 	 *
-	 * @param  strine $name
+	 * @param  string  $name
+	 * @param  integer $start
 	 * @return boolean
 	 */
-	public function createSequence($name)
+	public function createSequence($name, $start = 1)
 	{
 		if (!$name) return false;
 
-		return self::statement('create sequence '. $name);
+		return self::statement("create sequence {$name} start with {$start}");
 	}
 
 	/**

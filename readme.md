@@ -103,7 +103,7 @@ To support auto-increment in Laravel-OCI8, you must meet the following requireme
 ```php
 Schema::create('posts', function($table)
 {
-    $table->increments('id')->unsigned();
+    $table->increments('id');
     $table->integer('user_id')->unsigned();
     $table->string('title');
     $table->string('slug');
@@ -121,6 +121,16 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 - posts_id_trg (trigger)
 
 > Check the starter kit provided to see how it works.
+
+###Auto-Increment Start With Option
+- You can now set the auto-increment starting value by setting the `start` attribute.
+```php
+Schema::create('posts', function($table)
+{
+    $table->increments('id')->start(10000);
+    $table->string('title');
+}
+```
 
 ####Inserting Records Into A Table With An Auto-Incrementing ID
 
