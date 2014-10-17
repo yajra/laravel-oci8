@@ -88,18 +88,11 @@ class OracleConnector extends Connector implements ConnectorInterface
             $config['protocol'] = strtoupper($config['protocol']);
         }
 
-        // check protocol
-        if (!isset($config['protocol'])) {
-            $config['protocol'] = 'TCP';
-        } else {
-            $config['protocol'] = strtoupper($config['protocol']);
-        }
-
         // check host config
         if (isset($config['hostname']) and !isset($config['host'])) $config['host'] = $config['hostname'];
 
         // check tns
-        if ( empty($config['tns']) )
+        if (empty($config['tns']))
         {
             // Create a description to locate the database to connect to
             $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
