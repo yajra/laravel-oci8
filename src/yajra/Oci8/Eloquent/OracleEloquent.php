@@ -28,8 +28,7 @@ class OracleEloquent extends Model {
 	 */
 	public function getSequenceName()
 	{
-		if ($this->sequence)
-			return $this->sequence;
+		if ($this->sequence) return $this->sequence;
 
 		return $this->getTable() . '_' . $this->getKeyName() . '_seq';
 	}
@@ -66,12 +65,18 @@ class OracleEloquent extends Model {
 	 */
 	public function update(array $attributes = array())
 	{
-		if ( ! $this->exists)
+		if (!$this->exists)
 		{
 			// If dirty attributes contains binary field
 			// extract binary fields to new array
-			if ( $binaries = $this->wrapBinary($dirty) )
-				return $this->newQuery()->updateLob($attributes, $binaries);
+			if ($binaries = $this->wrapBinary($dirty))
+			{
+				return $this->newQuery()->updateLob($attributes, $binaries, $this->getKeyName());
+			}
+			else
+			{
+				return $this->newQuery()->update($attributes);
+			}
 
 			return $this->newQuery()->update($attributes);
 		}
@@ -86,7 +91,7 @@ class OracleEloquent extends Model {
 	 * @param  array $options
 	 * @return bool|null
 	 */
-	protected function performUpdate(Builder $query, array $options)
+	protected function performUpdate(Builder $query, array $options = array())
 	{
 		$dirty = $this->getDirty();
 
@@ -119,7 +124,7 @@ class OracleEloquent extends Model {
 				// extract binary fields to new array
 				if ( $binaries = $this->wrapBinary($dirty) )
 				{
-					$this->setKeysForSaveQuery($query)->updateLob($dirty, $binaries);
+					$this->setKeysForSaveQuery($query)->updateLob($dirty, $binaries, $this->getKeyName());
 				}
 				else
 				{
@@ -140,7 +145,7 @@ class OracleEloquent extends Model {
 	 * @param  array $options
 	 * @return bool
 	 */
-	protected function performInsert(Builder $query, array $options)
+	protected function performInsert(Builder $query, array $options = array())
 	{
 		if ($this->fireModelEvent('creating') === false) return false;
 
@@ -169,9 +174,9 @@ class OracleEloquent extends Model {
 		{
 			// If attributes contains binary field
 			// extract binary fields to new array
-			if ( $binaries = $this->wrapBinary($attributes) )
+			if ($binaries = $this->wrapBinary($attributes))
 			{
-				$query->insertLob($attributes);
+				$query->insertLob($attributes, $binaries, $this->getKeyName());
 			}
 			else
 			{
@@ -198,10 +203,10 @@ class OracleEloquent extends Model {
 	 */
 	protected function insertAndSetId(Builder $query, $attributes)
 	{
-		if ( $binaries = $this->wrapBinary($attributes) )
+		if ($binaries = $this->wrapBinary($attributes))
 		{
 			$query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
-			$id = $query->getModel()->getConnection()->lastInsertId( $this->getSequenceName() );
+			$id = $query->getModel()->getConnection()->lastInsertId($this->getSequenceName());
 		}
 		else
 		{
@@ -222,7 +227,7 @@ class OracleEloquent extends Model {
 		foreach ($attributes as $key => $value)
 		{
 			// if attribute is in binary field list
-			if ( in_array($key, $this->binaries) )
+			if (in_array($key, $this->binaries))
 			{
 				return true;
 			}
@@ -245,7 +250,7 @@ class OracleEloquent extends Model {
 		{
 			foreach ($attributes as $key => $value)
 			{
-				if ( in_array($key, $this->binaries) )
+				if (in_array($key, $this->binaries))
 				{
 					$binaries[$key] = $value;
 					unset($attributes[$key]);
