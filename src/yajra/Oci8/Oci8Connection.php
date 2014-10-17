@@ -1,6 +1,8 @@
 <?php namespace yajra\Oci8;
 
 use Illuminate\Database\Connection;
+use Doctrine\DBAL\Connection as DoctrineConnection;
+use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
@@ -56,6 +58,8 @@ class Oci8Connection extends Connection {
 	 */
 	public function getSchemaBuilder()
 	{
+		if (is_null($this->schemaGrammar)) { $this->useDefaultSchemaGrammar(); }
+
 		return new SchemaBuilder($this);
 	}
 
@@ -252,6 +256,30 @@ class Oci8Connection extends Connection {
 				sequence_name=upper('{$name}')
 				and sequence_owner=upper(user)
 			");
+	}
+
+	/**
+	 * Get the Doctrine DBAL database connection instance.
+	 *
+	 * @return \Doctrine\DBAL\Connection
+	 */
+	public function getDoctrineConnection()
+	{
+		$driver = $this->getDoctrineDriver();
+
+		$data = array('pdo' => $this->pdo, 'user' => $this->getConfig('database'));
+
+		return new DoctrineConnection($data, $driver);
+	}
+
+	/**
+	 * Get the Doctrine DBAL driver.
+	 *
+	 * @return \Doctrine\DBAL\Driver\OCI8\Driver
+	 */
+	protected function getDoctrineDriver()
+	{
+		return new DoctrineDriver;
 	}
 
 }
