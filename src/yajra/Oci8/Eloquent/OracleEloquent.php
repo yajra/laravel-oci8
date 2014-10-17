@@ -5,6 +5,10 @@ use Illuminate\Database\Eloquent\Builder;
 use yajra\Oci8\Oci8Connection;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 
+/**
+ * @method {array} wrapBinary() wrapBinary(array $attributes)
+ * @method {boolean} checkBinary() checkBinary(array $attributes)
+ */
 class OracleEloquent extends Model {
 
 	/**
