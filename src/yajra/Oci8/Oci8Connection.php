@@ -32,16 +32,6 @@ class Oci8Connection extends Connection {
 	}
 
 	/**
-	 * Get the schema grammar used by the connection.
-	 *
-	 * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
-	 */
-	public function getSchemaGrammar()
-	{
-		return $this->getDefaultSchemaGrammar();
-	}
-
-	/**
  	 * Get the default post processor instance.
  	 *
  	 * @return \yajra\Oci8\Query\Processors\OracleProcessor
