@@ -14,7 +14,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get the default query grammar instance.
 	 *
-	 * @return \Illuminate\Database\Grammar
+	 * @return \yajra\Oci8\Query\Grammars\OracleGrammar
 	 */
 	protected function getDefaultQueryGrammar()
 	{
@@ -24,7 +24,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get the default schema grammar instance.
 	 *
-	 * @return \Illuminate\Database\Grammar
+	 * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
 	 */
 	protected function getDefaultSchemaGrammar()
 	{
@@ -34,7 +34,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get the schema grammar used by the connection.
 	 *
-	 * @return \Illuminate\Database\Grammar
+	 * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
 	 */
 	public function getSchemaGrammar()
 	{
@@ -44,7 +44,7 @@ class Oci8Connection extends Connection {
 	/**
  	 * Get the default post processor instance.
  	 *
- 	 * @return Query\Processors\OracleProcessor
+ 	 * @return \yajra\Oci8\Query\Processors\OracleProcessor
  	 */
  	protected function getDefaultPostProcessor()
  	{
@@ -54,7 +54,7 @@ class Oci8Connection extends Connection {
 	/**
 	 * Get a schema builder instance for the connection.
 	 *
-	 * @return Schema\OracleBuilder
+	 * @return \yajra\Oci8\Schema\OracleBuilder
 	 */
 	public function getSchemaBuilder()
 	{
@@ -67,7 +67,7 @@ class Oci8Connection extends Connection {
 	 * Begin a fluent query against a database table.
 	 *
 	 * @param  string  $table
-	 * @return \Illuminate\Database\Query\Builder
+	 * @return \yajra\Oci8\Query\OracleBuilder
 	 */
 	public function table($table)
 	{
