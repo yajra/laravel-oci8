@@ -136,8 +136,7 @@ class Oci8Connection extends Connection {
 		// check if a valid name and sequence exists
 		if (!$name or !self::checkSequence($name)) return 0;
 
-		$data = self::select("select {$name}.currval as id from dual");
-		return $data[0]->id;
+		return self::selectOne("select {$name}.currval as id from dual")->id;
 	}
 
 	/**
@@ -150,8 +149,7 @@ class Oci8Connection extends Connection {
 	{
 		if (!$name) return 0;
 
-		$data = self::select("SELECT $name.NEXTVAL as id FROM DUAL");
-		return $data[0]->id;
+		return self::selectOne("SELECT $name.NEXTVAL as id FROM DUAL")->id;
 	}
 
 	/**
@@ -176,8 +174,7 @@ class Oci8Connection extends Connection {
 	 */
 	public function createAutoIncrementTrigger($table, $column, $triggerName, $sequenceName)
 	{
-		if (!$table or !$column or !$triggerName or !$sequenceName)
-			return 0;
+		if (!$table or !$column or !$triggerName or !$sequenceName) return 0;
 
 		return self::statement("
 			create trigger $triggerName
@@ -198,8 +195,7 @@ class Oci8Connection extends Connection {
 	 */
 	public function dropTrigger($name)
 	{
-		if (!$name)
-			return 0;
+		if (!$name) return 0;
 
 		return self::statement("
 			declare
@@ -223,7 +219,7 @@ class Oci8Connection extends Connection {
 	{
 		if (!$table) return '';
 
-		$data = self::select("
+		$data = self::selectOne("
 			SELECT cols.column_name
 			FROM all_constraints cons, all_cons_columns cols
 			WHERE cols.table_name = upper('{$table}')
@@ -235,7 +231,7 @@ class Oci8Connection extends Connection {
 			ORDER BY cols.table_name, cols.position
 			");
 
-		if (count($data)) return $data[0]->column_name;
+		if (count($data)) return $data->column_name;
 
 		return '';
 	}
@@ -250,7 +246,7 @@ class Oci8Connection extends Connection {
 	{
 		if (!$name) return false;
 
-		return self::select("select *
+		return self::selectOne("select *
 			from all_sequences
 			where
 				sequence_name=upper('{$name}')
