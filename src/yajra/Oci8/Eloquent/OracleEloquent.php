@@ -77,10 +77,6 @@ class OracleEloquent extends Model {
 			{
 				return $this->newQuery()->updateLob($attributes, $binaries, $this->getKeyName());
 			}
-			else
-			{
-				return $this->newQuery()->update($attributes);
-			}
 
 			return $this->newQuery()->update($attributes);
 		}
