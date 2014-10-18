@@ -17,6 +17,7 @@ class OracleEloquent extends Model {
 	 * @var array
 	 */
 	protected $binaries = array();
+	protected $wrapBinaries = array();
 
 	/**
 	 * Sequence name variable
@@ -73,9 +74,9 @@ class OracleEloquent extends Model {
 		{
 			// If dirty attributes contains binary field
 			// extract binary fields to new array
-			if ($binaries = $this->wrapBinary($dirty))
+			if ($this->wrapBinary($dirty))
 			{
-				return $this->newQuery()->updateLob($attributes, $binaries, $this->getKeyName());
+				return $this->newQuery()->updateLob($attributes, $this->wrapBinaries, $this->getKeyName());
 			}
 
 			return $this->newQuery()->update($attributes);
@@ -122,9 +123,9 @@ class OracleEloquent extends Model {
 			{
 				// If dirty attributes contains binary field
 				// extract binary fields to new array
-				if ( $binaries = $this->wrapBinary($dirty) )
+				if ($this->wrapBinary($dirty))
 				{
-					$this->setKeysForSaveQuery($query)->updateLob($dirty, $binaries, $this->getKeyName());
+					$this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
 				}
 				else
 				{
@@ -174,9 +175,9 @@ class OracleEloquent extends Model {
 		{
 			// If attributes contains binary field
 			// extract binary fields to new array
-			if ($binaries = $this->wrapBinary($attributes))
+			if ($this->wrapBinary($attributes))
 			{
-				$query->insertLob($attributes, $binaries, $this->getKeyName());
+				$query->insertLob($attributes, $this->wrapBinaries, $this->getKeyName());
 			}
 			else
 			{
@@ -250,14 +251,14 @@ class OracleEloquent extends Model {
 		{
 			foreach ($attributes as $key => $value)
 			{
-				if (in_array($key, $this->binaries))
+				if (in_array($key, $this->wrapBinaries))
 				{
 					$binaries[$key] = $value;
 					unset($attributes[$key]);
 				}
 			}
 		}
-		return $binaries;
+		return $this->wrapBinaries = $binaries;
 	}
 
 }
