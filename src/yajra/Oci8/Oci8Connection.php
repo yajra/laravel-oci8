@@ -97,4 +97,13 @@ class Oci8Connection extends Connection {
 		return new DoctrineDriver;
 	}
 
+    /**
+     * @param QueryGrammar $grammar
+     * @return QueryGrammar
+     */
+    public function withTablePrefix(QueryGrammar $grammar)
+    {
+       return parent::withTablePrefix($grammar);
+    }
+
 }
