@@ -9,7 +9,7 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/yajra/laravel-oci8/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/yajra/laravel-oci8/?branch=master)
 [![License](https://poser.pugx.org/yajra/laravel-oci8/license.svg)](https://packagist.org/packages/yajra/laravel-oci8)
 
-Laravel-OCI8 is an Oracle Database Driver package for [Laravel 4](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
+Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 
 The [yajra/laravel-pdo-via-oci8](https://github.com/yajra/laravel-pdo-via-oci8) package is a simple userspace driver for PDO that uses the tried and
 tested [OCI8](http://php.net/oci8) functions instead of using the still experimental and not all that functional
@@ -19,7 +19,6 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Starter Kit](#starter-kit)
 - [Auto-Increment Support](#auto-increment-support)
 - [Examples](#examples)
 - [Support](#support)
@@ -60,7 +59,7 @@ Once Composer has installed or updated your packages you need to register the se
 'yajra\Oci8\Oci8ServiceProvider'
 ```
 
-Then setup a valid database configuration using the driver "oracle". Configure your connection as usual with:
+Then setup a valid database configuration using the driver `oracle`. Configure your connection as usual with:
 
 ```php
 'oracle' => array(
@@ -74,36 +73,13 @@ Then setup a valid database configuration using the driver "oracle". Configure y
     'prefix' => '',
 )
 ```
->If your database uses SERVICE NAME alias, use the config below:
-```php
-'oracle' => array(
-    'driver' => 'oracle',
-    'host' => 'oracle.host',
-    'port' => '1521',
-    'database' => 'xe',
-    'service_name' => 'sid_alias',
-    'username' => 'hr',
-    'password' => 'hr',
-    'charset' => '',
-    'prefix' => '',
-)
-```
-
 
 And run your laravel installation...
-
-###Starter-Kit
-To help you kickstart with Laravel, you may want to use the starter kit package below:
-- [Laravel 4 Starter Kit](https://github.com/yajra/laravel4-starter-kit)
-- [Laravel 4.1 Starter Kit](https://github.com/yajra/laravel-4.1-starter-kit)
-- [Laravel 4.2 Starter Kit](https://github.com/yajra/laravel-admin-template)
-
-Starter kit package above were forked from [brunogaspar/laravel4-starter-kit](https://github.com/brunogaspar/laravel4-starter-kit). No need to re-invent the wheel.
 
 ###Auto-Increment Support
 To support auto-increment in Laravel-OCI8, you must meet the following requirements:
 - Table must have a corresponding sequence with this format ```{$table}_{$column}_seq```
-- Sequence next value are executed before the insert query. ```DB::nextSequenceValue("{$table}_{$column}_seq")```
+- Sequence next value are executed before the insert query.
 
 ***********
 
@@ -153,52 +129,7 @@ Schema::create('posts', function($table)
 
 > **Note:** When using the insertGetId method, you can specify the auto-incrementing column name as the second parameter in insertGetId function. It will default to "id" if not specified.
 
-###Eloquent
-**Eloquent (multiple insert)**
-```php
-// Initialize empty array
-$posts = array();
 
-$common = array(
-    'user_id' => 1,
-);
-
-// Blog post 1
-$date = new DateTime;
-$posts[] = array_merge($common, array(
-    'title'      => 'Lorem ipsum dolor sit amet',
-    'slug'       => 'lorem-ipsum-dolor-sit-amet',
-    'content'    => 'lorem-ipsum-dolor-sit-amet',
-    'created_at' => $date->modify('-10 day'),
-    'updated_at' => $date->modify('-10 day'),
-));
-
-// Blog post 2
-$date = new DateTime;
-$posts[] = array_merge($common, array(
-    'title'      => 'Vivendo suscipiantur vim te vix',
-    'slug'       => 'vivendo-suscipiantur-vim-te-vix',
-    'content'    => 'vivendo-suscipiantur-vim-te-vix',
-    'created_at' => $date->modify('-4 day'),
-    'updated_at' => $date->modify('-4 day'),
-));
-
-// Insert the blog posts
-Post::insert($posts);
-```
-
-**Eloquent getting auto-increment inserted id**
-```php
-$post = new Post;
-$post->user_id = 1;
-$post->title = 'title';
-$post->slug = 'slug';
-$post->content = 'content';
-$post->save();
-
-// to get the inserted id
-$id = $post->id;
-```
 ###Oracle Blob
 Querying a blob field will now load the value instead of the OCI-Lob object.
 ```php
@@ -278,28 +209,12 @@ Route::post('save-post', function()
 
 > Limitation: Saving multiple records with a blob field like `Post::insert($posts)` is not yet supported!
 
-###Oracle Sequence
-```php
-// creating a sequence
-DB::createSequence('seq_name');
-// deleting a sequence
-DB::dropSequence('seq_name');
-// check if a sequence
-DB::checkSequence('seq_name');
-// get new id from sequence
-$id = DB::nextSequenceValue('seq_name')
-// get last inserted id
-// Note: you must execute an insert statement using a sequence to be able to use this function
-$id = DB::lastInsertId('seq_name');
-// or
-$id = DB::currentSequenceValue('seq_name');
-```
 
 ###Date Formatting
 > (Note: Oracle's `DATE` & `TIMESTAMP` format is set to `YYYY-MM-DD HH24:MI:SS` by default to match PHP's common date format)
 
 ```php
-// set oracle session date format
+// set oracle session date and timestamp format
 DB::setDateFormat('MM/DD/YYYY');
 ```
 
@@ -307,7 +222,7 @@ DB::setDateFormat('MM/DD/YYYY');
 
 Just like the built-in database drivers, you can use the connection method to access the oracle database(s) you setup in the database config file.
 
-See [Laravel 4 Database Basic Docs](http://laravel.com/docs/database) for more information.
+See [Laravel Database Basic Docs](http://laravel.com/docs/database) for more information.
 
 
 ###Using the package outside of Laravel
