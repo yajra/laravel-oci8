@@ -13,7 +13,7 @@ use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 class Oci8Connection extends Connection {
 
     /**
-     * @return QueryGrammar
+     * @inheritdoc
      */
     protected function getDefaultQueryGrammar()
 	{
@@ -29,7 +29,7 @@ class Oci8Connection extends Connection {
     }
 
     /**
-     * @return SchemaGrammar
+     * @inheritdoc
      */
 	protected function getDefaultSchemaGrammar()
 	{
