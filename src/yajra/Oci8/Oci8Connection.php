@@ -11,41 +11,33 @@ use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 
 class Oci8Connection extends Connection {
 
-	/**
-	 * Get the default query grammar instance.
-	 *
-	 * @return \yajra\Oci8\Query\Grammars\OracleGrammar
-	 */
-	protected function getDefaultQueryGrammar()
+    /**
+     * @inheritdoc
+     */
+    protected function getDefaultQueryGrammar()
 	{
 		return $this->withTablePrefix(new QueryGrammar);
 	}
 
-	/**
-	 * Get the default schema grammar instance.
-	 *
-	 * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
-	 */
+    /**
+     * @inheritdoc
+     */
 	protected function getDefaultSchemaGrammar()
 	{
 		return $this->withTablePrefix(new SchemaGrammar);
 	}
 
-	/**
- 	 * Get the default post processor instance.
- 	 *
- 	 * @return \yajra\Oci8\Query\Processors\OracleProcessor
- 	 */
+    /**
+     * @inheritdoc
+     */
  	protected function getDefaultPostProcessor()
  	{
  		return new Processor;
  	}
 
-	/**
-	 * Get a schema builder instance for the connection.
-	 *
-	 * @return \yajra\Oci8\Schema\OracleBuilder
-	 */
+    /**
+     * @inheritdoc
+     */
 	public function getSchemaBuilder()
 	{
 		if (is_null($this->schemaGrammar)) { $this->useDefaultSchemaGrammar(); }
@@ -53,12 +45,9 @@ class Oci8Connection extends Connection {
 		return new SchemaBuilder($this);
 	}
 
-	/**
-	 * Begin a fluent query against a database table.
-	 *
-	 * @param  string  $table
-	 * @return \yajra\Oci8\Query\OracleBuilder
-	 */
+    /**
+     * @inheritdoc
+     */
 	public function table($table)
 	{
 		$processor = $this->getPostProcessor();
@@ -68,22 +57,18 @@ class Oci8Connection extends Connection {
 		return $query->from($table);
 	}
 
-	/**
-	 * function to set oracle's current session date format
-	 *
-	 * @param string $format
-	 */
+    /**
+     * @inheritdoc
+     */
 	public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
 		self::statement("alter session set NLS_DATE_FORMAT = '$format'");
 		self::statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
 	}
 
-	/**
-	 * Get the Doctrine DBAL database connection instance.
-	 *
-	 * @return \Doctrine\DBAL\Connection
-	 */
+    /**
+     * @inheritdoc
+     */
 	public function getDoctrineConnection()
 	{
 		$driver = $this->getDoctrineDriver();
@@ -93,11 +78,9 @@ class Oci8Connection extends Connection {
 		return new DoctrineConnection($data, $driver);
 	}
 
-	/**
-	 * Get the Doctrine DBAL driver.
-	 *
-	 * @return \Doctrine\DBAL\Driver\OCI8\Driver
-	 */
+    /**
+     * @inheritdoc
+     */
 	protected function getDoctrineDriver()
 	{
 		return new DoctrineDriver;
