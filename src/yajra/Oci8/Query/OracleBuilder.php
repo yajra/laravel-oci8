@@ -32,7 +32,7 @@ class OracleBuilder extends Builder {
     {
         parent::__construct($connection, $grammar, $processor);
     }
-    
+
     /**
 	 * Insert a new record and get the value of the primary key.
 	 *

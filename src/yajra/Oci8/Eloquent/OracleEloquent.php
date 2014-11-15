@@ -38,17 +38,28 @@ class OracleEloquent extends Model {
 		return $this->getTable() . '_' . $this->getKeyName() . '_seq';
 	}
 
-	/**
-	 * Set sequence name
-	 *
-	 * @param string $name
-	 */
+    /**
+     * Set sequence name
+     *
+     * @param string $name
+     * @return string
+     */
 	public function setSequenceName($name)
 	{
 		return $this->sequence = $name;
 	}
 
-	/**
+    /**
+     * Get the database connection for the model.
+     *
+     * @return Oci8Connection
+     */
+    public function getConnection()
+    {
+        return parent::getConnection();
+    }
+
+    /**
 	 * Get a new query builder instance for the connection.
 	 *
 	 * @return \Illuminate\Database\Query\Builder

@@ -12,7 +12,7 @@ use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 class Oci8Connection extends Connection {
 
     /**
-     * @inheritdoc
+     * @return QueryGrammar
      */
     protected function getDefaultQueryGrammar()
 	{
@@ -20,7 +20,15 @@ class Oci8Connection extends Connection {
 	}
 
     /**
-     * @inheritdoc
+     * @return QueryGrammar
+     */
+    public function getQueryGrammar()
+    {
+        return $this->queryGrammar;
+    }
+
+    /**
+     * @return SchemaGrammar
      */
 	protected function getDefaultSchemaGrammar()
 	{
@@ -28,19 +36,22 @@ class Oci8Connection extends Connection {
 	}
 
     /**
-     * @inheritdoc
+     * @return Processor
      */
- 	protected function getDefaultPostProcessor()
+    protected function getDefaultPostProcessor()
  	{
  		return new Processor;
  	}
 
     /**
-     * @inheritdoc
+     * @return SchemaBuilder
      */
-	public function getSchemaBuilder()
+    public function getSchemaBuilder()
 	{
-		if (is_null($this->schemaGrammar)) { $this->useDefaultSchemaGrammar(); }
+		if (is_null($this->schemaGrammar))
+        {
+            $this->useDefaultSchemaGrammar();
+        }
 
 		return new SchemaBuilder($this);
 	}
@@ -58,18 +69,18 @@ class Oci8Connection extends Connection {
 	}
 
     /**
-     * @inheritdoc
+     * @param string $format
      */
-	public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
+    public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
 		self::statement("alter session set NLS_DATE_FORMAT = '$format'");
 		self::statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
 	}
 
     /**
-     * @inheritdoc
+     * @return DoctrineConnection
      */
-	public function getDoctrineConnection()
+    public function getDoctrineConnection()
 	{
 		$driver = $this->getDoctrineDriver();
 
@@ -79,9 +90,9 @@ class Oci8Connection extends Connection {
 	}
 
     /**
-     * @inheritdoc
+     * @return DoctrineDriver
      */
-	protected function getDoctrineDriver()
+    protected function getDoctrineDriver()
 	{
 		return new DoctrineDriver;
 	}
