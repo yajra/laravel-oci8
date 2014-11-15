@@ -35,7 +35,7 @@ class OracleAutoIncrementHelper {
 
 		// create sequence for auto increment
 		$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
-		$this->createSequence($sequenceName, $start);
+		$this->createSequence($sequenceName, $start, $column->nocache);
 
         // create trigger for auto increment work around
         $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
@@ -90,13 +90,16 @@ class OracleAutoIncrementHelper {
 	 *
 	 * @param  string  $name
 	 * @param  integer $start
+	 * @param  boolean $nocache
 	 * @return boolean
 	 */
-	public function createSequence($name, $start = 1)
+	public function createSequence($name, $start = 1, $nocache = false)
 	{
 		if (!$name) return false;
 
-		return $this->connection->statement("create sequence {$name} start with {$start}");
+		$nocache = $nocache ? 'nocache' : '';
+
+		return $this->connection->statement("create sequence {$name} start with {$start} {$nocache}");
 	}
 
 	/**
