@@ -1,4 +1,4 @@
-# Laravel 4 Oracle (OCI8) DB Support
+# Laravel 4|5 Oracle (OCI8) DB Support
 
 ###Laravel-OCI8
 
@@ -32,15 +32,26 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 
 ###Installation
 
+##Laravel 4.2 and below
 Add `yajra/laravel-oci8` as a requirement to composer.json:
 
 ```json
 {
     "require": {
-        "yajra/laravel-oci8": "1.*"
+        "yajra/laravel-oci8": "~1.0"
     }
 }
 ```
+
+##Laravel 5.0 and above
+```
+{
+    "require": {
+        "yajra/laravel-oci8": "~2.0"
+    }
+}
+```
+
 And then run `composer update`
 
 Once Composer has installed or updated your packages you need to register the service provider. Open up `app/config/app.php` and find the `providers` key and add:
