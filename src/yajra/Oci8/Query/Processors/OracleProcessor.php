@@ -30,7 +30,7 @@ class OracleProcessor extends Processor {
         // set PDO statement property
         $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
 
-        // bind output param for the returning cluase
+        // bind output param for the returning clause
         $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
 
         // execute statement
