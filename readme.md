@@ -26,23 +26,10 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 - [Credits](#credits)
 
 ###Requirements
-- PHP >= 5.3
+- PHP >= 5.4
 - PHP [OCI8](http://php.net/oci8) extension
 
 ###Installation
-
-##Laravel 4.2 and below
-Add `yajra/laravel-oci8` as a requirement to composer.json:
-
-```json
-{
-    "require": {
-        "yajra/laravel-oci8": "~1.0"
-    }
-}
-```
-
-##Laravel 5.0 and above
 ```
 {
     "require": {
