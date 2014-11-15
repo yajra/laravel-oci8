@@ -28,25 +28,7 @@ class OracleProcessor extends Processor {
         $id = 0;
 
         // set PDO statement property
-        $this->prepareStatement($query, $sql);
-
-        // bind each parameter from the values array to their location
-        foreach ($values as $value)
-        {
-            // try to determine type of result
-            if (is_int($value))
-               $param = PDO::PARAM_INT;
-            elseif (is_bool($value))
-               $param = PDO::PARAM_BOOL;
-            elseif (is_null($value))
-               $param = PDO::PARAM_NULL;
-            else
-               $param = PDO::PARAM_STR;
-
-            $this->statement->bindValue($counter, ($value), $param);
-            // increment counter
-            $counter++;
-        }
+        $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
 
         // bind output param for the returning cluase
         $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
@@ -76,29 +58,11 @@ class OracleProcessor extends Processor {
         $query->getConnection()->getPdo()->beginTransaction();
 
         // set PDO statement property
-        $this->prepareStatement($query, $sql);
-
-        // bind each parameter from the values array to their location
-        foreach($values as $value)
-        {
-            // try to determine type of result
-            if (is_int($value))
-               $param = PDO::PARAM_INT;
-            elseif (is_bool($value))
-               $param = PDO::PARAM_BOOL;
-            elseif (is_null($value))
-               $param = PDO::PARAM_NULL;
-            else
-               $param = PDO::PARAM_STR;
-
-            $this->statement->bindValue($counter, ($value), $param);
-            // increment counter
-            $counter++;
-        }
+        $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
 
         for ($i=0; $i < count($binaries); $i++)
         {
-            // bind blob decriptor
+            // bind blob descriptor
             $this->statement->bindParam($counter, $lob[$i], PDO::PARAM_LOB);
             $counter++;
         }
@@ -137,11 +101,31 @@ class OracleProcessor extends Processor {
 
     /**
      * @param Builder $query
-     * @param PDOStatement
+     * @param $sql
+     * @param array $values
+     * @param $counter
+     * @internal param $PDOStatement
      */
-    protected function prepareStatement(Builder $query, $sql)
+    protected function prepareStatementAndBindValues(Builder $query, $sql, array $values, &$counter)
     {
         $this->statement = $query->getConnection()->getPdo()->prepare($sql);
+        // bind each parameter from the values array to their location
+        foreach($values as $value)
+        {
+            // try to determine type of result
+            if (is_int($value))
+                $param = PDO::PARAM_INT;
+            elseif (is_bool($value))
+                $param = PDO::PARAM_BOOL;
+            elseif (is_null($value))
+                $param = PDO::PARAM_NULL;
+            else
+                $param = PDO::PARAM_STR;
+
+            $this->statement->bindValue($counter, ($value), $param);
+            // increment counter
+            $counter++;
+        }
     }
 
 }
