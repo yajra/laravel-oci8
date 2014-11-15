@@ -106,8 +106,8 @@ class Oci8Connection extends Connection {
 	}
 
     /**
-     * @param QueryGrammar $grammar
-     * @return QueryGrammar
+     * @param QueryGrammar|SchemaGrammar $grammar
+     * @return QueryGrammar|SchemaGrammar
      */
     public function withTablePrefix(QueryGrammar $grammar)
     {
