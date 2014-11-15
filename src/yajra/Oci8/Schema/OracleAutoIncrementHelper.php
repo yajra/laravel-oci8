@@ -45,10 +45,10 @@ class OracleAutoIncrementHelper {
 	/**
 	 * get qualified autoincrement column
 	 *
-	 * @param  Blueprint $table
+	 * @param  Blueprint $blueprint
 	 * @return Fluent|null
 	 */
-	public function getQualifiedAutoIncrementColumn(Blueprint $table)
+	public function getQualifiedAutoIncrementColumn(Blueprint $blueprint)
 	{
 		$columns = $blueprint->getColumns();
 
