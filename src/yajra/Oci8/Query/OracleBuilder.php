@@ -1,10 +1,39 @@
 <?php namespace yajra\Oci8\Query;
 
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
+use yajra\Oci8\Query\Grammars\OracleGrammar;
+use yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder {
 
-	/**
+    /**
+     * The database query grammar instance.
+     *
+     * @var OracleGrammar
+     */
+    protected $grammar;
+
+    /**
+     * The database query post processor instance.
+     *
+     * @var OracleProcessor
+     */
+    protected $processor;
+
+    /**
+     * @param ConnectionInterface $connection
+     * @param OracleGrammar $grammar
+     * @param OracleProcessor $processor
+     */
+    public function __construct(ConnectionInterface $connection,
+                                OracleGrammar $grammar,
+                                OracleProcessor $processor)
+    {
+        parent::__construct($connection, $grammar, $processor);
+    }
+    
+    /**
 	 * Insert a new record and get the value of the primary key.
 	 *
 	 * @param  array   $values
