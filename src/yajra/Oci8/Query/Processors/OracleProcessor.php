@@ -2,13 +2,14 @@
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
+use yajra\Pdo\Oci8\Statement;
 use PDO;
 
 class OracleProcessor extends Processor {
 
     /**
      * DB Statement
-     * @var Oci8Statement
+     * @var Statement
      */
     protected $statement;
 
@@ -26,8 +27,8 @@ class OracleProcessor extends Processor {
         $counter = 0;
         $id = 0;
 
-        // get PDO statement object
-        $this->statement = $query->getConnection()->getPdo()->prepare($sql);
+        // set PDO statement property
+        $this->prepareStatement($query, $sql);
 
         // bind each parameter from the values array to their location
         foreach ($values as $value)
@@ -74,8 +75,8 @@ class OracleProcessor extends Processor {
         // begin transaction
         $query->getConnection()->getPdo()->beginTransaction();
 
-        // get PDO statement object
-        $this->statement = $query->getConnection()->getPdo()->prepare($sql);
+        // set PDO statement property
+        $this->prepareStatement($query, $sql);
 
         // bind each parameter from the values array to their location
         foreach($values as $value)
@@ -132,6 +133,15 @@ class OracleProcessor extends Processor {
         $query->getConnection()->getPdo()->commit();
 
         return (int) $id;
+    }
+
+    /**
+     * @param Builder $query
+     * @param Statement
+     */
+    protected function prepareStatement(Builder $query, $sql)
+    {
+        $this->statement = $query->getConnection()->getPdo()->prepare($sql);
     }
 
 }
