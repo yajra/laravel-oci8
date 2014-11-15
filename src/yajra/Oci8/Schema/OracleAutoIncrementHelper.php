@@ -16,37 +16,51 @@ class OracleAutoIncrementHelper {
 	/**
 	 * create sequence and trigger for autoIncrement support
 	 *
-	 * @param  \Illuminate\Database\Schema\Blueprint $blueprint
+	 * @param  Blueprint $blueprint
 	 * @param  string $table
 	 * @return null
 	 */
 	public function createAutoIncrementObjects(Blueprint $blueprint, $table)
 	{
-		// create sequence and trigger object
+		$column = $this->getQualifiedAutoIncrementColumn($blueprint);
+
+		// return if no qualified AI column
+		if (is_null($column)) return;
+
+		$col = $column->name;
+		$start = isset($column->start) ? $column->start : 1;
+
+		// get table prefix
+		$prefix = $this->connection->getTablePrefix();
+
+		// create sequence for auto increment
+		$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
+		$this->createSequence($sequenceName, $start);
+
+        // create trigger for auto increment work around
+        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
+		$this->createAutoIncrementTrigger($prefix . $table, $col, $triggerName, $sequenceName);
+	}
+
+	/**
+	 * get qualified autoincrement column
+	 *
+	 * @param  Blueprint $table
+	 * @return Fluent|null
+	 */
+	public function getQualifiedAutoIncrementColumn(Blueprint $table)
+	{
 		$columns = $blueprint->getColumns();
 
-		$col = "";
-		$start = 1;
 		// search for primary key / autoIncrement column
 		foreach ($columns as $column) {
 			// if column is autoIncrement set the primary col name
 			if ($column->autoIncrement) {
-				$col = $column->name;
-				$start = isset($column->start) ? $column->start : 1;
+				return $column;
 			}
 		}
 
-		// if primary key col is set, create auto increment objects
-		if (isset($col) and !empty($col)) {
-			// add table prefix to table name
-			$prefix = $this->connection->getTablePrefix();
-			// create sequence for auto increment
-			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
-			$this->createSequence($sequenceName, $start);
-	        // create trigger for auto increment work around
-	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-			$this->createAutoIncrementTrigger($prefix . $table, $col, $triggerName, $sequenceName);
-		}
+		return null;
 	}
 
 	/**
@@ -59,7 +73,7 @@ class OracleAutoIncrementHelper {
 		// drop sequence and trigger object
 		$prefix = $this->connection->getTablePrefix();
 		// get the actual primary column name from table
-		$col = $this->getPrimaryKey($prefix.$table);
+		$col = $this->getPrimaryKey($prefix . $table);
 		// if primary key col is set, drop auto increment objects
 		if (isset($col) and !empty($col)) {
 	      	// drop sequence for auto increment
