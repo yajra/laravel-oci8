@@ -7,15 +7,12 @@ use Closure;
 
 class OracleBuilder extends Builder {
 
-	protected $helper;
+	public $helper;
 
-	/**
-	 * Create a new database Schema manager.
-	 *
-	 * @param  \Illuminate\Database\Connection  $connection
-	 * @return void
-	 */
-	public function __construct(Connection $connection)
+    /**
+     * @param Connection $connection
+     */
+    public function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
 		$this->grammar = $connection->getSchemaGrammar();

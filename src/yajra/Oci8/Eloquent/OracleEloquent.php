@@ -217,8 +217,7 @@ class OracleEloquent extends Model {
 	{
 		if ($binaries = $this->wrapBinary($attributes))
 		{
-			$query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
-			$id = $query->getModel()->getConnection()->lastInsertId($this->getSequenceName());
+			$id = $query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
 		}
 		else
 		{
