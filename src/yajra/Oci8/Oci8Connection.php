@@ -44,6 +44,14 @@ class Oci8Connection extends Connection {
  	}
 
     /**
+     * @return Processor
+     */
+    public function getPostProcessor()
+    {
+        return parent::getPostProcessor();
+    }
+
+    /**
      * @return SchemaBuilder
      */
     public function getSchemaBuilder()
