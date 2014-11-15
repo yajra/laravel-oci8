@@ -94,7 +94,7 @@ class OracleAutoIncrementHelper {
 	public function dropSequence($name)
 	{
 		// check if a valid name and sequence exists
-		if (!$name or !$this->checkSequence($name)) return 0;
+		if (!$name or !$this->checkSequence($name)) return false;
 
 		return $this->connection->statement("
 			declare
@@ -157,7 +157,7 @@ class OracleAutoIncrementHelper {
 	 */
 	public function createAutoIncrementTrigger($table, $column, $triggerName, $sequenceName)
 	{
-		if (!$table or !$column or !$triggerName or !$sequenceName) return 0;
+		if (!$table or !$column or !$triggerName or !$sequenceName) return false;
 
 		return $this->connection->statement("
 			create trigger $triggerName
@@ -178,7 +178,7 @@ class OracleAutoIncrementHelper {
 	 */
 	public function dropTrigger($name)
 	{
-		if (!$name) return 0;
+		if (!$name) return false;
 
 		return $this->connection->statement("
 			declare
