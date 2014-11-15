@@ -5,10 +5,10 @@ use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use Illuminate\Database\Grammar;
 use yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
-use yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
-use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
-use yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
+use yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
+use yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
 
 class Oci8Connection extends Connection {
 

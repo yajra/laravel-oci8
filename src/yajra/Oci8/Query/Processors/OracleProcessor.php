@@ -2,14 +2,14 @@
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
-use yajra\Pdo\Oci8\Statement;
+use PDOStatement;
 use PDO;
 
 class OracleProcessor extends Processor {
 
     /**
      * DB Statement
-     * @var Statement
+     * @var PDOStatement
      */
     protected $statement;
 
@@ -137,7 +137,7 @@ class OracleProcessor extends Processor {
 
     /**
      * @param Builder $query
-     * @param Statement
+     * @param PDOStatement
      */
     protected function prepareStatement(Builder $query, $sql)
     {
