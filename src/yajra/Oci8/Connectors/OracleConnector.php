@@ -75,55 +75,39 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function getDsn(array $config)
     {
-        // check port
-        if (!isset($config['port'])) $config['port'] = '1521';
+        if (!empty($config['tns'])) return $config['tns'];
 
+        // check host
+        $config['host'] = !empty($config['host']) ? $config['host'] : $config['hostname'];
+        // check port
+        $config['port'] = !empty($config['port']) ? $config['port'] : '1521';
         // check protocol
-        if (!isset($config['protocol']))
+        $config['protocol'] = !empty($config['protocol']) ? $config['protocol'] : 'TCP';
+
+        // check if we will use Service Name
+        if (empty($config['service_name']))
         {
-            $config['protocol'] = 'TCP';
+            $service_param = 'SID = '.$config['database'];
         }
         else
         {
-            $config['protocol'] = strtoupper($config['protocol']);
+            $service_param = 'SERVICE_NAME = '.$config['service_name'];
         }
 
-        // check host config
-        if (isset($config['hostname']) and !isset($config['host'])) $config['host'] = $config['hostname'];
-
-        // check tns
-        if (empty($config['tns']))
-        {
-            // Create a description to locate the database to connect to
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =(SERVICE_NAME = {$config['database']})))";
-            // check if we will use Service Name
-            if( empty($config['service_name']) )
-            {
-                $service_param = 'SID = '.$config['database'];
-            }
-            else
-            {
-                $service_param = 'SERVICE_NAME = '.$config['service_name'];
-            }
-
-            $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
-        }
+        $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
 
         // check multiple connections/host, comma delimiter
-        if (isset($config['host']))
+        $host = explode(',', $config['host']);
+        if (count($host) > 1)
         {
-            $host = explode(',', $config['host']);
-            if (count($host) > 1)
+            $address  = "";
+            for ($i = 0;$i < count($host); $i++)
             {
-                $address  = "";
-                for($i = 0;$i < count($host); $i++)
-                {
-                   $address .= '(ADDRESS = (PROTOCOL = '.$config["protocol"].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
-                }
-
-                // create a tns with multiple address connection
-                $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+               $address .= '(ADDRESS = (PROTOCOL = '.$config["protocol"].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
             }
+
+            // create a tns with multiple address connection
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
         }
 
         // return generated tns
