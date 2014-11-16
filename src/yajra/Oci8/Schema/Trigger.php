@@ -1,6 +1,6 @@
 <?php namespace yajra\Oci8\Schema;
 
-use yajra\Oci8\Oci8Connection as Connection;
+use Illuminate\Database\Connection;
 
 class Trigger {
 
