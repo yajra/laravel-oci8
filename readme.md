@@ -237,7 +237,7 @@ See [Laravel Database Basic Docs](http://laravel.com/docs/database) for more inf
 
 ###Using the package outside of Laravel
 
-- add `"yajra/laravel-oci8": "1.*"` on your composer then run `composer install`
+- add `"yajra/laravel-oci8": "~2.0"` on your composer then run `composer install`
 - create `database.php` and add the code below
 ```php
 require 'vendor/autoload.php';
