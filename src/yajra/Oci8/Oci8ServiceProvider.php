@@ -1,5 +1,6 @@
 <?php namespace yajra\Oci8;
 
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 use yajra\Oci8\Connectors\OracleConnector as Connector;
 use Config;
@@ -46,13 +47,24 @@ class Oci8ServiceProvider extends ServiceProvider {
 					$connector = new Connector();
 					$connection = $connector->connect($config);
 					$db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
-		            // set oracle date format to match PHP's date
+		            // set oracle date format to match PHP date
 					$db->setDateFormat('YYYY-MM-DD HH24:MI:SS');
-					return $db;
+
+                    // register oracle helper
+                    $this->app->bind('oracle', function() use($db)
+                    {
+                        return new Schema\OracleAutoIncrementHelper($db);
+                    });
+
+                    // register oracle helper facade
+                    $loader = AliasLoader::getInstance();
+                    $loader->alias('Oracle', 'yajra\Oci8\OracleFacade');
+
+                    return $db;
 				});
 			});
 		}
-	}
+    }
 
 	/**
 	 * Get the services provided by the provider.
@@ -61,7 +73,7 @@ class Oci8ServiceProvider extends ServiceProvider {
 	 */
 	public function provides()
 	{
-		return array();
+		return array('oracle');
 	}
 
 }

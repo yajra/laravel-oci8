@@ -1,15 +1,19 @@
 <?php namespace yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
+use yajra\Oci8\Oci8Connection as Connection;
 use Illuminate\Database\Schema\Blueprint;
 
 class OracleAutoIncrementHelper {
 
 	protected $connection;
+    protected $trigger;
+    protected $sequence;
 
-	public function __construct(Connection $connection)
+    public function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
+        $this->sequence = new Sequence($connection);
+        $this->trigger = new Trigger($connection);
 	}
 
 	/**
@@ -34,11 +38,11 @@ class OracleAutoIncrementHelper {
 
 		// create sequence for auto increment
 		$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
-		$this->createSequence($sequenceName, $start, $column->nocache);
+		$this->sequence->create($sequenceName, $start, $column->nocache);
 
         // create trigger for auto increment work around
         $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-		$this->createAutoIncrementTrigger($prefix . $table, $col, $triggerName, $sequenceName);
+		$this->trigger->autoIncrement($prefix . $table, $col, $triggerName, $sequenceName);
 	}
 
 	/**
@@ -80,136 +84,12 @@ class OracleAutoIncrementHelper {
         {
 	      	// drop sequence for auto increment
 			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
-			$this->dropSequence($sequenceName);
+			$this->sequence->drop($sequenceName);
 
 	        // drop trigger for auto increment work around
 	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-			$this->dropTrigger($triggerName);
+			$this->trigger->drop($triggerName);
 		}
-	}
-
-	/**
-	 * function to create oracle sequence
-	 *
-	 * @param  string  $name
-	 * @param  integer $start
-	 * @param  boolean $nocache
-	 * @return boolean
-	 */
-	public function createSequence($name, $start = 1, $nocache = false)
-	{
-		if (!$name) return false;
-
-		$nocache = $nocache ? 'nocache' : '';
-
-		return $this->connection->statement("create sequence {$name} start with {$start} {$nocache}");
-	}
-
-	/**
-	 * function to safely drop sequence db object
-	 *
-	 * @param  string $name
-	 * @return boolean
-	 */
-	public function dropSequence($name)
-	{
-		// check if a valid name and sequence exists
-		if (!$name or !$this->checkSequence($name)) return false;
-
-		return $this->connection->statement("
-			declare
-				e exception;
-				pragma exception_init(e,-02289);
-			begin
-				execute immediate 'drop sequence {$name}';
-			exception
-			when e then
-				null;
-			end;");
-	}
-
-	/**
-	 * function to get oracle sequence last inserted id
-	 *
-	 * @param  string $name
-	 * @return integer
-	 */
-	public function lastInsertId($name)
-	{
-		// check if a valid name and sequence exists
-		if (!$name or !$this->checkSequence($name)) return 0;
-
-		return $this->connection->selectOne("select {$name}.currval as id from dual")->id;
-	}
-
-	/**
-	 * get sequence next value
-	 *
-	 * @param  string $name
-	 * @return integer
-	 */
-	public function nextSequenceValue($name)
-	{
-		if (!$name) return 0;
-
-		return $this->connection->selectOne("SELECT $name.NEXTVAL as id FROM DUAL")->id;
-	}
-
-	/**
-	 * same function as lastInsertId. added for clarity with oracle sql statement.
-	 *
-	 * @param  string $name
-	 * @return integer
-	 */
-	public function currentSequenceValue($name)
-	{
-		return $this->lastInsertId($name);
-	}
-
-	/**
-	 * function to create auto increment trigger for a table
-	 *
-	 * @param  string $table
-	 * @param  string $column
-	 * @param  string $triggerName
-	 * @param  string $sequenceName
-	 * @return boolean
-	 */
-	public function createAutoIncrementTrigger($table, $column, $triggerName, $sequenceName)
-	{
-		if (!$table or !$column or !$triggerName or !$sequenceName) return false;
-
-		return $this->connection->statement("
-			create trigger $triggerName
-			before insert or update on {$table}
-			for each row
-				begin
-			if inserting and :new.{$column} is null then
-				select {$sequenceName}.nextval into :new.{$column} from dual;
-			end if;
-			end;");
-	}
-
-	/**
-	 * function to safely drop trigger db object
-	 *
-	 * @param  string $name
-	 * @return boolean
-	 */
-	public function dropTrigger($name)
-	{
-		if (!$name) return false;
-
-		return $this->connection->statement("
-			declare
-				e exception;
-				pragma exception_init(e,-4080);
-			begin
-				execute immediate 'drop trigger {$name}';
-			exception
-			when e then
-				null;
-			end;");
 	}
 
 	/**
@@ -240,24 +120,6 @@ class OracleAutoIncrementHelper {
 	}
 
 	/**
-	 * function to check if sequence exists
-	 *
-	 * @param  string $name
-	 * @return boolean
-	 */
-	public function checkSequence($name)
-	{
-		if (!$name) return false;
-
-		return $this->connection->selectOne("select *
-			from all_sequences
-			where
-				sequence_name=upper('{$name}')
-				and sequence_owner=upper(user)
-			");
-	}
-
-	/**
 	 * Create an object name that limits to 30chars
 	 *
 	 * @param  string $prefix
@@ -271,5 +133,37 @@ class OracleAutoIncrementHelper {
 		// max object name length is 30 chars
 		return substr($prefix . $table . '_' . $col . '_' . $type, 0, 30);
 	}
+
+    /**
+     * @return Sequence
+     */
+    public function getSequence()
+    {
+        return $this->sequence;
+    }
+
+    /**
+     * @param Sequence $sequence
+     */
+    public function setSequence($sequence)
+    {
+        $this->sequence = $sequence;
+    }
+
+    /**
+     * @return Trigger
+     */
+    public function getTrigger()
+    {
+        return $this->trigger;
+    }
+
+    /**
+     * @param Trigger $trigger
+     */
+    public function setTrigger($trigger)
+    {
+        $this->trigger = $trigger;
+    }
 
 }
