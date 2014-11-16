@@ -28,7 +28,8 @@ class OracleProcessor extends Processor {
         $id = 0;
 
         // set PDO statement property
-        $counter = $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
+        $this->prepareStatement($query, $sql);
+        $counter = $this->bindValuesAndReturnCounter($values, $counter);
 
         // bind output param for the returning clause
         $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
@@ -58,7 +59,8 @@ class OracleProcessor extends Processor {
         $query->getConnection()->getPdo()->beginTransaction();
 
         // set PDO statement property
-        $counter = $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
+        $this->prepareStatement($query, $sql);
+        $counter = $this->bindValuesAndReturnCounter($values, $counter);
 
         for ($i=0; $i < count($binaries); $i++)
         {
@@ -71,7 +73,7 @@ class OracleProcessor extends Processor {
         $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
 
         // execute statement
-        if (! $this->statement->execute())
+        if ( ! $this->statement->execute())
         {
             $query->getConnection()->getPdo()->rollBack();
             return false;
@@ -102,17 +104,22 @@ class OracleProcessor extends Processor {
     /**
      * @param Builder $query
      * @param $sql
-     * @param array $values
-     * @param $counter
      * @internal param $PDOStatement
-     * @return integer $counter;
      */
-    protected function prepareStatementAndBindValues(Builder $query, $sql, array $values, $counter)
+    protected function prepareStatement(Builder $query, $sql)
     {
         $this->statement = $query->getConnection()->getPdo()->prepare($sql);
+    }
+
+    /**
+     * @param array $values
+     * @param $counter
+     * @return mixed
+     */
+    protected function bindValuesAndReturnCounter(array $values, $counter)
+    {
         // bind each parameter from the values array to their location
-        foreach($values as $value)
-        {
+        foreach ($values as $value) {
             // try to determine type of result
             if (is_int($value))
                 $param = PDO::PARAM_INT;
