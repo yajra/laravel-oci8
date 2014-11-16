@@ -220,9 +220,7 @@ class OracleGrammar extends Grammar {
 	 */
     public function compileUnique(Blueprint $blueprint, Fluent $command)
     {
-    	$table = $this->wrapTable($blueprint);
-
-    	return "alter table {$table} add constraint {$command->index} unique ( ".$this->columnize($command->columns)." )";
+    	return "alter table ".$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns)." )";
     }
 
 	/**
@@ -234,9 +232,7 @@ class OracleGrammar extends Grammar {
 	 */
 	public function compileIndex(Blueprint $blueprint, Fluent $command)
 	{
-		$table = $this->wrapTable($blueprint);
-
-		return "create index {$command->index} on {$table} ( ".$this->columnize($command->columns)." )";
+		return "create index {$command->index} on ".$this->wrapTable($blueprint)." ( ".$this->columnize($command->columns)." )";
 	}
 
 	/**

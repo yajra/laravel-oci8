@@ -101,14 +101,14 @@ class OracleBuilder extends Builder {
         if (count($values) > 1000)
         {
             $chunks = array_chunk($values,1000);
-            return $this->where(function(Builder $query) use ($column,$chunks,$type)
+            return $this->where(function($query) use ($column,$chunks,$type)
             {
-                $firstIteration=true;
+                $firstIteration = true;
                 foreach ($chunks as $ch)
                 {
                     $sqlClause = $firstIteration ? 'where'.$type : 'orWhere'.$type;
                     $query->$sqlClause($column,$ch);
-                    $firstIteration=false;
+                    $firstIteration = false;
                 }
 
             },null,null,$boolean);
