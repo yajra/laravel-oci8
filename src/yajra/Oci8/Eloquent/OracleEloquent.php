@@ -102,7 +102,7 @@ class OracleEloquent extends Model {
 	 *
 	 * @param  \Illuminate\Database\Eloquent\Builder  $query
 	 * @param  array $options
-	 * @return bool|null
+	 * @return boolean
 	 */
 	protected function performUpdate(Builder $query, array $options = array())
 	{

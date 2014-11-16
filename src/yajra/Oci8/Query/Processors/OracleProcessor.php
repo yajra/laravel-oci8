@@ -103,7 +103,7 @@ class OracleProcessor extends Processor {
 
     /**
      * @param Builder $query
-     * @param $sql
+     * @param string $sql
      * @internal param $PDOStatement
      */
     protected function prepareStatement(Builder $query, $sql)
@@ -113,7 +113,7 @@ class OracleProcessor extends Processor {
 
     /**
      * @param array $values
-     * @param $counter
+     * @param integer $counter
      * @return mixed
      */
     protected function bindValuesAndReturnCounter(array $values, $counter)
