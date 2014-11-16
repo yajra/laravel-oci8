@@ -569,11 +569,6 @@ class OracleGrammar extends Grammar {
 	 */
 	protected function typeTimestamp(Fluent $column)
 	{
-		// if timestamp is not nullable,
-		// set default value to sysdate to avoid null date error
-		if (!isset($column->nullable))
-			return 'timestamp default CURRENT_TIMESTAMP';
-
 		return 'timestamp';
 	}
 
@@ -598,7 +593,8 @@ class OracleGrammar extends Grammar {
 	protected function modifyNullable(Blueprint $blueprint, Fluent $column)
 	{
 		$null = $column->nullable ? ' null' : ' not null';
-		if ( ! is_null($column->default) ) {
+		if ( ! is_null($column->default))
+        {
 			return " default ".$this->getDefaultValue($column->default) . $null;
 		}
 		return $null;
