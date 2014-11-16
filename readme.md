@@ -78,13 +78,9 @@ To support auto-increment in Laravel-OCI8, you must meet the following requireme
 Schema::create('posts', function($table)
 {
     $table->increments('id');
-    $table->integer('user_id')->unsigned();
     $table->string('title');
     $table->string('slug');
     $table->text('content');
-    $table->string('meta_title')->nullable();
-    $table->string('meta_description')->nullable();
-    $table->string('meta_keywords')->nullable();
     $table->timestamps();
 });
 ```
@@ -94,14 +90,14 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 - posts_id_seq (sequence)
 - posts_id_trg (trigger)
 
-> Check the starter kit provided to see how it works.
 
-###Auto-Increment Start With Option
+###Auto-Increment Start With and No Cache Option
 - You can now set the auto-increment starting value by setting the `start` attribute.
+- If you want to disable cache, then add `nocache` attribute.
 ```php
 Schema::create('posts', function($table)
 {
-    $table->increments('id')->start(10000);
+    $table->increments('id')->start(10000)->nocache();
     $table->string('title');
 }
 ```
@@ -187,15 +183,42 @@ Route::post('save-post', function()
     $post->slug             = Str::slug(Input::get('title'));
     // set binary field (content) value directly using model attribute
     $post->content          = Input::get('content');
-    $post->meta_title       = Input::get('meta-title');
-    $post->meta_description = Input::get('meta-description');
-    $post->meta_keywords    = Input::get('meta-keywords');
     $post->save();
 });
 ```
 
 > Limitation: Saving multiple records with a blob field like `Post::insert($posts)` is not yet supported!
 
+###Oracle Facade
+Oracle Facade is now available which are used for Auto-Increment feature. 
+Oracle Facade returns instance `OracleAutoIncrementHelper`.
+
+##Sequence
+Oracle Sequence can be loaded via `Oracle::getSequence()`.
+```php
+$sequence = Oracle::getSequence();
+// create a sequence
+$sequence->create('seq_name');
+// drop a sequence
+$sequence->drop('seq_name');
+// next value
+$sequence->nextValue('seq_name');
+// current value
+$sequence->currentValue('seq_name');
+$sequence->lastInsertId('seq_name');
+// check if exists
+$sequence->exists('seq_name');
+```
+
+##Trigger
+Oracle Trigger can be loaded via `Oracle::getTrigger()`.
+```php
+$trigger = Oracle::getTrigger();
+// create an auto-increment trigger
+$trigger->autoIncrement($table, $column, $triggerName, $sequenceName);
+// drop a trigger
+$trigger->drop($triggerName);
+```
 
 ###Date Formatting
 > (Note: Oracle's `DATE` & `TIMESTAMP` format is set to `YYYY-MM-DD HH24:MI:SS` by default to match PHP's common date format)
