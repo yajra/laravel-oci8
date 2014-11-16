@@ -28,7 +28,7 @@ class OracleProcessor extends Processor {
         $id = 0;
 
         // set PDO statement property
-        $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
+        $counter = $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
 
         // bind output param for the returning clause
         $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
@@ -58,7 +58,7 @@ class OracleProcessor extends Processor {
         $query->getConnection()->getPdo()->beginTransaction();
 
         // set PDO statement property
-        $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
+        $counter = $this->prepareStatementAndBindValues($query, $sql, $values, $counter);
 
         for ($i=0; $i < count($binaries); $i++)
         {
@@ -105,8 +105,9 @@ class OracleProcessor extends Processor {
      * @param array $values
      * @param $counter
      * @internal param $PDOStatement
+     * @return integer $counter;
      */
-    protected function prepareStatementAndBindValues(Builder $query, $sql, array $values, &$counter)
+    protected function prepareStatementAndBindValues(Builder $query, $sql, array $values, $counter)
     {
         $this->statement = $query->getConnection()->getPdo()->prepare($sql);
         // bind each parameter from the values array to their location
@@ -126,6 +127,7 @@ class OracleProcessor extends Processor {
             // increment counter
             $counter++;
         }
+        return $counter;
     }
 
 }

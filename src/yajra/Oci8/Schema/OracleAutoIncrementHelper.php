@@ -1,6 +1,5 @@
 <?php namespace yajra\Oci8\Schema;
 
-use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -53,9 +52,11 @@ class OracleAutoIncrementHelper {
 		$columns = $blueprint->getColumns();
 
 		// search for primary key / autoIncrement column
-		foreach ($columns as $column) {
+		foreach ($columns as $column)
+        {
 			// if column is autoIncrement set the primary col name
-			if ($column->autoIncrement) {
+			if ($column->autoIncrement)
+            {
 				return $column;
 			}
 		}
@@ -75,10 +76,12 @@ class OracleAutoIncrementHelper {
 		// get the actual primary column name from table
 		$col = $this->getPrimaryKey($prefix . $table);
 		// if primary key col is set, drop auto increment objects
-		if (isset($col) and !empty($col)) {
+		if (isset($col) and !empty($col))
+        {
 	      	// drop sequence for auto increment
 			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
 			$this->dropSequence($sequenceName);
+
 	        // drop trigger for auto increment work around
 	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
 			$this->dropTrigger($triggerName);
