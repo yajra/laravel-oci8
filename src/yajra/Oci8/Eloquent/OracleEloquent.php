@@ -135,16 +135,9 @@ class OracleEloquent extends Model {
 			{
 				// If dirty attributes contains binary field
 				// extract binary fields to new array
-				if ($this->wrapBinary($dirty))
-				{
-					$this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
-				}
-				else
-				{
-					$this->setKeysForSaveQuery($query)->update($dirty);
-				}
+                $this->updateBinary($query, $dirty);
 
-				$this->fireModelEvent('updated', false);
+                $this->fireModelEvent('updated', false);
 			}
 		}
 
@@ -273,5 +266,18 @@ class OracleEloquent extends Model {
 		}
 		return $this->wrapBinaries = $binaries;
 	}
+
+    /**
+     * @param Builder $query
+     * @param $dirty
+     */
+    protected function updateBinary(Builder $query, $dirty)
+    {
+        if ($this->wrapBinary($dirty)) {
+            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
+        } else {
+            $this->setKeysForSaveQuery($query)->update($dirty);
+        }
+    }
 
 }
