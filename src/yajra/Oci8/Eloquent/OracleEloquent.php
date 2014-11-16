@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use yajra\Oci8\Oci8Connection;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use yajra\Oci8\Schema\OracleAutoIncrementHelper;
 
 /**
  * @method {array} wrapBinary() wrapBinary(array $attributes)
@@ -217,7 +218,10 @@ class OracleEloquent extends Model {
 	{
 		if ($binaries = $this->wrapBinary($attributes))
 		{
-			$id = $query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
+			$query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
+            $connection = $query->getModel()->getConnection();
+            $helper = new OracleAutoIncrementHelper($connection);
+            $id = $helper->lastInsertId($this->getSequenceName());
 		}
 		else
 		{
@@ -261,7 +265,7 @@ class OracleEloquent extends Model {
 		{
 			foreach ($attributes as $key => $value)
 			{
-				if (in_array($key, $this->wrapBinaries))
+				if (in_array($key, $this->binaries))
 				{
 					$binaries[$key] = $value;
 					unset($attributes[$key]);
