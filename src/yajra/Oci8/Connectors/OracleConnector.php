@@ -51,7 +51,14 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     public function connect(array $config)
     {
-        $tns = $this->getDsn($config);
+        if (!empty($config['tns']))
+        {
+            $tns = $config['tns'];
+        }
+        else
+        {
+            $tns = $this->getDsn($config);
+        }
 
         $options = $this->getOptions($config);
 
@@ -75,8 +82,6 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function getDsn(array $config)
     {
-        if (!empty($config['tns'])) return $config['tns'];
-
         // check host
         $config['host'] = !empty($config['host']) ? $config['host'] : $config['hostname'];
         // check port
@@ -103,17 +108,20 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function checkMultipleHostDsn(array $config)
     {
-        $host = explode(',', $config['host']);
-        if (count($host) > 1) {
+        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
+
+        if (count($host) > 1)
+        {
             $address = "";
-            for ($i = 0; $i < count($host); $i++) {
+            for ($i = 0; $i < count($host); $i++)
+            {
                 $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
             }
 
             // create a tns with multiple address connection
             $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
-            return $config;
         }
+
         return $config;
     }
 

@@ -114,7 +114,7 @@ class OracleProcessor extends Processor {
     /**
      * @param array $values
      * @param integer $counter
-     * @return mixed
+     * @return integer
      */
     protected function bindValuesAndReturnCounter(array $values, $counter)
     {
