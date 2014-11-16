@@ -83,35 +83,38 @@ class OracleConnector extends Connector implements ConnectorInterface
         $config['port'] = !empty($config['port']) ? $config['port'] : '1521';
         // check protocol
         $config['protocol'] = !empty($config['protocol']) ? $config['protocol'] : 'TCP';
-
         // check if we will use Service Name
-        if (empty($config['service_name']))
-        {
-            $service_param = 'SID = '.$config['database'];
-        }
-        else
-        {
-            $service_param = 'SERVICE_NAME = '.$config['service_name'];
-        }
+        $service_param = empty($config['service_name'])
+            ? $service_param = 'SID = '.$config['database']
+            : $service_param = 'SERVICE_NAME = '.$config['service_name'];
 
         $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
 
         // check multiple connections/host, comma delimiter
+        $config = $this->checkMultipleHostDsn($config);
+
+        // return generated tns
+        return $config['tns'];
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    protected function checkMultipleHostDsn(array $config)
+    {
         $host = explode(',', $config['host']);
-        if (count($host) > 1)
-        {
-            $address  = "";
-            for ($i = 0;$i < count($host); $i++)
-            {
-               $address .= '(ADDRESS = (PROTOCOL = '.$config["protocol"].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
+        if (count($host) > 1) {
+            $address = "";
+            for ($i = 0; $i < count($host); $i++) {
+                $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
             }
 
             // create a tns with multiple address connection
             $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+            return $config;
         }
-
-        // return generated tns
-        return $config['tns'];
+        return $config;
     }
 
 }
