@@ -47,6 +47,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Establish a database connection.
      *
+     * @param array $config
      * @return PDO
      */
     public function connect(array $config)
@@ -58,11 +59,7 @@ class OracleConnector extends Connector implements ConnectorInterface
         $connection = $this->createConnection($tns, $config, $options);
 
         // Like Postgres, Oracle allows the concept of "schema"
-        if (isset($config['schema']))
-        {
-            $schema = $config['schema'];
-            $connection->prepare("ALTER SESSION SET CURRENT_SCHEMA = {$schema}")->execute();
-        }
+        $this->setSchema($config, $connection);
 
         return $connection;
     }
@@ -91,7 +88,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param array $config
      * @return array
      */
-    protected function checkMultipleHostDsn(array $config)
+    private function checkMultipleHostDsn(array $config)
     {
         $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
 
@@ -114,17 +111,78 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param array $config
      * @return array
      */
-    protected function parseConfig(array $config)
+    private function parseConfig(array $config)
     {
-        $config['host'] = ! empty($config['host']) ? $config['host'] : $config['hostname'];
-        $config['port'] = ! empty($config['port']) ? $config['port'] : '1521';
-        $config['protocol'] = ! empty($config['protocol']) ? $config['protocol'] : 'TCP';
-        $service_param = empty($config['service_name'])
+        $config = $this->setHost($config);
+        $config = $this->setPort($config);
+        $config = $this->setProtocol($config);
+        $config = $this->setServiceId($config);
+        $config = $this->setTNS($config);
+        return $config;
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function setHost(array $config)
+    {
+        $config['host'] = isset($config['host']) ? $config['host'] : $config['hostname'];
+        return $config;
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function setPort(array $config)
+    {
+        $config['port'] = isset($config['port']) ? $config['port'] : '1521';
+        return $config;
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function setProtocol(array $config)
+    {
+        $config['protocol'] = isset($config['protocol']) ? $config['protocol'] : 'TCP';
+        return $config;
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function setServiceId(array $config)
+    {
+        $config['service'] = empty($config['service_name'])
             ? $service_param = 'SID = ' . $config['database']
             : $service_param = 'SERVICE_NAME = ' . $config['service_name'];
-
-        $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =($service_param)))";
         return $config;
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function setTNS(array $config)
+    {
+        $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
+        return $config;
+    }
+
+    /**
+     * @param array $config
+     * @param $connection
+     */
+    private function setSchema(array $config, $connection)
+    {
+        if (isset($config['schema'])) {
+            $schema = $config['schema'];
+            $connection->prepare("ALTER SESSION SET CURRENT_SCHEMA = {$schema}")->execute();
+        }
     }
 
 }
