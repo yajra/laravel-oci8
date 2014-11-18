@@ -35,6 +35,7 @@ class OracleConnector extends Connector implements ConnectorInterface {
             return parent::createConnection($tns, $config, $options);
         }
 
+        $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
         return new Oci8($tns, $config['username'], $config['password'], $options);
     }

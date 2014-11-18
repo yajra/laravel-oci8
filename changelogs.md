@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Logs
 
+#v2.0.4
+- Fix undefined charset
+
 #v2.0.3
 - Code clean up and refactoring
 
