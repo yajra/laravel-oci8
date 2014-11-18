@@ -44,7 +44,7 @@ class Oci8Connection extends Connection {
     public function setSchema($schema)
     {
         $this->schema = $schema;
-        $this->prepare("ALTER SESSION SET CURRENT_SCHEMA = {$schema}")->execute();
+        $this->statement("ALTER SESSION SET CURRENT_SCHEMA = {$schema}");
         return $this;
     }
 
@@ -161,8 +161,8 @@ class Oci8Connection extends Connection {
      */
     public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
-		self::statement("alter session set NLS_DATE_FORMAT = '$format'");
-		self::statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
+		$this->statement("alter session set NLS_DATE_FORMAT = '$format'");
+		$this->statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
         return $this;
 	}
 
