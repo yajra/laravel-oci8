@@ -1,6 +1,6 @@
 <?php namespace yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
+use yajra\Oci8\Oci8Connection as Connection;
 use Illuminate\Database\Schema\Blueprint;
 
 class OracleAutoIncrementHelper {
@@ -9,6 +9,9 @@ class OracleAutoIncrementHelper {
     protected $trigger;
     protected $sequence;
 
+    /**
+     * @param Connection $connection
+     */
     public function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
