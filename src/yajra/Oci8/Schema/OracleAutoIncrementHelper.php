@@ -15,8 +15,8 @@ class OracleAutoIncrementHelper {
     public function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
-        $this->sequence = $connection->getSequence();
-        $this->trigger = $connection->getTrigger();
+        $this->sequence = new Sequence($connection);
+        $this->trigger = new Trigger($connection);
 	}
 
 	/**
