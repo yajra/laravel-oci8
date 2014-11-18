@@ -1,0 +1,39 @@
+<?php
+
+use Mockery as m;
+use yajra\Oci8\Schema\Sequence;
+
+class SequenceTest extends PHPUnit_Framework_TestCase {
+
+    public function tearDown()
+    {
+        m::close();
+    }
+
+    protected function getConnection()
+    {
+        return m::mock('Illuminate\Database\Connection');
+    }
+
+    /** @test */
+    public function it_will_create_sequence()
+    {
+        $connection = $this->getConnection();
+        $sequence = new Sequence($connection);
+        $connection->shouldReceive('statement')->andReturn(true);
+        $success = $sequence->create('users_id_seq');
+        $this->assertEquals(true, $success);
+    }
+
+    /** @test */
+    public function it_will_drop_sequence()
+    {
+        $sequence = m::mock('Sequence');
+        $sequence->shouldReceive('drop')->andReturn(true);
+        $sequence->shouldReceive('exists')->andReturn(false);
+        $success = $sequence->drop('users_id_seq');
+        $this->assertEquals(true, $success);
+    }
+
+}
+ 

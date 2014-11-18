@@ -189,14 +189,10 @@ Route::post('save-post', function()
 
 > Limitation: Saving multiple records with a blob field like `Post::insert($posts)` is not yet supported!
 
-###Oracle Facade
-Oracle Facade is now available which are used for Auto-Increment feature. 
-Oracle Facade returns instance `OracleAutoIncrementHelper`.
-
 ##Sequence
-Oracle Sequence can be loaded via `Oracle::getSequence()`.
+Oracle Sequence can be loaded via `DB::getSequence()`.
 ```php
-$sequence = Oracle::getSequence();
+$sequence = DB::getSequence();
 // create a sequence
 $sequence->create('seq_name');
 // drop a sequence
@@ -211,9 +207,9 @@ $sequence->exists('seq_name');
 ```
 
 ##Trigger
-Oracle Trigger can be loaded via `Oracle::getTrigger()`.
+Oracle Trigger can be loaded via `DB::getTrigger()`.
 ```php
-$trigger = Oracle::getTrigger();
+$trigger = DB::getTrigger();
 // create an auto-increment trigger
 $trigger->autoIncrement($table, $column, $triggerName, $sequenceName);
 // drop a trigger

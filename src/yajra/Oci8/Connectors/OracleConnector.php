@@ -6,8 +6,7 @@ use Illuminate\Database\Connectors\ConnectorInterface;
 use yajra\Pdo\Oci8;
 use PDO;
 
-class OracleConnector extends Connector implements ConnectorInterface
-{
+class OracleConnector extends Connector implements ConnectorInterface {
 
     /**
      * The default PDO connection options.
@@ -31,13 +30,9 @@ class OracleConnector extends Connector implements ConnectorInterface
     public function createConnection($tns, array $config, array $options)
     {
         // add fallback in case driver is not set, will use pdo instead
-        if ( !in_array($config['driver'], array('oci8', 'pdo-via-oci8', 'oracle')) ) {
+        if ( ! in_array($config['driver'], array('oci8', 'pdo-via-oci8', 'oracle')))
+        {
             return parent::createConnection($tns, $config, $options);
-        }
-
-        // check charset
-        if (!isset($config['charset'])) {
-            $config['charset'] = 'AL32UTF8';
         }
 
         $options['charset'] = $config['charset'];
@@ -72,7 +67,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function getDsn(array $config)
     {
-        if (!empty($config['tns'])) return $config['tns'];
+        if ( ! empty($config['tns'])) return $config['tns'];
 
         // parse configuration
         $config = $this->parseConfig($config);
@@ -118,6 +113,7 @@ class OracleConnector extends Connector implements ConnectorInterface
         $config = $this->setProtocol($config);
         $config = $this->setServiceId($config);
         $config = $this->setTNS($config);
+        $config = $this->setCharset($config);
         return $config;
     }
 
@@ -181,8 +177,20 @@ class OracleConnector extends Connector implements ConnectorInterface
     {
         if (isset($config['schema'])) {
             $schema = $config['schema'];
-            $connection->prepare("ALTER SESSION SET CURRENT_SCHEMA = {$schema}")->execute();
+            $connection->setSchema($schema);
         }
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function setCharset(array $config)
+    {
+        if ( ! isset($config['charset'])) {
+            $config['charset'] = 'AL32UTF8';
+        }
+        return $config;
     }
 
 }

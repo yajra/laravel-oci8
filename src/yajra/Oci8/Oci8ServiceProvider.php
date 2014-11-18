@@ -49,17 +49,6 @@ class Oci8ServiceProvider extends ServiceProvider {
 					$db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
 		            // set oracle date format to match PHP date
 					$db->setDateFormat('YYYY-MM-DD HH24:MI:SS');
-
-                    // register oracle helper
-                    $this->app->bind('oracle', function() use($db)
-                    {
-                        return new Schema\OracleAutoIncrementHelper($db);
-                    });
-
-                    // register oracle helper facade
-                    $loader = AliasLoader::getInstance();
-                    $loader->alias('Oracle', 'yajra\Oci8\OracleFacade');
-
                     return $db;
 				});
 			});

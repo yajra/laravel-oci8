@@ -1,16 +1,94 @@
 <?php namespace yajra\Oci8;
 
+use PDO;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Grammar;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
-use Illuminate\Database\Grammar;
 use yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 use yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 use yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use yajra\Oci8\Schema\Sequence;
+use yajra\Oci8\Schema\Trigger;
 
 class Oci8Connection extends Connection {
+
+    /**
+     * @var string
+     */
+    protected $schema;
+
+    /**
+     * @var Sequence
+     */
+    protected $sequence;
+
+    /**
+     * @var Trigger
+     */
+    protected $trigger;
+
+    public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = array())
+    {
+        parent::__construct($pdo, $database, $tablePrefix, $config);
+        $this->sequence = new Sequence($this);
+        $this->trigger = new Trigger($this);
+    }
+
+    /**
+     * @param string $schema
+     * @return $this
+     */
+    public function setSchema($schema)
+    {
+        $this->schema = $schema;
+        $this->prepare("ALTER SESSION SET CURRENT_SCHEMA = {$schema}")->execute();
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSchema()
+    {
+        return $this->schema;
+    }
+
+    /**
+     * @return Sequence
+     */
+    public function getSequence()
+    {
+        return $this->sequence;
+    }
+
+    /**
+     * @param Sequence $sequence
+     * @return \yajra\Oci8\Schema\Sequence
+     */
+    public function setSequence(Sequence $sequence)
+    {
+        return $this->sequence = $sequence;
+    }
+
+    /**
+     * @return Trigger
+     */
+    public function getTrigger()
+    {
+        return $this->trigger;
+    }
+
+    /**
+     * @param Trigger $trigger
+     * @return \yajra\Oci8\Schema\Trigger
+     */
+    public function setTrigger(Trigger $trigger)
+    {
+        return $this->trigger = $trigger;
+    }
 
     /**
      * @inheritdoc
@@ -79,11 +157,13 @@ class Oci8Connection extends Connection {
 
     /**
      * @param string $format
+     * @return $this
      */
     public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
 		self::statement("alter session set NLS_DATE_FORMAT = '$format'");
 		self::statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
+        return $this;
 	}
 
     /**
