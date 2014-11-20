@@ -1,5 +1,11 @@
 #Laravel-OCI8 Change Logs
 
+#v2.0.5
+- Fix drop primary grammar
+- Fix drop foreign grammar
+- Fix drop unique grammar
+- Fix drop index grammar
+
 #v2.0.4
 - Fix undefined charset
 

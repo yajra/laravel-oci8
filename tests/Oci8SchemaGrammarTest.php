@@ -274,11 +274,11 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 	public function testDropPrimary()
 	{
 		$blueprint = new Blueprint('users');
-		$blueprint->dropPrimary('users_pk');
+		$blueprint->dropPrimary('foo');
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users drop constraint users_pk', $statements[0]);
+		$this->assertEquals('alter table users drop constraint users_foo_primary', $statements[0]);
 	}
 
 	public function testDropUnique()
@@ -288,7 +288,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users drop constraint foo', $statements[0]);
+		$this->assertEquals('alter table users drop constraint users_foo_unique', $statements[0]);
 	}
 
 	public function testDropIndex()
@@ -298,7 +298,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('drop index foo', $statements[0]);
+		$this->assertEquals('drop index users_foo_index', $statements[0]);
 	}
 
 	public function testDropForeign()
@@ -308,7 +308,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users drop constraint foo', $statements[0]);
+		$this->assertEquals('alter table users drop constraint users_foo_foreign', $statements[0]);
 	}
 
 	public function testDropTimestamps()

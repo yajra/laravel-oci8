@@ -282,59 +282,61 @@ class OracleGrammar extends Grammar {
 		return 'alter table '.$table.' drop ( '.implode(', ', $columns) . ' )';
 	}
 
-	/**
-	 * Compile a drop primary key command.
-	 *
-	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  \Illuminate\Support\Fluent  $command
-	 * @return string
-	 */
-	public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
-	{
-		$table = $this->wrapTable($blueprint);
+    /**
+     * Compile a drop primary key command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
+    {
+        $table = $this->wrapTable($blueprint);
+        $index = $table  . '_' . $command->index . '_primary';
+        return "alter table {$table} drop constraint {$index}";
+    }
 
-		return "alter table {$table} drop constraint {$command->index}";
-	}
+    /**
+     * Compile a drop unique key command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileDropUnique(Blueprint $blueprint, Fluent $command)
+    {
+        $table = $this->wrapTable($blueprint);
+        $index = $table  . '_' . $command->index . '_unique';
+        return "alter table {$table} drop constraint {$index}";
+    }
 
-	/**
-	 * Compile a drop unique key command.
-	 *
-	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  \Illuminate\Support\Fluent  $command
-	 * @return string
-	 */
-	public function compileDropUnique(Blueprint $blueprint, Fluent $command)
-	{
-		$table = $this->wrapTable($blueprint);
+    /**
+     * Compile a drop index command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileDropIndex(Blueprint $blueprint, Fluent $command)
+    {
+        $table = $this->wrapTable($blueprint);
+        $index = $table  . '_' . $command->index . '_index';
+        return "drop index {$index}";
+    }
 
-		return "alter table {$table} drop constraint {$command->index}";
-	}
-
-	/**
-	 * Compile a drop index command.
-	 *
-	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  \Illuminate\Support\Fluent  $command
-	 * @return string
-	 */
-	public function compileDropIndex(Blueprint $blueprint, Fluent $command)
-	{
-		return "drop index {$command->index}";
-	}
-
-	/**
-	 * Compile a drop foreign key command.
-	 *
-	 * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-	 * @param  \Illuminate\Support\Fluent  $command
-	 * @return string
-	 */
-	public function compileDropForeign(Blueprint $blueprint, Fluent $command)
-	{
-		$table = $this->wrapTable($blueprint);
-
-		return "alter table {$table} drop constraint {$command->index}";
-	}
+    /**
+     * Compile a drop foreign key command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileDropForeign(Blueprint $blueprint, Fluent $command)
+    {
+        $table = $this->wrapTable($blueprint);
+        $index = $table  . '_' . $command->index . '_foreign';
+        return "alter table {$table} drop constraint {$index}";
+    }
 
 	/**
 	 * Compile a rename table command.
