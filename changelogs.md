@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Logs
 
+#v2.0.6
+- Refactor drop constraints grammar
+- Fix drop constraint name exceeding 30 chars
+
 #v2.0.5
 - Fix drop primary grammar
 - Fix drop foreign grammar
