@@ -291,9 +291,7 @@ class OracleGrammar extends Grammar {
      */
     public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
     {
-        $table = $this->wrapTable($blueprint);
-        $index = $table  . '_' . $command->index . '_primary';
-        return "alter table {$table} drop constraint {$index}";
+        return $this->dropConstraint($blueprint, $command, 'primary');
     }
 
     /**
@@ -305,9 +303,7 @@ class OracleGrammar extends Grammar {
      */
     public function compileDropUnique(Blueprint $blueprint, Fluent $command)
     {
-        $table = $this->wrapTable($blueprint);
-        $index = $table  . '_' . $command->index . '_unique';
-        return "alter table {$table} drop constraint {$index}";
+        return $this->dropConstraint($blueprint, $command, 'unique');
     }
 
     /**
@@ -319,9 +315,7 @@ class OracleGrammar extends Grammar {
      */
     public function compileDropIndex(Blueprint $blueprint, Fluent $command)
     {
-        $table = $this->wrapTable($blueprint);
-        $index = $table  . '_' . $command->index . '_index';
-        return "drop index {$index}";
+        return $this->dropConstraint($blueprint, $command, 'index');
     }
 
     /**
@@ -333,9 +327,7 @@ class OracleGrammar extends Grammar {
      */
     public function compileDropForeign(Blueprint $blueprint, Fluent $command)
     {
-        $table = $this->wrapTable($blueprint);
-        $index = $table  . '_' . $command->index . '_foreign';
-        return "alter table {$table} drop constraint {$index}";
+        return $this->dropConstraint($blueprint, $command, 'foreign');
     }
 
 	/**
@@ -640,5 +632,26 @@ class OracleGrammar extends Grammar {
 	{
 		return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
 	}
+
+    /**
+     * @param Blueprint $blueprint
+     * @param Fluent $command
+     * @param string $type
+     * @return string
+     */
+    private function dropConstraint(Blueprint $blueprint, Fluent $command, $type)
+    {
+        $table = $this->wrapTable($blueprint);
+        $index = $table . '_' . $command->index . '_' . $type;
+        switch ($type)
+        {
+            case 'index':
+                return "drop index {$index}";
+                break;
+            default:
+                return "alter table {$table} drop constraint {$index}";
+                break;
+        }
+    }
 
 }
