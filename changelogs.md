@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Logs
 
+#v2.0.7
+- Rollback auto create constraint name
+- As per Laravel Docs, constraint full name should be passed (my bad >.<)
+
 #v2.0.6
 - Refactor drop constraints grammar
 - Fix drop constraint name exceeding 30 chars
