@@ -56,12 +56,19 @@ Then setup a valid database configuration using the driver `oracle`. Configure y
     'database' => 'xe',
     'username' => 'hr',
     'password' => 'hr',
-    'charset' => '',
+    'charset' => 'AL32UTF8',
     'prefix' => '',
 )
 ```
 
 And run your laravel installation...
+
+###Starter Kit
+To help you kickstart with Laravel, you may want to use the starter kit package below:
+
+[Laravel 4.2 Starter Kit](https://github.com/yajra/laravel-admin-template)
+
+Starter kit package above were forked from brunogaspar/laravel4-starter-kit. No need to re-invent the wheel. 
 
 ###Auto-Increment Support
 To support auto-increment in Laravel-OCI8, you must meet the following requirements:
@@ -89,7 +96,6 @@ This script will trigger Laravel-OCI8 to create the following DB objects
 - posts (table)
 - posts_id_seq (sequence)
 - posts_id_trg (trigger)
-
 
 ###Auto-Increment Start With and No Cache Option
 - You can now set the auto-increment starting value by setting the `start` attribute.
