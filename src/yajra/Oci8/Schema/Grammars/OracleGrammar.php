@@ -643,15 +643,13 @@ class OracleGrammar extends Grammar {
     {
         $table = $this->wrapTable($blueprint);
         $index = $table . '_' . $command->index . '_' . $type;
-        switch ($type)
+
+        if ($type === 'index')
         {
-            case 'index':
-                return "drop index {$index}";
-                break;
-            default:
-                return "alter table {$table} drop constraint {$index}";
-                break;
+            return "drop index {$index}";
         }
+        
+        return "alter table {$table} drop constraint {$index}";
     }
 
 }
