@@ -14,16 +14,16 @@ class OracleBlueprint extends Blueprint {
 	/**
 	 * Create a default index name for the table.
 	 *
-	 * @param  string  $type
-	 * @param  array   $columns
+	 * @param  string $type
+	 * @param  array $columns
 	 * @return string
 	 */
 	protected function createIndexName($type, array $columns)
 	{
-		$index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
+		$index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
 
 		// max index name length is 30 chars
-		return substr(str_replace(array('-', '.'), '_', $index), 0, 30);
+		return substr(str_replace(['-', '.'], '_', $index), 0, 30);
 	}
 
 	/**

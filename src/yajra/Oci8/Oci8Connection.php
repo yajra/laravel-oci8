@@ -1,10 +1,10 @@
 <?php namespace yajra\Oci8;
 
-use PDO;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Grammar;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
+use Illuminate\Database\Connection;
+use Illuminate\Database\Grammar;
+use PDO;
 use yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
@@ -15,137 +15,138 @@ use yajra\Oci8\Schema\Trigger;
 
 class Oci8Connection extends Connection {
 
-    /**
-     * @var string
-     */
-    protected $schema;
+	/**
+	 * @var string
+	 */
+	protected $schema;
 
-    /**
-     * @var Sequence
-     */
-    protected $sequence;
+	/**
+	 * @var Sequence
+	 */
+	protected $sequence;
 
-    /**
-     * @var Trigger
-     */
-    protected $trigger;
+	/**
+	 * @var Trigger
+	 */
+	protected $trigger;
 
-    public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = array())
-    {
-        parent::__construct($pdo, $database, $tablePrefix, $config);
-        $this->sequence = new Sequence($this);
-        $this->trigger = new Trigger($this);
-    }
+	public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = array())
+	{
+		parent::__construct($pdo, $database, $tablePrefix, $config);
+		$this->sequence = new Sequence($this);
+		$this->trigger = new Trigger($this);
+	}
 
-    /**
-     * @param string $schema
-     * @return $this
-     */
-    public function setSchema($schema)
-    {
-        $this->schema = $schema;
-        $this->statement("ALTER SESSION SET CURRENT_SCHEMA = {$schema}");
-        return $this;
-    }
+	/**
+	 * @param string $schema
+	 * @return $this
+	 */
+	public function setSchema($schema)
+	{
+		$this->schema = $schema;
+		$this->statement("ALTER SESSION SET CURRENT_SCHEMA = {$schema}");
 
-    /**
-     * @return string
-     */
-    public function getSchema()
-    {
-        return $this->schema;
-    }
+		return $this;
+	}
 
-    /**
-     * @return Sequence
-     */
-    public function getSequence()
-    {
-        return $this->sequence;
-    }
+	/**
+	 * @return string
+	 */
+	public function getSchema()
+	{
+		return $this->schema;
+	}
 
-    /**
-     * @param Sequence $sequence
-     * @return \yajra\Oci8\Schema\Sequence
-     */
-    public function setSequence(Sequence $sequence)
-    {
-        return $this->sequence = $sequence;
-    }
+	/**
+	 * @return Sequence
+	 */
+	public function getSequence()
+	{
+		return $this->sequence;
+	}
 
-    /**
-     * @return Trigger
-     */
-    public function getTrigger()
-    {
-        return $this->trigger;
-    }
+	/**
+	 * @param Sequence $sequence
+	 * @return \yajra\Oci8\Schema\Sequence
+	 */
+	public function setSequence(Sequence $sequence)
+	{
+		return $this->sequence = $sequence;
+	}
 
-    /**
-     * @param Trigger $trigger
-     * @return \yajra\Oci8\Schema\Trigger
-     */
-    public function setTrigger(Trigger $trigger)
-    {
-        return $this->trigger = $trigger;
-    }
+	/**
+	 * @return Trigger
+	 */
+	public function getTrigger()
+	{
+		return $this->trigger;
+	}
 
-    /**
-     * @inheritdoc
-     */
-    protected function getDefaultQueryGrammar()
+	/**
+	 * @param Trigger $trigger
+	 * @return \yajra\Oci8\Schema\Trigger
+	 */
+	public function setTrigger(Trigger $trigger)
+	{
+		return $this->trigger = $trigger;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	protected function getDefaultQueryGrammar()
 	{
 		return $this->withTablePrefix(new QueryGrammar);
 	}
 
-    /**
-     * @return QueryGrammar
-     */
-    public function getQueryGrammar()
-    {
-        return $this->queryGrammar;
-    }
+	/**
+	 * @return QueryGrammar
+	 */
+	public function getQueryGrammar()
+	{
+		return $this->queryGrammar;
+	}
 
-    /**
-     * @inheritdoc
-     */
+	/**
+	 * @inheritdoc
+	 */
 	protected function getDefaultSchemaGrammar()
 	{
 		return $this->withTablePrefix(new SchemaGrammar);
 	}
 
-    /**
-     * @return Processor
-     */
-    protected function getDefaultPostProcessor()
- 	{
- 		return new Processor;
- 	}
+	/**
+	 * @return Processor
+	 */
+	protected function getDefaultPostProcessor()
+	{
+		return new Processor;
+	}
 
-    /**
-     * @return Processor
-     */
-    public function getPostProcessor()
-    {
-        return parent::getPostProcessor();
-    }
+	/**
+	 * @return Processor
+	 */
+	public function getPostProcessor()
+	{
+		return parent::getPostProcessor();
+	}
 
-    /**
-     * @return SchemaBuilder
-     */
-    public function getSchemaBuilder()
+	/**
+	 * @return SchemaBuilder
+	 */
+	public function getSchemaBuilder()
 	{
 		if (is_null($this->schemaGrammar))
-        {
-            $this->useDefaultSchemaGrammar();
-        }
+		{
+			$this->useDefaultSchemaGrammar();
+		}
 
 		return new SchemaBuilder($this);
 	}
 
-    /**
-     * @inheritdoc
-     */
+	/**
+	 * @inheritdoc
+	 */
 	public function table($table)
 	{
 		$processor = $this->getPostProcessor();
@@ -155,21 +156,22 @@ class Oci8Connection extends Connection {
 		return $query->from($table);
 	}
 
-    /**
-     * @param string $format
-     * @return $this
-     */
-    public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
+	/**
+	 * @param string $format
+	 * @return $this
+	 */
+	public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
 		$this->statement("alter session set NLS_DATE_FORMAT = '$format'");
 		$this->statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
-        return $this;
+
+		return $this;
 	}
 
-    /**
-     * @return DoctrineConnection
-     */
-    public function getDoctrineConnection()
+	/**
+	 * @return DoctrineConnection
+	 */
+	public function getDoctrineConnection()
 	{
 		$driver = $this->getDoctrineDriver();
 
@@ -178,21 +180,21 @@ class Oci8Connection extends Connection {
 		return new DoctrineConnection($data, $driver);
 	}
 
-    /**
-     * @return DoctrineDriver
-     */
-    protected function getDoctrineDriver()
+	/**
+	 * @return DoctrineDriver
+	 */
+	protected function getDoctrineDriver()
 	{
 		return new DoctrineDriver;
 	}
 
-    /**
-     * @param Grammar $grammar
-     * @return Grammar
-     */
-    public function withTablePrefix(Grammar $grammar)
-    {
-       return parent::withTablePrefix($grammar);
-    }
+	/**
+	 * @param Grammar $grammar
+	 * @return Grammar
+	 */
+	public function withTablePrefix(Grammar $grammar)
+	{
+		return parent::withTablePrefix($grammar);
+	}
 
 }

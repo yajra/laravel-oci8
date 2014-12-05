@@ -6,14 +6,16 @@ use Illuminate\Database\Schema\Blueprint;
 class OracleAutoIncrementHelper {
 
 	protected $connection;
-    protected $trigger;
-    protected $sequence;
 
-    public function __construct(Connection $connection)
+	protected $trigger;
+
+	protected $sequence;
+
+	public function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
-        $this->sequence = new Sequence($connection);
-        $this->trigger = new Trigger($connection);
+		$this->sequence = new Sequence($connection);
+		$this->trigger = new Trigger($connection);
 	}
 
 	/**
@@ -28,7 +30,10 @@ class OracleAutoIncrementHelper {
 		$column = $this->getQualifiedAutoIncrementColumn($blueprint);
 
 		// return if no qualified AI column
-		if (is_null($column)) return;
+		if (is_null($column))
+		{
+			return;
+		}
 
 		$col = $column->name;
 		$start = isset($column->start) ? $column->start : 1;
@@ -40,8 +45,8 @@ class OracleAutoIncrementHelper {
 		$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
 		$this->sequence->create($sequenceName, $start, $column->nocache);
 
-        // create trigger for auto increment work around
-        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
+		// create trigger for auto increment work around
+		$triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
 		$this->trigger->autoIncrement($prefix . $table, $col, $triggerName, $sequenceName);
 	}
 
@@ -57,10 +62,10 @@ class OracleAutoIncrementHelper {
 
 		// search for primary key / autoIncrement column
 		foreach ($columns as $column)
-        {
+		{
 			// if column is autoIncrement set the primary col name
 			if ($column->autoIncrement)
-            {
+			{
 				return $column;
 			}
 		}
@@ -70,6 +75,7 @@ class OracleAutoIncrementHelper {
 
 	/**
 	 * drop sequence and triggers if exists, autoincrement objects
+	 *
 	 * @param  string $table
 	 * @return null
 	 */
@@ -80,14 +86,14 @@ class OracleAutoIncrementHelper {
 		// get the actual primary column name from table
 		$col = $this->getPrimaryKey($prefix . $table);
 		// if primary key col is set, drop auto increment objects
-		if (isset($col) and !empty($col))
-        {
-	      	// drop sequence for auto increment
+		if (isset($col) and ! empty($col))
+		{
+			// drop sequence for auto increment
 			$sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
 			$this->sequence->drop($sequenceName);
 
-	        // drop trigger for auto increment work around
-	        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
+			// drop trigger for auto increment work around
+			$triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
 			$this->trigger->drop($triggerName);
 		}
 	}
@@ -100,7 +106,10 @@ class OracleAutoIncrementHelper {
 	 */
 	public function getPrimaryKey($table)
 	{
-		if (!$table) return '';
+		if ( ! $table)
+		{
+			return '';
+		}
 
 		$data = $this->connection->selectOne("
 			SELECT cols.column_name
@@ -114,7 +123,10 @@ class OracleAutoIncrementHelper {
 			ORDER BY cols.table_name, cols.position
 			");
 
-		if (count($data)) return $data->column_name;
+		if (count($data))
+		{
+			return $data->column_name;
+		}
 
 		return '';
 	}
@@ -134,36 +146,36 @@ class OracleAutoIncrementHelper {
 		return substr($prefix . $table . '_' . $col . '_' . $type, 0, 30);
 	}
 
-    /**
-     * @return Sequence
-     */
-    public function getSequence()
-    {
-        return $this->sequence;
-    }
+	/**
+	 * @return Sequence
+	 */
+	public function getSequence()
+	{
+		return $this->sequence;
+	}
 
-    /**
-     * @param Sequence $sequence
-     */
-    public function setSequence($sequence)
-    {
-        $this->sequence = $sequence;
-    }
+	/**
+	 * @param Sequence $sequence
+	 */
+	public function setSequence($sequence)
+	{
+		$this->sequence = $sequence;
+	}
 
-    /**
-     * @return Trigger
-     */
-    public function getTrigger()
-    {
-        return $this->trigger;
-    }
+	/**
+	 * @return Trigger
+	 */
+	public function getTrigger()
+	{
+		return $this->trigger;
+	}
 
-    /**
-     * @param Trigger $trigger
-     */
-    public function setTrigger($trigger)
-    {
-        $this->trigger = $trigger;
-    }
+	/**
+	 * @param Trigger $trigger
+	 */
+	public function setTrigger($trigger)
+	{
+		$this->trigger = $trigger;
+	}
 
 }

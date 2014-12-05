@@ -1,15 +1,11 @@
 <?php namespace yajra\Oci8\Eloquent;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use yajra\Oci8\Oci8Connection;
 use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use yajra\Oci8\Schema\Sequence;
 
-/**
- * @method {array} wrapBinary() wrapBinary(array $attributes)
- * @method {boolean} checkBinary() checkBinary(array $attributes)
- */
 class OracleEloquent extends Model {
 
 	/**
@@ -17,8 +13,9 @@ class OracleEloquent extends Model {
 	 *
 	 * @var array
 	 */
-	protected $binaries = array();
-	protected $wrapBinaries = array();
+	protected $binaries = [];
+
+	protected $wrapBinaries = [];
 
 	/**
 	 * Sequence name variable
@@ -34,33 +31,36 @@ class OracleEloquent extends Model {
 	 */
 	public function getSequenceName()
 	{
-		if ($this->sequence) return $this->sequence;
+		if ($this->sequence)
+		{
+			return $this->sequence;
+		}
 
 		return $this->getTable() . '_' . $this->getKeyName() . '_seq';
 	}
 
-    /**
-     * Set sequence name
-     *
-     * @param string $name
-     * @return string
-     */
+	/**
+	 * Set sequence name
+	 *
+	 * @param string $name
+	 * @return string
+	 */
 	public function setSequenceName($name)
 	{
 		return $this->sequence = $name;
 	}
 
-    /**
-     * Get the database connection for the model.
-     *
-     * @return Oci8Connection
-     */
-    public function getConnection()
-    {
-        return parent::getConnection();
-    }
+	/**
+	 * Get the database connection for the model.
+	 *
+	 * @return Oci8Connection
+	 */
+	public function getConnection()
+	{
+		return parent::getConnection();
+	}
 
-    /**
+	/**
 	 * Get a new query builder instance for the connection.
 	 *
 	 * @return \Illuminate\Database\Query\Builder
@@ -77,12 +77,12 @@ class OracleEloquent extends Model {
 	/**
 	 * Update the model in the database.
 	 *
-	 * @param  array  $attributes
+	 * @param  array $attributes
 	 * @return bool|int
 	 */
-	public function update(array $attributes = array())
+	public function update(array $attributes = [])
 	{
-		if (!$this->exists)
+		if ( ! $this->exists)
 		{
 			// If dirty attributes contains binary field
 			// extract binary fields to new array
@@ -100,11 +100,11 @@ class OracleEloquent extends Model {
 	/**
 	 * Perform a model update operation.
 	 *
-	 * @param  \Illuminate\Database\Eloquent\Builder  $query
+	 * @param  \Illuminate\Database\Eloquent\Builder $query
 	 * @param  array $options
 	 * @return boolean
 	 */
-	protected function performUpdate(Builder $query, array $options = array())
+	protected function performUpdate(Builder $query, array $options = [])
 	{
 		$dirty = $this->getDirty();
 
@@ -135,9 +135,9 @@ class OracleEloquent extends Model {
 			{
 				// If dirty attributes contains binary field
 				// extract binary fields to new array
-                $this->updateBinary($query, $dirty);
+				$this->updateBinary($query, $dirty);
 
-                $this->fireModelEvent('updated', false);
+				$this->fireModelEvent('updated', false);
 			}
 		}
 
@@ -147,13 +147,16 @@ class OracleEloquent extends Model {
 	/**
 	 * Perform a model insert operation.
 	 *
-	 * @param  \Illuminate\Database\Eloquent\Builder  $query
+	 * @param  \Illuminate\Database\Eloquent\Builder $query
 	 * @param  array $options
 	 * @return bool
 	 */
-	protected function performInsert(Builder $query, array $options = array())
+	protected function performInsert(Builder $query, array $options = [])
 	{
-		if ($this->fireModelEvent('creating') === false) return false;
+		if ($this->fireModelEvent('creating') === false)
+		{
+			return false;
+		}
 
 		// First we'll need to create a fresh query instance and touch the creation and
 		// update timestamps on this model, which are maintained by us for developer
@@ -203,8 +206,8 @@ class OracleEloquent extends Model {
 	/**
 	 * Insert the given attributes and set the ID on the model.
 	 *
-	 * @param  \Illuminate\Database\Eloquent\Builder  $query
-	 * @param  array  $attributes
+	 * @param  \Illuminate\Database\Eloquent\Builder $query
+	 * @param  array $attributes
 	 * @return void
 	 */
 	protected function insertAndSetId(Builder $query, $attributes)
@@ -212,8 +215,8 @@ class OracleEloquent extends Model {
 		if ($binaries = $this->wrapBinary($attributes))
 		{
 			$query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
-            $sequence = new Sequence($this->getConnection());
-            $id = $sequence->lastInsertId($this->getSequenceName());
+			$sequence = new Sequence($this->getConnection());
+			$id = $sequence->lastInsertId($this->getSequenceName());
 		}
 		else
 		{
@@ -226,7 +229,7 @@ class OracleEloquent extends Model {
 	/**
 	 * Check if attributes contains binary field
 	 *
-	 * @param  array  $attributes
+	 * @param  array $attributes
 	 * @return boolean
 	 */
 	public function checkBinary(array $attributes)
@@ -239,6 +242,7 @@ class OracleEloquent extends Model {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -252,7 +256,7 @@ class OracleEloquent extends Model {
 	{
 		// If attributes contains binary field
 		// extract binary fields to new array
-		$binaries = array();
+		$binaries = [];
 		if ($this->checkBinary($attributes) and $this->getConnection() instanceOf Oci8Connection)
 		{
 			foreach ($attributes as $key => $value)
@@ -264,20 +268,24 @@ class OracleEloquent extends Model {
 				}
 			}
 		}
+
 		return $this->wrapBinaries = $binaries;
 	}
 
-    /**
-     * @param Builder $query
-     * @param $dirty
-     */
-    protected function updateBinary(Builder $query, $dirty)
-    {
-        if ($this->wrapBinary($dirty)) {
-            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
-        } else {
-            $this->setKeysForSaveQuery($query)->update($dirty);
-        }
-    }
+	/**
+	 * @param Builder $query
+	 * @param $dirty
+	 */
+	protected function updateBinary(Builder $query, $dirty)
+	{
+		if ($this->wrapBinary($dirty))
+		{
+			$this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
+		}
+		else
+		{
+			$this->setKeysForSaveQuery($query)->update($dirty);
+		}
+	}
 
 }
