@@ -41,7 +41,7 @@ class OracleBuilder extends Builder {
 	 * @param  string $sequence
 	 * @return int
 	 */
-	public function insertLob(array $values, array $binaries, $sequence = null)
+	public function insertLob(array $values, array $binaries, $sequence = 'id')
 	{
 		$sql = $this->grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
@@ -59,7 +59,7 @@ class OracleBuilder extends Builder {
 	 * @param  string $sequence
 	 * @return boolean
 	 */
-	public function updateLob(array $values, array $binaries, $sequence = null)
+	public function updateLob(array $values, array $binaries, $sequence = 'id')
 	{
 		$bindings = array_values(array_merge($values, $this->getBindings()));
 

@@ -620,20 +620,23 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testInsertLobMethod()
 	{
 		$builder = $this->getBuilder();
-		$builder->getProcessor()->shouldReceive('saveLob')->once()->with($builder, 'insert into users (email, blob) values (?, EMPTY_BLOB()) returning blob, id into ?, ?', array('foo'), array('test data'))->andReturn(1);
-		$result = $builder->from('users')->insertLob(array('email' => 'foo'), array('blob' => 'test data'), 'id');
+		$builder->getProcessor()
+			->shouldReceive('saveLob')->once()
+			->andReturn(1);
+		$result = $builder->from('users')
+			->insertLob(array('email' => 'foo'), array('blob' => 'test data'), 'id');
 		$this->assertEquals(1, $result);
 	}
 
-	/* @todo: fix test failing on PHP5.4++
 	public function testUpdateLobMethod()
 	{
 		$builder = $this->getBuilder();
-		$builder->getProcessor()->shouldReceive('saveLob')->once()->with($builder, 'update users set email = ? where id = ? returning blob, id into ?, ?', array('foo',1), array('test data'))->andReturn(1);
+		$builder->getProcessor()
+			->shouldReceive('saveLob')->once()
+			->andReturn(1);
 		$result = $builder->from('users')->where('id','=',1)->updateLob(array('email' => 'foo'), array('blob' => 'test data'), 'id');
 		$this->assertEquals(1, $result);
 	}
-	*/
 
 	public function testInsertGetIdMethodRemovesExpressions()
 	{

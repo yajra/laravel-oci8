@@ -225,13 +225,8 @@ class OracleGrammar extends Grammar {
 	 * @param  string $sequence
 	 * @return string
 	 */
-	public function compileInsertLob(Builder $query, $values, $binaries, $sequence = null)
+	public function compileInsertLob(Builder $query, $values, $binaries, $sequence = 'id')
 	{
-		if (is_null($sequence))
-		{
-			$sequence = 'id';
-		}
-
 		$table = $this->wrapTable($query->from);
 
 		if ( ! is_array(reset($values)))
@@ -269,12 +264,8 @@ class OracleGrammar extends Grammar {
 	 * @param  string $sequence
 	 * @return string
 	 */
-	public function compileUpdateLob(Builder $query, array $values, array $binaries, $sequence = null)
+	public function compileUpdateLob(Builder $query, array $values, array $binaries, $sequence = 'id')
 	{
-		if (is_null($sequence))
-		{
-			$sequence = 'id';
-		}
 		$table = $this->wrapTable($query->from);
 
 		// Each one of the columns in the update statements needs to be wrapped in the
