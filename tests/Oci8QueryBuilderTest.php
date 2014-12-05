@@ -18,6 +18,13 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select * from users', $builder->toSql());
 	}
 
+	public function testBasicSelectWithoutSelectedColumns()
+	{
+		$builder = $this->getBuilder();
+		$builder->from('users');
+		$this->assertEquals('select * from users', $builder->toSql());
+	}
+
 	public function testAddingSelects()
 	{
 		$builder = $this->getBuilder();
@@ -154,6 +161,24 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->select('*')->from('users')->where('id', '=', 1)->orWhereRaw('email = ?', array('foo'));
 		$this->assertEquals('select * from users where id = ? or email = ?', $builder->toSql());
 		$this->assertEquals(array(0 => 1, 1 => 'foo'), $builder->getBindings());
+	}
+
+	public function testBasicWhereInMoreThan1000()
+	{
+		$data = [];
+		for ($i = 0; $i < 1001; $i++)
+		{
+			$data[] = $i;
+		}
+
+		for ($i = 0; $i < 1000; $i++)
+		{
+			$param[] = '?';
+		}
+
+		$builder = $this->getBuilder();
+		$builder->select('*')->from('users')->whereIn('id', $data);
+		$this->assertEquals('select * from users where (id in (' . implode(', ',$param) . ') or id in (?))', $builder->toSql());
 	}
 
 	public function testBasicWhereIns()
