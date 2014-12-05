@@ -20,7 +20,7 @@ class Oci8ServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('yajra/oci8');
+		$this->package('yajra/laravel-oci8');
 	}
 
 	/**
@@ -62,7 +62,7 @@ class Oci8ServiceProvider extends ServiceProvider {
 	 */
 	public function provides()
 	{
-		return ['oracle'];
+		return [];
 	}
 
 }
