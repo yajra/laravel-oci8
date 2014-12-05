@@ -185,7 +185,7 @@ class OracleEloquent extends Model {
 			// extract binary fields to new array
 			if ($this->wrapBinary($attributes))
 			{
-				$query->insertLob($attributes, $this->wrapBinaries, $this->getKeyName());
+				$query->getQuery()->insertLob($attributes, $this->wrapBinaries, $this->getKeyName());
 			}
 			else
 			{
@@ -208,15 +208,13 @@ class OracleEloquent extends Model {
 	 *
 	 * @param  \Illuminate\Database\Eloquent\Builder $query
 	 * @param  array $attributes
-	 * @return void
+	 * @return int|void
 	 */
 	protected function insertAndSetId(Builder $query, $attributes)
 	{
 		if ($binaries = $this->wrapBinary($attributes))
 		{
-			$query->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
-			$sequence = new Sequence($this->getConnection());
-			$id = $sequence->lastInsertId($this->getSequenceName());
+			$id = $query->getQuery()->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
 		}
 		else
 		{
