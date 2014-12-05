@@ -659,7 +659,21 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getProcessor()
 			->shouldReceive('saveLob')->once()
 			->andReturn(1);
-		$result = $builder->from('users')->where('id','=',1)->updateLob(array('email' => 'foo'), array('blob' => 'test data'), 'id');
+		$result = $builder->from('users')->where('id','=',1)
+			->updateLob(array('email' => 'foo'), array('blob' => 'test data'), 'id');
+		$this->assertEquals(1, $result);
+	}
+
+	public function testUpdateLobMethodWithJoins()
+	{
+		$builder = $this->getBuilder();
+		$builder->getProcessor()
+			->shouldReceive('saveLob')->once()
+			->andReturn(1);
+		$result = $builder->from('users')
+			->join('orders', 'users.id', '=', 'orders.user_id')
+			->where('users.id', '=', 1)
+			->updateLob(array('email' => 'foo', 'name' => 'bar'), array('blob' => 'test data'));
 		$this->assertEquals(1, $result);
 	}
 
@@ -815,6 +829,24 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
 		$this->assertEquals('select * from foo where bar = ? lock in share mode', $builder->toSql());
 		$this->assertEquals(array('baz'), $builder->getBindings());
+
+		$builder = $this->getBuilder();
+		$builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock('foo');
+		$this->assertEquals('select * from foo where bar = ? foo', $builder->toSql());
+		$this->assertEquals(array('baz'), $builder->getBindings());
+	}
+
+	public function testTruncateMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getConnection()->shouldReceive('statement')->once()->with('truncate table users', array());
+		$builder->from('users')->truncate();
+		$grammar = new \yajra\Oci8\Query\Grammars\OracleGrammar;
+		$builder = $this->getBuilder();
+		$builder->from('users');
+		$this->assertEquals(array(
+			'truncate table users' => array(),
+		), $grammar->compileTruncate($builder));
 	}
 
 	protected function getBuilder()
