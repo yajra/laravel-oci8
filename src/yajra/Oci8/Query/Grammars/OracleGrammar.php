@@ -206,13 +206,8 @@ class OracleGrammar extends Grammar {
 	 * @param  string $sequence
 	 * @return string
 	 */
-	public function compileInsertGetId(Builder $query, $values, $sequence)
+	public function compileInsertGetId(Builder $query, $values, $sequence = 'id')
 	{
-		if (is_null($sequence))
-		{
-			$sequence = 'id';
-		}
-
 		return $this->compileInsert($query, $values) . ' returning ' . $this->wrap($sequence) . ' into ?';
 	}
 
