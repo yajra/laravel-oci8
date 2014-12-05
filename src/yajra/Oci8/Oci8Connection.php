@@ -100,14 +100,6 @@ class Oci8Connection extends Connection {
 	}
 
 	/**
-	 * @return QueryGrammar
-	 */
-	public function getQueryGrammar()
-	{
-		return $this->queryGrammar;
-	}
-
-	/**
 	 * @inheritdoc
 	 */
 	protected function getDefaultSchemaGrammar()
@@ -121,14 +113,6 @@ class Oci8Connection extends Connection {
 	protected function getDefaultPostProcessor()
 	{
 		return new Processor;
-	}
-
-	/**
-	 * @return Processor
-	 */
-	public function getPostProcessor()
-	{
-		return parent::getPostProcessor();
 	}
 
 	/**
