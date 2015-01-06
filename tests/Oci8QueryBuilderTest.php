@@ -648,23 +648,20 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $results);
 	}
 
-	/**
-	 * @todo not working on Laravel v4.2.16
 	public function testAggregateExistsFunction()
 	{
-	$builder = $this->getBuilder();
-	$builder->getConnection()->shouldReceive('select')
-	->once()
-	->with('select count(*) as aggregate from users', [])
-	->andReturn([['aggregate' => 1]]);
-	$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
-	{
-	return $results;
-	});
-	$results = $builder->from('users')->exists();
-	$this->assertTrue($results);
+		$builder = $this->getBuilder();
+		$builder->getConnection()->shouldReceive('select')
+			->once()
+			->with('select t2.* from ( select rownum AS "rn", t1.* from (select count(*) as aggregate from users) t1 ) t2 where t2."rn" between 1 and 1', [])
+			->andReturn([['aggregate' => 1]]);
+		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
+		{
+			return $results;
+		});
+		$results = $builder->from('users')->exists();
+		$this->assertTrue($results);
 	}
-	 */
 
 	public function testAggregateMaxFunction()
 	{
@@ -764,17 +761,19 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $result);
 	}
 
-	/* @todo: fix test failing on PHP5.4++
-	 * public function testUpdateLobMethod()
-	 * {
-	 * $builder = $this->getBuilder();
-	 * $builder->getProcessor()->shouldReceive('saveLob')->once()->with($builder, 'update users set email = ? where id
-	 * = ? returning blob, id into ?, ?', array('foo',1), array('test data'))->andReturn(1);
-	 * $result = $builder->from('users')->where('id','=',1)->updateLob(array('email' => 'foo'), array('blob' => 'test
-	 * data'), 'id');
-	 * $this->assertEquals(1, $result);
-	 * }
-	 */
+	public function testUpdateLobMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getProcessor()
+			->shouldReceive('saveLob')
+			->once()
+			->with($builder, 'update users set email = ?, blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?', ['foo', 1], ['test data'])
+			->andReturn(1);
+		$result = $builder->from('users')
+			->where('id', '=', 1)
+			->updateLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
+		$this->assertEquals(1, $result);
+	}
 
 	public function testInsertGetIdMethodRemovesExpressions()
 	{
@@ -861,14 +860,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $result);
 	}
 
-	/** @todo truncate failing ...
-	 * public function testTruncateMethod()
-	 * {
-	 * $builder = $this->getBuilder();
-	 * $builder->getConnection()->shouldReceive('statement')->once()->with('truncate users', array());
-	 * $builder->from('users')->truncate();
-	 * }
-	 */
+	public function testTruncateMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getConnection()->shouldReceive('statement')->once()->with('truncate table users', []);
+		$builder->from('users')->truncate();
+	}
 
 	public function testMergeWheresCanMergeWheresAndBindings()
 	{
