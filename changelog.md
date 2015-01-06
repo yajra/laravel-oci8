@@ -1,5 +1,9 @@
-#Laravel-OCI8 Change Logs
+#Laravel-OCI8 Change Log
 
+#v2.0.8
+- Enhance support for TNSNAMES.ORA connection via config[tns]
+- Fix set schema function
+ 
 #v2.0.7
 - Rollback auto create constraint name
 - As per Laravel Docs, constraint full name should be passed (my bad >.<)
