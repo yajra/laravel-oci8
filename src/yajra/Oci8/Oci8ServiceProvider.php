@@ -49,6 +49,12 @@ class Oci8ServiceProvider extends ServiceProvider {
 					// set oracle date format to match PHP date
 					$db->setDateFormat('YYYY-MM-DD HH24:MI:SS');
 
+					// Like Postgres, Oracle allows the concept of "schema"
+					if (isset($config['schema']))
+					{
+						$db->setSchema($config['schema']);
+					}
+
 					return $db;
 				});
 			});

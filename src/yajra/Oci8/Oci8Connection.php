@@ -30,7 +30,7 @@ class Oci8Connection extends Connection {
 	 */
 	protected $trigger;
 
-	public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = array())
+	public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = [])
 	{
 		parent::__construct($pdo, $database, $tablePrefix, $config);
 		$this->sequence = new Sequence($this);
@@ -159,7 +159,7 @@ class Oci8Connection extends Connection {
 	{
 		$driver = $this->getDoctrineDriver();
 
-		$data = array('pdo' => $this->pdo, 'user' => $this->getConfig('database'));
+		$data = ['pdo' => $this->pdo, 'user' => $this->getConfig('database')];
 
 		return new DoctrineConnection($data, $driver);
 	}

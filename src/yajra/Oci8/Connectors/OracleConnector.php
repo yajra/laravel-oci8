@@ -55,9 +55,6 @@ class OracleConnector extends Connector implements ConnectorInterface {
 
 		$connection = $this->createConnection($tns, $config, $options);
 
-		// Like Postgres, Oracle allows the concept of "schema"
-		$this->setSchema($config, $connection);
-
 		return $connection;
 	}
 
@@ -178,19 +175,6 @@ class OracleConnector extends Connector implements ConnectorInterface {
 		$config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
 
 		return $config;
-	}
-
-	/**
-	 * @param array $config
-	 * @param $connection
-	 */
-	private function setSchema(array $config, $connection)
-	{
-		if (isset($config['schema']))
-		{
-			$schema = $config['schema'];
-			$connection->setSchema($schema);
-		}
 	}
 
 	/**
