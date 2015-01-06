@@ -49,7 +49,7 @@ class OracleConnector extends Connector implements ConnectorInterface {
 	 */
 	public function connect(array $config)
 	{
-		$tns = $this->getDsn($config);
+		$tns = ! empty($config['tns']) ? $config['tns'] : $this->getDsn($config);
 
 		$options = $this->getOptions($config);
 

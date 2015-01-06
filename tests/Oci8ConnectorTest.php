@@ -90,6 +90,13 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
             array('(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 array('driver' => 'pdo-via-oci8', 'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))')),
 
+            // using tnsnames.ora
+            array('xe',
+                array('driver' => 'oracle', 'tns' => 'xe')),
+            array('xe',
+                array('driver' => 'oci8', 'tns' => 'xe')),
+            array('xe',
+                array('driver' => 'pdo-via-oci8', 'tns' => 'xe')),
 		);
 	}
 
