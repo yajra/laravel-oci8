@@ -514,6 +514,23 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
 	}
 
+	public function testAddingChar()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->char('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo char(255) not null )', $statements[0]);
+
+		$blueprint = new Blueprint('users');
+		$blueprint->char('foo', 1);
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo char(1) not null )', $statements[0]);
+	}
+
 	public function testAddingBigInteger()
 	{
 		$blueprint = new Blueprint('users');
