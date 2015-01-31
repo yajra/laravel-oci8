@@ -140,6 +140,24 @@ class Oci8Connection extends Connection {
 		return $query->from($table);
 	}
 
+
+	/**
+	 * @param string $format
+	 * @return $this
+	 */
+	public function setSessionVars($sessionVars = [])
+	{
+		$vars = [];
+		foreach ($sessionVars as $option => $value) {
+			$vars[] = $option." = ".$value;
+		}
+		$sql = "ALTER SESSION SET ".implode(" ", $vars);
+
+		$this->statement($sql);
+
+		return $this;
+	}
+
 	/**
 	 * @param string $format
 	 * @return $this
