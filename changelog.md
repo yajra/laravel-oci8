@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v2.1.1
+- remove boot/package function on Oci8ServiceProvider to fix compatibly with Laravel5
+
 #v2.1.0
 - Added support for CHAR column data type. Fix #51
 - Fix failing/todo unit tests
