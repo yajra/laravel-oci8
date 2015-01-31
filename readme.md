@@ -274,6 +274,16 @@ $capsule->addConnection(array(
 $capsule->bootEloquent();
 ```
 
+```php
+// Set the event dispatcher used by Eloquent models... (optional)
+use Illuminate\Events\Dispatcher;
+use Illuminate\Container\Container;
+$capsule->setEventDispatcher(new Dispatcher(new Container));
+
+// Make this Capsule instance available globally via static methods... (optional)
+$capsule->setAsGlobal();
+```
+
 - Now we can start working with database tables just like we would if we were using Laravel!
 ```php
 include 'database.php';
