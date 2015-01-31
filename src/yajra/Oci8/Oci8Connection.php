@@ -240,6 +240,24 @@ class Oci8Connection extends Connection {
 		return '';
 	}
 
+
+	/**
+	 * @param string $format
+	 * @return $this
+	 */
+	public function setSessionVars($sessionVars = [])
+	{
+		$vars = [];
+		foreach ($sessionVars as $option => $value) {
+			$vars[] = $option." = ".$value;
+		}
+		$sql = "ALTER SESSION SET ".implode(" ", $vars);
+
+		$this->statement($sql);
+
+		return $this;
+	}
+
 	/**
 	 * function to check if sequence exists
 	 *
