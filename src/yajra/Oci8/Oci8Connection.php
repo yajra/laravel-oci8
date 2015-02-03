@@ -185,15 +185,14 @@ class Oci8Connection extends Connection {
 	 * @param array $sessionVars
 	 * @return $this
 	 */
-	public function setSessionVars(array $sessionVars = [])
+	public function setSessionVars(array $sessionVars)
 	{
 		$vars = [];
 		foreach ($sessionVars as $option => $value)
 		{
-			$vars[] = $option . " = " . $value;
+			$vars[] = "$option  = '$value'";
 		}
 		$sql = "ALTER SESSION SET " . implode(" ", $vars);
-
 		$this->statement($sql);
 
 		return $this;
