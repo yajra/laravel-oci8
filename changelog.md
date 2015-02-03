@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v2.1.3
+- fix set schema alter session query
+- enhance oracle alter session variables query
+
 #v2.1.2
 - improve oracle alter session query
 
