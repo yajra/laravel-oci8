@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v2.1.2
+- improve oracle alter session query
+
 #v2.1.1
 - remove boot/package function on Oci8ServiceProvider to fix compatibly with Laravel5
 
