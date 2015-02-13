@@ -50,7 +50,9 @@ class Oci8Connection extends Connection {
 	public function setSchema($schema)
 	{
 		$this->schema = $schema;
-		$sessionVars['CURRENT_SCHEMA'] = $schema;
+		$sessionVars = [
+			'CURRENT_SCHEMA' => $schema
+		];
 
 		return $this->setSessionVars($sessionVars);
 	}
