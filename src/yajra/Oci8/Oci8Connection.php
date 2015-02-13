@@ -30,6 +30,12 @@ class Oci8Connection extends Connection {
 	 */
 	protected $trigger;
 
+	/**
+	 * @param PDO $pdo
+	 * @param string $database
+	 * @param string $tablePrefix
+	 * @param array $config
+	 */
 	public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = [])
 	{
 		parent::__construct($pdo, $database, $tablePrefix, $config);
@@ -44,9 +50,9 @@ class Oci8Connection extends Connection {
 	public function setSchema($schema)
 	{
 		$this->schema = $schema;
-		$this->statement("ALTER SESSION SET CURRENT_SCHEMA = {$schema}");
+		$sessionVars['CURRENT_SCHEMA'] = $schema;
 
-		return $this;
+		return $this->setSessionVars($sessionVars);
 	}
 
 	/**
@@ -146,10 +152,12 @@ class Oci8Connection extends Connection {
 	 */
 	public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
 	{
-		$this->statement("alter session set NLS_DATE_FORMAT = '$format'");
-		$this->statement("alter session set NLS_TIMESTAMP_FORMAT = '$format'");
+		$sessionVars = [
+			'NLS_DATE_FORMAT'      => $format,
+			'NLS_TIMESTAMP_FORMAT' => $format,
+		];
 
-		return $this;
+		return $this->setSessionVars($sessionVars);
 	}
 
 	/**
@@ -190,7 +198,14 @@ class Oci8Connection extends Connection {
 		$vars = [];
 		foreach ($sessionVars as $option => $value)
 		{
-			$vars[] = "$option  = '$value'";
+			if (strtoupper($option) == 'CURRENT_SCHEMA')
+			{
+				$vars[] = "$option  = $value";
+			}
+			else
+			{
+				$vars[] = "$option  = '$value'";
+			}
 		}
 		$sql = "ALTER SESSION SET " . implode(" ", $vars);
 		$this->statement($sql);
