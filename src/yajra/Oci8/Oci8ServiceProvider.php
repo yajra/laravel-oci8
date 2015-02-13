@@ -37,6 +37,11 @@ class Oci8ServiceProvider extends ServiceProvider {
 					$connection = $connector->connect($config);
 					$db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
 
+					if (Config::get('app.debug', false))
+					{
+						$db->enableQueryLog();
+					}
+
 					// set oracle session variables
 					$sessionVars = [
 						'NLS_TIME_FORMAT'         => 'HH24:MI:SS',
