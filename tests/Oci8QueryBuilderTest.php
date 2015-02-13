@@ -40,71 +40,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('select distinct foo, bar from users', $builder->toSql());
 	}
 
-	public function testSelectWithCaching()
-	{
-		$cache = m::mock('stdClass');
-		$driver = m::mock('stdClass');
-		$query = $this->setupCacheTestQuery($cache, $driver);
-
-		$query = $query->remember(5);
-
-		$driver->shouldReceive('remember')
-			->once()
-			->with($query->getCacheKey(), 5, m::type('Closure'))
-			->andReturnUsing(function ($key, $minutes, $callback)
-			{
-				return $callback();
-			});
-
-
-		$this->assertEquals($query->get(), ['results']);
-	}
-
-	public function testSelectWithCachingForever()
-	{
-		$cache = m::mock('stdClass');
-		$driver = m::mock('stdClass');
-		$query = $this->setupCacheTestQuery($cache, $driver);
-
-		$query = $query->rememberForever();
-
-		$driver->shouldReceive('rememberForever')
-			->once()
-			->with($query->getCacheKey(), m::type('Closure'))
-			->andReturnUsing(function ($key, $callback)
-			{
-				return $callback();
-			});
-
-
-		$this->assertEquals($query->get(), ['results']);
-	}
-
-	public function testSelectWithCachingAndTags()
-	{
-		$taggedCache = m::mock('StdClass');
-		$cache = m::mock('stdClass');
-		$driver = m::mock('stdClass');
-
-		$driver->shouldReceive('tags')
-			->once()
-			->with(['foo', 'bar'])
-			->andReturn($taggedCache);
-
-		$query = $this->setupCacheTestQuery($cache, $driver);
-		$query = $query->cacheTags(['foo', 'bar'])->remember(5);
-
-		$taggedCache->shouldReceive('remember')
-			->once()
-			->with($query->getCacheKey(), 5, m::type('Closure'))
-			->andReturnUsing(function ($key, $minutes, $callback)
-			{
-				return $callback();
-			});
-
-		$this->assertEquals($query->get(), ['results']);
-	}
-
 	public function testBasicAlias()
 	{
 		$builder = $this->getBuilder();
@@ -553,68 +488,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('bar,baz', $results);
 	}
 
-	public function testPaginateCorrectlyCreatesPaginatorInstance()
-	{
-		$connection = m::mock('Illuminate\Database\ConnectionInterface');
-		$grammar = m::mock('Illuminate\Database\Query\Grammars\Grammar');
-		$processor = m::mock('Illuminate\Database\Query\Processors\Processor');
-		$builder = $this->getMock('Illuminate\Database\Query\Builder', ['getPaginationCount', 'forPage', 'get'], [$connection, $grammar, $processor]);
-		$paginator = m::mock('Illuminate\Pagination\Environment');
-		$paginator->shouldReceive('getCurrentPage')->once()->andReturn(1);
-		$connection->shouldReceive('getPaginator')->once()->andReturn($paginator);
-		$builder->expects($this->once())
-			->method('forPage')
-			->with($this->equalTo(1), $this->equalTo(15))
-			->will($this->returnValue($builder));
-		$builder->expects($this->once())->method('get')->with($this->equalTo(['*']))->will($this->returnValue(['foo']));
-		$builder->expects($this->once())->method('getPaginationCount')->will($this->returnValue(10));
-		$paginator->shouldReceive('make')->once()->with(['foo'], 10, 15)->andReturn(['results']);
-
-		$this->assertEquals(['results'], $builder->paginate(15, ['*']));
-	}
-
-	public function testPaginateCorrectlyCreatesPaginatorInstanceForGroupedQuery()
-	{
-		$connection = m::mock('Illuminate\Database\ConnectionInterface');
-		$grammar = m::mock('Illuminate\Database\Query\Grammars\Grammar');
-		$processor = m::mock('Illuminate\Database\Query\Processors\Processor');
-		$builder = $this->getMock('Illuminate\Database\Query\Builder', ['get'], [$connection, $grammar, $processor]);
-		$paginator = m::mock('Illuminate\Pagination\Environment');
-		$paginator->shouldReceive('getCurrentPage')->once()->andReturn(2);
-		$connection->shouldReceive('getPaginator')->once()->andReturn($paginator);
-		$builder->expects($this->once())
-			->method('get')
-			->with($this->equalTo(['*']))
-			->will($this->returnValue(['foo', 'bar', 'baz']));
-		$paginator->shouldReceive('make')->once()->with(['baz'], 3, 2)->andReturn(['results']);
-
-		$this->assertEquals(['results'], $builder->groupBy('foo')->paginate(2, ['*']));
-	}
-
-	public function testGetPaginationCountGetsResultCount()
-	{
-		unset($_SERVER['orders']);
-		$builder = $this->getBuilder();
-		$builder->getConnection()
-			->shouldReceive('select')
-			->once()
-			->with('select count(*) as aggregate from users', [])
-			->andReturn([['aggregate' => 1]]);
-		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($query, $results)
-		{
-			$_SERVER['orders'] = $query->orders;
-
-			return $results;
-		});
-		$results = $builder->from('users')->orderBy('foo', 'desc')->getPaginationCount();
-
-		$this->assertNull($_SERVER['orders']);
-		unset($_SERVER['orders']);
-
-		$this->assertEquals([0 => ['column' => 'foo', 'direction' => 'desc']], $builder->orders);
-		$this->assertEquals(1, $results);
-	}
-
 	public function testPluckMethodReturnsSingleColumn()
 	{
 		$builder = $this->getBuilder();
@@ -930,24 +803,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder = $this->getBuilder();
 
 		$builder->noValidMethodHere();
-	}
-
-	public function setupCacheTestQuery($cache, $driver)
-	{
-		$connection = m::mock('Illuminate\Database\ConnectionInterface');
-		$connection->shouldReceive('getName')->andReturn('connection_name');
-		$connection->shouldReceive('getCacheManager')->once()->andReturn($cache);
-		$cache->shouldReceive('driver')->once()->andReturn($driver);
-		$grammar = new yajra\Oci8\Query\Grammars\OracleGrammar;
-		$processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
-
-		$builder = $this->getMock('Illuminate\Database\Query\Builder', ['getFresh'], [$connection, $grammar, $processor]);
-		$builder->expects($this->once())
-			->method('getFresh')
-			->with($this->equalTo(['*']))
-			->will($this->returnValue(['results']));
-
-		return $builder->select('*')->from('users')->where('email', 'foo@bar.com');
 	}
 
 	public function testOracleLock()
