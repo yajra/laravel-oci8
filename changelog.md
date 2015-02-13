@@ -1,5 +1,10 @@
 #Laravel-OCI8 Change Log
 
+#v2.1.4
+- refactor alter session functions
+- enable query log when app.debug = true
+	- temporary solution for https://github.com/laravel/framework/issues/7085
+
 #v2.1.3
 - fix set schema alter session query
 - enhance oracle alter session variables query
