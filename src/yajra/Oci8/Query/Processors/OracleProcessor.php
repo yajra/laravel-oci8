@@ -33,7 +33,7 @@ class OracleProcessor extends Processor {
 		$counter = $this->bindValuesAndReturnCounter($values, $counter);
 
 		// bind output param for the returning clause
-		$this->statement->bindParam($counter, $id, PDO::PARAM_INT);
+		$this->statement->bindParam($counter, $id, PDO::PARAM_INT|PDO::PARAM_INPUT_OUTPUT, 8);
 
 		// execute statement
 		$this->statement->execute();
