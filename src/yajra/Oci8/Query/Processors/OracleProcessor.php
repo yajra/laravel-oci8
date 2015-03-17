@@ -138,6 +138,11 @@ class OracleProcessor extends Processor {
 			{
 				$param = PDO::PARAM_NULL;
 			}
+			elseif ($value instanceOf \DateTime)
+			{
+                $value = $value->format('Y-m-d H:i:s');
+                $param = PDO::PARAM_STR;
+			}
 			else
 			{
 				$param = PDO::PARAM_STR;
