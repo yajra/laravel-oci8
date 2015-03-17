@@ -642,7 +642,17 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase {
 		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
 		$this->assertEquals(1, count($statements));
-		$this->assertEquals('alter table users add ( foo varchar2(255) check (foo in (\'bar\', \'baz\')) not null )', $statements[0]);
+		$this->assertEquals('alter table users add ( foo varchar2(255) not null check (foo in (\'bar\', \'baz\')) )', $statements[0]);
+	}
+
+	public function testAddingEnumWithDefaultValue()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->enum('foo', array('bar', 'baz'))->default('bar');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo varchar2(255) default \'bar\' not null check (foo in (\'bar\', \'baz\')) )', $statements[0]);
 	}
 
 	public function testAddingDate()

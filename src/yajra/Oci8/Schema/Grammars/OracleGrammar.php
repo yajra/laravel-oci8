@@ -538,7 +538,7 @@ class OracleGrammar extends Grammar {
 	{
 		$length = ($column->length) ? $column->length : 255;
 
-		return "varchar2({$length}) check ({$column->name} in ('" . implode("', '", $column->allowed) . "'))";
+		return "varchar2({$length})";
 	}
 
 	/**
@@ -605,7 +605,16 @@ class OracleGrammar extends Grammar {
 	 */
 	protected function modifyNullable(Blueprint $blueprint, Fluent $column)
 	{
+		// check if field is declared as enum
+		$enum = "";
+		if (count((array) $column->allowed))
+		{
+			$enum = " check ({$column->name} in ('" . implode("', '", $column->allowed) . "'))";
+		}
+
 		$null = $column->nullable ? ' null' : ' not null';
+		$null .= $enum;
+
 		if ( ! is_null($column->default))
 		{
 			return " default " . $this->getDefaultValue($column->default) . $null;
