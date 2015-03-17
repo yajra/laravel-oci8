@@ -206,7 +206,7 @@ class OracleGrammar extends Grammar {
 	 * @param  string $sequence
 	 * @return string
 	 */
-	public function compileInsertGetId(Builder $query, $values, $sequence = null)
+	public function compileInsertGetId(Builder $query, $values, $sequence = 'id')
 	{
         if (empty($sequence))
         {
@@ -227,6 +227,11 @@ class OracleGrammar extends Grammar {
 	 */
 	public function compileInsertLob(Builder $query, $values, $binaries, $sequence = 'id')
 	{
+        if (empty($sequence))
+        {
+            $sequence = 'id';
+        }
+
 		$table = $this->wrapTable($query->from);
 
 		if ( ! is_array(reset($values)))
