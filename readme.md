@@ -28,19 +28,15 @@ tested [OCI8](http://php.net/oci8) functions instead of using the still experime
 ###Requirements
 - PHP >= 5.4
 - PHP [OCI8](http://php.net/oci8) extension
+- [Composer](https://getcomposer.org/)
 
 ###Installation
-```
-{
-    "require": {
-        "yajra/laravel-oci8": "~2.0"
-    }
-}
-```
 
-And then run `composer update`
+Open your terminal / command prompt:
+- change directory to your project `cd /path/to/laravel`
+- execute `composer require yajra/laravel-oci8:~2.0`
 
-Once Composer has installed or updated your packages you need to register the service provider. Open up `app/config/app.php` and find the `providers` key and add:
+Once Composer has installed or updated your packages you need to register the service provider. Open up `config/app.php` and find the `providers` key and add:
 
 ```php
 'yajra\Oci8\Oci8ServiceProvider'
@@ -63,12 +59,15 @@ Then setup a valid database configuration using the driver `oracle`. Configure y
 
 And run your laravel installation...
 
-###Starter Kit
+####Starter Kit
 To help you kickstart with Laravel, you may want to use the starter kit package below:
 
 [Laravel 4.2 Starter Kit](https://github.com/yajra/laravel-admin-template)
 
-Starter kit package above were forked from brunogaspar/laravel4-starter-kit. No need to re-invent the wheel. 
+Starter kit package above were forked from [brunogaspar/laravel4-starter-kit](https://github.com/brunogaspar/laravel-starter-kit). No need to re-invent the wheel.
+
+####Homestead with Oracle Support
+You may also want to use [Homestead-Oracle](https://github.com/yajra/homestead-oracle) project as your development virtual machine to avoid the inconvenience of settings up a Laravel - Oracle development environment.
 
 ###Auto-Increment Support
 To support auto-increment in Laravel-OCI8, you must meet the following requirements:
@@ -256,7 +255,7 @@ $manager->extend('oracle', function($config)
     $connector = new OracleConnector();
     $connection = $connector->connect($config);
     $db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
-    
+
     // set oracle session variables
     $sessionVars = [
         'NLS_TIME_FORMAT'         => 'HH24:MI:SS',
