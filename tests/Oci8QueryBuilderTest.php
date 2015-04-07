@@ -391,7 +391,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1', [1])
+			->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1', [1], true)
 			->andReturn([['foo' => 'bar']]);
 		$builder->getProcessor()
 			->shouldReceive('processSelect')
@@ -411,7 +411,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1', [1])
+			->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1', [1], true)
 			->andReturn([['foo' => 'bar']]);
 		$builder->getProcessor()
 			->shouldReceive('processSelect')
@@ -494,7 +494,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select t2.* from ( select rownum AS "rn", t1.* from (select foo from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1', [1])
+			->with('select t2.* from ( select rownum AS "rn", t1.* from (select foo from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1', [1], true)
 			->andReturn([['rn' => 1, 'foo' => 'bar']]);
 		$builder->getProcessor()
 			->shouldReceive('processSelect')
@@ -511,7 +511,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select count(*) as aggregate from users', [])
+			->with('select count(*) as aggregate from users', [], true)
 			->andReturn([['aggregate' => 1]]);
 		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
 		{
@@ -526,7 +526,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder = $this->getBuilder();
 		$builder->getConnection()->shouldReceive('select')
 			->once()
-			->with('select t2.* from ( select rownum AS "rn", t1.* from (select count(*) as aggregate from users) t1 ) t2 where t2."rn" between 1 and 1', [])
+			->with('select t2.* from ( select rownum AS "rn", t1.* from (select count(*) as aggregate from users) t1 ) t2 where t2."rn" between 1 and 1', [], true)
 			->andReturn([['aggregate' => 1]]);
 		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
 		{
@@ -542,7 +542,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select max(id) as aggregate from users', [])
+			->with('select max(id) as aggregate from users', [], true)
 			->andReturn([['aggregate' => 1]]);
 		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
 		{
@@ -558,7 +558,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select min(id) as aggregate from users', [])
+			->with('select min(id) as aggregate from users', [], true)
 			->andReturn([['aggregate' => 1]]);
 		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
 		{
@@ -574,7 +574,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$builder->getConnection()
 			->shouldReceive('select')
 			->once()
-			->with('select sum(id) as aggregate from users', [])
+			->with('select sum(id) as aggregate from users', [], true)
 			->andReturn([['aggregate' => 1]]);
 		$builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results)
 		{
