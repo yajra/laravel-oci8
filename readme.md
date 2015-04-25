@@ -43,6 +43,7 @@ Once Composer has installed or updated your packages you need to register the se
 ```
 
 Then setup a valid database configuration using the driver `oracle`. Configure your connection as usual with:
+> Note: For [Laravel Lumen configuration](http://lumen.laravel.com/docs/configuration#configuration-files), make sure you have a `config/database.php` file on your project and append the configuration below:
 
 ```php
 'oracle' => array(
@@ -56,6 +57,7 @@ Then setup a valid database configuration using the driver `oracle`. Configure y
     'prefix' => '',
 )
 ```
+
 
 And run your laravel installation...
 
