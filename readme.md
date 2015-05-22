@@ -41,4 +41,4 @@ And run your laravel installation...
 
 ###License
 
-Licensed under the [MIT License](http://cheeaun.mit-license.org/).
+Licensed under the [MIT License](https://github.com/yajra/laravel-oci8/blob/master/LICENSE).
