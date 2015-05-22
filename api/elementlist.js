@@ -1,0 +1,3 @@
+
+var ApiGen = ApiGen || {};
+ApiGen.elements = [["c","yajra\\Oci8\\Connectors\\OracleConnector"],["c","yajra\\Oci8\\Eloquent\\OracleEloquent"],["c","yajra\\Oci8\\Oci8Connection"],["c","yajra\\Oci8\\Oci8ServiceProvider"],["c","yajra\\Oci8\\Query\\Grammars\\OracleGrammar"],["c","yajra\\Oci8\\Query\\OracleBuilder"],["c","yajra\\Oci8\\Query\\Processors\\OracleProcessor"],["c","yajra\\Oci8\\Schema\\Grammars\\OracleGrammar"],["c","yajra\\Oci8\\Schema\\OracleAutoIncrementHelper"],["c","yajra\\Oci8\\Schema\\OracleBlueprint"],["c","yajra\\Oci8\\Schema\\OracleBuilder"],["c","yajra\\Oci8\\Schema\\Sequence"],["c","yajra\\Oci8\\Schema\\Trigger"]];
