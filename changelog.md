@@ -1,5 +1,12 @@
 #Laravel-OCI8 Change Log
 
+#v2.3.0
+- added support for Oracle Cursor to be returned via Query Builder
+- requires `yajra/laravel-pdo-via-oci8:~0.12`
+
+#v2.2.0
+- added support for Laravel Lumen
+
 #v2.1.4
 - refactor alter session functions
 - enable query log when app.debug = true
