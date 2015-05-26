@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v2.3.1
+- Fix OracleEloquent Blob insert/update function when updating only the blob field
+- Fix Issue #70
+
 #v2.3.0
 - added support for Oracle Cursor to be returned via Query Builder
 - requires `yajra/laravel-pdo-via-oci8:~0.12`

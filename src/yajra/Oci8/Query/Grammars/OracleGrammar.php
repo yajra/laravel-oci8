@@ -246,7 +246,7 @@ class OracleGrammar extends Grammar {
 
 		$columns = $this->columnize(array_keys(reset($values)));
 		$binaryColumns = $this->columnize(array_keys(reset($binaries)));
-		$columns .= ', ' . $binaryColumns;
+		$columns .= (empty($columns) ? '' : ', ') . $binaryColumns;
 
 		$parameters = $this->parameterize(reset($values));
 		$binaryParameters = $this->parameterize(reset($binaries));
@@ -255,7 +255,7 @@ class OracleGrammar extends Grammar {
 		$binaryValue = array_fill(0, count($binaries), str_replace('?', 'EMPTY_BLOB()', $binaryParameters));
 
 		$value = array_merge($value, $binaryValue);
-		$parameters = implode(', ', $value);
+		$parameters = implode(', ', array_filter($value));
 
 		return "insert into $table ($columns) values ($parameters) returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
 	}
@@ -303,7 +303,7 @@ class OracleGrammar extends Grammar {
 		// prepare binary SQLs
 		if (count($binarySql))
 		{
-			$binarySql = ', ' . implode(',', $binarySql);
+			$binarySql = (empty($columns) ? '' : ', ') . implode(',', $binarySql);
 		}
 
 		// If the query has any "join" clauses, we will setup the joins on the builder

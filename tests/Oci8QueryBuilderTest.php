@@ -634,6 +634,18 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $result);
 	}
 
+	public function testInsertOnlyLobMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getProcessor()
+			->shouldReceive('saveLob')
+			->once()
+			->with($builder, 'insert into users (blob) values (EMPTY_BLOB()) returning blob, id into ?, ?', [], ['test data'])
+			->andReturn(1);
+		$result = $builder->from('users')->insertLob([], ['blob' => 'test data'], 'id');
+		$this->assertEquals(1, $result);
+	}
+
 	public function testUpdateLobMethod()
 	{
 		$builder = $this->getBuilder();
@@ -645,6 +657,20 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$result = $builder->from('users')
 			->where('id', '=', 1)
 			->updateLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
+		$this->assertEquals(1, $result);
+	}
+
+	public function testUpdateOnlyLobMethod()
+	{
+		$builder = $this->getBuilder();
+		$builder->getProcessor()
+			->shouldReceive('saveLob')
+			->once()
+			->with($builder, 'update users set blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?', [1], ['test data'])
+			->andReturn(1);
+		$result = $builder->from('users')
+			->where('id', '=', 1)
+			->updateLob([], ['blob' => 'test data'], 'id');
 		$this->assertEquals(1, $result);
 	}
 
