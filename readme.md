@@ -2,12 +2,14 @@
 
 ###Laravel-OCI8
 
-[![Build Status](https://travis-ci.org/yajra/laravel-oci8.png?branch=master)](https://travis-ci.org/yajra/laravel-oci8)
+[![Build Status](https://img.shields.io/travis/yajra/laravel-oci8.svg)](https://travis-ci.org/yajra/laravel-oci8)
 [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/downloads.png)](https://packagist.org/packages/yajra/laravel-oci8)
 [![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.png)](https://packagist.org/packages/yajra/laravel-oci8)
 [![Latest Unstable Version](https://poser.pugx.org/yajra/laravel-oci8/v/unstable.svg)](https://packagist.org/packages/yajra/laravel-oci8)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/yajra/laravel-oci8/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/yajra/laravel-oci8/?branch=master)
-[![License](https://poser.pugx.org/yajra/laravel-oci8/license.svg)](https://packagist.org/packages/yajra/laravel-oci8)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/yajra/laravel-oci8/blob/master/LICENSE)
+[![Support via Gratipay](https://img.shields.io/gratipay/yajra.svg)](https://gratipay.com/yajra/)
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=yajra&url=https://github.com/yajra/laravel-datatables&title=laravel-datatables&language=PHP&tags=github&category=software)
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 ##Documentations
