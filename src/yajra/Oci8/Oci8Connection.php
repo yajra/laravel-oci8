@@ -34,27 +34,6 @@ class Oci8Connection extends Connection
     protected $trigger;
 
     /**
-     * The query grammar implementation.
-     *
-     * @var \yajra\Oci8\Query\Grammars\OracleGrammar
-     */
-    protected $queryGrammar;
-
-    /**
-     * The schema grammar implementation.
-     *
-     * @var \yajra\Oci8\Schema\Grammars\OracleGrammar
-     */
-    protected $schemaGrammar;
-
-    /**
-     * The query post processor implementation.
-     *
-     * @var \yajra\Oci8\Query\Processors\OracleProcessor
-     */
-    protected $postProcessor;
-
-    /**
      * @param PDO $pdo
      * @param string $database
      * @param string $tablePrefix
@@ -187,16 +166,6 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Get the query grammar used by the connection.
-     *
-     * @return \Illuminate\Database\Query\Grammars\Grammar
-     */
-    public function getQueryGrammar()
-    {
-        return $this->queryGrammar;
-    }
-
-    /**
      * Set oracle session date format.
      *
      * @param string $format
@@ -237,16 +206,6 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Set the query grammar to the default implementation.
-     *
-     * @return void
-     */
-    public function useDefaultQueryGrammar()
-    {
-        $this->queryGrammar = $this->getDefaultQueryGrammar();
-    }
-
-    /**
      * Get the default query grammar instance.
      *
      * @return \yajra\Oci8\Query\Grammars\OracleGrammar
@@ -267,14 +226,15 @@ class Oci8Connection extends Connection
         return parent::withTablePrefix($grammar);
     }
 
+
     /**
-     * Set the query post processor to the default implementation.
+     * Get the default schema grammar instance.
      *
-     * @return void
+     * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
      */
-    public function useDefaultPostProcessor()
+    protected function getDefaultSchemaGrammar()
     {
-        $this->postProcessor = $this->getDefaultPostProcessor();
+        return $this->withTablePrefix(new SchemaGrammar);
     }
 
     /**
@@ -285,16 +245,6 @@ class Oci8Connection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new Processor;
-    }
-
-    /**
-     * Get the default schema grammar instance.
-     *
-     * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
-     */
-    protected function getDefaultSchemaGrammar()
-    {
-        return $this->withTablePrefix(new SchemaGrammar);
     }
 
 }
