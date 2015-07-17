@@ -89,6 +89,19 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Execute the query and get the first result.
+     *
+     * @param  array   $columns
+     * @return mixed|static
+     */
+    public function first($columns = array('*'))
+    {
+        $results = $this->take(1)->get($columns);
+
+        return count($results) > 0 ? (array) reset($results) : null;
+    }
+
+    /**
      * Add a "where in" clause to the query.
      * Split one WHERE IN clause into multiple clauses each
      * with up to 1000 expressions to avoid ORA-01795
