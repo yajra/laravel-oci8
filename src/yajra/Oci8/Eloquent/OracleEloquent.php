@@ -1,4 +1,6 @@
-<?php namespace yajra\Oci8\Eloquent;
+<?php
+
+namespace yajra\Oci8\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

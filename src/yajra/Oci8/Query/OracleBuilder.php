@@ -1,4 +1,6 @@
-<?php namespace yajra\Oci8\Query;
+<?php
+
+namespace yajra\Oci8\Query;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;

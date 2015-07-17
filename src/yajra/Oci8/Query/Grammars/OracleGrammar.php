@@ -1,4 +1,6 @@
-<?php namespace yajra\Oci8\Query\Grammars;
+<?php
+
+namespace yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;

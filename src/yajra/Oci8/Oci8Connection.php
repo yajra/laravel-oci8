@@ -1,4 +1,6 @@
-<?php namespace yajra\Oci8;
+<?php
+
+namespace yajra\Oci8;
 
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
