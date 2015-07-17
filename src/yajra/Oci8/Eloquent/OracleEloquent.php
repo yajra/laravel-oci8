@@ -17,6 +17,9 @@ class OracleEloquent extends Model
      */
     protected $binaries = [];
 
+    /**
+     * @var array
+     */
     protected $wrapBinaries = [];
 
     /**
@@ -52,19 +55,9 @@ class OracleEloquent extends Model
     }
 
     /**
-     * Get the database connection for the model.
-     *
-     * @return Oci8Connection
-     */
-    public function getConnection()
-    {
-        return parent::getConnection();
-    }
-
-    /**
      * Get a new query builder instance for the connection.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return \yajra\Oci8\Query\OracleBuilder
      */
     protected function newBaseQueryBuilder()
     {
