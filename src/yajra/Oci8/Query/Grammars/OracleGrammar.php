@@ -33,11 +33,21 @@ class OracleGrammar extends Grammar
         // If an offset is present on the query, we will need to wrap the query in
         // a big "ANSI" offset syntax block. This is very nasty compared to the
         // other database systems but is necessary for implementing features.
-        if (($query->limit > 0 || $query->offset > 0) && ! array_key_exists('lock', $components)) {
+        if ($this->isPaginationable($query, $components)) {
             return $this->compileAnsiOffset($query, $components);
         }
 
         return trim($this->concatenate($components));
+    }
+
+    /**
+     * @param Builder $query
+     * @param array $components
+     * @return bool
+     */
+    protected function isPaginationable(Builder $query, array $components)
+    {
+        return ($query->limit > 0 || $query->offset > 0) && ! array_key_exists('lock', $components);
     }
 
     /**
