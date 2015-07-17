@@ -66,7 +66,8 @@ class OracleProcessor extends Processor
         $this->prepareStatement($query, $sql);
         $counter = $this->bindValuesAndReturnCounter($values, $counter);
 
-        for ($i = 0; $i < count($binaries); $i++) {
+        $binariesCount = count($binaries);
+        for ($i = 0; $i < $binariesCount; $i++) {
             // bind blob descriptor
             $this->statement->bindParam($counter, $lob[$i], PDO::PARAM_LOB);
             $counter++;
@@ -82,7 +83,7 @@ class OracleProcessor extends Processor
             return false;
         }
 
-        for ($i = 0; $i < count($binaries); $i++) {
+        for ($i = 0; $i < $binariesCount; $i++) {
             // Discard the existing LOB contents
             if ( ! $lob[$i]->truncate()) {
                 $query->getConnection()->getPdo()->rollBack();
