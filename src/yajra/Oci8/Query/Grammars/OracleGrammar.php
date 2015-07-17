@@ -4,6 +4,7 @@ namespace yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {
@@ -274,6 +275,7 @@ class OracleGrammar extends Grammar
      * @param  \Illuminate\Database\Query\Builder $query
      * @param  bool|string $value
      * @return string
+     * @throws Oci8Exception
      */
     protected function compileLock(Builder $query, $value)
     {
@@ -281,7 +283,11 @@ class OracleGrammar extends Grammar
             return $value;
         }
 
-        return $value ? 'for update' : 'lock in share mode';
+        if ($value) {
+            return 'for update';
+        }
+
+        throw new Oci8Exception('Lock in share mode not yet supported!');
     }
 
     /**
