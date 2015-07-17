@@ -4,6 +4,7 @@ namespace yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {
@@ -32,7 +33,7 @@ class OracleGrammar extends Grammar
         // If an offset is present on the query, we will need to wrap the query in
         // a big "ANSI" offset syntax block. This is very nasty compared to the
         // other database systems but is necessary for implementing features.
-        if ($query->limit > 0 OR $query->offset > 0) {
+        if (($query->limit > 0 || $query->offset > 0) && ! array_key_exists('lock', $components)) {
             return $this->compileAnsiOffset($query, $components);
         }
 
@@ -274,6 +275,7 @@ class OracleGrammar extends Grammar
      * @param  \Illuminate\Database\Query\Builder $query
      * @param  bool|string $value
      * @return string
+     * @throws Oci8Exception
      */
     protected function compileLock(Builder $query, $value)
     {
@@ -281,7 +283,11 @@ class OracleGrammar extends Grammar
             return $value;
         }
 
-        return $value ? 'for update' : 'lock in share mode';
+        if ($value) {
+            return 'for update';
+        }
+
+        throw new Oci8Exception('Lock in share mode not yet supported!');
     }
 
     /**

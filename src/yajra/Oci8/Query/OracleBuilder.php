@@ -89,6 +89,19 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Execute the query and get the first result.
+     *
+     * @param  array   $columns
+     * @return mixed|static
+     */
+    public function first($columns = array('*'))
+    {
+        $results = $this->take(1)->get($columns);
+
+        return count($results) > 0 ? (array) reset($results) : null;
+    }
+
+    /**
      * Add a "where in" clause to the query.
      * Split one WHERE IN clause into multiple clauses each
      * with up to 1000 expressions to avoid ORA-01795
@@ -120,4 +133,21 @@ class OracleBuilder extends Builder
         return parent::whereIn($column, $values, $boolean, $not);
     }
 
+    /**
+     * Run the query as a "select" statement against the connection.
+     *
+     * @return array
+     */
+    protected function runSelect()
+    {
+        if ($this->lock) {
+            $this->connection->beginTransaction();
+            $result = $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
+            $this->connection->commit();
+
+            return $result;
+        }
+
+        return $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
+    }
 }
