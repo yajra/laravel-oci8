@@ -3,16 +3,12 @@
 use Mockery as m;
 use yajra\Oci8\Schema\Sequence;
 
-class SequenceTest extends PHPUnit_Framework_TestCase {
+class SequenceTest extends PHPUnit_Framework_TestCase
+{
 
     public function tearDown()
     {
         m::close();
-    }
-
-    protected function getConnection()
-    {
-        return m::mock('Illuminate\Database\Connection');
     }
 
     /** @test */
@@ -23,6 +19,11 @@ class SequenceTest extends PHPUnit_Framework_TestCase {
         $connection->shouldReceive('statement')->andReturn(true);
         $success = $sequence->create('users_id_seq');
         $this->assertEquals(true, $success);
+    }
+
+    protected function getConnection()
+    {
+        return m::mock('Illuminate\Database\Connection');
     }
 
     /** @test */
@@ -36,4 +37,3 @@ class SequenceTest extends PHPUnit_Framework_TestCase {
     }
 
 }
- 

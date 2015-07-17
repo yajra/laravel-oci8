@@ -1,9 +1,10 @@
 <?php
 
-use yajra\Oci8\Connectors\OracleConnector;
 use Mockery as m;
+use yajra\Oci8\Connectors\OracleConnector;
 
-class OracleConnectorStub extends OracleConnector {
+class OracleConnectorStub extends OracleConnector
+{
 
     public function createConnection($tns, array $config, array $options)
     {
