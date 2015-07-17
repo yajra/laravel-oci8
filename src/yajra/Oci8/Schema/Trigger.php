@@ -2,35 +2,35 @@
 
 use Illuminate\Database\Connection;
 
-class Trigger {
+class Trigger
+{
 
-	protected $connection;
+    protected $connection;
 
-	/**
-	 * @param Connection $connection
-	 */
-	public function __construct(Connection $connection)
-	{
-		$this->connection = $connection;
-	}
+    /**
+     * @param Connection $connection
+     */
+    public function __construct(Connection $connection)
+    {
+        $this->connection = $connection;
+    }
 
-	/**
-	 * function to create auto increment trigger for a table
-	 *
-	 * @param  string $table
-	 * @param  string $column
-	 * @param  string $triggerName
-	 * @param  string $sequenceName
-	 * @return boolean
-	 */
-	public function autoIncrement($table, $column, $triggerName, $sequenceName)
-	{
-		if ( ! $table or ! $column or ! $triggerName or ! $sequenceName)
-		{
-			return false;
-		}
+    /**
+     * function to create auto increment trigger for a table
+     *
+     * @param  string $table
+     * @param  string $column
+     * @param  string $triggerName
+     * @param  string $sequenceName
+     * @return boolean
+     */
+    public function autoIncrement($table, $column, $triggerName, $sequenceName)
+    {
+        if ( ! $table or ! $column or ! $triggerName or ! $sequenceName) {
+            return false;
+        }
 
-		return $this->connection->statement("
+        return $this->connection->statement("
 			create trigger $triggerName
 			before insert or update on {$table}
 			for each row
@@ -39,22 +39,21 @@ class Trigger {
 				select {$sequenceName}.nextval into :new.{$column} from dual;
 			end if;
 			end;");
-	}
+    }
 
-	/**
-	 * function to safely drop trigger db object
-	 *
-	 * @param  string $name
-	 * @return boolean
-	 */
-	public function drop($name)
-	{
-		if ( ! $name)
-		{
-			return false;
-		}
+    /**
+     * function to safely drop trigger db object
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function drop($name)
+    {
+        if ( ! $name) {
+            return false;
+        }
 
-		return $this->connection->statement("
+        return $this->connection->statement("
 			declare
 				e exception;
 				pragma exception_init(e,-4080);
@@ -64,6 +63,6 @@ class Trigger {
 			when e then
 				null;
 			end;");
-	}
+    }
 
 }

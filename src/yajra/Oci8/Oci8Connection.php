@@ -13,206 +13,202 @@ use yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
 use yajra\Oci8\Schema\Sequence;
 use yajra\Oci8\Schema\Trigger;
 
-class Oci8Connection extends Connection {
+class Oci8Connection extends Connection
+{
 
-	/**
-	 * @var string
-	 */
-	protected $schema;
+    /**
+     * @var string
+     */
+    protected $schema;
 
-	/**
-	 * @var Sequence
-	 */
-	protected $sequence;
+    /**
+     * @var Sequence
+     */
+    protected $sequence;
 
-	/**
-	 * @var Trigger
-	 */
-	protected $trigger;
+    /**
+     * @var Trigger
+     */
+    protected $trigger;
 
-	/**
-	 * @param PDO $pdo
-	 * @param string $database
-	 * @param string $tablePrefix
-	 * @param array $config
-	 */
-	public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = [])
-	{
-		parent::__construct($pdo, $database, $tablePrefix, $config);
-		$this->sequence = new Sequence($this);
-		$this->trigger = new Trigger($this);
-	}
+    /**
+     * @param PDO $pdo
+     * @param string $database
+     * @param string $tablePrefix
+     * @param array $config
+     */
+    public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = [])
+    {
+        parent::__construct($pdo, $database, $tablePrefix, $config);
+        $this->sequence = new Sequence($this);
+        $this->trigger = new Trigger($this);
+    }
 
-	/**
-	 * @param string $schema
-	 * @return $this
-	 */
-	public function setSchema($schema)
-	{
-		$this->schema = $schema;
-		$sessionVars = [
-			'CURRENT_SCHEMA' => $schema
-		];
+    /**
+     * @param string $schema
+     * @return $this
+     */
+    public function setSchema($schema)
+    {
+        $this->schema = $schema;
+        $sessionVars = [
+            'CURRENT_SCHEMA' => $schema
+        ];
 
-		return $this->setSessionVars($sessionVars);
-	}
+        return $this->setSessionVars($sessionVars);
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getSchema()
-	{
-		return $this->schema;
-	}
+    /**
+     * @return string
+     */
+    public function getSchema()
+    {
+        return $this->schema;
+    }
 
-	/**
-	 * @return Sequence
-	 */
-	public function getSequence()
-	{
-		return $this->sequence;
-	}
+    /**
+     * @return Sequence
+     */
+    public function getSequence()
+    {
+        return $this->sequence;
+    }
 
-	/**
-	 * @param Sequence $sequence
-	 * @return \yajra\Oci8\Schema\Sequence
-	 */
-	public function setSequence(Sequence $sequence)
-	{
-		return $this->sequence = $sequence;
-	}
+    /**
+     * @param Sequence $sequence
+     * @return \yajra\Oci8\Schema\Sequence
+     */
+    public function setSequence(Sequence $sequence)
+    {
+        return $this->sequence = $sequence;
+    }
 
-	/**
-	 * @return Trigger
-	 */
-	public function getTrigger()
-	{
-		return $this->trigger;
-	}
+    /**
+     * @return Trigger
+     */
+    public function getTrigger()
+    {
+        return $this->trigger;
+    }
 
-	/**
-	 * @param Trigger $trigger
-	 * @return \yajra\Oci8\Schema\Trigger
-	 */
-	public function setTrigger(Trigger $trigger)
-	{
-		return $this->trigger = $trigger;
-	}
+    /**
+     * @param Trigger $trigger
+     * @return \yajra\Oci8\Schema\Trigger
+     */
+    public function setTrigger(Trigger $trigger)
+    {
+        return $this->trigger = $trigger;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function getDefaultQueryGrammar()
-	{
-		return $this->withTablePrefix(new QueryGrammar);
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return $this->withTablePrefix(new QueryGrammar);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	protected function getDefaultSchemaGrammar()
-	{
-		return $this->withTablePrefix(new SchemaGrammar);
-	}
+    /**
+     * @inheritdoc
+     */
+    protected function getDefaultSchemaGrammar()
+    {
+        return $this->withTablePrefix(new SchemaGrammar);
+    }
 
-	/**
-	 * @return Processor
-	 */
-	protected function getDefaultPostProcessor()
-	{
-		return new Processor;
-	}
+    /**
+     * @return Processor
+     */
+    protected function getDefaultPostProcessor()
+    {
+        return new Processor;
+    }
 
-	/**
-	 * @return SchemaBuilder
-	 */
-	public function getSchemaBuilder()
-	{
-		if (is_null($this->schemaGrammar))
-		{
-			$this->useDefaultSchemaGrammar();
-		}
+    /**
+     * @return SchemaBuilder
+     */
+    public function getSchemaBuilder()
+    {
+        if (is_null($this->schemaGrammar)) {
+            $this->useDefaultSchemaGrammar();
+        }
 
-		return new SchemaBuilder($this);
-	}
+        return new SchemaBuilder($this);
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function table($table)
-	{
-		$processor = $this->getPostProcessor();
+    /**
+     * @inheritdoc
+     */
+    public function table($table)
+    {
+        $processor = $this->getPostProcessor();
 
-		$query = new QueryBuilder($this, $this->getQueryGrammar(), $processor);
+        $query = new QueryBuilder($this, $this->getQueryGrammar(), $processor);
 
-		return $query->from($table);
-	}
+        return $query->from($table);
+    }
 
-	/**
-	 * @param string $format
-	 * @return $this
-	 */
-	public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
-	{
-		$sessionVars = [
-			'NLS_DATE_FORMAT'      => $format,
-			'NLS_TIMESTAMP_FORMAT' => $format,
-		];
+    /**
+     * @param string $format
+     * @return $this
+     */
+    public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
+    {
+        $sessionVars = [
+            'NLS_DATE_FORMAT'      => $format,
+            'NLS_TIMESTAMP_FORMAT' => $format,
+        ];
 
-		return $this->setSessionVars($sessionVars);
-	}
+        return $this->setSessionVars($sessionVars);
+    }
 
-	/**
-	 * @return DoctrineConnection
-	 */
-	public function getDoctrineConnection()
-	{
-		$driver = $this->getDoctrineDriver();
+    /**
+     * @return DoctrineConnection
+     */
+    public function getDoctrineConnection()
+    {
+        $driver = $this->getDoctrineDriver();
 
-		$data = ['pdo' => $this->pdo, 'user' => $this->getConfig('database')];
+        $data = ['pdo' => $this->pdo, 'user' => $this->getConfig('database')];
 
-		return new DoctrineConnection($data, $driver);
-	}
+        return new DoctrineConnection($data, $driver);
+    }
 
-	/**
-	 * @return DoctrineDriver
-	 */
-	protected function getDoctrineDriver()
-	{
-		return new DoctrineDriver;
-	}
+    /**
+     * @return DoctrineDriver
+     */
+    protected function getDoctrineDriver()
+    {
+        return new DoctrineDriver;
+    }
 
-	/**
-	 * @param Grammar $grammar
-	 * @return Grammar
-	 */
-	public function withTablePrefix(Grammar $grammar)
-	{
-		return parent::withTablePrefix($grammar);
-	}
+    /**
+     * @param Grammar $grammar
+     * @return Grammar
+     */
+    public function withTablePrefix(Grammar $grammar)
+    {
+        return parent::withTablePrefix($grammar);
+    }
 
-	/**
-	 * @param array $sessionVars
-	 * @return $this
-	 */
-	public function setSessionVars(array $sessionVars)
-	{
-		$vars = [];
-		foreach ($sessionVars as $option => $value)
-		{
-			if (strtoupper($option) == 'CURRENT_SCHEMA')
-			{
-				$vars[] = "$option  = $value";
-			}
-			else
-			{
-				$vars[] = "$option  = '$value'";
-			}
-		}
-		$sql = "ALTER SESSION SET " . implode(" ", $vars);
-		$this->statement($sql);
+    /**
+     * @param array $sessionVars
+     * @return $this
+     */
+    public function setSessionVars(array $sessionVars)
+    {
+        $vars = [];
+        foreach ($sessionVars as $option => $value) {
+            if (strtoupper($option) == 'CURRENT_SCHEMA') {
+                $vars[] = "$option  = $value";
+            } else {
+                $vars[] = "$option  = '$value'";
+            }
+        }
+        $sql = "ALTER SESSION SET " . implode(" ", $vars);
+        $this->statement($sql);
 
-		return $this;
-	}
+        return $this;
+    }
 
 }
