@@ -3,6 +3,7 @@
 use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
 use yajra\Oci8\Query\OracleBuilder as Builder;
+use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 {
@@ -851,9 +852,13 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['baz'], $builder->getBindings());
 
         $builder = $this->getBuilder();
-        $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
-        $this->assertEquals('select * from foo where bar = ? lock in share mode', $builder->toSql());
-        $this->assertEquals(['baz'], $builder->getBindings());
+        try {
+            $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
+        } catch (Oci8Exception $e) {
+            // $this->assertEquals('select * from foo where bar = ? lock in share mode', $builder->toSql());
+            $this->assertContains('Lock in share mode not yet supported!', $e->getMessage());
+            $this->assertEquals(['baz'], $builder->getBindings());
+        }
     }
 
     protected function getBuilder()
