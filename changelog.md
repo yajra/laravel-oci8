@@ -1,5 +1,13 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.0
+- Converted source code to PSR1/2 coding standard.
+- Fix ORA-01002 when usng lockForUpdate.
+- Fix ORA-00907 issue #76.
+- Fix UnexpectedValueException when returning response using first(),
+- Throws Oci8Exception when using sharedLock. Not supported atm. 
+- Will now use git flow process when releasing changes.
+
 #v2.3.1
 - Fix OracleEloquent Blob insert/update function when updating only the blob field
 - Fix Issue #70
