@@ -120,4 +120,21 @@ class OracleBuilder extends Builder
         return parent::whereIn($column, $values, $boolean, $not);
     }
 
+    /**
+     * Run the query as a "select" statement against the connection.
+     *
+     * @return array
+     */
+    protected function runSelect()
+    {
+        if ($this->lock) {
+            $this->connection->beginTransaction();
+            $result = $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
+            $this->connection->commit();
+
+            return $result;
+        }
+
+        return $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
+    }
 }
