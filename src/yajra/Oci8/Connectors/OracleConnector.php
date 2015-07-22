@@ -90,9 +90,10 @@ class OracleConnector extends Connector implements ConnectorInterface
     {
         $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
 
-        if (count($host) > 1) {
+        $count = count($host);
+        if ($count > 1) {
             $address = "";
-            for ($i = 0; $i < count($host); $i++) {
+            for ($i = 0; $i < $count; $i++) {
                 $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
             }
 
