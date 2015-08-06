@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.2
+- Add support for model using DB Link.
+- Fix #79. Credits to @jbaron30.
+
 #v2.4.1
 - Reverted. Fix UnexpectedValueException when returning response using first().
 - Minor code clean-up and updated doc blocks.
