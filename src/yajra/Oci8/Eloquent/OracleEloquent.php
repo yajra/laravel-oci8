@@ -256,4 +256,22 @@ class OracleEloquent extends Model
         }
     }
 
+    /**
+     * Get the table qualified key name.
+     *
+     * @return string
+     */
+    public function getQualifiedKeyName()
+    {
+        $pos = strpos($this->getTable(), '@');
+
+        if ($pos === false) {
+            return $this->getTable() . '.' . $this->getKeyName();
+        } else {
+            $table  = substr($this->getTable(), 0, $pos);
+            $dblink = substr($this->getTable(), $pos);
+
+            return $table . '.' . $this->getKeyName() . $dblink;
+        }
+    }
 }
