@@ -60,7 +60,11 @@ class OracleProcessor extends Processor
         $id = 0;
 
         // begin transaction
-        $query->getConnection()->getPdo()->beginTransaction();
+        $pdo = $query->getConnection()->getPdo();
+        $inTransaction = $pdo->inTransaction();
+        if ( ! $inTransaction) {
+            $pdo->beginTransaction();
+        }
 
         // set PDO statement property
         $this->prepareStatement($query, $sql);
@@ -78,7 +82,7 @@ class OracleProcessor extends Processor
 
         // execute statement
         if ( ! $this->statement->execute()) {
-            $query->getConnection()->getPdo()->rollBack();
+            $pdo->rollBack();
 
             return false;
         }
@@ -86,20 +90,22 @@ class OracleProcessor extends Processor
         for ($i = 0; $i < $binariesCount; $i++) {
             // Discard the existing LOB contents
             if ( ! $lob[$i]->truncate()) {
-                $query->getConnection()->getPdo()->rollBack();
+                $pdo->rollBack();
 
                 return false;
             }
             // save blob content
             if ( ! $lob[$i]->save($binaries[$i])) {
-                $query->getConnection()->getPdo()->rollBack();
+                $pdo->rollBack();
 
                 return false;
             }
         }
 
-        // commit statements
-        $query->getConnection()->getPdo()->commit();
+        if ( ! $inTransaction) {
+            // commit statements
+            $pdo->commit();
+        }
 
         return (int) $id;
     }
