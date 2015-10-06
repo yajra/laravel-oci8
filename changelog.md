@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.3
+- Add checker if pdo is in transaction. Fix #83
+- Use ~0.14 as default pdo-via-oci8 version.
+
 #v2.4.2
 - Add support for model using DB Link.
 - Fix #79. Credits to @jbaron30.
