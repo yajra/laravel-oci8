@@ -9,7 +9,6 @@ use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 
 class OracleEloquent extends Model
 {
-
     /**
      * List of binary (blob) columns
      *
@@ -76,7 +75,7 @@ class OracleEloquent extends Model
      */
     public function update(array $attributes = [])
     {
-        if ( ! $this->exists) {
+        if (! $this->exists) {
             // If dirty attributes contains binary field
             // extract binary fields to new array
             if ($this->wrapBinary($dirty)) {
@@ -231,7 +230,7 @@ class OracleEloquent extends Model
         // If attributes contains binary field
         // extract binary fields to new array
         $binaries = [];
-        if ($this->checkBinary($attributes) and $this->getConnection() instanceOf Oci8Connection) {
+        if ($this->checkBinary($attributes) and $this->getConnection() instanceof Oci8Connection) {
             foreach ($attributes as $key => $value) {
                 if (in_array($key, $this->binaries)) {
                     $binaries[$key] = $value;

@@ -7,7 +7,6 @@ use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 {
-
     public function tearDown()
     {
         m::close();
@@ -779,7 +778,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     public function testMergeWheresCanMergeWheresAndBindings()
     {
-        $builder = $this->getBuilder();
+        $builder         = $this->getBuilder();
         $builder->wheres = ['foo'];
         $builder->mergeWheres(['wheres'], [12 => 'foo', 13 => 'bar']);
         $this->assertEquals(['foo', 'wheres'], $builder->wheres);
@@ -795,11 +794,11 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     public function testDynamicWhere()
     {
-        $method = 'whereFooBarAndBazOrQux';
+        $method     = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
-        $grammar = new yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar    = new yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor  = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('foo_bar', '=', $parameters[0], 'and')->once()->andReturn($builder);
@@ -807,16 +806,15 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->shouldReceive('where')->with('qux', '=', $parameters[2], 'or')->once()->andReturn($builder);
 
         $this->assertEquals($builder, $builder->dynamicWhere($method, $parameters));
-
     }
 
     public function testDynamicWhereIsNotGreedy()
     {
-        $method = 'whereIosVersionAndAndroidVersionOrOrientation';
+        $method     = 'whereIosVersionAndAndroidVersionOrOrientation';
         $parameters = ['6.1', '4.2', 'Vertical'];
-        $grammar = new yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar    = new yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor  = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('ios_version', '=', '6.1', 'and')->once()->andReturn($builder);
@@ -863,10 +861,9 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     protected function getBuilder()
     {
-        $grammar = new yajra\Oci8\Query\Grammars\OracleGrammar;
+        $grammar   = new yajra\Oci8\Query\Grammars\OracleGrammar;
         $processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
 
         return new Builder(m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor);
     }
-
 }

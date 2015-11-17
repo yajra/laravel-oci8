@@ -6,7 +6,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class OracleBlueprint extends Blueprint
 {
-
     /**
      * Database prefix variable
      *

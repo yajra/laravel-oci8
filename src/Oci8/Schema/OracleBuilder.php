@@ -8,7 +8,6 @@ use Illuminate\Database\Schema\Builder;
 
 class OracleBuilder extends Builder
 {
-
     public $helper;
 
     /**
@@ -17,8 +16,8 @@ class OracleBuilder extends Builder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->grammar = $connection->getSchemaGrammar();
-        $this->helper = new OracleAutoIncrementHelper($connection);
+        $this->grammar    = $connection->getSchemaGrammar();
+        $this->helper     = new OracleAutoIncrementHelper($connection);
     }
 
     /**
@@ -78,5 +77,4 @@ class OracleBuilder extends Builder
 
         return $blueprint;
     }
-
 }

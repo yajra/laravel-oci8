@@ -9,7 +9,6 @@ use PDOStatement;
 
 class OracleProcessor extends Processor
 {
-
     /**
      * DB Statement
      *
@@ -29,7 +28,7 @@ class OracleProcessor extends Processor
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
         $counter = 0;
-        $id = 0;
+        $id      = 0;
 
         // set PDO statement property
         $this->prepareStatement($query, $sql);
@@ -56,13 +55,13 @@ class OracleProcessor extends Processor
     public function saveLob(Builder $query, $sql, array $values, array $binaries)
     {
         $counter = 0;
-        $lob = [];
-        $id = 0;
+        $lob     = [];
+        $id      = 0;
 
         // begin transaction
-        $pdo = $query->getConnection()->getPdo();
+        $pdo           = $query->getConnection()->getPdo();
         $inTransaction = $pdo->inTransaction();
-        if ( ! $inTransaction) {
+        if (! $inTransaction) {
             $pdo->beginTransaction();
         }
 
@@ -81,7 +80,7 @@ class OracleProcessor extends Processor
         $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
 
         // execute statement
-        if ( ! $this->statement->execute()) {
+        if (! $this->statement->execute()) {
             $pdo->rollBack();
 
             return false;
@@ -89,20 +88,20 @@ class OracleProcessor extends Processor
 
         for ($i = 0; $i < $binariesCount; $i++) {
             // Discard the existing LOB contents
-            if ( ! $lob[$i]->truncate()) {
+            if (! $lob[$i]->truncate()) {
                 $pdo->rollBack();
 
                 return false;
             }
             // save blob content
-            if ( ! $lob[$i]->save($binaries[$i])) {
+            if (! $lob[$i]->save($binaries[$i])) {
                 $pdo->rollBack();
 
                 return false;
             }
         }
 
-        if ( ! $inTransaction) {
+        if (! $inTransaction) {
             // commit statements
             $pdo->commit();
         }
@@ -136,7 +135,7 @@ class OracleProcessor extends Processor
                 $param = PDO::PARAM_BOOL;
             } elseif (is_null($value)) {
                 $param = PDO::PARAM_NULL;
-            } elseif ($value instanceOf \DateTime) {
+            } elseif ($value instanceof \DateTime) {
                 $value = $value->format('Y-m-d H:i:s');
                 $param = PDO::PARAM_STR;
             } else {
@@ -150,5 +149,4 @@ class OracleProcessor extends Processor
 
         return $counter;
     }
-
 }

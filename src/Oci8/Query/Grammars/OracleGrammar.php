@@ -8,7 +8,6 @@ use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {
-
     /**
      * The keyword identifier wrapper format.
      *
@@ -149,7 +148,7 @@ class OracleGrammar extends Grammar
         // basic routine regardless of an amount of records given to us to insert.
         $table = $this->wrapTable($query->from);
 
-        if ( ! is_array(reset($values))) {
+        if (! is_array(reset($values))) {
             $values = [$values];
         }
 
@@ -165,7 +164,7 @@ class OracleGrammar extends Grammar
         if (count($value) > 1) {
             $insertQueries = [];
             foreach ($value as $parameter) {
-                $parameter = (str_replace(['(', ')'], '', $parameter));
+                $parameter       = (str_replace(['(', ')'], '', $parameter));
                 $insertQueries[] = "select " . $parameter . " from dual ";
             }
             $parameters = implode('union all ', $insertQueries);
@@ -176,7 +175,6 @@ class OracleGrammar extends Grammar
         $parameters = implode(', ', $value);
 
         return "insert into $table ($columns) values $parameters";
-
     }
 
     /**
@@ -196,25 +194,25 @@ class OracleGrammar extends Grammar
 
         $table = $this->wrapTable($query->from);
 
-        if ( ! is_array(reset($values))) {
+        if (! is_array(reset($values))) {
             $values = [$values];
         }
 
-        if ( ! is_array(reset($binaries))) {
+        if (! is_array(reset($binaries))) {
             $binaries = [$binaries];
         }
 
-        $columns = $this->columnize(array_keys(reset($values)));
+        $columns       = $this->columnize(array_keys(reset($values)));
         $binaryColumns = $this->columnize(array_keys(reset($binaries)));
         $columns .= (empty($columns) ? '' : ', ') . $binaryColumns;
 
-        $parameters = $this->parameterize(reset($values));
+        $parameters       = $this->parameterize(reset($values));
         $binaryParameters = $this->parameterize(reset($binaries));
 
-        $value = array_fill(0, count($values), "$parameters");
+        $value       = array_fill(0, count($values), "$parameters");
         $binaryValue = array_fill(0, count($binaries), str_replace('?', 'EMPTY_BLOB()', $binaryParameters));
 
-        $value = array_merge($value, $binaryValue);
+        $value      = array_merge($value, $binaryValue);
         $parameters = implode(', ', array_filter($value));
 
         return "insert into $table ($columns) values ($parameters) returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
@@ -245,10 +243,10 @@ class OracleGrammar extends Grammar
         $columns = implode(', ', $columns);
 
         // set blob variables
-        if ( ! is_array(reset($binaries))) {
+        if (! is_array(reset($binaries))) {
             $binaries = [$binaries];
         }
-        $binaryColumns = $this->columnize(array_keys(reset($binaries)));
+        $binaryColumns    = $this->columnize(array_keys(reset($binaries)));
         $binaryParameters = $this->parameterize(reset($binaries));
 
         // create EMPTY_BLOB sql for each binary
@@ -334,5 +332,4 @@ class OracleGrammar extends Grammar
     {
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
-
 }

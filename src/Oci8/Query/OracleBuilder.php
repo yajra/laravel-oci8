@@ -9,7 +9,6 @@ use yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {
-
     /**
      * The database query grammar instance.
      *
@@ -49,7 +48,7 @@ class OracleBuilder extends Builder
     {
         $sql = $this->grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
-        $values = $this->cleanBindings($values);
+        $values   = $this->cleanBindings($values);
         $binaries = $this->cleanBindings($binaries);
 
         return $this->processor->saveLob($this, $sql, $values, $binaries);
@@ -69,7 +68,7 @@ class OracleBuilder extends Builder
 
         $sql = $this->grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
-        $values = $this->cleanBindings($bindings);
+        $values   = $this->cleanBindings($bindings);
         $binaries = $this->cleanBindings($binaries);
 
         return $this->processor->saveLob($this, $sql, $values, $binaries);

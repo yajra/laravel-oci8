@@ -5,7 +5,6 @@ use yajra\Oci8\Schema\Sequence;
 
 class SequenceTest extends PHPUnit_Framework_TestCase
 {
-
     public function tearDown()
     {
         m::close();
@@ -15,7 +14,7 @@ class SequenceTest extends PHPUnit_Framework_TestCase
     public function it_will_create_sequence()
     {
         $connection = $this->getConnection();
-        $sequence = new Sequence($connection);
+        $sequence   = new Sequence($connection);
         $connection->shouldReceive('statement')->andReturn(true);
         $success = $sequence->create('users_id_seq');
         $this->assertEquals(true, $success);
@@ -35,5 +34,4 @@ class SequenceTest extends PHPUnit_Framework_TestCase
         $success = $sequence->drop('users_id_seq');
         $this->assertEquals(true, $success);
     }
-
 }

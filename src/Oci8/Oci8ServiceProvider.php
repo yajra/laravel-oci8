@@ -7,7 +7,6 @@ use yajra\Oci8\Connectors\OracleConnector as Connector;
 
 class Oci8ServiceProvider extends ServiceProvider
 {
-
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -23,9 +22,9 @@ class Oci8ServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app['db']->extend('oracle', function ($config) {
-            $connector = new Connector();
+            $connector  = new Connector();
             $connection = $connector->connect($config);
-            $db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
+            $db         = new Oci8Connection($connection, $config["database"], $config["prefix"]);
 
             // set oracle session variables
             $sessionVars = [
@@ -56,5 +55,4 @@ class Oci8ServiceProvider extends ServiceProvider
     {
         return [];
     }
-
 }

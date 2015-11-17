@@ -9,7 +9,6 @@ use Illuminate\Support\Fluent;
 
 class OracleGrammar extends Grammar
 {
-
     /**
      * The keyword identifier wrapper format.
      *
@@ -41,7 +40,7 @@ class OracleGrammar extends Grammar
     {
         $primary = $this->getCommandByName($blueprint, 'primary');
 
-        if ( ! is_null($primary)) {
+        if (! is_null($primary)) {
             $columns = $this->columnize($primary->columns);
 
             return ", constraint {$primary->index} primary key ( {$columns} )";
@@ -77,7 +76,7 @@ class OracleGrammar extends Grammar
             // Once we have the basic foreign key creation statement constructed we can
             // build out the syntax for what should happen on an update or delete of
             // the affected columns, which will get something like "cascade", etc.
-            if ( ! is_null($foreign->onDelete)) {
+            if (! is_null($foreign->onDelete)) {
                 $sql .= " on delete {$foreign->onDelete}";
             }
         }
@@ -201,7 +200,7 @@ class OracleGrammar extends Grammar
             // Once we have the basic foreign key creation statement constructed we can
             // build out the syntax for what should happen on an update or delete of
             // the affected columns, which will get something like "cascade", etc.
-            if ( ! is_null($command->onDelete)) {
+            if (! is_null($command->onDelete)) {
                 $sql .= " on delete {$command->onDelete}";
             }
 
@@ -355,7 +354,7 @@ class OracleGrammar extends Grammar
     {
         $table = $this->wrapTable($blueprint);
 
-        $rs = [];
+        $rs    = [];
         $rs[0] = 'alter table ' . $table . ' rename column ' . $command->from . ' to ' . $command->to;
 
         return (array) $rs;
@@ -622,7 +621,7 @@ class OracleGrammar extends Grammar
         $null = $column->nullable ? ' null' : ' not null';
         $null .= $enum;
 
-        if ( ! is_null($column->default)) {
+        if (! is_null($column->default)) {
             return " default " . $this->getDefaultValue($column->default) . $null;
         }
 
@@ -684,5 +683,4 @@ class OracleGrammar extends Grammar
 
         return "alter table {$table} drop constraint {$index}";
     }
-
 }

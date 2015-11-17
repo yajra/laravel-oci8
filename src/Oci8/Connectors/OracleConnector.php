@@ -10,7 +10,6 @@ use yajra\Pdo\Oci8;
 
 class OracleConnector extends Connector implements ConnectorInterface
 {
-
     /**
      * The default PDO connection options.
      *
@@ -33,11 +32,11 @@ class OracleConnector extends Connector implements ConnectorInterface
     public function createConnection($tns, array $config, array $options)
     {
         // add fallback in case driver is not set, will use pdo instead
-        if ( ! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
+        if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
             return parent::createConnection($tns, $config, $options);
         }
 
-        $config = $this->setCharset($config);
+        $config             = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
         return new Oci8($tns, $config['username'], $config['password'], $options);
@@ -68,7 +67,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function getDsn(array $config)
     {
-        if ( ! empty($config['tns'])) {
+        if (! empty($config['tns'])) {
             return $config['tns'];
         }
 
@@ -159,7 +158,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setServiceId(array $config)
     {
-        $config['service'] = empty($config['service_name'])
+        $config['service']   = empty($config['service_name'])
             ? $service_param = 'SID = ' . $config['database']
             : $service_param = 'SERVICE_NAME = ' . $config['service_name'];
 
@@ -183,11 +182,10 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setCharset(array $config)
     {
-        if ( ! isset($config['charset'])) {
+        if (! isset($config['charset'])) {
             $config['charset'] = 'AL32UTF8';
         }
 
         return $config;
     }
-
 }

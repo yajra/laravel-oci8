@@ -6,7 +6,6 @@ use Illuminate\Database\Connection;
 
 class Trigger
 {
-
     protected $connection;
 
     /**
@@ -28,7 +27,7 @@ class Trigger
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
     {
-        if ( ! $table or ! $column or ! $triggerName or ! $sequenceName) {
+        if (! $table or ! $column or ! $triggerName or ! $sequenceName) {
             return false;
         }
 
@@ -51,7 +50,7 @@ class Trigger
      */
     public function drop($name)
     {
-        if ( ! $name) {
+        if (! $name) {
             return false;
         }
 
@@ -66,5 +65,4 @@ class Trigger
 				null;
 			end;");
     }
-
 }

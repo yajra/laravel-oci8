@@ -4,7 +4,6 @@ use Mockery as m;
 
 class DatabaseConnectionTest extends PHPUnit_Framework_TestCase
 {
-
     public function tearDown()
     {
         m::close();
@@ -41,5 +40,4 @@ class DatabaseConnectionTest extends PHPUnit_Framework_TestCase
         $connection->checkSequence(null);
         $this->assertEquals(false, $connection->dropSequence(null));
     }
-
 }

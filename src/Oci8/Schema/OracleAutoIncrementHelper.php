@@ -7,7 +7,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class OracleAutoIncrementHelper
 {
-
     protected $connection;
 
     protected $trigger;
@@ -17,8 +16,8 @@ class OracleAutoIncrementHelper
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->sequence = new Sequence($connection);
-        $this->trigger = new Trigger($connection);
+        $this->sequence   = new Sequence($connection);
+        $this->trigger    = new Trigger($connection);
     }
 
     /**
@@ -37,7 +36,7 @@ class OracleAutoIncrementHelper
             return;
         }
 
-        $col = $column->name;
+        $col   = $column->name;
         $start = isset($column->start) ? $column->start : 1;
 
         // get table prefix
@@ -120,7 +119,7 @@ class OracleAutoIncrementHelper
      */
     public function getPrimaryKey($table)
     {
-        if ( ! $table) {
+        if (! $table) {
             return '';
         }
 
@@ -174,5 +173,4 @@ class OracleAutoIncrementHelper
     {
         $this->trigger = $trigger;
     }
-
 }

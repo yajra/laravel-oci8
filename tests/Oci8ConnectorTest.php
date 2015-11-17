@@ -4,7 +4,6 @@ use Mockery as m;
 
 class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
 {
-
     public function tearDown()
     {
         m::close();
@@ -13,8 +12,8 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
     public function testCreateConnection()
     {
         $connector = new OracleConnectorStub();
-        $tns = "Connection String";
-        $config = [
+        $tns       = "Connection String";
+        $config    = [
             'driver'   => 'oracle',
             'host'     => 'host',
             'database' => 'database',
@@ -32,7 +31,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
     {
         $connector = new Illuminate\Database\Connectors\Connector;
         $connector->setDefaultOptions([0 => 'foo', 1 => 'bar']);
-        $this->assertEquals([0 => 'baz', 1 => 'bar', 2 => 'boom'],
+        $this->assertEquals([0                => 'baz', 1 => 'bar', 2 => 'boom'],
             $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']]));
     }
 
@@ -41,7 +40,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector = $this->getMock('yajra\Oci8\Connectors\OracleConnector', ['createConnection', 'getOptions']);
+        $connector  = $this->getMock('yajra\Oci8\Connectors\OracleConnector', ['createConnection', 'getOptions']);
         $connection = m::mock('stdClass');
         $connector->expects($this->once())
             ->method('getOptions')
@@ -171,5 +170,4 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
             ],
         ];
     }
-
 }
