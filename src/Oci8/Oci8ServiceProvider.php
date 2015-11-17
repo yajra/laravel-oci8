@@ -15,12 +15,26 @@ class Oci8ServiceProvider extends ServiceProvider
     protected $defer = false;
 
     /**
+     * Boot Oci8 Provider
+     */
+    public function boot()
+    {
+        $this->publishes([
+            __DIR__ . '/../../config/oracle.php' => config_path('oracle.php'),
+        ]);
+    }
+
+    /**
      * Register the service provider.
      *
      * @return void
      */
     public function register()
     {
+        if (file_exists(config_path('oracle.php'))) {
+            $this->mergeConfigFrom(config_path('oracle.php'), 'database.connections');
+        }
+
         $this->app['db']->extend('oracle', function ($config) {
             $connector  = new Connector();
             $connection = $connector->connect($config);
