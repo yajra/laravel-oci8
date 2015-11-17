@@ -17,7 +17,6 @@ use yajra\Oci8\Schema\Trigger;
 
 class Oci8Connection extends Connection
 {
-
     /**
      * @var string
      */
@@ -246,5 +245,4 @@ class Oci8Connection extends Connection
     {
         return new Processor;
     }
-
 }

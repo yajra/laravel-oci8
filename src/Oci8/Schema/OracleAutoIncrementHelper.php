@@ -7,18 +7,29 @@ use Illuminate\Database\Schema\Blueprint;
 
 class OracleAutoIncrementHelper
 {
-
+    /**
+     * @var \Illuminate\Database\Connection
+     */
     protected $connection;
 
+    /**
+     * @var \yajra\Oci8\Schema\Trigger
+     */
     protected $trigger;
 
+    /**
+     * @var \yajra\Oci8\Schema\Sequence
+     */
     protected $sequence;
 
+    /**
+     * @param \Illuminate\Database\Connection $connection
+     */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->sequence = new Sequence($connection);
-        $this->trigger = new Trigger($connection);
+        $this->sequence   = new Sequence($connection);
+        $this->trigger    = new Trigger($connection);
     }
 
     /**
@@ -37,7 +48,7 @@ class OracleAutoIncrementHelper
             return;
         }
 
-        $col = $column->name;
+        $col   = $column->name;
         $start = isset($column->start) ? $column->start : 1;
 
         // get table prefix
@@ -120,21 +131,21 @@ class OracleAutoIncrementHelper
      */
     public function getPrimaryKey($table)
     {
-        if ( ! $table) {
+        if (! $table) {
             return '';
         }
 
         $data = $this->connection->selectOne("
-			SELECT cols.column_name
-			FROM all_constraints cons, all_cons_columns cols
-			WHERE cols.table_name = upper('{$table}')
-				AND cons.constraint_type = 'P'
-				AND cons.constraint_name = cols.constraint_name
-				AND cons.owner = cols.owner
-				AND cols.position = 1
-				AND cons.owner = (select user from dual)
-			ORDER BY cols.table_name, cols.position
-			");
+            SELECT cols.column_name
+            FROM all_constraints cons, all_cons_columns cols
+            WHERE cols.table_name = upper('{$table}')
+                AND cons.constraint_type = 'P'
+                AND cons.constraint_name = cols.constraint_name
+                AND cons.owner = cols.owner
+                AND cols.position = 1
+                AND cons.owner = (select user from dual)
+            ORDER BY cols.table_name, cols.position
+            ");
 
         if (count($data)) {
             return $data->column_name;
@@ -174,5 +185,4 @@ class OracleAutoIncrementHelper
     {
         $this->trigger = $trigger;
     }
-
 }

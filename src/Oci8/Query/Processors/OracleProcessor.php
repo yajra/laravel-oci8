@@ -9,7 +9,6 @@ use PDOStatement;
 
 class OracleProcessor extends Processor
 {
-
     /**
      * DB Statement
      *
@@ -29,7 +28,7 @@ class OracleProcessor extends Processor
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
         $counter = 0;
-        $id = 0;
+        $id      = 0;
 
         // set PDO statement property
         $this->prepareStatement($query, $sql);
@@ -40,72 +39,6 @@ class OracleProcessor extends Processor
 
         // execute statement
         $this->statement->execute();
-
-        return (int) $id;
-    }
-
-    /**
-     * save Query with Blob returning primary key value
-     *
-     * @param  Builder $query
-     * @param  string $sql
-     * @param  array $values
-     * @param  array $binaries
-     * @return int
-     */
-    public function saveLob(Builder $query, $sql, array $values, array $binaries)
-    {
-        $counter = 0;
-        $lob = [];
-        $id = 0;
-
-        // begin transaction
-        $pdo = $query->getConnection()->getPdo();
-        $inTransaction = $pdo->inTransaction();
-        if ( ! $inTransaction) {
-            $pdo->beginTransaction();
-        }
-
-        // set PDO statement property
-        $this->prepareStatement($query, $sql);
-        $counter = $this->bindValuesAndReturnCounter($values, $counter);
-
-        $binariesCount = count($binaries);
-        for ($i = 0; $i < $binariesCount; $i++) {
-            // bind blob descriptor
-            $this->statement->bindParam($counter, $lob[$i], PDO::PARAM_LOB);
-            $counter++;
-        }
-
-        // bind output param for the returning clause
-        $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
-
-        // execute statement
-        if ( ! $this->statement->execute()) {
-            $pdo->rollBack();
-
-            return false;
-        }
-
-        for ($i = 0; $i < $binariesCount; $i++) {
-            // Discard the existing LOB contents
-            if ( ! $lob[$i]->truncate()) {
-                $pdo->rollBack();
-
-                return false;
-            }
-            // save blob content
-            if ( ! $lob[$i]->save($binaries[$i])) {
-                $pdo->rollBack();
-
-                return false;
-            }
-        }
-
-        if ( ! $inTransaction) {
-            // commit statements
-            $pdo->commit();
-        }
 
         return (int) $id;
     }
@@ -136,7 +69,7 @@ class OracleProcessor extends Processor
                 $param = PDO::PARAM_BOOL;
             } elseif (is_null($value)) {
                 $param = PDO::PARAM_NULL;
-            } elseif ($value instanceOf \DateTime) {
+            } elseif ($value instanceof \DateTime) {
                 $value = $value->format('Y-m-d H:i:s');
                 $param = PDO::PARAM_STR;
             } else {
@@ -151,4 +84,69 @@ class OracleProcessor extends Processor
         return $counter;
     }
 
+    /**
+     * save Query with Blob returning primary key value
+     *
+     * @param  Builder $query
+     * @param  string $sql
+     * @param  array $values
+     * @param  array $binaries
+     * @return int
+     */
+    public function saveLob(Builder $query, $sql, array $values, array $binaries)
+    {
+        $counter = 0;
+        $lob     = [];
+        $id      = 0;
+
+        // begin transaction
+        $pdo           = $query->getConnection()->getPdo();
+        $inTransaction = $pdo->inTransaction();
+        if (! $inTransaction) {
+            $pdo->beginTransaction();
+        }
+
+        // set PDO statement property
+        $this->prepareStatement($query, $sql);
+        $counter = $this->bindValuesAndReturnCounter($values, $counter);
+
+        $binariesCount = count($binaries);
+        for ($i = 0; $i < $binariesCount; $i++) {
+            // bind blob descriptor
+            $this->statement->bindParam($counter, $lob[$i], PDO::PARAM_LOB);
+            $counter++;
+        }
+
+        // bind output param for the returning clause
+        $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
+
+        // execute statement
+        if (! $this->statement->execute()) {
+            $pdo->rollBack();
+
+            return false;
+        }
+
+        for ($i = 0; $i < $binariesCount; $i++) {
+            // Discard the existing LOB contents
+            if (! $lob[$i]->truncate()) {
+                $pdo->rollBack();
+
+                return false;
+            }
+            // save blob content
+            if (! $lob[$i]->save($binaries[$i])) {
+                $pdo->rollBack();
+
+                return false;
+            }
+        }
+
+        if (! $inTransaction) {
+            // commit statements
+            $pdo->commit();
+        }
+
+        return (int) $id;
+    }
 }

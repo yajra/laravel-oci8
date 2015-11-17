@@ -8,7 +8,9 @@ use Illuminate\Database\Schema\Builder;
 
 class OracleBuilder extends Builder
 {
-
+    /**
+     * @var \yajra\Oci8\Schema\OracleAutoIncrementHelper
+     */
     public $helper;
 
     /**
@@ -17,8 +19,8 @@ class OracleBuilder extends Builder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->grammar = $connection->getSchemaGrammar();
-        $this->helper = new OracleAutoIncrementHelper($connection);
+        $this->grammar    = $connection->getSchemaGrammar();
+        $this->helper     = new OracleAutoIncrementHelper($connection);
     }
 
     /**
@@ -39,6 +41,21 @@ class OracleBuilder extends Builder
         $this->build($blueprint);
 
         $this->helper->createAutoIncrementObjects($blueprint, $table);
+    }
+
+    /**
+     * Create a new command set with a Closure.
+     *
+     * @param  string $table
+     * @param  Closure $callback
+     * @return \Illuminate\Database\Schema\Blueprint
+     */
+    protected function createBlueprint($table, Closure $callback = null)
+    {
+        $blueprint = new OracleBlueprint($table, $callback);
+        $blueprint->setTablePrefix($this->connection->getTablePrefix());
+
+        return $blueprint;
     }
 
     /**
@@ -63,20 +80,4 @@ class OracleBuilder extends Builder
         $this->helper->dropAutoIncrementObjects($table);
         parent::dropIfExists($table);
     }
-
-    /**
-     * Create a new command set with a Closure.
-     *
-     * @param  string $table
-     * @param  Closure $callback
-     * @return \Illuminate\Database\Schema\Blueprint
-     */
-    protected function createBlueprint($table, Closure $callback = null)
-    {
-        $blueprint = new OracleBlueprint($table, $callback);
-        $blueprint->setTablePrefix($this->connection->getTablePrefix());
-
-        return $blueprint;
-    }
-
 }
