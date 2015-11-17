@@ -24,6 +24,18 @@ class OracleBlueprint extends Blueprint
     }
 
     /**
+     * Add creation and update timestampTz columns to the table.
+     *
+     * @return void
+     */
+    public function timestampsTz()
+    {
+        $this->timestampTz('created_at');
+
+        $this->timestampTz('updated_at');
+    }
+
+    /**
      * Create a default index name for the table.
      *
      * @param  string $type
@@ -36,17 +48,5 @@ class OracleBlueprint extends Blueprint
 
         // max index name length is 30 chars
         return substr(str_replace(['-', '.'], '_', $index), 0, 30);
-    }
-
-    /**
-     * Add creation and update timestampTz columns to the table.
-     *
-     * @return void
-     */
-    public function timestampsTz()
-    {
-        $this->timestampTz('created_at');
-
-        $this->timestampTz('updated_at');
     }
 }

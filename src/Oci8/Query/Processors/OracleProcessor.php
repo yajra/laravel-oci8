@@ -44,6 +44,47 @@ class OracleProcessor extends Processor
     }
 
     /**
+     * @param Builder $query
+     * @param string $sql
+     * @internal param $PDOStatement
+     */
+    protected function prepareStatement(Builder $query, $sql)
+    {
+        $this->statement = $query->getConnection()->getPdo()->prepare($sql);
+    }
+
+    /**
+     * @param array $values
+     * @param integer $counter
+     * @return integer
+     */
+    protected function bindValuesAndReturnCounter(array $values, $counter)
+    {
+        // bind each parameter from the values array to their location
+        foreach ($values as $value) {
+            // try to determine type of result
+            if (is_int($value)) {
+                $param = PDO::PARAM_INT;
+            } elseif (is_bool($value)) {
+                $param = PDO::PARAM_BOOL;
+            } elseif (is_null($value)) {
+                $param = PDO::PARAM_NULL;
+            } elseif ($value instanceof \DateTime) {
+                $value = $value->format('Y-m-d H:i:s');
+                $param = PDO::PARAM_STR;
+            } else {
+                $param = PDO::PARAM_STR;
+            }
+
+            $this->statement->bindValue($counter, ($value), $param);
+            // increment counter
+            $counter++;
+        }
+
+        return $counter;
+    }
+
+    /**
      * save Query with Blob returning primary key value
      *
      * @param  Builder $query
@@ -107,46 +148,5 @@ class OracleProcessor extends Processor
         }
 
         return (int) $id;
-    }
-
-    /**
-     * @param Builder $query
-     * @param string $sql
-     * @internal param $PDOStatement
-     */
-    protected function prepareStatement(Builder $query, $sql)
-    {
-        $this->statement = $query->getConnection()->getPdo()->prepare($sql);
-    }
-
-    /**
-     * @param array $values
-     * @param integer $counter
-     * @return integer
-     */
-    protected function bindValuesAndReturnCounter(array $values, $counter)
-    {
-        // bind each parameter from the values array to their location
-        foreach ($values as $value) {
-            // try to determine type of result
-            if (is_int($value)) {
-                $param = PDO::PARAM_INT;
-            } elseif (is_bool($value)) {
-                $param = PDO::PARAM_BOOL;
-            } elseif (is_null($value)) {
-                $param = PDO::PARAM_NULL;
-            } elseif ($value instanceof \DateTime) {
-                $value = $value->format('Y-m-d H:i:s');
-                $param = PDO::PARAM_STR;
-            } else {
-                $param = PDO::PARAM_STR;
-            }
-
-            $this->statement->bindValue($counter, ($value), $param);
-            // increment counter
-            $counter++;
-        }
-
-        return $counter;
     }
 }

@@ -54,20 +54,6 @@ class OracleEloquent extends Model
     }
 
     /**
-     * Get a new query builder instance for the connection.
-     *
-     * @return \yajra\Oci8\Query\OracleBuilder
-     */
-    protected function newBaseQueryBuilder()
-    {
-        $conn = $this->getConnection();
-
-        $grammar = $conn->getQueryGrammar();
-
-        return new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
-    }
-
-    /**
      * Update the model in the database.
      *
      * @param  array $attributes
@@ -86,6 +72,80 @@ class OracleEloquent extends Model
         }
 
         return $this->fill($attributes)->save();
+    }
+
+    /**
+     * wrap binaries to each attributes
+     *
+     * @param  array $attributes
+     * @return array
+     */
+    public function wrapBinary(&$attributes)
+    {
+        // If attributes contains binary field
+        // extract binary fields to new array
+        $binaries = [];
+        if ($this->checkBinary($attributes) and $this->getConnection() instanceof Oci8Connection) {
+            foreach ($attributes as $key => $value) {
+                if (in_array($key, $this->binaries)) {
+                    $binaries[$key] = $value;
+                    unset($attributes[$key]);
+                }
+            }
+        }
+
+        return $this->wrapBinaries = $binaries;
+    }
+
+    /**
+     * Check if attributes contains binary field
+     *
+     * @param  array $attributes
+     * @return boolean
+     */
+    public function checkBinary(array $attributes)
+    {
+        foreach ($attributes as $key => $value) {
+            // if attribute is in binary field list
+            if (in_array($key, $this->binaries)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the table qualified key name.
+     *
+     * @return string
+     */
+    public function getQualifiedKeyName()
+    {
+        $pos = strpos($this->getTable(), '@');
+
+        if ($pos === false) {
+            return $this->getTable() . '.' . $this->getKeyName();
+        } else {
+            $table  = substr($this->getTable(), 0, $pos);
+            $dblink = substr($this->getTable(), $pos);
+
+            return $table . '.' . $this->getKeyName() . $dblink;
+        }
+    }
+
+    /**
+     * Get a new query builder instance for the connection.
+     *
+     * @return \yajra\Oci8\Query\OracleBuilder
+     */
+    protected function newBaseQueryBuilder()
+    {
+        $conn = $this->getConnection();
+
+        $grammar = $conn->getQueryGrammar();
+
+        return new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
     }
 
     /**
@@ -129,6 +189,19 @@ class OracleEloquent extends Model
         }
 
         return true;
+    }
+
+    /**
+     * @param Builder $query
+     * @param $dirty
+     */
+    protected function updateBinary(Builder $query, $dirty)
+    {
+        if ($this->wrapBinary($dirty)) {
+            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
+        } else {
+            $this->setKeysForSaveQuery($query)->update($dirty);
+        }
     }
 
     /**
@@ -199,78 +272,5 @@ class OracleEloquent extends Model
         }
 
         $this->setAttribute($keyName, $id);
-    }
-
-    /**
-     * Check if attributes contains binary field
-     *
-     * @param  array $attributes
-     * @return boolean
-     */
-    public function checkBinary(array $attributes)
-    {
-        foreach ($attributes as $key => $value) {
-            // if attribute is in binary field list
-            if (in_array($key, $this->binaries)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * wrap binaries to each attributes
-     *
-     * @param  array $attributes
-     * @return array
-     */
-    public function wrapBinary(&$attributes)
-    {
-        // If attributes contains binary field
-        // extract binary fields to new array
-        $binaries = [];
-        if ($this->checkBinary($attributes) and $this->getConnection() instanceof Oci8Connection) {
-            foreach ($attributes as $key => $value) {
-                if (in_array($key, $this->binaries)) {
-                    $binaries[$key] = $value;
-                    unset($attributes[$key]);
-                }
-            }
-        }
-
-        return $this->wrapBinaries = $binaries;
-    }
-
-    /**
-     * @param Builder $query
-     * @param $dirty
-     */
-    protected function updateBinary(Builder $query, $dirty)
-    {
-        if ($this->wrapBinary($dirty)) {
-            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
-        } else {
-            $this->setKeysForSaveQuery($query)->update($dirty);
-        }
-    }
-
-    /**
-     * Get the table qualified key name.
-     *
-     * @return string
-     */
-    public function getQualifiedKeyName()
-    {
-        $pos = strpos($this->getTable(), '@');
-
-        if ($pos === false) {
-            return $this->getTable() . '.' . $this->getKeyName();
-        } else {
-            $table  = substr($this->getTable(), 0, $pos);
-            $dblink = substr($this->getTable(), $pos);
-
-            return $table . '.' . $this->getKeyName() . $dblink;
-        }
     }
 }

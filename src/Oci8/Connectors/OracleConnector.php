@@ -22,27 +22,6 @@ class OracleConnector extends Connector implements ConnectorInterface
     ];
 
     /**
-     * Create a new PDO connection.
-     *
-     * @param  string $tns
-     * @param  array $config
-     * @param  array $options
-     * @return PDO
-     */
-    public function createConnection($tns, array $config, array $options)
-    {
-        // add fallback in case driver is not set, will use pdo instead
-        if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
-            return parent::createConnection($tns, $config, $options);
-        }
-
-        $config             = $this->setCharset($config);
-        $options['charset'] = $config['charset'];
-
-        return new Oci8($tns, $config['username'], $config['password'], $options);
-    }
-
-    /**
      * Establish a database connection.
      *
      * @param array $config
@@ -79,28 +58,6 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         // return generated tns
         return $config['tns'];
-    }
-
-    /**
-     * @param array $config
-     * @return array
-     */
-    private function checkMultipleHostDsn(array $config)
-    {
-        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
-
-        $count = count($host);
-        if ($count > 1) {
-            $address = "";
-            for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
-            }
-
-            // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
-        }
-
-        return $config;
     }
 
     /**
@@ -158,7 +115,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setServiceId(array $config)
     {
-        $config['service']   = empty($config['service_name'])
+        $config['service'] = empty($config['service_name'])
             ? $service_param = 'SID = ' . $config['database']
             : $service_param = 'SERVICE_NAME = ' . $config['service_name'];
 
@@ -187,5 +144,48 @@ class OracleConnector extends Connector implements ConnectorInterface
         }
 
         return $config;
+    }
+
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function checkMultipleHostDsn(array $config)
+    {
+        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
+
+        $count = count($host);
+        if ($count > 1) {
+            $address = "";
+            for ($i = 0; $i < $count; $i++) {
+                $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
+            }
+
+            // create a tns with multiple address connection
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+        }
+
+        return $config;
+    }
+
+    /**
+     * Create a new PDO connection.
+     *
+     * @param  string $tns
+     * @param  array $config
+     * @param  array $options
+     * @return PDO
+     */
+    public function createConnection($tns, array $config, array $options)
+    {
+        // add fallback in case driver is not set, will use pdo instead
+        if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
+            return parent::createConnection($tns, $config, $options);
+        }
+
+        $config             = $this->setCharset($config);
+        $options['charset'] = $config['charset'];
+
+        return new Oci8($tns, $config['username'], $config['password'], $options);
     }
 }

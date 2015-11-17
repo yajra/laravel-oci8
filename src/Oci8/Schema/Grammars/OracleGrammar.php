@@ -31,22 +31,31 @@ class OracleGrammar extends Grammar
     protected $serials = ['bigInteger', 'integer', 'mediumInteger', 'smallInteger', 'tinyInteger'];
 
     /**
-     * Get the primary key syntax for a table creation statement.
+     * Compile a create table command.
      *
      * @param  \Illuminate\Database\Schema\Blueprint $blueprint
-     * @return string|null
+     * @param  \Illuminate\Support\Fluent $command
+     * @return string
      */
-    protected function addPrimaryKeys(Blueprint $blueprint)
+    public function compileCreate(Blueprint $blueprint, Fluent $command)
     {
-        $primary = $this->getCommandByName($blueprint, 'primary');
+        $columns = implode(', ', $this->getColumns($blueprint));
 
-        if (! is_null($primary)) {
-            $columns = $this->columnize($primary->columns);
+        $sql = 'create table ' . $this->wrapTable($blueprint) . " ( $columns";
 
-            return ", constraint {$primary->index} primary key ( {$columns} )";
-        }
+        /**
+         * To be able to name the primary/foreign keys when the table is
+         * initially created we will need to check for a primary/foreign
+         * key commands and add the columns to the table's declaration
+         * here so they can be created on the tables.
+         */
+        $sql .= (string) $this->addForeignKeys($blueprint);
 
-        return "";
+        $sql .= (string) $this->addPrimaryKeys($blueprint);
+
+        $sql .= ' )';
+
+        return $sql;
     }
 
     /**
@@ -85,31 +94,22 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * Compile a create table command.
+     * Get the primary key syntax for a table creation statement.
      *
      * @param  \Illuminate\Database\Schema\Blueprint $blueprint
-     * @param  \Illuminate\Support\Fluent $command
-     * @return string
+     * @return string|null
      */
-    public function compileCreate(Blueprint $blueprint, Fluent $command)
+    protected function addPrimaryKeys(Blueprint $blueprint)
     {
-        $columns = implode(', ', $this->getColumns($blueprint));
+        $primary = $this->getCommandByName($blueprint, 'primary');
 
-        $sql = 'create table ' . $this->wrapTable($blueprint) . " ( $columns";
+        if (! is_null($primary)) {
+            $columns = $this->columnize($primary->columns);
 
-        /**
-         * To be able to name the primary/foreign keys when the table is
-         * initially created we will need to check for a primary/foreign
-         * key commands and add the columns to the table's declaration
-         * here so they can be created on the tables.
-         */
-        $sql .= (string) $this->addForeignKeys($blueprint);
+            return ", constraint {$primary->index} primary key ( {$columns} )";
+        }
 
-        $sql .= (string) $this->addPrimaryKeys($blueprint);
-
-        $sql .= ' )';
-
-        return $sql;
+        return "";
     }
 
     /**
@@ -290,6 +290,24 @@ class OracleGrammar extends Grammar
     public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
     {
         return $this->dropConstraint($blueprint, $command, 'primary');
+    }
+
+    /**
+     * @param Blueprint $blueprint
+     * @param Fluent $command
+     * @param string $type
+     * @return string
+     */
+    private function dropConstraint(Blueprint $blueprint, Fluent $command, $type)
+    {
+        $table = $this->wrapTable($blueprint);
+        $index = substr($command->index, 0, 30);
+
+        if ($type === 'index') {
+            return "drop index {$index}";
+        }
+
+        return "alter table {$table} drop constraint {$index}";
     }
 
     /**
@@ -664,23 +682,5 @@ class OracleGrammar extends Grammar
     protected function wrapValue($value)
     {
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
-    }
-
-    /**
-     * @param Blueprint $blueprint
-     * @param Fluent $command
-     * @param string $type
-     * @return string
-     */
-    private function dropConstraint(Blueprint $blueprint, Fluent $command, $type)
-    {
-        $table = $this->wrapTable($blueprint);
-        $index = substr($command->index, 0, 30);
-
-        if ($type === 'index') {
-            return "drop index {$index}";
-        }
-
-        return "alter table {$table} drop constraint {$index}";
     }
 }

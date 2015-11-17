@@ -41,6 +41,21 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Create a new command set with a Closure.
+     *
+     * @param  string $table
+     * @param  Closure $callback
+     * @return \Illuminate\Database\Schema\Blueprint
+     */
+    protected function createBlueprint($table, Closure $callback = null)
+    {
+        $blueprint = new OracleBlueprint($table, $callback);
+        $blueprint->setTablePrefix($this->connection->getTablePrefix());
+
+        return $blueprint;
+    }
+
+    /**
      * Drop a table from the schema.
      *
      * @param  string $table
@@ -61,20 +76,5 @@ class OracleBuilder extends Builder
     {
         $this->helper->dropAutoIncrementObjects($table);
         parent::dropIfExists($table);
-    }
-
-    /**
-     * Create a new command set with a Closure.
-     *
-     * @param  string $table
-     * @param  Closure $callback
-     * @return \Illuminate\Database\Schema\Blueprint
-     */
-    protected function createBlueprint($table, Closure $callback = null)
-    {
-        $blueprint = new OracleBlueprint($table, $callback);
-        $blueprint->setTablePrefix($this->connection->getTablePrefix());
-
-        return $blueprint;
     }
 }
