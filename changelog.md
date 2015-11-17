@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.5
+- Revert laravel/framework#10373 commit that breaks exists method. Fix #102.
+
 #v2.4.4
 - Added timestampTz support #101
 
