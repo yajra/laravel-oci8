@@ -20,8 +20,8 @@
         "phpunit/phpunit": "4.0.*"
     },
     "autoload": {
-        "psr-0": {
-            "yajra\\Oci8": "src/"
+        "psr-4": {
+            "yajra\\": "src/"
         }
     },
     "minimum-stability": "stable"
