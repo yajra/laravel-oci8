@@ -15,25 +15,38 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 - You will find updated API documentation here: [Laravel-OCI8 API](http://yajra.github.io/laravel-oci8/api/)
 
 ###Quick Installation
-`composer require yajra/laravel-oci8:~2.0`
+```
+$ composer require yajra/laravel-oci8:~3.0`
+```
 
 ###Service Provider
-`'yajra\Oci8\Oci8ServiceProvider',`
+Once Composer has installed or updated your packages you need to register Laravel-Oci8. Open up `config/app.php` and find the providers key and add:
+```php
+yajra\Oci8\Oci8ServiceProvider::class,
+```
 
 ###Configuration
-Then setup a valid database configuration using the driver `oracle`. Configure your connection as usual with:
+Finally you need to publish a configuration file by running the following Artisan command.
+
+```
+$ php artisan vendor:publish
+```
+
+This will copy the configuration file to `config/oracle.php`
+
 > Note: For [Laravel Lumen configuration](http://lumen.laravel.com/docs/configuration#configuration-files), make sure you have a `config/database.php` file on your project and append the configuration below:
 
 ```php
 'oracle' => array(
-    'driver' => 'oracle',
-    'host' => 'oracle.host',
-    'port' => '1521',
-    'database' => 'xe',
-    'username' => 'hr',
-    'password' => 'hr',
-    'charset' => 'AL32UTF8',
-    'prefix' => '',
+    'driver'   => 'oracle',
+    'tns'      => env('DB_TNS', ''),
+    'host'     => env('DB_HOST', ''),
+    'port'     => env('DB_PORT', '1521'),
+    'database' => env('DB_DATABASE', ''),
+    'username' => env('DB_USERNAME', ''),
+    'password' => env('DB_PASSWORD', ''),
+    'charset'  => 'AL32UTF8',
+    'prefix'   => '',
 )
 ```
 
