@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.4
+- Added timestampTz support #101
+
 #v2.4.3
 - Add checker if pdo is in transaction. Fix #83
 - Use ~0.14 as default pdo-via-oci8 version.

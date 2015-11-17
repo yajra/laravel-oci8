@@ -583,6 +583,17 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a timestamp type with timezone.
+     *
+     * @param Fluent $column
+     * @return string
+     */
+    protected function typeTimestampTz(Fluent $column)
+    {
+        return 'timestamp with time zone';
+    }
+
+    /**
      * Create the column definition for a binary type.
      *
      * @param  \Illuminate\Support\Fluent $column
