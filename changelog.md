@@ -1,10 +1,14 @@
 #Laravel-OCI8 Change Log
 
-#v2.4.5
-- Revert laravel/framework#10373 commit that breaks exists method. Fix #102.
+#v3.0.0
+- Drop support for Laravel 4.2 & 5.0.
+- Drop Support for PHP 5.4.
+- Use PSR-4 auto loading.
+- Add oracle config file.
+- Update CS style using Laravel 5.1 php cs config.
 
 #v2.4.4
-- Added timestampTz support #101
+- Add timestampTz support #101.
 
 #v2.4.3
 - Add checker if pdo is in transaction. Fix #83

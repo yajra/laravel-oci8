@@ -7,7 +7,6 @@ use yajra\Oci8\Connectors\OracleConnector as Connector;
 
 class Oci8ServiceProvider extends ServiceProvider
 {
-
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -16,16 +15,30 @@ class Oci8ServiceProvider extends ServiceProvider
     protected $defer = false;
 
     /**
+     * Boot Oci8 Provider
+     */
+    public function boot()
+    {
+        $this->publishes([
+            __DIR__ . '/../config/oracle.php' => config_path('oracle.php'),
+        ], 'config');
+    }
+
+    /**
      * Register the service provider.
      *
      * @return void
      */
     public function register()
     {
+        if (file_exists(config_path('oracle.php'))) {
+            $this->mergeConfigFrom(config_path('oracle.php'), 'database.connections');
+        }
+
         $this->app['db']->extend('oracle', function ($config) {
-            $connector = new Connector();
+            $connector  = new Connector();
             $connection = $connector->connect($config);
-            $db = new Oci8Connection($connection, $config["database"], $config["prefix"]);
+            $db         = new Oci8Connection($connection, $config["database"], $config["prefix"]);
 
             // set oracle session variables
             $sessionVars = [
@@ -56,5 +69,4 @@ class Oci8ServiceProvider extends ServiceProvider
     {
         return [];
     }
-
 }

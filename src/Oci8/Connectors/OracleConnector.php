@@ -10,7 +10,6 @@ use yajra\Pdo\Oci8;
 
 class OracleConnector extends Connector implements ConnectorInterface
 {
-
     /**
      * The default PDO connection options.
      *
@@ -21,27 +20,6 @@ class OracleConnector extends Connector implements ConnectorInterface
         PDO::ATTR_ERRMODE      => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
     ];
-
-    /**
-     * Create a new PDO connection.
-     *
-     * @param  string $tns
-     * @param  array $config
-     * @param  array $options
-     * @return PDO
-     */
-    public function createConnection($tns, array $config, array $options)
-    {
-        // add fallback in case driver is not set, will use pdo instead
-        if ( ! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
-            return parent::createConnection($tns, $config, $options);
-        }
-
-        $config = $this->setCharset($config);
-        $options['charset'] = $config['charset'];
-
-        return new Oci8($tns, $config['username'], $config['password'], $options);
-    }
 
     /**
      * Establish a database connection.
@@ -68,7 +46,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function getDsn(array $config)
     {
-        if ( ! empty($config['tns'])) {
+        if (! empty($config['tns'])) {
             return $config['tns'];
         }
 
@@ -80,28 +58,6 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         // return generated tns
         return $config['tns'];
-    }
-
-    /**
-     * @param array $config
-     * @return array
-     */
-    private function checkMultipleHostDsn(array $config)
-    {
-        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
-
-        $count = count($host);
-        if ($count > 1) {
-            $address = "";
-            for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
-            }
-
-            // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
-        }
-
-        return $config;
     }
 
     /**
@@ -183,11 +139,53 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setCharset(array $config)
     {
-        if ( ! isset($config['charset'])) {
+        if (! isset($config['charset'])) {
             $config['charset'] = 'AL32UTF8';
         }
 
         return $config;
     }
 
+    /**
+     * @param array $config
+     * @return array
+     */
+    private function checkMultipleHostDsn(array $config)
+    {
+        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
+
+        $count = count($host);
+        if ($count > 1) {
+            $address = "";
+            for ($i = 0; $i < $count; $i++) {
+                $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
+            }
+
+            // create a tns with multiple address connection
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+        }
+
+        return $config;
+    }
+
+    /**
+     * Create a new PDO connection.
+     *
+     * @param  string $tns
+     * @param  array $config
+     * @param  array $options
+     * @return PDO
+     */
+    public function createConnection($tns, array $config, array $options)
+    {
+        // add fallback in case driver is not set, will use pdo instead
+        if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
+            return parent::createConnection($tns, $config, $options);
+        }
+
+        $config             = $this->setCharset($config);
+        $options['charset'] = $config['charset'];
+
+        return new Oci8($tns, $config['username'], $config['password'], $options);
+    }
 }
