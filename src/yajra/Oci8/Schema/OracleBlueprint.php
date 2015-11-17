@@ -39,4 +39,15 @@ class OracleBlueprint extends Blueprint
         return substr(str_replace(['-', '.'], '_', $index), 0, 30);
     }
 
+    /**
+     * Add creation and update timestampTz columns to the table.
+     *
+     * @return void
+     */
+    public function timestampsTz()
+    {
+        $this->timestampTz('created_at');
+
+        $this->timestampTz('updated_at');
+    }
 }

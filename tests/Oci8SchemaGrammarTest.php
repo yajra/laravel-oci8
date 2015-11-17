@@ -720,6 +720,16 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals('alter table users add ( foo timestamp not null )', $statements[0]);
 	}
 
+	public function testAddingTimeStampTz()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->timestampTz('foo');
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( foo timestamp with time zone not null )', $statements[0]);
+	}
+
 	public function testAddingNullableTimeStamps()
 	{
 		$blueprint = new Blueprint('users');
@@ -739,7 +749,18 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(1, count($statements));
 		$this->assertEquals('alter table users add ( created_at timestamp not null, updated_at timestamp not null )',
-			$statements[0]);
+							$statements[0]);
+	}
+
+	public function testAddingTimeStampTzs()
+	{
+		$blueprint = new Blueprint('users');
+		$blueprint->timestampsTz();
+		$statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+		$this->assertEquals(1, count($statements));
+		$this->assertEquals('alter table users add ( created_at timestamp with time zone not null, updated_at timestamp with time zone not null )',
+							$statements[0]);
 	}
 
 	public function testAddingBinary()
