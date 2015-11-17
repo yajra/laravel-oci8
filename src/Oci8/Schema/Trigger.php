@@ -32,14 +32,14 @@ class Trigger
         }
 
         return $this->connection->statement("
-			create trigger $triggerName
-			before insert or update on {$table}
-			for each row
-				begin
-			if inserting and :new.{$column} is null then
-				select {$sequenceName}.nextval into :new.{$column} from dual;
-			end if;
-			end;");
+            create trigger $triggerName
+            before insert or update on {$table}
+            for each row
+                begin
+            if inserting and :new.{$column} is null then
+                select {$sequenceName}.nextval into :new.{$column} from dual;
+            end if;
+            end;");
     }
 
     /**
@@ -55,14 +55,14 @@ class Trigger
         }
 
         return $this->connection->statement("
-			declare
-				e exception;
-				pragma exception_init(e,-4080);
-			begin
-				execute immediate 'drop trigger {$name}';
-			exception
-			when e then
-				null;
-			end;");
+            declare
+                e exception;
+                pragma exception_init(e,-4080);
+            begin
+                execute immediate 'drop trigger {$name}';
+            exception
+            when e then
+                null;
+            end;");
     }
 }

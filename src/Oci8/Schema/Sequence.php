@@ -49,15 +49,15 @@ class Sequence
         }
 
         return $this->connection->statement("
-			declare
-				e exception;
-				pragma exception_init(e,-02289);
-			begin
-				execute immediate 'drop sequence {$name}';
-			exception
-			when e then
-				null;
-			end;");
+            declare
+                e exception;
+                pragma exception_init(e,-02289);
+            begin
+                execute immediate 'drop sequence {$name}';
+            exception
+            when e then
+                null;
+            end;");
     }
 
     /**
@@ -73,11 +73,11 @@ class Sequence
         }
 
         return $this->connection->selectOne("select *
-			from all_sequences
-			where
-				sequence_name=upper('{$name}')
-				and sequence_owner=upper(user)
-			");
+            from all_sequences
+            where
+                sequence_name=upper('{$name}')
+                and sequence_owner=upper(user)
+            ");
     }
 
     /**

@@ -256,12 +256,12 @@ class OracleGrammar extends Grammar
         $table = $this->wrapTable($blueprint);
 
         return "declare c int;
-			begin
-			   select count(*) into c from user_tables where table_name = upper('$table');
-			   if c = 1 then
-			      execute immediate 'drop table $table';
-			   end if;
-			end;";
+            begin
+               select count(*) into c from user_tables where table_name = upper('$table');
+               if c = 1 then
+                  execute immediate 'drop table $table';
+               end if;
+            end;";
     }
 
     /**
