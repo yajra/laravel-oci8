@@ -22,13 +22,13 @@ class SequenceTest extends PHPUnit_Framework_TestCase
 
     protected function getConnection()
     {
-        return m::mock('Illuminate\Database\Connection');
+        return m::mock(Illuminate\Database\Connection::class);
     }
 
     /** @test */
     public function it_will_drop_sequence()
     {
-        $sequence = m::mock('Sequence');
+        $sequence = m::mock(Sequence::class);
         $sequence->shouldReceive('drop')->andReturn(true);
         $sequence->shouldReceive('exists')->andReturn(false);
         $success = $sequence->drop('users_id_seq');

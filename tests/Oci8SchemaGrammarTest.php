@@ -26,6 +26,16 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
+    protected function getConnection()
+    {
+        return m::mock('Illuminate\Database\Connection');
+    }
+
+    public function getGrammar()
+    {
+        return new yajra\Oci8\Schema\Grammars\OracleGrammar;
+    }
+
     public function testBasicCreateTableWithPrimary()
     {
         $blueprint = new Blueprint('users');
@@ -495,8 +505,8 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
         $blueprint = new Blueprint('users');
         $blueprint->string('foo', 100)
-            ->nullable()
-            ->default(new Illuminate\Database\Query\Expression('CURRENT TIMESTAMP'));
+                  ->nullable()
+                  ->default(new Illuminate\Database\Query\Expression('CURRENT TIMESTAMP'));
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
@@ -748,7 +758,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($statements));
         $this->assertEquals('alter table users add ( created_at timestamp not null, updated_at timestamp not null )',
-                            $statements[0]);
+            $statements[0]);
     }
 
     public function testAddingTimeStampTzs()
@@ -759,7 +769,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($statements));
         $this->assertEquals('alter table users add ( created_at timestamp with time zone not null, updated_at timestamp with time zone not null )',
-                            $statements[0]);
+            $statements[0]);
     }
 
     public function testAddingBinary()
@@ -770,15 +780,5 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($statements));
         $this->assertEquals('alter table users add ( foo blob not null )', $statements[0]);
-    }
-
-    protected function getConnection()
-    {
-        return m::mock('Illuminate\Database\Connection');
-    }
-
-    public function getGrammar()
-    {
-        return new yajra\Oci8\Schema\Grammars\OracleGrammar;
     }
 }

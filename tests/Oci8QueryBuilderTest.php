@@ -19,6 +19,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('select * from users', $builder->toSql());
     }
 
+    protected function getBuilder()
+    {
+        $grammar   = new yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor = m::mock(yajra\Oci8\Query\Processors\OracleProcessor::class);
+
+        return new Builder(m::mock(Illuminate\Database\ConnectionInterface::class), $grammar, $processor);
+    }
+
     public function testAddingSelects()
     {
         $builder = $this->getBuilder();
@@ -355,17 +363,17 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')
-            ->from('users')
-            ->join('contacts', 'users.id', '=', 'contacts.id')
-            ->leftJoin('photos', 'users.id', '=', 'photos.id');
+                ->from('users')
+                ->join('contacts', 'users.id', '=', 'contacts.id')
+                ->leftJoin('photos', 'users.id', '=', 'photos.id');
         $this->assertEquals('select * from users inner join contacts on users.id = contacts.id left join photos on users.id = photos.id',
             $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')
-            ->from('users')
-            ->leftJoinWhere('photos', 'users.id', '=', 'bar')
-            ->joinWhere('photos', 'users.id', '=', 'foo');
+                ->from('users')
+                ->leftJoinWhere('photos', 'users.id', '=', 'bar')
+                ->joinWhere('photos', 'users.id', '=', 'foo');
         $this->assertEquals('select * from users left join photos on users.id = ? inner join photos on users.id = ?',
             $builder->toSql());
         $this->assertEquals(['bar', 'foo'], $builder->getBindings());
@@ -400,18 +408,18 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
-                [1], true)
-            ->andReturn([['foo' => 'bar']]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
+                    [1], true)
+                ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['foo' => 'bar']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['foo' => 'bar']])
+                ->andReturnUsing(function ($query, $results) {
+                    return $results;
+                });
         $results = $builder->from('users')->find(1);
         $this->assertEquals(['foo' => 'bar'], $results);
     }
@@ -420,18 +428,18 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
-                [1], true)
-            ->andReturn([['foo' => 'bar']]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
+                    [1], true)
+                ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['foo' => 'bar']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['foo' => 'bar']])
+                ->andReturnUsing(function ($query, $results) {
+                    return $results;
+                });
         $results = $builder->from('users')->where('id', '=', 1)->first();
         $this->assertEquals(['foo' => 'bar'], $results);
     }
@@ -441,27 +449,27 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
+                ->andReturnUsing(function ($query, $results) {
+                    return $results;
+                });
         $results = $builder->from('users')->where('id', '=', 1)->lists('foo');
         $this->assertEquals(['bar', 'baz'], $results);
 
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->andReturn([['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']]);
+                ->shouldReceive('select')
+                ->once()
+                ->andReturn([['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])
+                ->andReturnUsing(function ($query, $results) {
+                    return $results;
+                });
         $results = $builder->from('users')->where('id', '=', 1)->lists('foo', 'id');
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results);
     }
@@ -472,12 +480,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
+                ->andReturnUsing(function ($query, $results) {
+                    return $results;
+                });
         $results = $builder->from('users')->where('id', '=', 1)->implode('foo');
         $this->assertEquals('barbaz', $results);
 
@@ -485,12 +493,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
+                ->andReturnUsing(function ($query, $results) {
+                    return $results;
+                });
         $results = $builder->from('users')->where('id', '=', 1)->implode('foo', ',');
         $this->assertEquals('bar,baz', $results);
     }
@@ -499,16 +507,16 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select t2.* from ( select rownum AS "rn", t1.* from (select foo from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
-                [1], true)
-            ->andReturn([['rn' => 1, 'foo' => 'bar']]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select foo from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
+                    [1], true)
+                ->andReturn([['rn' => 1, 'foo' => 'bar']]);
         $builder->getProcessor()
-            ->shouldReceive('processSelect')
-            ->once()
-            ->with($builder, [['rn' => 1, 'foo' => 'bar']])
-            ->andReturn([['rn' => 1, 'foo' => 'bar']]);
+                ->shouldReceive('processSelect')
+                ->once()
+                ->with($builder, [['rn' => 1, 'foo' => 'bar']])
+                ->andReturn([['rn' => 1, 'foo' => 'bar']]);
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
         $this->assertEquals('bar', $results);
     }
@@ -517,10 +525,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select count(*) as aggregate from users', [], true)
-            ->andReturn([['aggregate' => 1]]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select count(*) as aggregate from users', [], true)
+                ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -532,10 +540,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
-            ->once()
-            ->with('select t2.* from ( select rownum AS "rn", t1.* from (select count(*) as aggregate from users) t1 ) t2 where t2."rn" between 1 and 1',
-                [], true)
-            ->andReturn([['aggregate' => 1]]);
+                ->once()
+                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select count(*) as aggregate from users) t1 ) t2 where t2."rn" between 1 and 1',
+                    [], true)
+                ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -547,10 +555,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select max(id) as aggregate from users', [], true)
-            ->andReturn([['aggregate' => 1]]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select max(id) as aggregate from users', [], true)
+                ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -562,10 +570,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select min(id) as aggregate from users', [], true)
-            ->andReturn([['aggregate' => 1]]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select min(id) as aggregate from users', [], true)
+                ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -577,10 +585,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('select')
-            ->once()
-            ->with('select sum(id) as aggregate from users', [], true)
-            ->andReturn([['aggregate' => 1]]);
+                ->shouldReceive('select')
+                ->once()
+                ->with('select sum(id) as aggregate from users', [], true)
+                ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -592,10 +600,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('insert')
-            ->once()
-            ->with('insert into users (email) values (?)', ['foo'])
-            ->andReturn(true);
+                ->shouldReceive('insert')
+                ->once()
+                ->with('insert into users (email) values (?)', ['foo'])
+                ->andReturn(true);
         $result = $builder->from('users')->insert(['email' => 'foo']);
         $this->assertTrue($result);
     }
@@ -604,10 +612,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('insert')
-            ->once()
-            ->with('insert into users (email) select ? from dual union all select ? from dual ', ['foo', 'foo'])
-            ->andReturn(true);
+                ->shouldReceive('insert')
+                ->once()
+                ->with('insert into users (email) select ? from dual union all select ? from dual ', ['foo', 'foo'])
+                ->andReturn(true);
         $data[] = ['email' => 'foo'];
         $data[] = ['email' => 'foo'];
         $result = $builder->from('users')->insert($data);
@@ -618,10 +626,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-            ->shouldReceive('processInsertGetId')
-            ->once()
-            ->with($builder, 'insert into users (email) values (?) returning id into ?', ['foo'], 'id')
-            ->andReturn(1);
+                ->shouldReceive('processInsertGetId')
+                ->once()
+                ->with($builder, 'insert into users (email) values (?) returning id into ?', ['foo'], 'id')
+                ->andReturn(1);
         $result = $builder->from('users')->insertGetId(['email' => 'foo'], 'id');
         $this->assertEquals(1, $result);
     }
@@ -630,11 +638,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-            ->shouldReceive('saveLob')
-            ->once()
-            ->with($builder, 'insert into users (email, blob) values (?, EMPTY_BLOB()) returning blob, id into ?, ?',
-                ['foo'], ['test data'])
-            ->andReturn(1);
+                ->shouldReceive('saveLob')
+                ->once()
+                ->with($builder,
+                    'insert into users (email, blob) values (?, EMPTY_BLOB()) returning blob, id into ?, ?',
+                    ['foo'], ['test data'])
+                ->andReturn(1);
         $result = $builder->from('users')->insertLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
@@ -643,11 +652,11 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-            ->shouldReceive('saveLob')
-            ->once()
-            ->with($builder, 'insert into users (blob) values (EMPTY_BLOB()) returning blob, id into ?, ?', [],
-                ['test data'])
-            ->andReturn(1);
+                ->shouldReceive('saveLob')
+                ->once()
+                ->with($builder, 'insert into users (blob) values (EMPTY_BLOB()) returning blob, id into ?, ?', [],
+                    ['test data'])
+                ->andReturn(1);
         $result = $builder->from('users')->insertLob([], ['blob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
@@ -656,15 +665,16 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-            ->shouldReceive('saveLob')
-            ->once()
-            ->with($builder,
-                'update users set email = ?, blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?', ['foo', 1],
-                ['test data'])
-            ->andReturn(1);
+                ->shouldReceive('saveLob')
+                ->once()
+                ->with($builder,
+                    'update users set email = ?, blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?',
+                    ['foo', 1],
+                    ['test data'])
+                ->andReturn(1);
         $result = $builder->from('users')
-            ->where('id', '=', 1)
-            ->updateLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
+                          ->where('id', '=', 1)
+                          ->updateLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -672,14 +682,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-            ->shouldReceive('saveLob')
-            ->once()
-            ->with($builder, 'update users set blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?', [1],
-                ['test data'])
-            ->andReturn(1);
+                ->shouldReceive('saveLob')
+                ->once()
+                ->with($builder, 'update users set blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?', [1],
+                    ['test data'])
+                ->andReturn(1);
         $result = $builder->from('users')
-            ->where('id', '=', 1)
-            ->updateLob([], ['blob' => 'test data'], 'id');
+                          ->where('id', '=', 1)
+                          ->updateLob([], ['blob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -687,12 +697,13 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-            ->shouldReceive('processInsertGetId')
-            ->once()
-            ->with($builder, 'insert into users (email, bar) values (?, bar) returning id into ?', ['foo'], 'id')
-            ->andReturn(1);
+                ->shouldReceive('processInsertGetId')
+                ->once()
+                ->with($builder, 'insert into users (email, bar) values (?, bar) returning id into ?', ['foo'], 'id')
+                ->andReturn(1);
         $result = $builder->from('users')
-            ->insertGetId(['email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')], 'id');
+                          ->insertGetId(['email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')],
+                              'id');
         $this->assertEquals(1, $result);
     }
 
@@ -700,10 +711,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('insert')
-            ->once()
-            ->with('insert into users (email) values (CURRENT TIMESTAMP)', [])
-            ->andReturn(true);
+                ->shouldReceive('insert')
+                ->once()
+                ->with('insert into users (email) values (CURRENT TIMESTAMP)', [])
+                ->andReturn(true);
         $result = $builder->from('users')->insert(['email' => new Raw('CURRENT TIMESTAMP')]);
         $this->assertTrue($result);
     }
@@ -712,10 +723,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('update')
-            ->once()
-            ->with('update users set email = ?, name = ? where id = ?', ['foo', 'bar', 1])
-            ->andReturn(1);
+                ->shouldReceive('update')
+                ->once()
+                ->with('update users set email = ?, name = ? where id = ?', ['foo', 'bar', 1])
+                ->andReturn(1);
         $result = $builder->from('users')->where('id', '=', 1)->update(['email' => 'foo', 'name' => 'bar']);
         $this->assertEquals(1, $result);
     }
@@ -724,15 +735,15 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('update')
-            ->once()
-            ->with('update users inner join orders on users.id = orders.user_id set email = ?, name = ? where users.id = ?',
-                ['foo', 'bar', 1])
-            ->andReturn(1);
+                ->shouldReceive('update')
+                ->once()
+                ->with('update users inner join orders on users.id = orders.user_id set email = ?, name = ? where users.id = ?',
+                    ['foo', 'bar', 1])
+                ->andReturn(1);
         $result = $builder->from('users')
-            ->join('orders', 'users.id', '=', 'orders.user_id')
-            ->where('users.id', '=', 1)
-            ->update(['email' => 'foo', 'name' => 'bar']);
+                          ->join('orders', 'users.id', '=', 'orders.user_id')
+                          ->where('users.id', '=', 1)
+                          ->update(['email' => 'foo', 'name' => 'bar']);
         $this->assertEquals(1, $result);
     }
 
@@ -740,10 +751,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('update')
-            ->once()
-            ->with('update users set email = foo, name = ? where id = ?', ['bar', 1])
-            ->andReturn(1);
+                ->shouldReceive('update')
+                ->once()
+                ->with('update users set email = foo, name = ? where id = ?', ['bar', 1])
+                ->andReturn(1);
         $result = $builder->from('users')->where('id', '=', 1)->update(['email' => new Raw('foo'), 'name' => 'bar']);
         $this->assertEquals(1, $result);
     }
@@ -752,19 +763,19 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('delete')
-            ->once()
-            ->with('delete from users where email = ?', ['foo'])
-            ->andReturn(1);
+                ->shouldReceive('delete')
+                ->once()
+                ->with('delete from users where email = ?', ['foo'])
+                ->andReturn(1);
         $result = $builder->from('users')->where('email', '=', 'foo')->delete();
         $this->assertEquals(1, $result);
 
         $builder = $this->getBuilder();
         $builder->getConnection()
-            ->shouldReceive('delete')
-            ->once()
-            ->with('delete from users where id = ?', [1])
-            ->andReturn(1);
+                ->shouldReceive('delete')
+                ->once()
+                ->with('delete from users where id = ?', [1])
+                ->andReturn(1);
         $result = $builder->from('users')->delete(1);
         $this->assertEquals(1, $result);
     }
@@ -857,13 +868,5 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
             $this->assertContains('Lock in share mode not yet supported!', $e->getMessage());
             $this->assertEquals(['baz'], $builder->getBindings());
         }
-    }
-
-    protected function getBuilder()
-    {
-        $grammar   = new yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor = m::mock('yajra\Oci8\Query\Processors\OracleProcessor');
-
-        return new Builder(m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor);
     }
 }
