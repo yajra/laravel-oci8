@@ -46,6 +46,8 @@ class OracleBlueprint extends Blueprint
      */
     public function timestampsTz()
     {
-        parent::timestampsTz();
+        $this->timestampTz('created_at');
+
+        $this->timestampTz('updated_at');
     }
 }
