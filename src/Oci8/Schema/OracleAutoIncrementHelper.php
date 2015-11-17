@@ -7,12 +7,24 @@ use Illuminate\Database\Schema\Blueprint;
 
 class OracleAutoIncrementHelper
 {
+    /**
+     * @var \Illuminate\Database\Connection
+     */
     protected $connection;
 
+    /**
+     * @var \yajra\Oci8\Schema\Trigger
+     */
     protected $trigger;
 
+    /**
+     * @var \yajra\Oci8\Schema\Sequence
+     */
     protected $sequence;
 
+    /**
+     * @param \Illuminate\Database\Connection $connection
+     */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;

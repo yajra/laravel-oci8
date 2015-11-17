@@ -8,6 +8,9 @@ use Illuminate\Database\Schema\Builder;
 
 class OracleBuilder extends Builder
 {
+    /**
+     * @var \yajra\Oci8\Schema\OracleAutoIncrementHelper
+     */
     public $helper;
 
     /**

@@ -6,6 +6,9 @@ use Illuminate\Database\Connection;
 
 class Trigger
 {
+    /**
+     * @var \Illuminate\Database\Connection
+     */
     protected $connection;
 
     /**

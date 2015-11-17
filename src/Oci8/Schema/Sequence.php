@@ -6,6 +6,9 @@ use Illuminate\Database\Connection;
 
 class Sequence
 {
+    /**
+     * @var \Illuminate\Database\Connection
+     */
     protected $connection;
 
     /**
