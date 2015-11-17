@@ -10,17 +10,20 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/yajra/laravel-oci8/blob/master/LICENSE)
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
-##Documentations
+###Documentations
 - You will find user friendly and updated documentation in the wiki here: [Laravel-OCI8 Wiki](https://github.com/yajra/laravel-oci8/wiki)
 - You will find updated API documentation here: [Laravel-OCI8 API](http://yajra.github.io/laravel-oci8/api/)
 
 ###Quick Installation
 ```
-$ composer require yajra/laravel-oci8:~3.0`
+$ composer require yajra/laravel-oci8:~3.0
 ```
 
+###Laravel 4.2 & 5.0 Users
+Please use [2.4](https://github.com/yajra/laravel-oci8/tree/2.4) branch.
+
 ###Service Provider
-Once Composer has installed or updated your packages you need to register Laravel-Oci8. Open up `config/app.php` and find the providers key and add:
+Once Composer has installed or updated your packages you need to register Laravel-OCI8. Open up `config/app.php` and find the providers key and add:
 ```php
 yajra\Oci8\Oci8ServiceProvider::class,
 ```
