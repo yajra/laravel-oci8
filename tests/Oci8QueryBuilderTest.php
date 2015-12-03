@@ -897,4 +897,74 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('select * from users where extract (year from created_at) = ?', $builder->toSql());
         $this->assertEquals([0 => 2015], $builder->getBindings());
     }
+
+    public function testAggregateResetFollowedByGet()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from users', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getConnection()->shouldReceive('select')->once()->with('select sum(id) as aggregate from users', [], true)->andReturn([['aggregate' => 2]]);
+        $builder->getConnection()->shouldReceive('select')->once()->with('select column1, column2 from users', [], true)->andReturn([['column1' => 'foo', 'column2' => 'bar']]);
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) { return $results; });
+        $builder->from('users')->select('column1', 'column2');
+        $count = $builder->count();
+        $this->assertEquals(1, $count);
+        $sum = $builder->sum('id');
+        $this->assertEquals(2, $sum);
+        $result = $builder->get();
+        $this->assertEquals([['column1' => 'foo', 'column2' => 'bar']], $result);
+    }
+
+    public function testAggregateResetFollowedBySelectGet()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(column1) as aggregate from users', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getConnection()->shouldReceive('select')->once()->with('select column2, column3 from users', [], true)->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) { return $results; });
+        $builder->from('users');
+        $count = $builder->count('column1');
+        $this->assertEquals(1, $count);
+        $result = $builder->select('column2', 'column3')->get();
+        $this->assertEquals([['column2' => 'foo', 'column3' => 'bar']], $result);
+    }
+
+    public function testAggregateResetFollowedByGetWithColumns()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(column1) as aggregate from users', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getConnection()->shouldReceive('select')->once()->with('select column2, column3 from users', [], true)->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) { return $results; });
+        $builder->from('users');
+        $count = $builder->count('column1');
+        $this->assertEquals(1, $count);
+        $result = $builder->get(['column2', 'column3']);
+        $this->assertEquals([['column2' => 'foo', 'column3' => 'bar']], $result);
+    }
+
+    public function testAggregateWithSubSelect()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from users', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) { return $results; });
+        $builder->from('users')->selectSub(function ($query) { $query->from('posts')->select('foo')->where('title', 'foo'); }, 'post');
+        $count = $builder->count();
+        $this->assertEquals(1, $count);
+        $this->assertEquals(['foo'], $builder->getBindings());
+    }
+
+    public function testSubQueriesBindings()
+    {
+        $builder = $this->getBuilder();
+        $second = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
+        $third = $this->getBuilder()->select('*')->from('users')->where('id', 3)->groupBy('id')->having('id', '!=', 4);
+        $builder->groupBy('a')->having('a', '=', 1)->union($second)->union($third);
+        $this->assertEquals([0 => 1, 1 => 2, 2 => 3, 3 => 4], $builder->getBindings());
+
+        $builder = $this->getBuilder()->select('*')->from('users')->where('email', '=', function ($q) {
+            $q->select(new Raw('max(id)'))
+              ->from('users')->where('email', '=', 'bar')
+              ->orderByRaw('email like ?', '%.com')
+              ->groupBy('id')->having('id', '=', 4);
+        })->orWhere('id', '=', 'foo')->groupBy('id')->having('id', '=', 5);
+        $this->assertEquals([0 => 'bar', 1 => 4, 2 => '%.com', 3 => 'foo', 4 => 5], $builder->getBindings());
+    }
 }
