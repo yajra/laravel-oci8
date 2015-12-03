@@ -970,4 +970,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         })->orWhere('id', '=', 'foo')->groupBy('id')->having('id', '=', 5);
         $this->assertEquals([0 => 'bar', 1 => 4, 2 => '%.com', 3 => 'foo', 4 => 5], $builder->getBindings());
     }
+
+    public function testOracleUnionOrderBys()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('id', '=', 1);
+        $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
+        $builder->orderBy('id', 'desc');
+        $this->assertEquals('select * from users where id = ? union select * from users where id = ? order by id desc', $builder->toSql());
+        $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
+    }
 }
