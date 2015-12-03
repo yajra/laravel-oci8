@@ -29,14 +29,15 @@ Yajra\Oci8\Oci8ServiceProvider::class,
 ```
 > Important: Since v4.0, the package will now use `Yajra\Oci8` (capital Y) namespace from `yajra\Oci8` to follow the name standard for vendor name.
 
-###Configuration
-Finally you need to publish a configuration file by running the following Artisan command.
+###Configuration (OPTIONAL)
+Finally you can optionally publish a configuration file by running the following Artisan command.
+If config file is not publish, the package will automatically use what is declared on your `.env` file database configuartion.
 
 ```
 $ php artisan vendor:publish --tag=oracle
 ```
 
-This will copy the configuration file to `config/oracle.php`
+This will copy the configuration file to `config/oracle.php`.
 
 > Note: For [Laravel Lumen configuration](http://lumen.laravel.com/docs/configuration#configuration-files), make sure you have a `config/database.php` file on your project and append the configuration below:
 
@@ -49,8 +50,8 @@ This will copy the configuration file to `config/oracle.php`
     'database' => env('DB_DATABASE', ''),
     'username' => env('DB_USERNAME', ''),
     'password' => env('DB_PASSWORD', ''),
-    'charset'  => 'AL32UTF8',
-    'prefix'   => '',
+    'charset'  => env('DB_CHARSET', 'AL32UTF8'),
+    'prefix'   => env('DB_PREFIX', ''),
 )
 ```
 

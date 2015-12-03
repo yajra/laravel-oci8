@@ -33,6 +33,8 @@ class Oci8ServiceProvider extends ServiceProvider
     {
         if (file_exists(config_path('oracle.php'))) {
             $this->mergeConfigFrom(config_path('oracle.php'), 'database.connections');
+        } else {
+            $this->mergeConfigFrom(__DIR__ . '/../config/oracle.php', 'database.connections');
         }
 
         $this->app['db']->extend('oracle', function ($config) {
