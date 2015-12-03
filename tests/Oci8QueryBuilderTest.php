@@ -410,7 +410,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
+                ->with('select * from (select * from users where id = ?) where rownum = 1',
                     [1], true)
                 ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
@@ -430,7 +430,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select * from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
+                ->with('select * from (select * from users where id = ?) where rownum = 1',
                     [1], true)
                 ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
@@ -509,14 +509,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select foo from users where id = ?) t1 ) t2 where t2."rn" between 1 and 1',
+                ->with('select * from (select foo from users where id = ?) where rownum = 1',
                     [1], true)
-                ->andReturn([['rn' => 1, 'foo' => 'bar']]);
+                ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
                 ->shouldReceive('processSelect')
                 ->once()
-                ->with($builder, [['rn' => 1, 'foo' => 'bar']])
-                ->andReturn([['rn' => 1, 'foo' => 'bar']]);
+                ->with($builder, [['foo' => 'bar']])
+                ->andReturn([['foo' => 'bar']]);
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
         $this->assertEquals('bar', $results);
     }
@@ -541,7 +541,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
                 ->once()
-                ->with('select t2.* from ( select rownum AS "rn", t1.* from (select count(*) as aggregate from users) t1 ) t2 where t2."rn" between 1 and 1',
+                ->with('select * from (select count(*) as aggregate from users) where rownum = 1',
                     [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {

@@ -80,7 +80,11 @@ class OracleGrammar extends Grammar
     {
         $start = $query->offset + 1;
 
-        if ($query->limit > 0) {
+        if ($query->limit == 1) {
+            return "= 1";
+        }
+
+        if ($query->limit > 1) {
             $finish = $query->offset + $query->limit;
 
             return "between {$start} and {$finish}";
@@ -99,7 +103,7 @@ class OracleGrammar extends Grammar
      */
     protected function compileTableExpression($sql, $constraint, $query)
     {
-        if ($query->limit > 0) {
+        if ($query->limit > 1) {
             return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
         } else {
             return "select * from ({$sql}) where rownum {$constraint}";
