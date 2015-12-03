@@ -865,4 +865,36 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(['baz'], $builder->getBindings());
         }
     }
+
+    public function testWhereDate()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '=', '2015-12-20');
+        $this->assertEquals('select * from users where trunc(created_at) = ?', $builder->toSql());
+        $this->assertEquals([0 => '2015-12-20'], $builder->getBindings());
+    }
+
+    public function testWhereDay()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDay('created_at', '=', 20);
+        $this->assertEquals('select * from users where extract (day from created_at) = ?', $builder->toSql());
+        $this->assertEquals([0 => 20], $builder->getBindings());
+    }
+
+    public function testWhereMonth()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereMonth('created_at', '=', 12);
+        $this->assertEquals('select * from users where extract (month from created_at) = ?', $builder->toSql());
+        $this->assertEquals([0 => 12], $builder->getBindings());
+    }
+
+    public function testWhereYear()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereYear('created_at', '=', 2015);
+        $this->assertEquals('select * from users where extract (year from created_at) = ?', $builder->toSql());
+        $this->assertEquals([0 => 2015], $builder->getBindings());
+    }
 }

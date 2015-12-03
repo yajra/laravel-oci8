@@ -341,6 +341,35 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a "where date" clause.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
+     * @return string
+     */
+    protected function whereDate(Builder $query, $where)
+    {
+        $value = $this->parameter($where['value']);
+
+        return "trunc({$this->wrap($where['column'])}) {$where['operator']} $value";
+    }
+
+    /**
+     * Compile a date based where clause.
+     *
+     * @param  string $type
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $where
+     * @return string
+     */
+    protected function dateBasedWhere($type, Builder $query, $where)
+    {
+        $value = $this->parameter($where['value']);
+
+        return "extract ($type from {$this->wrap($where['column'])}) {$where['operator']} $value";
+    }
+
+    /**
      * Wrap a single string in keyword identifiers.
      *
      * @param  string $value
