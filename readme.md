@@ -16,7 +16,7 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 
 ###Quick Installation [Laravel 5.1 & Up]
 ```
-$ composer require yajra/laravel-oci8:~3.0
+$ composer require yajra/laravel-oci8:~4.0
 ```
 
 ###Laravel 4.2 & 5.0 Users
@@ -25,14 +25,15 @@ Please use [2.4](https://github.com/yajra/laravel-oci8/tree/2.4) branch.
 ###Service Provider
 Once Composer has installed or updated your packages you need to register Laravel-OCI8. Open up `config/app.php` and find the providers key and add:
 ```php
-yajra\Oci8\Oci8ServiceProvider::class,
+Yajra\Oci8\Oci8ServiceProvider::class,
 ```
+> Important: Since v4.0, the package will now use `Yajra\Oci8` (capital Y) namespace from `yajra\Oci8` to follow the name standard for vendor name.
 
 ###Configuration
 Finally you need to publish a configuration file by running the following Artisan command.
 
 ```
-$ php artisan vendor:publish
+$ php artisan vendor:publish --tag=oracle
 ```
 
 This will copy the configuration file to `config/oracle.php`
