@@ -123,18 +123,4 @@ class OracleBuilder extends Builder
 
         return $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
     }
-
-    /**
-     * Determine if any rows exist for the current query.
-     *
-     * @return bool|null
-     */
-    public function exists()
-    {
-        $limit = $this->limit;
-        $result = $this->limit(1)->count() > 0;
-        $this->limit($limit);
-
-        return $result;
-    }
 }

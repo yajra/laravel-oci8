@@ -541,12 +541,8 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
                 ->once()
-                ->with('select * from (select count(*) as aggregate from users) where rownum = 1',
-                    [], true)
-                ->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+                ->with('select 1 as "exists" from users where rownum = 1', [], true)
+                ->andReturn([['exists' => 1]]);
         $results = $builder->from('users')->exists();
         $this->assertTrue($results);
     }

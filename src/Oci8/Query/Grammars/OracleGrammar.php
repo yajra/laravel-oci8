@@ -16,6 +16,20 @@ class OracleGrammar extends Grammar
     protected $wrapper = '%s';
 
     /**
+     * Compile an exists statement into SQL.
+     *
+     * @param \Illuminate\Database\Query\Builder $query
+     * @return string
+     */
+    public function compileExists(Builder $query)
+    {
+        $query->selectRaw('1 as "exists"')
+              ->whereRaw("rownum = 1");
+
+        return $this->compileSelect($query);
+    }
+
+    /**
      * Compile a select query into SQL.
      *
      * @param  \Illuminate\Database\Query\Builder
