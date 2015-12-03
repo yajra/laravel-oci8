@@ -21,7 +21,7 @@ class Oci8ServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../config/oracle.php' => config_path('oracle.php'),
-        ], 'config');
+        ], 'oracle');
     }
 
     /**
