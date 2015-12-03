@@ -75,19 +75,6 @@ class OracleBuilder extends Builder
     }
 
     /**
-     * Pluck a single column's value from the first result of a query.
-     *
-     * @param  string $column
-     * @return mixed
-     */
-    public function pluck($column)
-    {
-        $result = (array) $this->first([$column]);
-
-        return count($result) > 0 ? $result[$column] : null;
-    }
-
-    /**
      * Add a "where in" clause to the query.
      * Split one WHERE IN clause into multiple clauses each
      * with up to 1000 expressions to avoid ORA-01795
