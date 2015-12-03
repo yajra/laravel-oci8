@@ -23,10 +23,12 @@ class OracleGrammar extends Grammar
      */
     public function compileExists(Builder $query)
     {
-        $query->selectRaw('1 as "exists"')
-              ->whereRaw("rownum = 1");
+        $q = clone $query;
+        $q->columns = [];
+        $q->selectRaw('1 as "exists"')
+          ->whereRaw("rownum = 1");
 
-        return $this->compileSelect($query);
+        return $this->compileSelect($q);
     }
 
     /**
@@ -343,8 +345,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where date" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $where
      * @return string
      */
     protected function whereDate(Builder $query, $where)
