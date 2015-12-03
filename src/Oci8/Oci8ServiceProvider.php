@@ -1,9 +1,9 @@
 <?php
 
-namespace yajra\Oci8;
+namespace Yajra\Oci8;
 
 use Illuminate\Support\ServiceProvider;
-use yajra\Oci8\Connectors\OracleConnector as Connector;
+use Yajra\Oci8\Connectors\OracleConnector as Connector;
 
 class Oci8ServiceProvider extends ServiceProvider
 {

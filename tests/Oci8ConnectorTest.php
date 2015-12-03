@@ -42,7 +42,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector  = $this->getMock(yajra\Oci8\Connectors\OracleConnector::class, ['createConnection', 'getOptions']);
+        $connector  = $this->getMock(Yajra\Oci8\Connectors\OracleConnector::class, ['createConnection', 'getOptions']);
         $connection = m::mock('stdClass');
         $connector->expects($this->once())
                   ->method('getOptions')

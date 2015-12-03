@@ -1,19 +1,19 @@
 <?php
 
-namespace yajra\Oci8;
+namespace Yajra\Oci8;
 
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
 use PDO;
-use yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
-use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
-use yajra\Oci8\Query\Processors\OracleProcessor as Processor;
-use yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
-use yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
-use yajra\Oci8\Schema\Sequence;
-use yajra\Oci8\Schema\Trigger;
+use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
+use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
+use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
+use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use Yajra\Oci8\Schema\Sequence;
+use Yajra\Oci8\Schema\Trigger;
 
 class Oci8Connection extends Connection
 {
@@ -23,12 +23,12 @@ class Oci8Connection extends Connection
     protected $schema;
 
     /**
-     * @var \yajra\Oci8\Schema\Sequence
+     * @var \Yajra\Oci8\Schema\Sequence
      */
     protected $sequence;
 
     /**
-     * @var \yajra\Oci8\Schema\Trigger
+     * @var \Yajra\Oci8\Schema\Trigger
      */
     protected $trigger;
 
@@ -96,7 +96,7 @@ class Oci8Connection extends Connection
     /**
      * Get sequence class.
      *
-     * @return \yajra\Oci8\Schema\Sequence
+     * @return \Yajra\Oci8\Schema\Sequence
      */
     public function getSequence()
     {
@@ -106,8 +106,8 @@ class Oci8Connection extends Connection
     /**
      * Set sequence class.
      *
-     * @param \yajra\Oci8\Schema\Sequence $sequence
-     * @return \yajra\Oci8\Schema\Sequence
+     * @param \Yajra\Oci8\Schema\Sequence $sequence
+     * @return \Yajra\Oci8\Schema\Sequence
      */
     public function setSequence(Sequence $sequence)
     {
@@ -117,7 +117,7 @@ class Oci8Connection extends Connection
     /**
      * Get oracle trigger class.
      *
-     * @return \yajra\Oci8\Schema\Trigger
+     * @return \Yajra\Oci8\Schema\Trigger
      */
     public function getTrigger()
     {
@@ -127,8 +127,8 @@ class Oci8Connection extends Connection
     /**
      * Set oracle trigger class.
      *
-     * @param \yajra\Oci8\Schema\Trigger $trigger
-     * @return \yajra\Oci8\Schema\Trigger
+     * @param \Yajra\Oci8\Schema\Trigger $trigger
+     * @return \Yajra\Oci8\Schema\Trigger
      */
     public function setTrigger(Trigger $trigger)
     {
@@ -138,7 +138,7 @@ class Oci8Connection extends Connection
     /**
      * Get a schema builder instance for the connection.
      *
-     * @return \yajra\Oci8\Schema\OracleBuilder
+     * @return \Yajra\Oci8\Schema\OracleBuilder
      */
     public function getSchemaBuilder()
     {
@@ -153,7 +153,7 @@ class Oci8Connection extends Connection
      * Begin a fluent query against a database table.
      *
      * @param  string $table
-     * @return \yajra\Oci8\Query\OracleBuilder
+     * @return \Yajra\Oci8\Query\OracleBuilder
      */
     public function table($table)
     {
@@ -207,7 +207,7 @@ class Oci8Connection extends Connection
     /**
      * Get the default query grammar instance.
      *
-     * @return \yajra\Oci8\Query\Grammars\OracleGrammar
+     * @return \Yajra\Oci8\Query\Grammars\OracleGrammar
      */
     protected function getDefaultQueryGrammar()
     {
@@ -229,7 +229,7 @@ class Oci8Connection extends Connection
     /**
      * Get the default schema grammar instance.
      *
-     * @return \yajra\Oci8\Schema\Grammars\OracleGrammar
+     * @return \Yajra\Oci8\Schema\Grammars\OracleGrammar
      */
     protected function getDefaultSchemaGrammar()
     {
@@ -239,7 +239,7 @@ class Oci8Connection extends Connection
     /**
      * Get the default post processor instance.
      *
-     * @return \yajra\Oci8\Query\Processors\OracleProcessor
+     * @return \Yajra\Oci8\Query\Processors\OracleProcessor
      */
     protected function getDefaultPostProcessor()
     {

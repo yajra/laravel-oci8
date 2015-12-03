@@ -1,11 +1,11 @@
 <?php
 
-namespace yajra\Oci8\Eloquent;
+namespace Yajra\Oci8\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use yajra\Oci8\Oci8Connection;
-use yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use Yajra\Oci8\Oci8Connection;
+use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 
 class OracleEloquent extends Model
 {
@@ -137,7 +137,7 @@ class OracleEloquent extends Model
     /**
      * Get a new query builder instance for the connection.
      *
-     * @return \yajra\Oci8\Query\OracleBuilder
+     * @return \Yajra\Oci8\Query\OracleBuilder
      */
     protected function newBaseQueryBuilder()
     {

@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use yajra\Oci8\Schema\OracleBlueprint as Blueprint;
+use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 
 class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 {
@@ -33,7 +33,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
     public function getGrammar()
     {
-        return new yajra\Oci8\Schema\Grammars\OracleGrammar;
+        return new Yajra\Oci8\Schema\Grammars\OracleGrammar;
     }
 
     public function testBasicCreateTableWithPrimary()

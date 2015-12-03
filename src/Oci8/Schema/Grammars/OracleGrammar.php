@@ -1,6 +1,6 @@
 <?php
 
-namespace yajra\Oci8\Schema\Grammars;
+namespace Yajra\Oci8\Schema\Grammars;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;

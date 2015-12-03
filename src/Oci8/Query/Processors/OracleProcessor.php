@@ -1,6 +1,6 @@
 <?php
 
-namespace yajra\Oci8\Query\Processors;
+namespace Yajra\Oci8\Query\Processors;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;

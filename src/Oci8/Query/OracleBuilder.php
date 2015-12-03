@@ -1,11 +1,11 @@
 <?php
 
-namespace yajra\Oci8\Query;
+namespace Yajra\Oci8\Query;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
-use yajra\Oci8\Query\Grammars\OracleGrammar;
-use yajra\Oci8\Query\Processors\OracleProcessor;
+use Yajra\Oci8\Query\Grammars\OracleGrammar;
+use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {

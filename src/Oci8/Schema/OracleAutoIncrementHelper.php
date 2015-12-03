@@ -1,6 +1,6 @@
 <?php
 
-namespace yajra\Oci8\Schema;
+namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,12 +13,12 @@ class OracleAutoIncrementHelper
     protected $connection;
 
     /**
-     * @var \yajra\Oci8\Schema\Trigger
+     * @var \Yajra\Oci8\Schema\Trigger
      */
     protected $trigger;
 
     /**
-     * @var \yajra\Oci8\Schema\Sequence
+     * @var \Yajra\Oci8\Schema\Sequence
      */
     protected $sequence;
 

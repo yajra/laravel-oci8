@@ -1,6 +1,6 @@
 <?php
 
-namespace yajra\Oci8\Schema;
+namespace Yajra\Oci8\Schema;
 
 use Closure;
 use Illuminate\Database\Connection;
@@ -9,7 +9,7 @@ use Illuminate\Database\Schema\Builder;
 class OracleBuilder extends Builder
 {
     /**
-     * @var \yajra\Oci8\Schema\OracleAutoIncrementHelper
+     * @var \Yajra\Oci8\Schema\OracleAutoIncrementHelper
      */
     public $helper;
 

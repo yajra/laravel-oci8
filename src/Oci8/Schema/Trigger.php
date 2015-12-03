@@ -1,6 +1,6 @@
 <?php
 
-namespace yajra\Oci8\Schema;
+namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
 

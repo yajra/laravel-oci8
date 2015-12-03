@@ -1,7 +1,7 @@
 <?php
 
 use Mockery as m;
-use yajra\Oci8\Connectors\OracleConnector;
+use Yajra\Oci8\Connectors\OracleConnector;
 
 class OracleConnectorStub extends OracleConnector
 {
