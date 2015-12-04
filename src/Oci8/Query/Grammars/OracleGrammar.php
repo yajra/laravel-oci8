@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Yajra\Oci8\OracleReservedWords;
 use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
@@ -374,11 +375,20 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a single string in keyword identifiers.
      *
-     * @param  string $value
+     * @param  string  $value
      * @return string
      */
     protected function wrapValue($value)
     {
+        if ($value === '*') {
+            return $value;
+        }
+
+        $checker = new OracleReservedWords;
+        if ($checker->isReserved($value)) {
+            return '"'.str_replace('"', '""', $value).'"';
+        }
+
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
 }

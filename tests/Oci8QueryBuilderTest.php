@@ -19,6 +19,13 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('select * from users', $builder->toSql());
     }
 
+    public function testBasicSelectWithReservedWords()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('exists', 'drop', 'group')->from('users');
+        $this->assertEquals('select "exists", "drop", "group" from users', $builder->toSql());
+    }
+
     protected function getBuilder()
     {
         $grammar   = new Yajra\Oci8\Query\Grammars\OracleGrammar;
@@ -56,11 +63,15 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('select foo as bar from users', $builder->toSql());
     }
 
-    public function testBasicTableWrapping()
+    public function testBasicTableWrappingReservedWords()
     {
+        /**
+         * NOTE: this should not be allowed in real world app
+         * as Oracle will not allow creation of such objects.
+         */
         $builder = $this->getBuilder();
-        $builder->select('*')->from('public.users');
-        $this->assertEquals('select * from public.users', $builder->toSql());
+        $builder->select('*')->from('schema.users');
+        $this->assertEquals('select * from "schema".users', $builder->toSql());
     }
 
     public function testBasicWheres()
@@ -71,7 +82,15 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testWhereBetweens()
+    public function testBasicWheresWithReservedWords()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('blob', '=', 1);
+        $this->assertEquals('select * from users where "blob" = ?', $builder->toSql());
+        $this->assertEquals([0 => 1], $builder->getBindings());
+    }
+
+    public function testWhereBetween()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereBetween('id', [1, 2]);
@@ -637,10 +656,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 ->shouldReceive('saveLob')
                 ->once()
                 ->with($builder,
-                    'insert into users (email, blob) values (?, EMPTY_BLOB()) returning blob, id into ?, ?',
+                    'insert into users (email, myblob) values (?, EMPTY_BLOB()) returning myblob, id into ?, ?',
                     ['foo'], ['test data'])
                 ->andReturn(1);
-        $result = $builder->from('users')->insertLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
+        $result = $builder->from('users')->insertLob(['email' => 'foo'], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -650,10 +669,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getProcessor()
                 ->shouldReceive('saveLob')
                 ->once()
-                ->with($builder, 'insert into users (blob) values (EMPTY_BLOB()) returning blob, id into ?, ?', [],
+                ->with($builder, 'insert into users (myblob) values (EMPTY_BLOB()) returning myblob, id into ?, ?', [],
                     ['test data'])
                 ->andReturn(1);
-        $result = $builder->from('users')->insertLob([], ['blob' => 'test data'], 'id');
+        $result = $builder->from('users')->insertLob([], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -664,13 +683,13 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 ->shouldReceive('saveLob')
                 ->once()
                 ->with($builder,
-                    'update users set email = ?, blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?',
+                    'update users set email = ?, myblob = EMPTY_BLOB() where id = ? returning myblob, id into ?, ?',
                     ['foo', 1],
                     ['test data'])
                 ->andReturn(1);
         $result = $builder->from('users')
                           ->where('id', '=', 1)
-                          ->updateLob(['email' => 'foo'], ['blob' => 'test data'], 'id');
+                          ->updateLob(['email' => 'foo'], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -680,12 +699,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getProcessor()
                 ->shouldReceive('saveLob')
                 ->once()
-                ->with($builder, 'update users set blob = EMPTY_BLOB() where id = ? returning blob, id into ?, ?', [1],
+                ->with($builder, 'update users set myblob = EMPTY_BLOB() where id = ? returning myblob, id into ?, ?', [1],
                     ['test data'])
                 ->andReturn(1);
         $result = $builder->from('users')
                           ->where('id', '=', 1)
-                          ->updateLob([], ['blob' => 'test data'], 'id');
+                          ->updateLob([], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
