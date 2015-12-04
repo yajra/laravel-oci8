@@ -4,7 +4,7 @@ namespace Yajra\Oci8;
 
 use Illuminate\Support\Str;
 
-class OracleReservedWords
+trait OracleReservedWords
 {
     /**
      * Lists of reserved words.

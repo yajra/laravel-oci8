@@ -9,6 +9,8 @@ use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {
+    use OracleReservedWords;
+
     /**
      * The keyword identifier wrapper format.
      *
@@ -384,8 +386,7 @@ class OracleGrammar extends Grammar
             return $value;
         }
 
-        $checker = new OracleReservedWords;
-        if ($checker->isReserved($value)) {
+        if ($this->isReserved($value)) {
             return '"'.str_replace('"', '""', $value).'"';
         }
 
