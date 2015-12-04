@@ -503,11 +503,7 @@ trait OracleReservedWords
      */
     public function isReserved($value)
     {
-        if (in_array(Str::upper(trim($value)), $this->reserves, true)) {
-            return true;
-        }
-
-        return false;
+        return in_array(Str::upper(trim($value)), $this->reserves, true);
     }
 
     /**
@@ -518,10 +514,6 @@ trait OracleReservedWords
      */
     protected function wrapValue($value)
     {
-        if ($value === '*') {
-            return $value;
-        }
-
         if ($this->isReserved($value)) {
             return '"'.str_replace('"', '""', $value).'"';
         }
