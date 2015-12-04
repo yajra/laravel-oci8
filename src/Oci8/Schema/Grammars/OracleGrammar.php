@@ -6,9 +6,12 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
+use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
 {
+    use OracleReservedWords;
+
     /**
      * The keyword identifier wrapper format.
      *
@@ -671,16 +674,5 @@ class OracleGrammar extends Grammar
         if (in_array($column->type, $this->serials) && $column->autoIncrement) {
             $blueprint->primary($column->name);
         }
-    }
-
-    /**
-     * Wrap a single string in keyword identifiers.
-     *
-     * @param  string $value
-     * @return string
-     */
-    protected function wrapValue($value)
-    {
-        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
 }

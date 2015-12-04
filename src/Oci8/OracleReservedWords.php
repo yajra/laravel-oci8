@@ -509,4 +509,23 @@ trait OracleReservedWords
 
         return false;
     }
+
+    /**
+     * Wrap a single string in keyword identifiers.
+     *
+     * @param  string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        if ($value === '*') {
+            return $value;
+        }
+
+        if ($this->isReserved($value)) {
+            return '"'.str_replace('"', '""', $value).'"';
+        }
+
+        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+    }
 }

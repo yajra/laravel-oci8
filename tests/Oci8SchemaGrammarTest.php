@@ -26,6 +26,22 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
+    public function testBasicCreateTableWithReservedWords()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->create();
+        $blueprint->increments('id');
+        $blueprint->string('group');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals('create table users ( id number(10,0) not null, "group" varchar2(255) not null, constraint users_id_primary primary key ( id ) )',
+            $statements[0]);
+    }
+
     protected function getConnection()
     {
         return m::mock('Illuminate\Database\Connection');
