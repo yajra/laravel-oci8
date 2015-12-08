@@ -36,10 +36,10 @@ class Trigger
 
         return $this->connection->statement("
             create trigger $triggerName
-            before insert or update on {$table}
+            before insert on {$table}
             for each row
                 begin
-            if inserting and :new.{$column} is null then
+            if :new.{$column} is null then
                 select {$sequenceName}.nextval into :new.{$column} from dual;
             end if;
             end;");
