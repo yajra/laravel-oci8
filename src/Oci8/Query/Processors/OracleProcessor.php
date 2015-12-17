@@ -9,13 +9,6 @@ use PDO;
 class OracleProcessor extends Processor
 {
     /**
-     * DB Statement
-     *
-     * @var \PDOStatement
-     */
-    protected $statement;
-
-    /**
      * Process an "insert get ID" query.
      *
      * @param  Builder $query
@@ -26,30 +19,33 @@ class OracleProcessor extends Processor
      */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
-        $parameter = 0;
         $id        = 0;
+        $parameter = 0;
+        $statement = $this->prepareStatement($query, $sql);
 
-        $this->prepareStatement($query, $sql);
         for ($i = 0; $i < count($values); $i++) {
             ${'param' . $i} = $values[$i];
-            $this->bindValue($parameter, ${'param' . $i});
+            $statement->bindParam($parameter, ${'param' . $i});
             $parameter++;
         }
-        $this->bindValue($parameter, $id);
-        $this->statement->execute();
+        $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
+        $statement->execute();
 
         return (int) $id;
     }
 
     /**
+     * Get prepared statement.
+     *
      * @param Builder $query
      * @param string $sql
-     * @internal param $PDOStatement
+     * @return \PDOStatement | \Yajra\Pdo\Oci8
      */
     private function prepareStatement(Builder $query, $sql)
     {
-        $pdo             = $query->getConnection()->getPdo();
-        $this->statement = $pdo->prepare($sql);
+        $pdo = $query->getConnection()->getPdo();
+
+        return $pdo->prepare($sql);
     }
 
     /**
@@ -63,85 +59,31 @@ class OracleProcessor extends Processor
      */
     public function saveLob(Builder $query, $sql, array $values, array $binaries)
     {
-        $parameter = 0;
-        $lob       = [];
         $id        = 0;
+        $parameter = 0;
+        $statement = $this->prepareStatement($query, $sql);
 
-        // begin transaction
-        $pdo           = $query->getConnection()->getPdo();
-        $inTransaction = $pdo->inTransaction();
-        if (! $inTransaction) {
-            $pdo->beginTransaction();
-        }
-
-        $this->prepareStatement($query, $sql);
-        foreach ($values as $value) {
-            $this->bindValue($parameter, $value);
+        // bind values.
+        for ($i = 0; $i < count($values); $i++) {
+            ${'param' . $i} = $values[$i];
+            $statement->bindParam($parameter, ${'param' . $i});
             $parameter++;
         }
 
-        $binariesCount = count($binaries);
-        for ($i = 0; $i < $binariesCount; $i++) {
-            // bind blob descriptor
-            $this->statement->bindParam($parameter, $lob[$i], PDO::PARAM_LOB);
+        // bind blob fields.
+        for ($i = 0; $i < count($binaries); $i++) {
+            ${'binary' . $i} = $binaries[$i];
+            $statement->bindParam($parameter, ${'binary' . $i}, PDO::PARAM_LOB, -1);
             $parameter++;
         }
 
-        // bind output param for the returning clause
-        $this->statement->bindParam($parameter, $id, PDO::PARAM_INT);
+        // bind output param for the returning clause.
+        $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
 
-        // execute statement
-        if (! $this->statement->execute()) {
-            $pdo->rollBack();
-
+        if (! $statement->execute()) {
             return false;
         }
 
-        for ($i = 0; $i < $binariesCount; $i++) {
-            // Discard the existing LOB contents
-            if (! $lob[$i]->truncate()) {
-                $pdo->rollBack();
-
-                return false;
-            }
-            // save blob content
-            if (! $lob[$i]->save($binaries[$i])) {
-                $pdo->rollBack();
-
-                return false;
-            }
-        }
-
-        if (! $inTransaction) {
-            // commit statements
-            $pdo->commit();
-        }
-
         return (int) $id;
-    }
-
-    /**
-     * Bind value to an statement
-     *
-     * @param int $parameter
-     * @param mixed $variable
-     */
-    private function bindValue($parameter, &$variable)
-    {
-        $param     = PDO::PARAM_STR;
-        $maxLength = -1;
-
-        if (is_int($variable)) {
-            $param     = PDO::PARAM_INT;
-            $maxLength = 10;
-        } elseif (is_bool($variable)) {
-            $param = PDO::PARAM_BOOL;
-        } elseif (is_null($variable)) {
-            $param = PDO::PARAM_NULL;
-        } elseif ($variable instanceof \DateTimeInterface) {
-            $variable = $variable->format('Y-m-d H:i:s');
-        }
-
-        $this->statement->bindParam($parameter, $variable, $param, $maxLength);
     }
 }
