@@ -1,5 +1,18 @@
 #Laravel-OCI8 Change Log
 
+#v4.0.0
+- Change vendor namespace from yajra to Yajra.
+- Remove own pluck implementation. Frameworks implementation works out of the box.
+- Publishing of config file is now optional.
+- Improve query when expecting first row as result.
+- Removes unwanted "rn" column being returned when executing first() queries.
+- Improve exists query. #107
+- Add support for date based queries.
+- Implement quoting of Oracle reserved words. #93
+- Enhance auto-increment trigger and remove unnecessary updating sql. #112
+- Add more tests.
+- Fix compatibility issues with PHP 7.
+
 #v3.0.0
 - Drop support for Laravel 4.2 & 5.0.
 - Drop Support for PHP 5.4.
