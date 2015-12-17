@@ -13,7 +13,7 @@
         "php": ">=5.5.9",
         "illuminate/support": "5.1.*|5.2.*",
         "illuminate/database": "~5.1.20|5.2.*",
-        "yajra/laravel-pdo-via-oci8": "~0.15"
+        "yajra/laravel-pdo-via-oci8": "1.0.x-dev"
     },
     "require-dev": {
         "mockery/mockery": "0.9.*",
@@ -23,11 +23,6 @@
         "psr-4": {
             "Yajra\\": "src/"
         }
-    },
-    "extra": {
-      "branch-alias": {
-        "dev-master": "4.0-dev"
-      }
     },
     "minimum-stability": "stable"
 }

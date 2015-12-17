@@ -5,7 +5,7 @@ namespace Yajra\Oci8\Query\Grammars;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Yajra\Oci8\OracleReservedWords;
-use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
+use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {

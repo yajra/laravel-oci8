@@ -24,7 +24,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
             'options'  => [],
         ];
         $oci8      = $connector->createConnection($tns, $config, []);
-        $this->assertInstanceOf(yajra\Pdo\Oci8::class, $oci8);
+        $this->assertInstanceOf(Yajra\Pdo\Oci8::class, $oci8);
     }
 
     public function testOptionResolution()

@@ -3,7 +3,7 @@
 use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
-use yajra\Pdo\Oci8\Exceptions\Oci8Exception;
+use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 {
