@@ -251,6 +251,8 @@ class OracleEloquent extends Model
         // during the event. This will allow them to do so and run an update here.
         $this->exists = true;
 
+        $this->wasRecentlyCreated = true;
+
         $this->fireModelEvent('created', false);
 
         return true;
