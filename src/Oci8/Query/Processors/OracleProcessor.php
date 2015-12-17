@@ -27,17 +27,15 @@ class OracleProcessor extends Processor
      */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
-        $counter = 0;
-        $id      = 0;
+        $parameter = 0;
+        $id        = 0;
 
-        // set PDO statement property
         $this->prepareStatement($query, $sql);
-        $counter = $this->bindValuesAndReturnCounter($values, $counter);
-
-        // bind output param for the returning clause
-        $this->statement->bindParam($counter, $id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 10);
-
-        // execute statement
+        foreach ($values as $value) {
+            $this->bindValue($parameter, $value);
+            $parameter++;
+        }
+        $this->statement->bindParam($parameter, $id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 10);
         $this->statement->execute();
 
         return (int) $id;
@@ -48,40 +46,9 @@ class OracleProcessor extends Processor
      * @param string $sql
      * @internal param $PDOStatement
      */
-    protected function prepareStatement(Builder $query, $sql)
+    private function prepareStatement(Builder $query, $sql)
     {
         $this->statement = $query->getConnection()->getPdo()->prepare($sql);
-    }
-
-    /**
-     * @param array $values
-     * @param integer $counter
-     * @return integer
-     */
-    protected function bindValuesAndReturnCounter(array $values, $counter)
-    {
-        // bind each parameter from the values array to their location
-        foreach ($values as $value) {
-            // try to determine type of result
-            if (is_int($value)) {
-                $param = PDO::PARAM_INT;
-            } elseif (is_bool($value)) {
-                $param = PDO::PARAM_BOOL;
-            } elseif (is_null($value)) {
-                $param = PDO::PARAM_NULL;
-            } elseif ($value instanceof \DateTime) {
-                $value = $value->format('Y-m-d H:i:s');
-                $param = PDO::PARAM_STR;
-            } else {
-                $param = PDO::PARAM_STR;
-            }
-
-            $this->statement->bindValue($counter, ($value), $param);
-            // increment counter
-            $counter++;
-        }
-
-        return $counter;
     }
 
     /**
@@ -95,7 +62,7 @@ class OracleProcessor extends Processor
      */
     public function saveLob(Builder $query, $sql, array $values, array $binaries)
     {
-        $counter = 0;
+        $parameter = 0;
         $lob     = [];
         $id      = 0;
 
@@ -106,19 +73,21 @@ class OracleProcessor extends Processor
             $pdo->beginTransaction();
         }
 
-        // set PDO statement property
         $this->prepareStatement($query, $sql);
-        $counter = $this->bindValuesAndReturnCounter($values, $counter);
+        foreach ($values as $value) {
+            $this->bindValue($parameter, $value);
+            $parameter++;
+        }
 
         $binariesCount = count($binaries);
         for ($i = 0; $i < $binariesCount; $i++) {
             // bind blob descriptor
-            $this->statement->bindParam($counter, $lob[$i], PDO::PARAM_LOB);
-            $counter++;
+            $this->statement->bindParam($parameter, $lob[$i], PDO::PARAM_LOB);
+            $parameter++;
         }
 
         // bind output param for the returning clause
-        $this->statement->bindParam($counter, $id, PDO::PARAM_INT);
+        $this->statement->bindParam($parameter, $id, PDO::PARAM_INT);
 
         // execute statement
         if (! $this->statement->execute()) {
@@ -148,5 +117,29 @@ class OracleProcessor extends Processor
         }
 
         return (int) $id;
+    }
+
+    /**
+     * Bind value to an statement
+     *
+     * @param int $counter
+     * @param mixed $value
+     */
+    private function bindValue($counter, &$value)
+    {
+        if (is_int($value)) {
+            $param = PDO::PARAM_INT;
+        } elseif (is_bool($value)) {
+            $param = PDO::PARAM_BOOL;
+        } elseif (is_null($value)) {
+            $param = PDO::PARAM_NULL;
+        } elseif ($value instanceof \DateTimeInterface) {
+            $value = $value->format('Y-m-d H:i:s');
+            $param = PDO::PARAM_STR;
+        } else {
+            $param = PDO::PARAM_STR;
+        }
+
+        $this->statement->bindParam($counter, $value, $param);
     }
 }
