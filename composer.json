@@ -13,7 +13,7 @@
         "php": ">=5.5.9",
         "illuminate/support": "5.1.*|5.2.*",
         "illuminate/database": "~5.1.20|5.2.*",
-        "yajra/laravel-pdo-via-oci8": "1.0.x-dev"
+        "yajra/laravel-pdo-via-oci8": "1.*"
     },
     "require-dev": {
         "mockery/mockery": "0.9.*",
