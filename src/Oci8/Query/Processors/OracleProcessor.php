@@ -5,14 +5,13 @@ namespace Yajra\Oci8\Query\Processors;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
 use PDO;
-use PDOStatement;
 
 class OracleProcessor extends Processor
 {
     /**
      * DB Statement
      *
-     * @var PDOStatement
+     * @var \PDOStatement
      */
     protected $statement;
 
@@ -31,11 +30,12 @@ class OracleProcessor extends Processor
         $id        = 0;
 
         $this->prepareStatement($query, $sql);
-        foreach ($values as $value) {
-            $this->bindValue($parameter, $value);
+        for ($i = 0; $i < count($values); $i++) {
+            ${'param' . $i} = $values[$i];
+            $this->bindValue($parameter, ${'param' . $i});
             $parameter++;
         }
-        $this->statement->bindParam($parameter, $id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 10);
+        $this->bindValue($parameter, $id);
         $this->statement->execute();
 
         return (int) $id;
@@ -48,7 +48,8 @@ class OracleProcessor extends Processor
      */
     private function prepareStatement(Builder $query, $sql)
     {
-        $this->statement = $query->getConnection()->getPdo()->prepare($sql);
+        $pdo             = $query->getConnection()->getPdo();
+        $this->statement = $pdo->prepare($sql);
     }
 
     /**
@@ -63,8 +64,8 @@ class OracleProcessor extends Processor
     public function saveLob(Builder $query, $sql, array $values, array $binaries)
     {
         $parameter = 0;
-        $lob     = [];
-        $id      = 0;
+        $lob       = [];
+        $id        = 0;
 
         // begin transaction
         $pdo           = $query->getConnection()->getPdo();
@@ -122,24 +123,25 @@ class OracleProcessor extends Processor
     /**
      * Bind value to an statement
      *
-     * @param int $counter
-     * @param mixed $value
+     * @param int $parameter
+     * @param mixed $variable
      */
-    private function bindValue($counter, &$value)
+    private function bindValue($parameter, &$variable)
     {
-        if (is_int($value)) {
-            $param = PDO::PARAM_INT;
-        } elseif (is_bool($value)) {
+        $param     = PDO::PARAM_STR;
+        $maxLength = -1;
+
+        if (is_int($variable)) {
+            $param     = PDO::PARAM_INT;
+            $maxLength = 10;
+        } elseif (is_bool($variable)) {
             $param = PDO::PARAM_BOOL;
-        } elseif (is_null($value)) {
+        } elseif (is_null($variable)) {
             $param = PDO::PARAM_NULL;
-        } elseif ($value instanceof \DateTimeInterface) {
-            $value = $value->format('Y-m-d H:i:s');
-            $param = PDO::PARAM_STR;
-        } else {
-            $param = PDO::PARAM_STR;
+        } elseif ($variable instanceof \DateTimeInterface) {
+            $variable = $variable->format('Y-m-d H:i:s');
         }
 
-        $this->statement->bindParam($counter, $value, $param);
+        $this->statement->bindParam($parameter, $variable, $param, $maxLength);
     }
 }
