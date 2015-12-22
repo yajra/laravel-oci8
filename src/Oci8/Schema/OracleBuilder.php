@@ -14,6 +14,11 @@ class OracleBuilder extends Builder
     public $helper;
 
     /**
+     * @var \Yajra\Oci8\Schema\Comment
+     */
+    public $comment;
+
+    /**
      * @param Connection $connection
      */
     public function __construct(Connection $connection)
