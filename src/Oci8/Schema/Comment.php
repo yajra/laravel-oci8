@@ -33,20 +33,25 @@ class Comment
         }
 
         // Comments set by $table->string('column')->comment('comment');
-        foreach ($blueprint->getColumns() as $column)
-        {
-            if (isset($column['comment']))
-            {
-                $this->connection->statement(sprintf('comment on column %s.%s is \'%s\'', $blueprint->getTable(), $column['name'], $column['comment']));
-            }
-        }
+        $this->commentColumns($blueprint->getTable(), $blueprint->getColumns());
 
         // Comments set by $table->commentColumn('column', 'comment');
-        foreach ($blueprint->commentColumn as $column)
+        $this->commentColumns($blueprint->getTable(), $blueprint->commentColumn);
+    }
+
+    /**
+     * Set column comment.
+     *
+     * @param  string $table
+     * @param  array  $columns
+     */
+    private function commentColumns($table, $columns)
+    {
+        foreach ($columns as $column)
         {
             if (isset($column['comment']))
             {
-                $this->connection->statement(sprintf('comment on column %s.%s is \'%s\'', $blueprint->getTable(), $column['name'], $column['comment']));
+                $this->connection->statement(sprintf('comment on column %s.%s is \'%s\'', $table, $column['name'], $column['comment']));
             }
         }
     }
