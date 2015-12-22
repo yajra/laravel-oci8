@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.0.2
+- Add config_path for Lumen. Fix #123
+
 #v4.0.1
 - Fix PDO Type detection when binding values. Fix #122
 
