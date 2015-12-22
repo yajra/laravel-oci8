@@ -22,13 +22,8 @@ class OracleProcessor extends Processor
         $id        = 0;
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
-        $count     = count($values);
 
-        for ($i = 0; $i < $count; $i++) {
-            $type = $this->getPdoType($values[$i]);
-            $statement->bindParam($parameter, $values[$i], $type);
-            $parameter++;
-        }
+        $parameter = $this->bindValues($values, $statement, $parameter);
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
         $statement->execute();
 
@@ -83,15 +78,10 @@ class OracleProcessor extends Processor
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
 
-        $count = count($values);
-        for ($i = 0; $i < $count; $i++) {
-            $type = $this->getPdoType($values[$i]);
-            $statement->bindParam($parameter, $values[$i], $type);
-            $parameter++;
-        }
+        $parameter = $this->bindValues($values, $statement, $parameter);
 
-        $count = count($binaries);
-        for ($i = 0; $i < $count; $i++) {
+        $countBinary = count($binaries);
+        for ($i = 0; $i < $countBinary; $i++) {
             $statement->bindParam($parameter, $binaries[$i], PDO::PARAM_LOB, -1);
             $parameter++;
         }
@@ -104,5 +94,23 @@ class OracleProcessor extends Processor
         }
 
         return (int) $id;
+    }
+
+    /**
+     * @param $values
+     * @param $statement
+     * @param $parameter
+     * @return mixed
+     */
+    private function bindValues($values, $statement, $parameter)
+    {
+        $count = count($values);
+        for ($i = 0; $i < $count; $i++) {
+            $type = $this->getPdoType($values[$i]);
+            $statement->bindParam($parameter, $values[$i], $type);
+            $parameter++;
+        }
+
+        return $parameter;
     }
 }
