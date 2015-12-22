@@ -26,7 +26,7 @@ class OracleGrammar extends Grammar
      */
     public function compileExists(Builder $query)
     {
-        $q = clone $query;
+        $q          = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
           ->whereRaw("rownum = 1");
@@ -372,5 +372,20 @@ class OracleGrammar extends Grammar
         $value = $this->parameter($where['value']);
 
         return "extract ($type from {$this->wrap($where['column'])}) {$where['operator']} $value";
+    }
+
+    /**
+     * Wrap a single string in keyword identifiers.
+     *
+     * @param  string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        if ($this->isReserved($value)) {
+            return '"' . str_replace('"', '""', $value) . '"';
+        }
+
+        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
 }
