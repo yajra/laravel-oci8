@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.0.1
+- Fix PDO Type detection when binding values. Fix #122
+
 #v4.0.0
 - Change vendor namespace from yajra to Yajra.
 - Remove own pluck implementation. Frameworks implementation works out of the box.
