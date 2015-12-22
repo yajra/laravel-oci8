@@ -5,7 +5,7 @@
     <title>Laravel-OCI8 by yajra</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
@@ -25,17 +25,17 @@
 <h3>
 <a id="laravel-oci8" class="anchor" href="#laravel-oci8" aria-hidden="true"><span class="octicon octicon-link"></span></a>Laravel-OCI8</h3>
 
-<p><a href="https://travis-ci.org/yajra/laravel-oci8"><img src="https://travis-ci.org/yajra/laravel-oci8.png?branch=master" alt="Build Status"></a>
+<p><a href="https://travis-ci.org/yajra/laravel-oci8"><img src="https://img.shields.io/travis/yajra/laravel-oci8.svg" alt="Build Status"></a>
 <a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/downloads.png" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/stable.png" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/unstable.svg" alt="Latest Unstable Version"></a>
 <a href="https://scrutinizer-ci.com/g/yajra/laravel-oci8/?branch=master"><img src="https://scrutinizer-ci.com/g/yajra/laravel-oci8/badges/quality-score.png?b=master" alt="Scrutinizer Code Quality"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/license.svg" alt="License"></a></p>
+<a href="https://github.com/yajra/laravel-oci8/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a></p>
 
 <p>Laravel-OCI8 is an Oracle Database Driver package for <a href="http://laravel.com/">Laravel</a>. Laravel-OCI8 is an extension of <a href="https://github.com/illuminate/database">Illuminate/Database</a> that uses <a href="http://php.net/oci8">OCI8</a> extension to communicate with Oracle. Thanks to <a href="https://github.com/taylorotwell" class="user-mention">@taylorotwell</a>.</p>
 
-<h2>
-<a id="documentations" class="anchor" href="#documentations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentations</h2>
+<h3>
+<a id="documentations" class="anchor" href="#documentations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentations</h3>
 
 <ul>
 <li>You will find user friendly and updated documentation in the wiki here: <a href="https://github.com/yajra/laravel-oci8/wiki">Laravel-OCI8 Wiki</a>
@@ -45,33 +45,52 @@
 </ul>
 
 <h3>
-<a id="quick-installation" class="anchor" href="#quick-installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick Installation</h3>
+<a id="quick-installation-laravel-51--up" class="anchor" href="#quick-installation-laravel-51--up" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick Installation [Laravel 5.1 &amp; Up]</h3>
 
-<p><code>composer require yajra/laravel-oci8:~2.0</code></p>
+<pre><code>$ composer require yajra/laravel-oci8:~4.0
+</code></pre>
+
+<h3>
+<a id="laravel-42--50-users" class="anchor" href="#laravel-42--50-users" aria-hidden="true"><span class="octicon octicon-link"></span></a>Laravel 4.2 &amp; 5.0 Users</h3>
+
+<p>Please use <a href="https://github.com/yajra/laravel-oci8/tree/2.4">2.4</a> branch.</p>
 
 <h3>
 <a id="service-provider" class="anchor" href="#service-provider" aria-hidden="true"><span class="octicon octicon-link"></span></a>Service Provider</h3>
 
-<p><code>'yajra\Oci8\Oci8ServiceProvider',</code></p>
+<p>Once Composer has installed or updated your packages you need to register Laravel-OCI8. Open up <code>config/app.php</code> and find the providers key and add:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-c1">Yajra\Oci8\</span><span class="pl-c1">Oci8ServiceProvider</span><span class="pl-k">::</span><span class="pl-c1">class</span>,</span></pre></div>
+
+<blockquote>
+<p>Important: Since v4.0, the package will now use <code>Yajra\Oci8</code> (capital Y) namespace from <code>yajra\Oci8</code> to follow the name standard for vendor name.</p>
+</blockquote>
 
 <h3>
-<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h3>
+<a id="configuration-optional" class="anchor" href="#configuration-optional" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration (OPTIONAL)</h3>
 
-<p>Then setup a valid database configuration using the driver <code>oracle</code>. Configure your connection as usual with:</p>
+<p>Finally you can optionally publish a configuration file by running the following Artisan command.
+If config file is not publish, the package will automatically use what is declared on your <code>.env</code> file database configuartion.</p>
+
+<pre><code>$ php artisan vendor:publish --tag=oracle
+</code></pre>
+
+<p>This will copy the configuration file to <code>config/oracle.php</code>.</p>
 
 <blockquote>
 <p>Note: For <a href="http://lumen.laravel.com/docs/configuration#configuration-files">Laravel Lumen configuration</a>, make sure you have a <code>config/database.php</code> file on your project and append the configuration below:</p>
 </blockquote>
 
-<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-s"><span class="pl-pds">'</span>oracle<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">array</span>(</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>driver<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>oracle<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>host<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>oracle.host<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>port<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>1521<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>database<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>xe<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>username<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>hr<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>password<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>hr<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>charset<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>AL32UTF8<span class="pl-pds">'</span></span>,</span>
-<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>prefix<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>,</span>
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-s"><span class="pl-pds">'</span>oracle<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">array</span>(</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>driver<span class="pl-pds">'</span></span>   <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>oracle<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>tns<span class="pl-pds">'</span></span>      <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_TNS<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>host<span class="pl-pds">'</span></span>     <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_HOST<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>port<span class="pl-pds">'</span></span>     <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_PORT<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>1521<span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>database<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_DATABASE<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>username<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_USERNAME<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>password<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_PASSWORD<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>charset<span class="pl-pds">'</span></span>  <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_CHARSET<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>AL32UTF8<span class="pl-pds">'</span></span>),</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>prefix<span class="pl-pds">'</span></span>   <span class="pl-k">=&gt;</span> env(<span class="pl-s"><span class="pl-pds">'</span>DB_PREFIX<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span>),</span>
 <span class="pl-s1">)</span></pre></div>
 
 <p>And run your laravel installation...</p>
@@ -79,7 +98,12 @@
 <h3>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
 
-<p>Licensed under the <a href="http://cheeaun.mit-license.org/">MIT License</a>.</p>
+<p>Licensed under the <a href="https://github.com/yajra/laravel-oci8/blob/master/LICENSE">MIT License</a>.</p>
+
+<h3>
+<a id="buy-me-a-beer" class="anchor" href="#buy-me-a-beer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Buy me a beer</h3>
+
+<p><a href="https://pledgie.com/campaigns/29516"><img alt="Click here to lend your support to: Laravel-OCI8 and make a donation at pledgie.com !" src="https://pledgie.com/campaigns/29516.png?skin_name=chrome" border="0"></a></p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/yajra/laravel-oci8">Laravel-OCI8</a> is maintained by <a href="https://github.com/yajra">yajra</a>.</span>
@@ -92,4 +116,3 @@
   
   </body>
 </html>
-
