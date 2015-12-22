@@ -45,6 +45,26 @@ class OracleProcessor extends Processor
     }
 
     /**
+     * Bind values to PDO statement.
+     *
+     * @param array $values
+     * @param \PDOStatement $statement
+     * @param int $parameter
+     * @return int
+     */
+    private function bindValues(&$values, $statement, $parameter)
+    {
+        $count = count($values);
+        for ($i = 0; $i < $count; $i++) {
+            $type = $this->getPdoType($values[$i]);
+            $statement->bindParam($parameter, $values[$i], $type);
+            $parameter++;
+        }
+
+        return $parameter;
+    }
+
+    /**
      * Get PDO Type depending on value.
      *
      * @param mixed $value
@@ -64,7 +84,7 @@ class OracleProcessor extends Processor
     }
 
     /**
-     * save Query with Blob returning primary key value
+     * Save Query with Blob returning primary key value.
      *
      * @param  Builder $query
      * @param  string $sql
@@ -94,23 +114,5 @@ class OracleProcessor extends Processor
         }
 
         return (int) $id;
-    }
-
-    /**
-     * @param $values
-     * @param $statement
-     * @param $parameter
-     * @return mixed
-     */
-    private function bindValues($values, $statement, $parameter)
-    {
-        $count = count($values);
-        for ($i = 0; $i < $count; $i++) {
-            $type = $this->getPdoType($values[$i]);
-            $statement->bindParam($parameter, $values[$i], $type);
-            $parameter++;
-        }
-
-        return $parameter;
     }
 }
