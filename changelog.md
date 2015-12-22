@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.0.3
+- Scrutinizer code refactoring.
+
 #v4.0.2
 - Add config_path for Lumen. Fix #123
 
