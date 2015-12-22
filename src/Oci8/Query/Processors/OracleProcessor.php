@@ -22,8 +22,9 @@ class OracleProcessor extends Processor
         $id        = 0;
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
+        $count     = count($values);
 
-        for ($i = 0; $i < count($values); $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $type = $this->getPdoType($values[$i]);
             $statement->bindParam($parameter, $values[$i], $type);
             $parameter++;
@@ -82,15 +83,15 @@ class OracleProcessor extends Processor
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
 
-        // bind values.
-        for ($i = 0; $i < count($values); $i++) {
+        $count = count($values);
+        for ($i = 0; $i < $count; $i++) {
             $type = $this->getPdoType($values[$i]);
             $statement->bindParam($parameter, $values[$i], $type);
             $parameter++;
         }
 
-        // bind blob fields.
-        for ($i = 0; $i < count($binaries); $i++) {
+        $count = count($binaries);
+        for ($i = 0; $i < $count; $i++) {
             $statement->bindParam($parameter, $binaries[$i], PDO::PARAM_LOB, -1);
             $parameter++;
         }
