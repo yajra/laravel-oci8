@@ -24,8 +24,8 @@ class OracleProcessor extends Processor
         $statement = $this->prepareStatement($query, $sql);
 
         for ($i = 0; $i < count($values); $i++) {
-            ${'param' . $i} = $values[$i];
-            $statement->bindParam($parameter, ${'param' . $i});
+            $type = $this->getPdoType($values[$i]);
+            $statement->bindParam($parameter, $values[$i], $type);
             $parameter++;
         }
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
@@ -49,6 +49,25 @@ class OracleProcessor extends Processor
     }
 
     /**
+     * Get PDO Type depending on value.
+     *
+     * @param mixed $value
+     * @return int
+     */
+    private function getPdoType($value)
+    {
+        if (is_int($value)) {
+            return PDO::PARAM_INT;
+        } elseif (is_bool($value)) {
+            return PDO::PARAM_BOOL;
+        } elseif (is_null($value)) {
+            return PDO::PARAM_NULL;
+        } else {
+            return PDO::PARAM_STR;
+        }
+    }
+
+    /**
      * save Query with Blob returning primary key value
      *
      * @param  Builder $query
@@ -65,15 +84,14 @@ class OracleProcessor extends Processor
 
         // bind values.
         for ($i = 0; $i < count($values); $i++) {
-            ${'param' . $i} = $values[$i];
-            $statement->bindParam($parameter, ${'param' . $i});
+            $type = $this->getPdoType($values[$i]);
+            $statement->bindParam($parameter, $values[$i], $type);
             $parameter++;
         }
 
         // bind blob fields.
         for ($i = 0; $i < count($binaries); $i++) {
-            ${'binary' . $i} = $binaries[$i];
-            $statement->bindParam($parameter, ${'binary' . $i}, PDO::PARAM_LOB, -1);
+            $statement->bindParam($parameter, $binaries[$i], PDO::PARAM_LOB, -1);
             $parameter++;
         }
 
