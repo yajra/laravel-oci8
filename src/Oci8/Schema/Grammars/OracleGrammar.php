@@ -675,4 +675,19 @@ class OracleGrammar extends Grammar
             $blueprint->primary($column->name);
         }
     }
+
+    /**
+     * Wrap a single string in keyword identifiers.
+     *
+     * @param  string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        if ($this->isReserved($value)) {
+            return parent::wrapValue($value);
+        }
+
+        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+    }
 }
