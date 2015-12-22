@@ -383,7 +383,7 @@ class OracleGrammar extends Grammar
     protected function wrapValue($value)
     {
         if ($this->isReserved($value)) {
-            return '"' . str_replace('"', '""', $value) . '"';
+            return parent::wrapValue($value);
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
