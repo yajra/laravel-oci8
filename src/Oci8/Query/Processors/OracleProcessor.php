@@ -23,11 +23,7 @@ class OracleProcessor extends Processor
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
 
-        for ($i = 0; $i < count($values); $i++) {
-            $type = $this->getPdoType($values[$i]);
-            $statement->bindParam($parameter, $values[$i], $type);
-            $parameter++;
-        }
+        $parameter = $this->bindValues($values, $statement, $parameter);
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
         $statement->execute();
 
@@ -46,6 +42,26 @@ class OracleProcessor extends Processor
         $pdo = $query->getConnection()->getPdo();
 
         return $pdo->prepare($sql);
+    }
+
+    /**
+     * Bind values to PDO statement.
+     *
+     * @param array $values
+     * @param \PDOStatement $statement
+     * @param int $parameter
+     * @return int
+     */
+    private function bindValues(&$values, $statement, $parameter)
+    {
+        $count = count($values);
+        for ($i = 0; $i < $count; $i++) {
+            $type = $this->getPdoType($values[$i]);
+            $statement->bindParam($parameter, $values[$i], $type);
+            $parameter++;
+        }
+
+        return $parameter;
     }
 
     /**
@@ -68,7 +84,7 @@ class OracleProcessor extends Processor
     }
 
     /**
-     * save Query with Blob returning primary key value
+     * Save Query with Blob returning primary key value.
      *
      * @param  Builder $query
      * @param  string $sql
@@ -82,15 +98,10 @@ class OracleProcessor extends Processor
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
 
-        // bind values.
-        for ($i = 0; $i < count($values); $i++) {
-            $type = $this->getPdoType($values[$i]);
-            $statement->bindParam($parameter, $values[$i], $type);
-            $parameter++;
-        }
+        $parameter = $this->bindValues($values, $statement, $parameter);
 
-        // bind blob fields.
-        for ($i = 0; $i < count($binaries); $i++) {
+        $countBinary = count($binaries);
+        for ($i = 0; $i < $countBinary; $i++) {
             $statement->bindParam($parameter, $binaries[$i], PDO::PARAM_LOB, -1);
             $parameter++;
         }

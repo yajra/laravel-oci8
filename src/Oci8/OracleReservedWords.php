@@ -505,19 +505,4 @@ trait OracleReservedWords
     {
         return in_array(Str::upper(trim($value)), $this->reserves, true);
     }
-
-    /**
-     * Wrap a single string in keyword identifiers.
-     *
-     * @param  string $value
-     * @return string
-     */
-    protected function wrapValue($value)
-    {
-        if ($this->isReserved($value)) {
-            return '"'.str_replace('"', '""', $value).'"';
-        }
-
-        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
-    }
 }
