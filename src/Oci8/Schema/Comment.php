@@ -26,33 +26,37 @@ class Comment
      */
     public function setComments(OracleBlueprint $blueprint)
     {
-        // Comment set by $table->comment('comment');
-        if ($blueprint->commentTable != null)
+        // Comment set by $table->comment = 'comment';
+        if ($blueprint->comment != null)
         {
-            $this->connection->statement(sprintf('comment on table %s is \'%s\'', $blueprint->getTable(), $blueprint->commentTable));
+            $this->connection->statement(sprintf('comment on table %s is \'%s\'', $blueprint->getTable(), $blueprint->comment));
         }
 
         // Comments set by $table->string('column')->comment('comment');
-        $this->commentColumns($blueprint->getTable(), $blueprint->getColumns());
-
-        // Comments set by $table->commentColumn('column', 'comment');
-        $this->commentColumns($blueprint->getTable(), $blueprint->commentColumn);
-    }
-
-    /**
-     * Set column comment.
-     *
-     * @param  string $table
-     * @param  array  $columns
-     */
-    private function commentColumns($table, $columns)
-    {
-        foreach ($columns as $column)
+        foreach ($blueprint->getColumns() as $column)
         {
             if (isset($column['comment']))
             {
-                $this->connection->statement(sprintf('comment on column %s.%s is \'%s\'', $table, $column['name'], $column['comment']));
+                $this->commentColumn($blueprint->getTable(), $column['name'], $column['comment']);
             }
         }
+
+        // Comments set by $table->commentColumns = ['column' => 'comment'];
+        foreach ($blueprint->commentColumns as $column => $comment)
+        {
+            $this->commentColumn($blueprint->getTable(), $column, $comment);
+        }
+    }
+
+    /**
+     * Run the comment on column statement
+     *
+     * @param  string $table
+     * @param  string $column
+     * @param  string $comment
+     */
+    private function commentColumn($table, $column, $comment)
+    {
+        $this->connection->statement(sprintf('comment on column %s.%s is \'%s\'', $table, $column, $comment));
     }
 }

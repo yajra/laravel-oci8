@@ -18,14 +18,14 @@ class OracleBlueprint extends Blueprint
      *
      * @var string
      */
-    public $commentTable = null;
+    public $comment = null;
 
     /**
      * Column comments
      *
      * @var array
      */
-    public $commentColumn = [];
+    public $commentColumns = [];
 
     /**
      * set table prefix settings
@@ -62,29 +62,5 @@ class OracleBlueprint extends Blueprint
 
         // max index name length is 30 chars
         return substr(str_replace(['-', '.'], '_', $index), 0, 30);
-    }
-
-    /**
-     * Set the column comment for an existing table
-     *
-     * @param  string $column
-     * @param  string $comment
-     */
-    public function commentColumn($column, $comment)
-    {
-        $this->commentColumn[] = [
-            'name' => $column,
-            'comment' => $comment ?: ''
-        ];
-    }
-
-    /**
-     * Set the table comment for an existing table
-     *
-     * @param  string $comment
-     */
-    public function comment($comment)
-    {
-        $this->commentTable = $comment ?: '';
     }
 }
