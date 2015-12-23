@@ -467,29 +467,17 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
-        $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
-                ->andReturnUsing(function ($query, $results) {
-                    return $results;
-                });
-        $results = $builder->from('users')->where('id', '=', 1)->lists('foo');
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(function ($query, $results) {
+            return $results;
+        });
+        $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
         $this->assertEquals(['bar', 'baz'], $results);
-
         $builder = $this->getBuilder();
-        $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->andReturn([['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']]);
-        $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])
-                ->andReturnUsing(function ($query, $results) {
-                    return $results;
-                });
-        $results = $builder->from('users')->where('id', '=', 1)->lists('foo', 'id');
+        $builder->getConnection()->shouldReceive('select')->once()->andReturn([['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])->andReturnUsing(function ($query, $results) {
+            return $results;
+        });
+        $results = $builder->from('users')->where('id', '=', 1)->pluck('foo', 'id');
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results);
     }
 
@@ -520,24 +508,6 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 });
         $results = $builder->from('users')->where('id', '=', 1)->implode('foo', ',');
         $this->assertEquals('bar,baz', $results);
-    }
-
-    public function testPluckMethodReturnsSingleColumn()
-    {
-        $builder = $this->getBuilder();
-        $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select * from (select foo from users where id = ?) where rownum = 1',
-                    [1], true)
-                ->andReturn([['foo' => 'bar']]);
-        $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['foo' => 'bar']])
-                ->andReturn([['foo' => 'bar']]);
-        $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
-        $this->assertEquals('bar', $results);
     }
 
     public function testAggregateCountFunction()
