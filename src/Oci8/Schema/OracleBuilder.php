@@ -14,6 +14,11 @@ class OracleBuilder extends Builder
     public $helper;
 
     /**
+     * @var \Yajra\Oci8\Schema\Comment
+     */
+    public $comment;
+
+    /**
      * @param Connection $connection
      */
     public function __construct(Connection $connection)
@@ -21,6 +26,7 @@ class OracleBuilder extends Builder
         $this->connection = $connection;
         $this->grammar    = $connection->getSchemaGrammar();
         $this->helper     = new OracleAutoIncrementHelper($connection);
+        $this->comment    = new Comment($connection);
     }
 
     /**
@@ -40,7 +46,27 @@ class OracleBuilder extends Builder
 
         $this->build($blueprint);
 
+        $this->comment->setComments($blueprint);
+
         $this->helper->createAutoIncrementObjects($blueprint, $table);
+    }
+
+    /**
+     * Changes an existing table on the schema.
+     *
+     * @param  string $table
+     * @param  Closure $callback
+     * @return \Illuminate\Database\Schema\Blueprint
+     */
+    public function table($table, Closure $callback)
+    {
+        $blueprint = $this->createBlueprint($table);
+
+        $callback($blueprint);
+
+        $this->build($blueprint);
+
+        $this->comment->setComments($blueprint);
     }
 
     /**

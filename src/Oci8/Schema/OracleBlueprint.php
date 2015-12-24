@@ -14,6 +14,20 @@ class OracleBlueprint extends Blueprint
     protected $prefix;
 
     /**
+     * Table comment
+     *
+     * @var string
+     */
+    public $comment = null;
+
+    /**
+     * Column comments
+     *
+     * @var array
+     */
+    public $commentColumns = [];
+
+    /**
      * set table prefix settings
      *
      * @param string $prefix
