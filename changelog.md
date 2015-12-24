@@ -3,6 +3,7 @@
 #v4.1.0
 - Fix pluck unit tests to passed Laravel 5.2.
 - New feature to add comments on columns and table. #124 - Credits to @rafael-renan-pacheco
+    
     When creating a table:
     ```php
     Schema::create('flights', function (Blueprint $table) {
