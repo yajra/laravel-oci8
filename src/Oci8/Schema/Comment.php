@@ -27,23 +27,20 @@ class Comment
     public function setComments(OracleBlueprint $blueprint)
     {
         // Comment set by $table->comment = 'comment';
-        if ($blueprint->comment != null)
-        {
-            $this->connection->statement(sprintf('comment on table %s is \'%s\'', $blueprint->getTable(), $blueprint->comment));
+        if ($blueprint->comment != null) {
+            $this->connection->statement(sprintf('comment on table %s is \'%s\'', $blueprint->getTable(),
+                $blueprint->comment));
         }
 
         // Comments set by $table->string('column')->comment('comment');
-        foreach ($blueprint->getColumns() as $column)
-        {
-            if (isset($column['comment']))
-            {
+        foreach ($blueprint->getColumns() as $column) {
+            if (isset($column['comment'])) {
                 $this->commentColumn($blueprint->getTable(), $column['name'], $column['comment']);
             }
         }
 
         // Comments set by $table->commentColumns = ['column' => 'comment'];
-        foreach ($blueprint->commentColumns as $column => $comment)
-        {
+        foreach ($blueprint->commentColumns as $column => $comment) {
             $this->commentColumn($blueprint->getTable(), $column, $comment);
         }
     }
