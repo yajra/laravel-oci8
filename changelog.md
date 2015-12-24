@@ -1,5 +1,31 @@
 #Laravel-OCI8 Change Log
 
+#v4.1.0
+- Fix pluck unit tests to passed Laravel 5.2.
+- New feature to add comments on columns and table. #124 - Credits to @rafael-renan-pacheco
+    When creating a table:
+    ```php
+    Schema::create('flights', function (Blueprint $table) {
+        $table->increments('id');
+        $table->string('name')->comment('Flight name'); /* Column comment */
+        $table->string('airline')->comment('Airline name'); /* Column comment */
+    
+        $table->comment = 'Flights table'; /* Table comment */
+    });
+    ```
+    
+    When modifying a table:
+    ```php
+    Schema::table('flights', function ($table) {
+        $table->comment = 'A flights table'; /* Table comment */
+    
+        $table->commentColumns = [
+            'name' => 'This is the flight name', /* Column comment */
+            'airline' => 'This is the airline name' /* Column comment */
+        ];
+    });
+    ```
+
 #v4.0.3
 - Scrutinizer code refactoring.
 
