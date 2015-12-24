@@ -20,6 +20,11 @@
 				<h3>Namespaces</h3>
 			<ul>
 				<li>
+					<a href="namespace-None.html">
+						None					</a>
+
+						</li>
+				<li>
 					<a href="namespace-Yajra.html">
 						Yajra<span></span>
 					</a>
@@ -86,6 +91,7 @@
 				<li><a href="class-Yajra.Oci8.Query.Grammars.OracleGrammar.html">Yajra\Oci8\Query\Grammars\OracleGrammar</a></li>
 				<li><a href="class-Yajra.Oci8.Query.OracleBuilder.html">Yajra\Oci8\Query\OracleBuilder</a></li>
 				<li><a href="class-Yajra.Oci8.Query.Processors.OracleProcessor.html">Yajra\Oci8\Query\Processors\OracleProcessor</a></li>
+				<li><a href="class-Yajra.Oci8.Schema.Comment.html">Yajra\Oci8\Schema\Comment</a></li>
 				<li><a href="class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html">Yajra\Oci8\Schema\Grammars\OracleGrammar</a></li>
 				<li><a href="class-Yajra.Oci8.Schema.OracleAutoIncrementHelper.html">Yajra\Oci8\Schema\OracleAutoIncrementHelper</a></li>
 				<li><a href="class-Yajra.Oci8.Schema.OracleBlueprint.html">Yajra\Oci8\Schema\OracleBlueprint</a></li>
@@ -102,6 +108,10 @@
 
 
 
+			<h3>Functions</h3>
+			<ul>
+				<li><a href="function-config_path.html">config_path</a></li>
+			</ul>
 		</div>
 	</div>
 </div>
@@ -160,7 +170,7 @@
 </span></span><span id="26" class="l"><a href="#26"> 26: </a><span class="php-comment">     */</span>
 </span><span id="27" class="l"><a href="#27"> 27: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> compileExists(Builder <span class="php-var">$query</span>)
 </span><span id="28" class="l"><a href="#28"> 28: </a>    {
-</span><span id="29" class="l"><a href="#29"> 29: </a>        <span class="php-var">$q</span> = <span class="php-keyword1">clone</span> <span class="php-var">$query</span>;
+</span><span id="29" class="l"><a href="#29"> 29: </a>        <span class="php-var">$q</span>          = <span class="php-keyword1">clone</span> <span class="php-var">$query</span>;
 </span><span id="30" class="l"><a href="#30"> 30: </a>        <span class="php-var">$q</span>-&gt;columns = [];
 </span><span id="31" class="l"><a href="#31"> 31: </a>        <span class="php-var">$q</span>-&gt;selectRaw(<span class="php-quote">'1 as &quot;exists&quot;'</span>)
 </span><span id="32" class="l"><a href="#32"> 32: </a>          -&gt;whereRaw(<span class="php-quote">&quot;rownum = 1&quot;</span>);
@@ -507,8 +517,23 @@
 </span><span id="373" class="l"><a href="#373">373: </a>
 </span><span id="374" class="l"><a href="#374">374: </a>        <span class="php-keyword1">return</span> <span class="php-quote">&quot;extract (</span><span class="php-var">$type</span><span class="php-quote"> from </span><span class="php-var">{$this-&gt;wrap($where['column'])}</span><span class="php-quote">) </span><span class="php-var">{$where['operator']}</span><span class="php-quote"> </span><span class="php-var">$value</span><span class="php-quote">&quot;</span>;
 </span><span id="375" class="l"><a href="#375">375: </a>    }
-</span><span id="376" class="l"><a href="#376">376: </a>}
-</span><span id="377" class="l"><a href="#377">377: </a></span></code></pre>
+</span><span id="376" class="l"><a href="#376">376: </a>
+</span><span id="377" class="l"><a href="#377">377: </a>    <span class="php-comment">/**
+</span></span><span id="378" class="l"><a href="#378">378: </a><span class="php-comment">     * Wrap a single string in keyword identifiers.
+</span></span><span id="379" class="l"><a href="#379">379: </a><span class="php-comment">     *
+</span></span><span id="380" class="l"><a href="#380">380: </a><span class="php-comment">     * @param  string $value
+</span></span><span id="381" class="l"><a href="#381">381: </a><span class="php-comment">     * @return string
+</span></span><span id="382" class="l"><a href="#382">382: </a><span class="php-comment">     */</span>
+</span><span id="383" class="l"><a href="#383">383: </a>    <span class="php-keyword1">protected</span> <span class="php-keyword1">function</span> wrapValue(<span class="php-var">$value</span>)
+</span><span id="384" class="l"><a href="#384">384: </a>    {
+</span><span id="385" class="l"><a href="#385">385: </a>        <span class="php-keyword1">if</span> (<span class="php-var">$this</span>-&gt;isReserved(<span class="php-var">$value</span>)) {
+</span><span id="386" class="l"><a href="#386">386: </a>            <span class="php-keyword1">return</span> parent::wrapValue(<span class="php-var">$value</span>);
+</span><span id="387" class="l"><a href="#387">387: </a>        }
+</span><span id="388" class="l"><a href="#388">388: </a>
+</span><span id="389" class="l"><a href="#389">389: </a>        <span class="php-keyword1">return</span> <span class="php-var">$value</span> !== <span class="php-quote">'*'</span> ? <span class="php-keyword2">sprintf</span>(<span class="php-var">$this</span>-&gt;wrapper, <span class="php-var">$value</span>) : <span class="php-var">$value</span>;
+</span><span id="390" class="l"><a href="#390">390: </a>    }
+</span><span id="391" class="l"><a href="#391">391: </a>}
+</span><span id="392" class="l"><a href="#392">392: </a></span></code></pre>
 
 	<div id="footer">
 		 API documentation generated by <a href="http://apigen.org">ApiGen</a>
@@ -516,6 +541,6 @@
 </div>
 </div>
 <script src="resources/combined.js?cd021bc814832c24a7cec5319ea03335bfba1caf"></script>
-<script src="elementlist.js?c7a37a376fb286a160c4cc39850d6617ec936ecf"></script>
+<script src="elementlist.js?a86cfd8efa1dd9d4cde91890b1927a89a282d391"></script>
 </body>
 </html>

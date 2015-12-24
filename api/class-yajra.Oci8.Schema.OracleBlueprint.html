@@ -18,6 +18,11 @@
 		<div id="groups">
 				<h3>Namespaces</h3>
 			<ul>
+				<li>
+					<a href="namespace-None.html">
+						None					</a>
+
+						</li>
 				<li class="active">
 					<a href="namespace-Yajra.html">
 						Yajra<span></span>
@@ -78,6 +83,7 @@
 		<div id="elements">
 			<h3>Classes</h3>
 			<ul>
+				<li><a href="class-Yajra.Oci8.Schema.Comment.html">Comment</a></li>
 				<li><a href="class-Yajra.Oci8.Schema.OracleAutoIncrementHelper.html">OracleAutoIncrementHelper</a></li>
 				<li class="active"><a href="class-Yajra.Oci8.Schema.OracleBlueprint.html">OracleBlueprint</a></li>
 				<li><a href="class-Yajra.Oci8.Schema.OracleBuilder.html">OracleBuilder</a></li>
@@ -152,7 +158,7 @@ Illuminate\Database\Schema\Blueprint
 		<b>Namespace:</b> <a href="namespace-Yajra.html">Yajra</a>\<a href="namespace-Yajra.Oci8.html">Oci8</a>\<a href="namespace-Yajra.Oci8.Schema.html">Schema</a><br>
 		
 
-			<b>Located at</b> <a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#7-52" title="Go to source code">Oci8/Schema/OracleBlueprint.php</a>
+			<b>Located at</b> <a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#7-66" title="Go to source code">Oci8/Schema/OracleBlueprint.php</a>
 		<br>
 	</div>
 
@@ -172,7 +178,7 @@ Illuminate\Database\Schema\Blueprint
 
 		<td class="name"><div>
 		<a class="anchor" href="#_setTablePrefix">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#16-24" title="Go to source code">setTablePrefix</a>( <span>string <var>$prefix</var> = <span class="php-quote">''</span></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#30-38" title="Go to source code">setTablePrefix</a>( <span>string <var>$prefix</var> = <span class="php-quote">''</span></span> )</code>
 
 		<div class="description short">
 			<p>set table prefix settings</p>
@@ -207,7 +213,7 @@ Illuminate\Database\Schema\Blueprint
 
 		<td class="name"><div>
 		<a class="anchor" href="#_timestampsTz">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#26-36" title="Go to source code">timestampsTz</a>( )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#40-50" title="Go to source code">timestampsTz</a>( )</code>
 
 		<div class="description short">
 			<p>Add creation and update timestampTz columns to the table.</p>
@@ -237,7 +243,7 @@ Illuminate\Database\Schema\Blueprint
 
 		<td class="name"><div>
 		<a class="anchor" href="#_createIndexName">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#38-51" title="Go to source code">createIndexName</a>( <span>string <var>$type</var></span>, <span>array <var>$columns</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#52-65" title="Go to source code">createIndexName</a>( <span>string <var>$type</var></span>, <span>array <var>$columns</var></span> )</code>
 
 		<div class="description short">
 			<p>Create a default index name for the table.</p>
@@ -303,6 +309,56 @@ Illuminate\Database\Schema\Blueprint
 			<div>
 				<a href="#$prefix" class="anchor">#</a>
 				<code></code>
+			</div>
+		</td>
+	</tr>
+	<tr data-order="comment" id="$comment">
+		<td class="attributes"><code>
+			public  
+			string
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#16-21" title="Go to source code"><var>$comment</var></a>
+
+			<div class="description short">
+				<p>Table comment</p>
+			</div>
+
+			<div class="description detailed hidden">
+				<p>Table comment</p>
+
+			</div>
+		</td>
+		<td class="value">
+			<div>
+				<a href="#$comment" class="anchor">#</a>
+				<code><span class="php-keyword1">null</span></code>
+			</div>
+		</td>
+	</tr>
+	<tr data-order="commentColumns" id="$commentColumns">
+		<td class="attributes"><code>
+			public  
+			array
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-Yajra.Oci8.Schema.OracleBlueprint.html#23-28" title="Go to source code"><var>$commentColumns</var></a>
+
+			<div class="description short">
+				<p>Column comments</p>
+			</div>
+
+			<div class="description detailed hidden">
+				<p>Column comments</p>
+
+			</div>
+		</td>
+		<td class="value">
+			<div>
+				<a href="#$commentColumns" class="anchor">#</a>
+				<code>[]</code>
 			</div>
 		</td>
 	</tr>
