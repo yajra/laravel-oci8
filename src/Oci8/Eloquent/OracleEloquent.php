@@ -56,10 +56,11 @@ class OracleEloquent extends Model
     /**
      * Update the model in the database.
      *
-     * @param  array $attributes
+     * @param  array  $attributes
+     * @param  array  $options
      * @return bool|int
      */
-    public function update(array $attributes = [])
+    public function update(array $attributes = [], array $options = [])
     {
         if (! $this->exists) {
             // If dirty attributes contains binary field
@@ -182,7 +183,7 @@ class OracleEloquent extends Model
             if (count($dirty) > 0) {
                 // If dirty attributes contains binary field
                 // extract binary fields to new array
-                $this->updateBinary($query, $dirty);
+                $this->updateBinary($query, $dirty, $options);
 
                 $this->fireModelEvent('updated', false);
             }
@@ -193,14 +194,15 @@ class OracleEloquent extends Model
 
     /**
      * @param Builder $query
-     * @param $dirty
+     * @param array $dirty
+     * @param array $options
      */
-    protected function updateBinary(Builder $query, $dirty)
+    protected function updateBinary(Builder $query, $dirty, $options = [])
     {
         if ($this->wrapBinary($dirty)) {
             $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
         } else {
-            $this->setKeysForSaveQuery($query)->update($dirty);
+            $this->setKeysForSaveQuery($query)->update($dirty, $options);
         }
     }
 

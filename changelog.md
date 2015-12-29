@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.1.1
+- Fix update method compatibility with L5.2. Fix #127.
+
 #v4.1.0
 - Fix pluck unit tests to passed Laravel 5.2.
 - New feature to add comments on columns and table. #124 - Credits to @rafael-renan-pacheco
