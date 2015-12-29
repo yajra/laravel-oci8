@@ -3,9 +3,13 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
+use Illuminate\Database\Schema\Grammars\Grammar;
+use Yajra\Oci8\OracleReservedWords;
 
-class Comment
+class Comment extends Grammar
 {
+    use OracleReservedWords;
+
     /**
      * @var \Illuminate\Database\Connection
      */
@@ -43,11 +47,10 @@ class Comment
      */
     private function commentTable(OracleBlueprint $blueprint)
     {
+        $table = $this->wrapValue($blueprint->getTable());
+
         if ($blueprint->comment != null) {
-            $this->connection->statement(sprintf(
-                'comment on table %s is \'%s\'', $blueprint->getTable(),
-                $blueprint->comment
-            ));
+            $this->connection->statement("comment on table {$table} is '{$blueprint->comment}'");
         }
     }
 
@@ -74,7 +77,11 @@ class Comment
      */
     private function commentColumn($table, $column, $comment)
     {
-        $this->connection->statement(sprintf('comment on column %s.%s is \'%s\'', $table, $column, $comment));
+        $table = $this->wrapValue($table);
+
+        $column = $this->wrapValue($column);
+
+        $this->connection->statement("comment on column {$table}.{$column} is '{$comment}'");
     }
 
     /**
@@ -87,5 +94,16 @@ class Comment
         foreach ($blueprint->commentColumns as $column => $comment) {
             $this->commentColumn($blueprint->getTable(), $column, $comment);
         }
+    }
+
+    /**
+     * Wrap reserved words.
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        return $this->isReserved($value) ? parent::wrapValue($value) : $value;
     }
 }
