@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.1.2
+- Wrap reserved words when commenting on table or columns. PR #128
+
 #v4.1.1
 - Fix update method compatibility with L5.2. Fix #127.
 
