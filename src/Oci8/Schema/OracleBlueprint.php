@@ -58,6 +58,14 @@ class OracleBlueprint extends Blueprint
      */
     protected function createIndexName($type, array $columns)
     {
+        $short_type = [
+            'primary' => 'pk',
+            'foreign' => 'fk',
+            'unique' => 'uk'
+        ];
+
+        $type = isset($short_type[$type]) ? $short_type[$type] : $type;
+
         $index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
 
         // max index name length is 30 chars
