@@ -64,6 +64,14 @@ class OracleBuilder extends Builder
 
         $callback($blueprint);
 
+        foreach($blueprint->getCommands() as $command)
+        {
+            if ($command->get('name') == 'drop')
+            {
+                $this->helper->dropAutoIncrementObjects($table);
+            }
+        }
+
         $this->build($blueprint);
 
         $this->comment->setComments($blueprint);
