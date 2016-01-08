@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.6
+- Update pdo-via-oci8 package to use v1.0.0.
+
 #v2.4.5
 - Revert laravel/framework#10373 commit that breaks exists method. Fix #102.
 
