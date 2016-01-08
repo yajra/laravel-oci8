@@ -7,14 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 class OracleBlueprint extends Blueprint
 {
     /**
-     * Database prefix variable
-     *
-     * @var string
-     */
-    protected $prefix;
-
-    /**
-     * Table comment
+     * Table comment.
      *
      * @var string
      */
@@ -28,7 +21,14 @@ class OracleBlueprint extends Blueprint
     public $commentColumns = [];
 
     /**
-     * set table prefix settings
+     * Database prefix variable.
+     *
+     * @var string
+     */
+    protected $prefix;
+
+    /**
+     * Set table prefix settings.
      *
      * @param string $prefix
      */
@@ -61,7 +61,7 @@ class OracleBlueprint extends Blueprint
         $short_type = [
             'primary' => 'pk',
             'foreign' => 'fk',
-            'unique' => 'uk'
+            'unique'  => 'uk',
         ];
 
         $type = isset($short_type[$type]) ? $short_type[$type] : $type;
