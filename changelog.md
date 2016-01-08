@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.7
+- Lock support to Laravel 4.2 & 5.0 only.
+- Fixes failing unit tests.
+
 #v2.4.6
 - Update pdo-via-oci8 package to use v1.0.0.
 
