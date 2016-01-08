@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.2.0
+- Use shorter index name. PR #132, Issue #131.
+
 #v4.1.2
 - Wrap reserved words when commenting on table or columns. PR #128
 
