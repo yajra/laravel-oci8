@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.8
+- Apply PHP7 compatibility fix.
+- Implement auto-saving of blob of pdo-via-oci8.
+
 #v2.4.7
 - Lock support to Laravel 4.2 & 5.0 only.
 - Fixes failing unit tests.
