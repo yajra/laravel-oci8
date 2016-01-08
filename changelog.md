@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.2.1
+- Drop sequence and trigger if table is dropped through Blueprint. Fix #106.
+
 #v4.2.0
 - Use shorter index name. PR #132, Issue #131.
 
