@@ -131,9 +131,9 @@ class OracleGrammar extends Grammar
      *
      * @return string
      */
-    public function compileColumnExists($table="?")
+    public function compileColumnExists($table)
     {
-        return "select column_name from user_tab_columns where table_name = upper('".$table."') and column_name = upper('".$table."')";
+        return "select column_name from user_tab_columns where table_name = upper('".$table."')";
     }
 
     /**
