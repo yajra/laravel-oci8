@@ -246,8 +246,8 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 	public function testCompileColumnExistsMethod()
 	{
 		$grammar = $this->getGrammar();
-		$expected = 'select column_name from user_tab_columns where table_name = upper(?) and column_name = upper(?)';
-		$sql = $grammar->compileColumnExists();
+		$expected = 'select column_name from user_tab_columns where table_name = upper(\'test_table\')';
+		$sql = $grammar->compileColumnExists('test_table');
 		$this->assertEquals($expected, $sql);
 	}
 

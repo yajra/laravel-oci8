@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v2.4.9
+- Implement PR #136 fixing compileColumnExists method.
+
 #v2.4.8
 - Apply PHP7 compatibility fix.
 - Implement auto-saving of blob of pdo-via-oci8.
