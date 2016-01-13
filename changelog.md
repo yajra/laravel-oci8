@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v3.1.1
+- Lock support to Laravel 5.1 only.
+- Fix unit tests.
+
 #v3.1.0
 - Apply PHP 7 compatibility fix.
 - Update pdo-via-oci8 to v1.0.
