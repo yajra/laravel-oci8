@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v3.0.1
+- Apply PHP 7 compatibility fix.
+
 #v3.0.0
 - Drop support for Laravel 4.2 & 5.0.
 - Drop Support for PHP 5.4.
