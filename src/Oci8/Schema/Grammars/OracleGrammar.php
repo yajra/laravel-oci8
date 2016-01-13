@@ -125,14 +125,15 @@ class OracleGrammar extends Grammar
         return "select * from user_tables where upper(table_name) = upper(?)";
     }
 
+
     /**
      * Compile the query to determine the list of columns.
      *
      * @return string
      */
-    public function compileColumnExists()
+    public function compileColumnExists($table)
     {
-        return "select column_name from user_tab_columns where table_name = upper(?) and column_name = upper(?)";
+        return "select column_name from user_tab_columns where table_name = upper('".$table."')";
     }
 
     /**
