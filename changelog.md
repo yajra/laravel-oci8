@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v3.1.2
+- Implement PR #136 fixing compileColumnExists method.
+
 #v3.1.1
 - Lock support to Laravel 5.1 only.
 - Fix unit tests.
