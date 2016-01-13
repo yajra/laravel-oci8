@@ -1,6 +1,6 @@
 <?php
 
-use yajra\Pdo\Oci8;
+use Yajra\Pdo\Oci8;
 
 class Oci8Stub extends Oci8
 {
