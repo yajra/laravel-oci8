@@ -1,7 +1,8 @@
 #Laravel-OCI8 Change Log
 
-#v3.0.1
+#v3.1.0
 - Apply PHP 7 compatibility fix.
+- Update pdo-via-oci8 to v1.0.
 
 #v3.0.0
 - Drop support for Laravel 4.2 & 5.0.
