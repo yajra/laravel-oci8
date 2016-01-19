@@ -57,7 +57,7 @@ class OracleProcessor extends Processor
     {
         $count = count($values);
         for ($i = 0; $i < $count; $i++) {
-            if($values[$i] instanceof \DateTime) {
+            if ($values[$i] instanceof \DateTime) {
                 $values[$i] = (string) $values[$i];
             }
             $type = $this->getPdoType($values[$i]);
