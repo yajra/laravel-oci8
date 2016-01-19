@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v4.2.3
+- Convert DateTime instance to string.
+- Fix issue #134.
+
 #v4.2.2
 - Fix compileColumnExists method. PR #136
 
