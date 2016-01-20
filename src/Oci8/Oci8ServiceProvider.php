@@ -40,7 +40,7 @@ class Oci8ServiceProvider extends ServiceProvider
         $this->app['db']->extend('oracle', function ($config) {
             $connector  = new Connector();
             $connection = $connector->connect($config);
-            $db         = new Oci8Connection($connection, $config["database"], $config["prefix"]);
+            $db         = new Oci8Connection($connection, $config["database"], $config["prefix"],$config);
 
             // set oracle session variables
             $sessionVars = [
