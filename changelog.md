@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v4.2.4
+- Fix new instance of Oci8Connection with config on last parameter. PR #142
+
 #v4.2.3
 - Convert DateTime instance to string.
 - Fix issue #134.
