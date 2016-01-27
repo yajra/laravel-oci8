@@ -33,12 +33,12 @@ class Oci8Connection extends Connection
     protected $trigger;
 
     /**
-     * @param PDO $pdo
+     * @param PDO|Closure $pdo
      * @param string $database
      * @param string $tablePrefix
      * @param array $config
      */
-    public function __construct(PDO $pdo, $database = '', $tablePrefix = '', array $config = [])
+    public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
         $this->sequence = new Sequence($this);
