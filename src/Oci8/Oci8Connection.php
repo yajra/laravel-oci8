@@ -189,7 +189,7 @@ class Oci8Connection extends Connection
     {
         $driver = $this->getDoctrineDriver();
 
-        $data = ['pdo' => $this->pdo, 'user' => $this->getConfig('database')];
+        $data = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('database')];
 
         return new DoctrineConnection($data, $driver);
     }
@@ -224,7 +224,6 @@ class Oci8Connection extends Connection
     {
         return parent::withTablePrefix($grammar);
     }
-
 
     /**
      * Get the default schema grammar instance.
