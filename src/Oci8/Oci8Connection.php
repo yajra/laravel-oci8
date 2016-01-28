@@ -33,7 +33,7 @@ class Oci8Connection extends Connection
     protected $trigger;
 
     /**
-     * @param PDO|Closure $pdo
+     * @param PDO|\Closure $pdo
      * @param string $database
      * @param string $tablePrefix
      * @param array $config

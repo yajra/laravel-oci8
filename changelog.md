@@ -1,5 +1,10 @@
 #Laravel-OCI8 Change Log
 
+#v4.2.5
+- Remove PDO typehint to allow closure.
+- Use getPdo() when using doctrine connection.
+- Fix #143.
+
 #v4.2.4
 - Fix new instance of Oci8Connection with config on last parameter. PR #142
 
