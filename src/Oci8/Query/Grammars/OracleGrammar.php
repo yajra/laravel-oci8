@@ -306,7 +306,6 @@ class OracleGrammar extends Grammar
      * @param  \Illuminate\Database\Query\Builder $query
      * @param  bool|string $value
      * @return string
-     * @throws Oci8Exception
      */
     protected function compileLock(Builder $query, $value)
     {
@@ -318,7 +317,7 @@ class OracleGrammar extends Grammar
             return 'for update';
         }
 
-        throw new Oci8Exception('Lock in share mode not yet supported!');
+        return '';
     }
 
     /**
