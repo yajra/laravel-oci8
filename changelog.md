@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v4.2.6 - 2015-02-09
+- Return empty string instead of throwing lock shared mode exception.
+- Cast all object values to string when binding.
+
 #v4.2.5
 - Remove PDO typehint to allow closure.
 - Use getPdo() when using doctrine connection.
