@@ -426,6 +426,12 @@ class OracleGrammar extends Grammar
     protected function compileFrom(Builder $query, $table)
     {
 
+        $query = $this->wrapTable($table);
+
+        if ($this->isSubQuery($query))
+        {
+            return 'from ' . $this->wrapTable($table);
+        }
 
         return 'from ' . $this->getSchemaPrefix() . $this->wrapTable($table);
     }
@@ -448,5 +454,10 @@ class OracleGrammar extends Grammar
     public function getSchemaPrefix()
     {
         return !empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
+
+    protected function isSubQuery($query)
+    {
+        return substr($query, 0, 1) == '(';
     }
 }
