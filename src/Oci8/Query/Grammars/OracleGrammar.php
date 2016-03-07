@@ -19,6 +19,11 @@ class OracleGrammar extends Grammar
     protected $wrapper = '%s';
 
     /**
+     * @var string
+     */
+    protected $schema_prefix = '';
+
+    /**
      * Compile an exists statement into SQL.
      *
      * @param \Illuminate\Database\Query\Builder $query
@@ -29,7 +34,7 @@ class OracleGrammar extends Grammar
         $q          = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
-          ->whereRaw("rownum = 1");
+            ->whereRaw("rownum = 1");
 
         return $this->compileSelect($q);
     }
@@ -42,7 +47,8 @@ class OracleGrammar extends Grammar
      */
     public function compileSelect(Builder $query)
     {
-        if (is_null($query->columns)) {
+        if (is_null($query->columns))
+        {
             $query->columns = ['*'];
         }
 
@@ -51,7 +57,8 @@ class OracleGrammar extends Grammar
         // If an offset is present on the query, we will need to wrap the query in
         // a big "ANSI" offset syntax block. This is very nasty compared to the
         // other database systems but is necessary for implementing features.
-        if ($this->isPaginationable($query, $components)) {
+        if ($this->isPaginationable($query, $components))
+        {
             return $this->compileAnsiOffset($query, $components);
         }
 
@@ -65,7 +72,7 @@ class OracleGrammar extends Grammar
      */
     protected function isPaginationable(Builder $query, array $components)
     {
-        return ($query->limit > 0 || $query->offset > 0) && ! array_key_exists('lock', $components);
+        return ($query->limit > 0 || $query->offset > 0) && !array_key_exists('lock', $components);
     }
 
     /**
@@ -99,11 +106,13 @@ class OracleGrammar extends Grammar
     {
         $start = $query->offset + 1;
 
-        if ($query->limit == 1) {
+        if ($query->limit == 1)
+        {
             return "= 1";
         }
 
-        if ($query->limit > 1) {
+        if ($query->limit > 1)
+        {
             $finish = $query->offset + $query->limit;
 
             return "between {$start} and {$finish}";
@@ -122,9 +131,11 @@ class OracleGrammar extends Grammar
      */
     protected function compileTableExpression($sql, $constraint, $query)
     {
-        if ($query->limit > 1) {
+        if ($query->limit > 1)
+        {
             return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
-        } else {
+        } else
+        {
             return "select * from ({$sql}) where rownum {$constraint}";
         }
     }
@@ -150,7 +161,8 @@ class OracleGrammar extends Grammar
      */
     public function compileInsertGetId(Builder $query, $values, $sequence = 'id')
     {
-        if (empty($sequence)) {
+        if (empty($sequence))
+        {
             $sequence = 'id';
         }
 
@@ -171,7 +183,8 @@ class OracleGrammar extends Grammar
         // basic routine regardless of an amount of records given to us to insert.
         $table = $this->wrapTable($query->from);
 
-        if (! is_array(reset($values))) {
+        if (!is_array(reset($values)))
+        {
             $values = [$values];
         }
 
@@ -184,9 +197,11 @@ class OracleGrammar extends Grammar
 
         $value = array_fill(0, count($values), "($parameters)");
 
-        if (count($value) > 1) {
+        if (count($value) > 1)
+        {
             $insertQueries = [];
-            foreach ($value as $parameter) {
+            foreach ($value as $parameter)
+            {
                 $parameter       = (str_replace(['(', ')'], '', $parameter));
                 $insertQueries[] = "select " . $parameter . " from dual ";
             }
@@ -211,17 +226,20 @@ class OracleGrammar extends Grammar
      */
     public function compileInsertLob(Builder $query, $values, $binaries, $sequence = 'id')
     {
-        if (empty($sequence)) {
+        if (empty($sequence))
+        {
             $sequence = 'id';
         }
 
         $table = $this->wrapTable($query->from);
 
-        if (! is_array(reset($values))) {
+        if (!is_array(reset($values)))
+        {
             $values = [$values];
         }
 
-        if (! is_array(reset($binaries))) {
+        if (!is_array(reset($binaries)))
+        {
             $binaries = [$binaries];
         }
 
@@ -259,14 +277,16 @@ class OracleGrammar extends Grammar
         // the values in the list of bindings so we can make the sets statements.
         $columns = [];
 
-        foreach ($values as $key => $value) {
+        foreach ($values as $key => $value)
+        {
             $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
         }
 
         $columns = implode(', ', $columns);
 
         // set blob variables
-        if (! is_array(reset($binaries))) {
+        if (!is_array(reset($binaries)))
+        {
             $binaries = [$binaries];
         }
         $binaryColumns    = $this->columnize(array_keys(reset($binaries)));
@@ -274,21 +294,25 @@ class OracleGrammar extends Grammar
 
         // create EMPTY_BLOB sql for each binary
         $binarySql = [];
-        foreach ((array) $binaryColumns as $binary) {
+        foreach ((array)$binaryColumns as $binary)
+        {
             $binarySql[] = "$binary = EMPTY_BLOB()";
         }
 
         // prepare binary SQLs
-        if (count($binarySql)) {
+        if (count($binarySql))
+        {
             $binarySql = (empty($columns) ? '' : ', ') . implode(',', $binarySql);
         }
 
         // If the query has any "join" clauses, we will setup the joins on the builder
         // and compile them so we can attach them to this update, as update queries
         // can get join statements to attach to other tables when they're needed.
-        if (isset($query->joins)) {
+        if (isset($query->joins))
+        {
             $joins = ' ' . $this->compileJoins($query, $query->joins);
-        } else {
+        } else
+        {
             $joins = '';
         }
 
@@ -309,11 +333,13 @@ class OracleGrammar extends Grammar
      */
     protected function compileLock(Builder $query, $value)
     {
-        if (is_string($value)) {
+        if (is_string($value))
+        {
             return $value;
         }
 
-        if ($value) {
+        if ($value)
+        {
             return 'for update';
         }
 
@@ -381,10 +407,57 @@ class OracleGrammar extends Grammar
      */
     protected function wrapValue($value)
     {
-        if ($this->isReserved($value)) {
+        if ($this->isReserved($value))
+        {
             return parent::wrapValue($value);
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+    }
+
+
+    /**
+     * Compile the "from" portion of the query.
+     *
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  string $table
+     * @return string
+     */
+    protected function compileFrom(Builder $query, $table)
+    {
+
+        $query = $this->wrapTable($table);
+
+        if ($this->isSubQuery($query))
+        {
+            return 'from ' . $this->wrapTable($table);
+        }
+
+        return 'from ' . $this->getSchemaPrefix() . $this->wrapTable($table);
+    }
+
+
+    /**
+     * Set the shema prefix
+     *
+     * @param string $prefix
+     */
+    public function setSchemaPrefix($prefix)
+    {
+        $this->schema_prefix = $prefix;
+    }
+
+    /**
+     * Return the schema prefix
+     * @return string
+     */
+    public function getSchemaPrefix()
+    {
+        return !empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
+
+    protected function isSubQuery($query)
+    {
+        return substr($query, 0, 1) == '(';
     }
 }

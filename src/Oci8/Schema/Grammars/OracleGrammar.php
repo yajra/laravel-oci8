@@ -691,4 +691,50 @@ class OracleGrammar extends Grammar
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
+
+
+    /**
+     * Compile the "from" portion of the query.
+     *
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  string $table
+     * @return string
+     */
+    protected function compileFrom(Builder $query, $table)
+    {
+
+
+        return 'from ' . $this->getSchemaPrefix() . $this->wrapTable($table);
+    }
+
+    /**
+     * Wrap a table in keyword identifiers.
+     *
+     * @param  mixed   $table
+     * @return string
+     */
+    public function wrapTable($table)
+    {
+        return $this->getSchemaPrefix().parent::wrapTable($table);
+    }
+
+
+    /**
+     * Set the shema prefix
+     *
+     * @param string $prefix
+     */
+    public function setSchemaPrefix($prefix)
+    {
+        $this->schema_prefix = $prefix;
+    }
+
+    /**
+     * Return the schema prefix
+     * @return string
+     */
+    public function getSchemaPrefix()
+    {
+        return !empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
 }
