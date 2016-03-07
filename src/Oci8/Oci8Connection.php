@@ -222,7 +222,8 @@ class Oci8Connection extends Connection
      */
     public function withTablePrefix(Grammar $grammar)
     {
-        return parent::withTablePrefix($grammar);
+
+        return $this->withSchemaPrefix(parent::withTablePrefix($grammar));
     }
 
     /**
@@ -243,5 +244,19 @@ class Oci8Connection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new Processor;
+    }
+
+
+    /**
+     * Set the table prefix and return the grammar.
+     *
+     * @param \Illuminate\Database\Grammar $grammar
+     * @return \Illuminate\Database\Grammar
+     */
+    public function withSchemaPrefix(Grammar $grammar)
+    {
+        $grammar->setSchemaPrefix($this->config['prefix_schema']);
+
+        return $grammar;
     }
 }
