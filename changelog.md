@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.1.0 - 2016-03-08
+- Add a dedicated branch/tag for Laravel 5.1 support.
+
 #v4.2.6 - 2015-02-09
 - Return empty string instead of throwing lock shared mode exception.
 - Cast all object values to string when binding.
