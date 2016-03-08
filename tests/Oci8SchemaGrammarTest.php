@@ -773,7 +773,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table users add ( created_at timestamp not null, updated_at timestamp not null )',
+        $this->assertEquals('alter table users add ( created_at timestamp null, updated_at timestamp null )',
             $statements[0]);
     }
 
@@ -784,7 +784,7 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table users add ( created_at timestamp with time zone not null, updated_at timestamp with time zone not null )',
+        $this->assertEquals('alter table users add ( created_at timestamp with time zone null, updated_at timestamp with time zone null )',
             $statements[0]);
     }
 

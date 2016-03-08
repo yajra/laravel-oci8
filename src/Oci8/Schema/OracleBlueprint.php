@@ -38,18 +38,6 @@ class OracleBlueprint extends Blueprint
     }
 
     /**
-     * Add creation and update timestampTz columns to the table.
-     *
-     * @return void
-     */
-    public function timestampsTz()
-    {
-        $this->timestampTz('created_at');
-
-        $this->timestampTz('updated_at');
-    }
-
-    /**
      * Create a default index name for the table.
      *
      * @param  string $type
