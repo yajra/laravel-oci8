@@ -463,6 +463,24 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(['foo' => 'bar'], $results);
     }
 
+    public function testListMethodsGetsArrayOfColumnValues()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(function ($query, $results) {
+            return $results;
+        });
+        $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
+        $this->assertEquals(['bar', 'baz'], $results);
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')->once()->andReturn([['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])->andReturnUsing(function ($query, $results) {
+            return $results;
+        });
+        $results = $builder->from('users')->where('id', '=', 1)->pluck('foo', 'id');
+        $this->assertEquals([1 => 'bar', 10 => 'baz'], $results);
+    }
+
     public function testImplode()
     {
         // Test without glue.
