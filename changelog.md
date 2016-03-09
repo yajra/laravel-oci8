@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.1 - 2016-03-09
+- Implement schema prefix option.
+- PR #154, credits to @mfrancois.
+
 #v5.2.0 - 2016-03-08
 - Dedicated branch/tag for Laravel 5.2 support.
 
