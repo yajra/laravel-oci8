@@ -33,7 +33,6 @@ class OracleGrammar extends Grammar
      */
     protected $serials = ['bigInteger', 'integer', 'mediumInteger', 'smallInteger', 'tinyInteger'];
 
-
     /**
      * @var string
      */
@@ -65,6 +64,37 @@ class OracleGrammar extends Grammar
         $sql .= ' )';
 
         return $sql;
+    }
+
+    /**
+     * Wrap a table in keyword identifiers.
+     *
+     * @param  mixed $table
+     * @return string
+     */
+    public function wrapTable($table)
+    {
+        return $this->getSchemaPrefix() . parent::wrapTable($table);
+    }
+
+    /**
+     * Return the schema prefix
+     *
+     * @return string
+     */
+    public function getSchemaPrefix()
+    {
+        return ! empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
+
+    /**
+     * Set the shema prefix
+     *
+     * @param string $prefix
+     */
+    public function setSchemaPrefix($prefix)
+    {
+        $this->schema_prefix = $prefix;
     }
 
     /**
@@ -131,7 +161,6 @@ class OracleGrammar extends Grammar
         return "select * from user_tables where upper(table_name) = upper(?)";
     }
 
-
     /**
      * Compile the query to determine the list of columns.
      *
@@ -139,7 +168,7 @@ class OracleGrammar extends Grammar
      */
     public function compileColumnExists($table)
     {
-        return "select column_name from user_tab_columns where table_name = upper('".$table."')";
+        return "select column_name from user_tab_columns where table_name = upper('" . $table . "')";
     }
 
     /**
@@ -696,36 +725,5 @@ class OracleGrammar extends Grammar
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
-    }
-
-    /**
-     * Wrap a table in keyword identifiers.
-     *
-     * @param  mixed   $table
-     * @return string
-     */
-    public function wrapTable($table)
-    {
-        return $this->getSchemaPrefix().parent::wrapTable($table);
-    }
-
-
-    /**
-     * Set the shema prefix
-     *
-     * @param string $prefix
-     */
-    public function setSchemaPrefix($prefix)
-    {
-        $this->schema_prefix = $prefix;
-    }
-
-    /**
-     * Return the schema prefix
-     * @return string
-     */
-    public function getSchemaPrefix()
-    {
-        return !empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
     }
 }

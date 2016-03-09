@@ -5,7 +5,6 @@ namespace Yajra\Oci8\Query\Grammars;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Yajra\Oci8\OracleReservedWords;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {
@@ -17,7 +16,6 @@ class OracleGrammar extends Grammar
      * @var string
      */
     protected $wrapper = '%s';
-
 
     /**
      * @var string
@@ -197,7 +195,6 @@ class OracleGrammar extends Grammar
                 $insertQueries[] = "select " . $parameter . " from dual ";
             }
             $parameters = implode('union all ', $insertQueries);
-
 
             return "insert into $table ($columns) $parameters";
         }
@@ -394,7 +391,6 @@ class OracleGrammar extends Grammar
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
 
-
     /**
      * Compile the "from" portion of the query.
      *
@@ -414,6 +410,26 @@ class OracleGrammar extends Grammar
         return 'from ' . $this->getSchemaPrefix() . $this->wrapTable($table);
     }
 
+    /**
+     * Check if given query is a sub-query.
+     *
+     * @param string $query
+     * @return bool
+     */
+    protected function isSubQuery($query)
+    {
+        return substr($query, 0, 1) == '(';
+    }
+
+    /**
+     * Return the schema prefix
+     *
+     * @return string
+     */
+    public function getSchemaPrefix()
+    {
+        return ! empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
 
     /**
      * Set the shema prefix
@@ -423,19 +439,5 @@ class OracleGrammar extends Grammar
     public function setSchemaPrefix($prefix)
     {
         $this->schema_prefix = $prefix;
-    }
-
-    /**
-     * Return the schema prefix
-     * @return string
-     */
-    public function getSchemaPrefix()
-    {
-        return !empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
-    }
-
-    protected function isSubQuery($query)
-    {
-        return substr($query, 0, 1) == '(';
     }
 }
