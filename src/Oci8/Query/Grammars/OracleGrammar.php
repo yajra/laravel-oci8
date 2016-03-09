@@ -18,6 +18,12 @@ class OracleGrammar extends Grammar
      */
     protected $wrapper = '%s';
 
+
+    /**
+     * @var string
+     */
+    protected $schema_prefix = '';
+
     /**
      * Compile an exists statement into SQL.
      *
@@ -386,5 +392,50 @@ class OracleGrammar extends Grammar
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+    }
+
+
+    /**
+     * Compile the "from" portion of the query.
+     *
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  string $table
+     * @return string
+     */
+    protected function compileFrom(Builder $query, $table)
+    {
+
+        $query = $this->wrapTable($table);
+
+        if ($this->isSubQuery($query)) {
+            return 'from ' . $this->wrapTable($table);
+        }
+
+        return 'from ' . $this->getSchemaPrefix() . $this->wrapTable($table);
+    }
+
+
+    /**
+     * Set the shema prefix
+     *
+     * @param string $prefix
+     */
+    public function setSchemaPrefix($prefix)
+    {
+        $this->schema_prefix = $prefix;
+    }
+
+    /**
+     * Return the schema prefix
+     * @return string
+     */
+    public function getSchemaPrefix()
+    {
+        return !empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
+
+    protected function isSubQuery($query)
+    {
+        return substr($query, 0, 1) == '(';
     }
 }
