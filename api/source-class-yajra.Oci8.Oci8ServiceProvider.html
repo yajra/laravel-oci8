@@ -184,7 +184,7 @@
 </span><span id="40" class="l"><a href="#40">40: </a>        <span class="php-var">$this</span>-&gt;app[<span class="php-quote">'db'</span>]-&gt;extend(<span class="php-quote">'oracle'</span>, <span class="php-keyword1">function</span> (<span class="php-var">$config</span>) {
 </span><span id="41" class="l"><a href="#41">41: </a>            <span class="php-var">$connector</span>  = <span class="php-keyword1">new</span> Connector();
 </span><span id="42" class="l"><a href="#42">42: </a>            <span class="php-var">$connection</span> = <span class="php-var">$connector</span>-&gt;connect(<span class="php-var">$config</span>);
-</span><span id="43" class="l"><a href="#43">43: </a>            <span class="php-var">$db</span>         = <span class="php-keyword1">new</span> Oci8Connection(<span class="php-var">$connection</span>, <span class="php-var">$config</span>[<span class="php-quote">&quot;database&quot;</span>], <span class="php-var">$config</span>[<span class="php-quote">&quot;prefix&quot;</span>]);
+</span><span id="43" class="l"><a href="#43">43: </a>            <span class="php-var">$db</span>         = <span class="php-keyword1">new</span> Oci8Connection(<span class="php-var">$connection</span>, <span class="php-var">$config</span>[<span class="php-quote">&quot;database&quot;</span>], <span class="php-var">$config</span>[<span class="php-quote">&quot;prefix&quot;</span>], <span class="php-var">$config</span>);
 </span><span id="44" class="l"><a href="#44">44: </a>
 </span><span id="45" class="l"><a href="#45">45: </a>            <span class="php-comment">// set oracle session variables</span>
 </span><span id="46" class="l"><a href="#46">46: </a>            <span class="php-var">$sessionVars</span> = [

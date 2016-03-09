@@ -177,12 +177,12 @@
 </span><span id="33" class="l"><a href="#33"> 33: </a>    <span class="php-keyword1">protected</span> <span class="php-var">$trigger</span>;
 </span><span id="34" class="l"><a href="#34"> 34: </a>
 </span><span id="35" class="l"><a href="#35"> 35: </a>    <span class="php-comment">/**
-</span></span><span id="36" class="l"><a href="#36"> 36: </a><span class="php-comment">     * @param PDO $pdo
+</span></span><span id="36" class="l"><a href="#36"> 36: </a><span class="php-comment">     * @param PDO|\Closure $pdo
 </span></span><span id="37" class="l"><a href="#37"> 37: </a><span class="php-comment">     * @param string $database
 </span></span><span id="38" class="l"><a href="#38"> 38: </a><span class="php-comment">     * @param string $tablePrefix
 </span></span><span id="39" class="l"><a href="#39"> 39: </a><span class="php-comment">     * @param array $config
 </span></span><span id="40" class="l"><a href="#40"> 40: </a><span class="php-comment">     */</span>
-</span><span id="41" class="l"><a href="#41"> 41: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> __construct(PDO <span class="php-var">$pdo</span>, <span class="php-var">$database</span> = <span class="php-quote">''</span>, <span class="php-var">$tablePrefix</span> = <span class="php-quote">''</span>, <span class="php-keyword1">array</span> <span class="php-var">$config</span> = [])
+</span><span id="41" class="l"><a href="#41"> 41: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> __construct(<span class="php-var">$pdo</span>, <span class="php-var">$database</span> = <span class="php-quote">''</span>, <span class="php-var">$tablePrefix</span> = <span class="php-quote">''</span>, <span class="php-keyword1">array</span> <span class="php-var">$config</span> = [])
 </span><span id="42" class="l"><a href="#42"> 42: </a>    {
 </span><span id="43" class="l"><a href="#43"> 43: </a>        parent::__construct(<span class="php-var">$pdo</span>, <span class="php-var">$database</span>, <span class="php-var">$tablePrefix</span>, <span class="php-var">$config</span>);
 </span><span id="44" class="l"><a href="#44"> 44: </a>        <span class="php-var">$this</span>-&gt;sequence = <span class="php-keyword1">new</span> Sequence(<span class="php-var">$this</span>);
@@ -333,7 +333,7 @@
 </span><span id="189" class="l"><a href="#189">189: </a>    {
 </span><span id="190" class="l"><a href="#190">190: </a>        <span class="php-var">$driver</span> = <span class="php-var">$this</span>-&gt;getDoctrineDriver();
 </span><span id="191" class="l"><a href="#191">191: </a>
-</span><span id="192" class="l"><a href="#192">192: </a>        <span class="php-var">$data</span> = [<span class="php-quote">'pdo'</span> =&gt; <span class="php-var">$this</span>-&gt;pdo, <span class="php-quote">'user'</span> =&gt; <span class="php-var">$this</span>-&gt;getConfig(<span class="php-quote">'database'</span>)];
+</span><span id="192" class="l"><a href="#192">192: </a>        <span class="php-var">$data</span> = [<span class="php-quote">'pdo'</span> =&gt; <span class="php-var">$this</span>-&gt;getPdo(), <span class="php-quote">'user'</span> =&gt; <span class="php-var">$this</span>-&gt;getConfig(<span class="php-quote">'database'</span>)];
 </span><span id="193" class="l"><a href="#193">193: </a>
 </span><span id="194" class="l"><a href="#194">194: </a>        <span class="php-keyword1">return</span> <span class="php-keyword1">new</span> DoctrineConnection(<span class="php-var">$data</span>, <span class="php-var">$driver</span>);
 </span><span id="195" class="l"><a href="#195">195: </a>    }
@@ -361,36 +361,58 @@
 </span><span id="217" class="l"><a href="#217">217: </a>    <span class="php-comment">/**
 </span></span><span id="218" class="l"><a href="#218">218: </a><span class="php-comment">     * Set the table prefix and return the grammar.
 </span></span><span id="219" class="l"><a href="#219">219: </a><span class="php-comment">     *
-</span></span><span id="220" class="l"><a href="#220">220: </a><span class="php-comment">     * @param \Illuminate\Database\Grammar $grammar
+</span></span><span id="220" class="l"><a href="#220">220: </a><span class="php-comment">     * @param \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar
 </span></span><span id="221" class="l"><a href="#221">221: </a><span class="php-comment">     * @return \Illuminate\Database\Grammar
 </span></span><span id="222" class="l"><a href="#222">222: </a><span class="php-comment">     */</span>
 </span><span id="223" class="l"><a href="#223">223: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> withTablePrefix(Grammar <span class="php-var">$grammar</span>)
 </span><span id="224" class="l"><a href="#224">224: </a>    {
-</span><span id="225" class="l"><a href="#225">225: </a>        <span class="php-keyword1">return</span> parent::withTablePrefix(<span class="php-var">$grammar</span>);
+</span><span id="225" class="l"><a href="#225">225: </a>        <span class="php-keyword1">return</span> <span class="php-var">$this</span>-&gt;withSchemaPrefix(parent::withTablePrefix(<span class="php-var">$grammar</span>));
 </span><span id="226" class="l"><a href="#226">226: </a>    }
 </span><span id="227" class="l"><a href="#227">227: </a>
-</span><span id="228" class="l"><a href="#228">228: </a>
-</span><span id="229" class="l"><a href="#229">229: </a>    <span class="php-comment">/**
-</span></span><span id="230" class="l"><a href="#230">230: </a><span class="php-comment">     * Get the default schema grammar instance.
-</span></span><span id="231" class="l"><a href="#231">231: </a><span class="php-comment">     *
-</span></span><span id="232" class="l"><a href="#232">232: </a><span class="php-comment">     * @return \Yajra\Oci8\Schema\Grammars\OracleGrammar
+</span><span id="228" class="l"><a href="#228">228: </a>    <span class="php-comment">/**
+</span></span><span id="229" class="l"><a href="#229">229: </a><span class="php-comment">     * Set the schema prefix and return the grammar.
+</span></span><span id="230" class="l"><a href="#230">230: </a><span class="php-comment">     *
+</span></span><span id="231" class="l"><a href="#231">231: </a><span class="php-comment">     * @param \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar
+</span></span><span id="232" class="l"><a href="#232">232: </a><span class="php-comment">     * @return \Illuminate\Database\Grammar
 </span></span><span id="233" class="l"><a href="#233">233: </a><span class="php-comment">     */</span>
-</span><span id="234" class="l"><a href="#234">234: </a>    <span class="php-keyword1">protected</span> <span class="php-keyword1">function</span> getDefaultSchemaGrammar()
+</span><span id="234" class="l"><a href="#234">234: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> withSchemaPrefix(Grammar <span class="php-var">$grammar</span>)
 </span><span id="235" class="l"><a href="#235">235: </a>    {
-</span><span id="236" class="l"><a href="#236">236: </a>        <span class="php-keyword1">return</span> <span class="php-var">$this</span>-&gt;withTablePrefix(<span class="php-keyword1">new</span> SchemaGrammar);
-</span><span id="237" class="l"><a href="#237">237: </a>    }
-</span><span id="238" class="l"><a href="#238">238: </a>
-</span><span id="239" class="l"><a href="#239">239: </a>    <span class="php-comment">/**
-</span></span><span id="240" class="l"><a href="#240">240: </a><span class="php-comment">     * Get the default post processor instance.
-</span></span><span id="241" class="l"><a href="#241">241: </a><span class="php-comment">     *
-</span></span><span id="242" class="l"><a href="#242">242: </a><span class="php-comment">     * @return \Yajra\Oci8\Query\Processors\OracleProcessor
-</span></span><span id="243" class="l"><a href="#243">243: </a><span class="php-comment">     */</span>
-</span><span id="244" class="l"><a href="#244">244: </a>    <span class="php-keyword1">protected</span> <span class="php-keyword1">function</span> getDefaultPostProcessor()
-</span><span id="245" class="l"><a href="#245">245: </a>    {
-</span><span id="246" class="l"><a href="#246">246: </a>        <span class="php-keyword1">return</span> <span class="php-keyword1">new</span> Processor;
-</span><span id="247" class="l"><a href="#247">247: </a>    }
-</span><span id="248" class="l"><a href="#248">248: </a>}
-</span><span id="249" class="l"><a href="#249">249: </a></span></code></pre>
+</span><span id="236" class="l"><a href="#236">236: </a>        <span class="php-var">$grammar</span>-&gt;setSchemaPrefix(<span class="php-var">$this</span>-&gt;getConfigSchemaPrefix());
+</span><span id="237" class="l"><a href="#237">237: </a>
+</span><span id="238" class="l"><a href="#238">238: </a>        <span class="php-keyword1">return</span> <span class="php-var">$grammar</span>;
+</span><span id="239" class="l"><a href="#239">239: </a>    }
+</span><span id="240" class="l"><a href="#240">240: </a>
+</span><span id="241" class="l"><a href="#241">241: </a>    <span class="php-comment">/**
+</span></span><span id="242" class="l"><a href="#242">242: </a><span class="php-comment">     * Get config schema prefix.
+</span></span><span id="243" class="l"><a href="#243">243: </a><span class="php-comment">     *
+</span></span><span id="244" class="l"><a href="#244">244: </a><span class="php-comment">     * @return string
+</span></span><span id="245" class="l"><a href="#245">245: </a><span class="php-comment">     */</span>
+</span><span id="246" class="l"><a href="#246">246: </a>    <span class="php-keyword1">protected</span> <span class="php-keyword1">function</span> getConfigSchemaPrefix()
+</span><span id="247" class="l"><a href="#247">247: </a>    {
+</span><span id="248" class="l"><a href="#248">248: </a>        <span class="php-keyword1">return</span> <span class="php-keyword1">isset</span>(<span class="php-var">$this</span>-&gt;config[<span class="php-quote">'prefix_schema'</span>]) ? <span class="php-var">$this</span>-&gt;config[<span class="php-quote">'prefix_schema'</span>] : <span class="php-quote">''</span>;
+</span><span id="249" class="l"><a href="#249">249: </a>    }
+</span><span id="250" class="l"><a href="#250">250: </a>
+</span><span id="251" class="l"><a href="#251">251: </a>    <span class="php-comment">/**
+</span></span><span id="252" class="l"><a href="#252">252: </a><span class="php-comment">     * Get the default schema grammar instance.
+</span></span><span id="253" class="l"><a href="#253">253: </a><span class="php-comment">     *
+</span></span><span id="254" class="l"><a href="#254">254: </a><span class="php-comment">     * @return \Yajra\Oci8\Schema\Grammars\OracleGrammar
+</span></span><span id="255" class="l"><a href="#255">255: </a><span class="php-comment">     */</span>
+</span><span id="256" class="l"><a href="#256">256: </a>    <span class="php-keyword1">protected</span> <span class="php-keyword1">function</span> getDefaultSchemaGrammar()
+</span><span id="257" class="l"><a href="#257">257: </a>    {
+</span><span id="258" class="l"><a href="#258">258: </a>        <span class="php-keyword1">return</span> <span class="php-var">$this</span>-&gt;withTablePrefix(<span class="php-keyword1">new</span> SchemaGrammar);
+</span><span id="259" class="l"><a href="#259">259: </a>    }
+</span><span id="260" class="l"><a href="#260">260: </a>
+</span><span id="261" class="l"><a href="#261">261: </a>    <span class="php-comment">/**
+</span></span><span id="262" class="l"><a href="#262">262: </a><span class="php-comment">     * Get the default post processor instance.
+</span></span><span id="263" class="l"><a href="#263">263: </a><span class="php-comment">     *
+</span></span><span id="264" class="l"><a href="#264">264: </a><span class="php-comment">     * @return \Yajra\Oci8\Query\Processors\OracleProcessor
+</span></span><span id="265" class="l"><a href="#265">265: </a><span class="php-comment">     */</span>
+</span><span id="266" class="l"><a href="#266">266: </a>    <span class="php-keyword1">protected</span> <span class="php-keyword1">function</span> getDefaultPostProcessor()
+</span><span id="267" class="l"><a href="#267">267: </a>    {
+</span><span id="268" class="l"><a href="#268">268: </a>        <span class="php-keyword1">return</span> <span class="php-keyword1">new</span> Processor;
+</span><span id="269" class="l"><a href="#269">269: </a>    }
+</span><span id="270" class="l"><a href="#270">270: </a>}
+</span><span id="271" class="l"><a href="#271">271: </a></span></code></pre>
 
 	<div id="footer">
 		 API documentation generated by <a href="http://apigen.org">ApiGen</a>

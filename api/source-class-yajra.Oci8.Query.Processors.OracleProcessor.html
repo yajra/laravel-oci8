@@ -200,67 +200,70 @@
 </span><span id="56" class="l"><a href="#56"> 56: </a>    {
 </span><span id="57" class="l"><a href="#57"> 57: </a>        <span class="php-var">$count</span> = <span class="php-keyword2">count</span>(<span class="php-var">$values</span>);
 </span><span id="58" class="l"><a href="#58"> 58: </a>        <span class="php-keyword1">for</span> (<span class="php-var">$i</span> = <span class="php-num">0</span>; <span class="php-var">$i</span> &lt; <span class="php-var">$count</span>; <span class="php-var">$i</span>++) {
-</span><span id="59" class="l"><a href="#59"> 59: </a>            <span class="php-var">$type</span> = <span class="php-var">$this</span>-&gt;getPdoType(<span class="php-var">$values</span>[<span class="php-var">$i</span>]);
-</span><span id="60" class="l"><a href="#60"> 60: </a>            <span class="php-var">$statement</span>-&gt;bindParam(<span class="php-var">$parameter</span>, <span class="php-var">$values</span>[<span class="php-var">$i</span>], <span class="php-var">$type</span>);
-</span><span id="61" class="l"><a href="#61"> 61: </a>            <span class="php-var">$parameter</span>++;
-</span><span id="62" class="l"><a href="#62"> 62: </a>        }
-</span><span id="63" class="l"><a href="#63"> 63: </a>
-</span><span id="64" class="l"><a href="#64"> 64: </a>        <span class="php-keyword1">return</span> <span class="php-var">$parameter</span>;
-</span><span id="65" class="l"><a href="#65"> 65: </a>    }
+</span><span id="59" class="l"><a href="#59"> 59: </a>            <span class="php-keyword1">if</span> (<span class="php-keyword2">is_object</span>(<span class="php-var">$values</span>[<span class="php-var">$i</span>])) {
+</span><span id="60" class="l"><a href="#60"> 60: </a>                <span class="php-var">$values</span>[<span class="php-var">$i</span>] = (string) <span class="php-var">$values</span>[<span class="php-var">$i</span>];
+</span><span id="61" class="l"><a href="#61"> 61: </a>            }
+</span><span id="62" class="l"><a href="#62"> 62: </a>            <span class="php-var">$type</span> = <span class="php-var">$this</span>-&gt;getPdoType(<span class="php-var">$values</span>[<span class="php-var">$i</span>]);
+</span><span id="63" class="l"><a href="#63"> 63: </a>            <span class="php-var">$statement</span>-&gt;bindParam(<span class="php-var">$parameter</span>, <span class="php-var">$values</span>[<span class="php-var">$i</span>], <span class="php-var">$type</span>);
+</span><span id="64" class="l"><a href="#64"> 64: </a>            <span class="php-var">$parameter</span>++;
+</span><span id="65" class="l"><a href="#65"> 65: </a>        }
 </span><span id="66" class="l"><a href="#66"> 66: </a>
-</span><span id="67" class="l"><a href="#67"> 67: </a>    <span class="php-comment">/**
-</span></span><span id="68" class="l"><a href="#68"> 68: </a><span class="php-comment">     * Get PDO Type depending on value.
-</span></span><span id="69" class="l"><a href="#69"> 69: </a><span class="php-comment">     *
-</span></span><span id="70" class="l"><a href="#70"> 70: </a><span class="php-comment">     * @param mixed $value
-</span></span><span id="71" class="l"><a href="#71"> 71: </a><span class="php-comment">     * @return int
-</span></span><span id="72" class="l"><a href="#72"> 72: </a><span class="php-comment">     */</span>
-</span><span id="73" class="l"><a href="#73"> 73: </a>    <span class="php-keyword1">private</span> <span class="php-keyword1">function</span> getPdoType(<span class="php-var">$value</span>)
-</span><span id="74" class="l"><a href="#74"> 74: </a>    {
-</span><span id="75" class="l"><a href="#75"> 75: </a>        <span class="php-keyword1">if</span> (<span class="php-keyword2">is_int</span>(<span class="php-var">$value</span>)) {
-</span><span id="76" class="l"><a href="#76"> 76: </a>            <span class="php-keyword1">return</span> PDO::PARAM_INT;
-</span><span id="77" class="l"><a href="#77"> 77: </a>        } <span class="php-keyword1">elseif</span> (<span class="php-keyword2">is_bool</span>(<span class="php-var">$value</span>)) {
-</span><span id="78" class="l"><a href="#78"> 78: </a>            <span class="php-keyword1">return</span> PDO::PARAM_BOOL;
-</span><span id="79" class="l"><a href="#79"> 79: </a>        } <span class="php-keyword1">elseif</span> (<span class="php-keyword2">is_null</span>(<span class="php-var">$value</span>)) {
-</span><span id="80" class="l"><a href="#80"> 80: </a>            <span class="php-keyword1">return</span> PDO::PARAM_NULL;
-</span><span id="81" class="l"><a href="#81"> 81: </a>        } <span class="php-keyword1">else</span> {
-</span><span id="82" class="l"><a href="#82"> 82: </a>            <span class="php-keyword1">return</span> PDO::PARAM_STR;
-</span><span id="83" class="l"><a href="#83"> 83: </a>        }
-</span><span id="84" class="l"><a href="#84"> 84: </a>    }
-</span><span id="85" class="l"><a href="#85"> 85: </a>
-</span><span id="86" class="l"><a href="#86"> 86: </a>    <span class="php-comment">/**
-</span></span><span id="87" class="l"><a href="#87"> 87: </a><span class="php-comment">     * Save Query with Blob returning primary key value.
-</span></span><span id="88" class="l"><a href="#88"> 88: </a><span class="php-comment">     *
-</span></span><span id="89" class="l"><a href="#89"> 89: </a><span class="php-comment">     * @param  Builder $query
-</span></span><span id="90" class="l"><a href="#90"> 90: </a><span class="php-comment">     * @param  string $sql
-</span></span><span id="91" class="l"><a href="#91"> 91: </a><span class="php-comment">     * @param  array $values
-</span></span><span id="92" class="l"><a href="#92"> 92: </a><span class="php-comment">     * @param  array $binaries
-</span></span><span id="93" class="l"><a href="#93"> 93: </a><span class="php-comment">     * @return int
-</span></span><span id="94" class="l"><a href="#94"> 94: </a><span class="php-comment">     */</span>
-</span><span id="95" class="l"><a href="#95"> 95: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> saveLob(Builder <span class="php-var">$query</span>, <span class="php-var">$sql</span>, <span class="php-keyword1">array</span> <span class="php-var">$values</span>, <span class="php-keyword1">array</span> <span class="php-var">$binaries</span>)
-</span><span id="96" class="l"><a href="#96"> 96: </a>    {
-</span><span id="97" class="l"><a href="#97"> 97: </a>        <span class="php-var">$id</span>        = <span class="php-num">0</span>;
-</span><span id="98" class="l"><a href="#98"> 98: </a>        <span class="php-var">$parameter</span> = <span class="php-num">0</span>;
-</span><span id="99" class="l"><a href="#99"> 99: </a>        <span class="php-var">$statement</span> = <span class="php-var">$this</span>-&gt;prepareStatement(<span class="php-var">$query</span>, <span class="php-var">$sql</span>);
-</span><span id="100" class="l"><a href="#100">100: </a>
-</span><span id="101" class="l"><a href="#101">101: </a>        <span class="php-var">$parameter</span> = <span class="php-var">$this</span>-&gt;bindValues(<span class="php-var">$values</span>, <span class="php-var">$statement</span>, <span class="php-var">$parameter</span>);
-</span><span id="102" class="l"><a href="#102">102: </a>
-</span><span id="103" class="l"><a href="#103">103: </a>        <span class="php-var">$countBinary</span> = <span class="php-keyword2">count</span>(<span class="php-var">$binaries</span>);
-</span><span id="104" class="l"><a href="#104">104: </a>        <span class="php-keyword1">for</span> (<span class="php-var">$i</span> = <span class="php-num">0</span>; <span class="php-var">$i</span> &lt; <span class="php-var">$countBinary</span>; <span class="php-var">$i</span>++) {
-</span><span id="105" class="l"><a href="#105">105: </a>            <span class="php-var">$statement</span>-&gt;bindParam(<span class="php-var">$parameter</span>, <span class="php-var">$binaries</span>[<span class="php-var">$i</span>], PDO::PARAM_LOB, -<span class="php-num">1</span>);
-</span><span id="106" class="l"><a href="#106">106: </a>            <span class="php-var">$parameter</span>++;
-</span><span id="107" class="l"><a href="#107">107: </a>        }
-</span><span id="108" class="l"><a href="#108">108: </a>
-</span><span id="109" class="l"><a href="#109">109: </a>        <span class="php-comment">// bind output param for the returning clause.</span>
-</span><span id="110" class="l"><a href="#110">110: </a>        <span class="php-var">$statement</span>-&gt;bindParam(<span class="php-var">$parameter</span>, <span class="php-var">$id</span>, PDO::PARAM_INT, <span class="php-num">10</span>);
+</span><span id="67" class="l"><a href="#67"> 67: </a>        <span class="php-keyword1">return</span> <span class="php-var">$parameter</span>;
+</span><span id="68" class="l"><a href="#68"> 68: </a>    }
+</span><span id="69" class="l"><a href="#69"> 69: </a>
+</span><span id="70" class="l"><a href="#70"> 70: </a>    <span class="php-comment">/**
+</span></span><span id="71" class="l"><a href="#71"> 71: </a><span class="php-comment">     * Get PDO Type depending on value.
+</span></span><span id="72" class="l"><a href="#72"> 72: </a><span class="php-comment">     *
+</span></span><span id="73" class="l"><a href="#73"> 73: </a><span class="php-comment">     * @param mixed $value
+</span></span><span id="74" class="l"><a href="#74"> 74: </a><span class="php-comment">     * @return int
+</span></span><span id="75" class="l"><a href="#75"> 75: </a><span class="php-comment">     */</span>
+</span><span id="76" class="l"><a href="#76"> 76: </a>    <span class="php-keyword1">private</span> <span class="php-keyword1">function</span> getPdoType(<span class="php-var">$value</span>)
+</span><span id="77" class="l"><a href="#77"> 77: </a>    {
+</span><span id="78" class="l"><a href="#78"> 78: </a>        <span class="php-keyword1">if</span> (<span class="php-keyword2">is_int</span>(<span class="php-var">$value</span>)) {
+</span><span id="79" class="l"><a href="#79"> 79: </a>            <span class="php-keyword1">return</span> PDO::PARAM_INT;
+</span><span id="80" class="l"><a href="#80"> 80: </a>        } <span class="php-keyword1">elseif</span> (<span class="php-keyword2">is_bool</span>(<span class="php-var">$value</span>)) {
+</span><span id="81" class="l"><a href="#81"> 81: </a>            <span class="php-keyword1">return</span> PDO::PARAM_BOOL;
+</span><span id="82" class="l"><a href="#82"> 82: </a>        } <span class="php-keyword1">elseif</span> (<span class="php-keyword2">is_null</span>(<span class="php-var">$value</span>)) {
+</span><span id="83" class="l"><a href="#83"> 83: </a>            <span class="php-keyword1">return</span> PDO::PARAM_NULL;
+</span><span id="84" class="l"><a href="#84"> 84: </a>        } <span class="php-keyword1">else</span> {
+</span><span id="85" class="l"><a href="#85"> 85: </a>            <span class="php-keyword1">return</span> PDO::PARAM_STR;
+</span><span id="86" class="l"><a href="#86"> 86: </a>        }
+</span><span id="87" class="l"><a href="#87"> 87: </a>    }
+</span><span id="88" class="l"><a href="#88"> 88: </a>
+</span><span id="89" class="l"><a href="#89"> 89: </a>    <span class="php-comment">/**
+</span></span><span id="90" class="l"><a href="#90"> 90: </a><span class="php-comment">     * Save Query with Blob returning primary key value.
+</span></span><span id="91" class="l"><a href="#91"> 91: </a><span class="php-comment">     *
+</span></span><span id="92" class="l"><a href="#92"> 92: </a><span class="php-comment">     * @param  Builder $query
+</span></span><span id="93" class="l"><a href="#93"> 93: </a><span class="php-comment">     * @param  string $sql
+</span></span><span id="94" class="l"><a href="#94"> 94: </a><span class="php-comment">     * @param  array $values
+</span></span><span id="95" class="l"><a href="#95"> 95: </a><span class="php-comment">     * @param  array $binaries
+</span></span><span id="96" class="l"><a href="#96"> 96: </a><span class="php-comment">     * @return int
+</span></span><span id="97" class="l"><a href="#97"> 97: </a><span class="php-comment">     */</span>
+</span><span id="98" class="l"><a href="#98"> 98: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> saveLob(Builder <span class="php-var">$query</span>, <span class="php-var">$sql</span>, <span class="php-keyword1">array</span> <span class="php-var">$values</span>, <span class="php-keyword1">array</span> <span class="php-var">$binaries</span>)
+</span><span id="99" class="l"><a href="#99"> 99: </a>    {
+</span><span id="100" class="l"><a href="#100">100: </a>        <span class="php-var">$id</span>        = <span class="php-num">0</span>;
+</span><span id="101" class="l"><a href="#101">101: </a>        <span class="php-var">$parameter</span> = <span class="php-num">0</span>;
+</span><span id="102" class="l"><a href="#102">102: </a>        <span class="php-var">$statement</span> = <span class="php-var">$this</span>-&gt;prepareStatement(<span class="php-var">$query</span>, <span class="php-var">$sql</span>);
+</span><span id="103" class="l"><a href="#103">103: </a>
+</span><span id="104" class="l"><a href="#104">104: </a>        <span class="php-var">$parameter</span> = <span class="php-var">$this</span>-&gt;bindValues(<span class="php-var">$values</span>, <span class="php-var">$statement</span>, <span class="php-var">$parameter</span>);
+</span><span id="105" class="l"><a href="#105">105: </a>
+</span><span id="106" class="l"><a href="#106">106: </a>        <span class="php-var">$countBinary</span> = <span class="php-keyword2">count</span>(<span class="php-var">$binaries</span>);
+</span><span id="107" class="l"><a href="#107">107: </a>        <span class="php-keyword1">for</span> (<span class="php-var">$i</span> = <span class="php-num">0</span>; <span class="php-var">$i</span> &lt; <span class="php-var">$countBinary</span>; <span class="php-var">$i</span>++) {
+</span><span id="108" class="l"><a href="#108">108: </a>            <span class="php-var">$statement</span>-&gt;bindParam(<span class="php-var">$parameter</span>, <span class="php-var">$binaries</span>[<span class="php-var">$i</span>], PDO::PARAM_LOB, -<span class="php-num">1</span>);
+</span><span id="109" class="l"><a href="#109">109: </a>            <span class="php-var">$parameter</span>++;
+</span><span id="110" class="l"><a href="#110">110: </a>        }
 </span><span id="111" class="l"><a href="#111">111: </a>
-</span><span id="112" class="l"><a href="#112">112: </a>        <span class="php-keyword1">if</span> (! <span class="php-var">$statement</span>-&gt;execute()) {
-</span><span id="113" class="l"><a href="#113">113: </a>            <span class="php-keyword1">return</span> <span class="php-keyword1">false</span>;
-</span><span id="114" class="l"><a href="#114">114: </a>        }
-</span><span id="115" class="l"><a href="#115">115: </a>
-</span><span id="116" class="l"><a href="#116">116: </a>        <span class="php-keyword1">return</span> (int) <span class="php-var">$id</span>;
-</span><span id="117" class="l"><a href="#117">117: </a>    }
-</span><span id="118" class="l"><a href="#118">118: </a>}
-</span><span id="119" class="l"><a href="#119">119: </a></span></code></pre>
+</span><span id="112" class="l"><a href="#112">112: </a>        <span class="php-comment">// bind output param for the returning clause.</span>
+</span><span id="113" class="l"><a href="#113">113: </a>        <span class="php-var">$statement</span>-&gt;bindParam(<span class="php-var">$parameter</span>, <span class="php-var">$id</span>, PDO::PARAM_INT, <span class="php-num">10</span>);
+</span><span id="114" class="l"><a href="#114">114: </a>
+</span><span id="115" class="l"><a href="#115">115: </a>        <span class="php-keyword1">if</span> (! <span class="php-var">$statement</span>-&gt;execute()) {
+</span><span id="116" class="l"><a href="#116">116: </a>            <span class="php-keyword1">return</span> <span class="php-keyword1">false</span>;
+</span><span id="117" class="l"><a href="#117">117: </a>        }
+</span><span id="118" class="l"><a href="#118">118: </a>
+</span><span id="119" class="l"><a href="#119">119: </a>        <span class="php-keyword1">return</span> (int) <span class="php-var">$id</span>;
+</span><span id="120" class="l"><a href="#120">120: </a>    }
+</span><span id="121" class="l"><a href="#121">121: </a>}
+</span><span id="122" class="l"><a href="#122">122: </a></span></code></pre>
 
 	<div id="footer">
 		 API documentation generated by <a href="http://apigen.org">ApiGen</a>

@@ -155,7 +155,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 		<b>Namespace:</b> <a href="namespace-Yajra.html">Yajra</a>\<a href="namespace-Yajra.Oci8.html">Oci8</a>\<a href="namespace-Yajra.Oci8.Schema.html">Schema</a>\<a href="namespace-Yajra.Oci8.Schema.Grammars.html">Grammars</a><br>
 		
 
-			<b>Located at</b> <a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#11-693" title="Go to source code">Oci8/Schema/Grammars/OracleGrammar.php</a>
+			<b>Located at</b> <a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#11-729" title="Go to source code">Oci8/Schema/Grammars/OracleGrammar.php</a>
 		<br>
 	</div>
 
@@ -175,7 +175,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileCreate">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#36-62" title="Go to source code">compileCreate</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#41-67" title="Go to source code">compileCreate</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a create table command.</p>
@@ -204,6 +204,114 @@ Illuminate\Database\Schema\Grammars\Grammar
 		</div>
 		</div></td>
 	</tr>
+	<tr data-order="wrapTable" id="_wrapTable">
+
+		<td class="attributes"><code>
+			 public 
+
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_wrapTable">#</a>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#69-78" title="Go to source code">wrapTable</a>( <span>mixed <var>$table</var></span> )</code>
+
+		<div class="description short">
+			<p>Wrap a table in keyword identifiers.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Wrap a table in keyword identifiers.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$table</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					string
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getSchemaPrefix" id="_getSchemaPrefix">
+
+		<td class="attributes"><code>
+			 public 
+
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getSchemaPrefix">#</a>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#80-88" title="Go to source code">getSchemaPrefix</a>( )</code>
+
+		<div class="description short">
+			<p>Return the schema prefix</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Return the schema prefix</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					string
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="setSchemaPrefix" id="_setSchemaPrefix">
+
+		<td class="attributes"><code>
+			 public 
+
+			
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_setSchemaPrefix">#</a>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#90-98" title="Go to source code">setSchemaPrefix</a>( <span>string <var>$prefix</var></span> )</code>
+
+		<div class="description short">
+			<p>Set the shema prefix</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Set the shema prefix</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$prefix</var></dt>
+					<dd></dd>
+				</dl></div>
+
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
 	<tr data-order="addForeignKeys" id="_addForeignKeys">
 
 		<td class="attributes"><code>
@@ -216,7 +324,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_addForeignKeys">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#64-97" title="Go to source code">addForeignKeys</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#100-133" title="Go to source code">addForeignKeys</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span> )</code>
 
 		<div class="description short">
 			<p>Get the foreign key syntax for a table creation statement.</p>
@@ -255,7 +363,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_addPrimaryKeys">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#99-116" title="Go to source code">addPrimaryKeys</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#135-152" title="Go to source code">addPrimaryKeys</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span> )</code>
 
 		<div class="description short">
 			<p>Get the primary key syntax for a table creation statement.</p>
@@ -294,7 +402,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileTableExists">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#118-126" title="Go to source code">compileTableExists</a>( )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#154-162" title="Go to source code">compileTableExists</a>( )</code>
 
 		<div class="description short">
 			<p>Compile the query to determine if a table exists.</p>
@@ -328,7 +436,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileColumnExists">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#128-136" title="Go to source code">compileColumnExists</a>( )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#164-172" title="Go to source code">compileColumnExists</a>( <span> <var>$table</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile the query to determine the list of columns.</p>
@@ -362,7 +470,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileAdd">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#138-154" title="Go to source code">compileAdd</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#174-190" title="Go to source code">compileAdd</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile an add column command.</p>
@@ -403,7 +511,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compilePrimary">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#156-174" title="Go to source code">compilePrimary</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#192-210" title="Go to source code">compilePrimary</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a primary key command.</p>
@@ -444,7 +552,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileForeign">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#176-212" title="Go to source code">compileForeign</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#212-248" title="Go to source code">compileForeign</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a foreign key command.</p>
@@ -485,7 +593,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileUnique">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#214-224" title="Go to source code">compileUnique</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#250-260" title="Go to source code">compileUnique</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a unique key command.</p>
@@ -526,7 +634,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileIndex">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#226-236" title="Go to source code">compileIndex</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#262-272" title="Go to source code">compileIndex</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a plain index key command.</p>
@@ -567,7 +675,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDrop">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#238-248" title="Go to source code">compileDrop</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#274-284" title="Go to source code">compileDrop</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop table command.</p>
@@ -608,7 +716,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDropIfExists">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#250-268" title="Go to source code">compileDropIfExists</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#286-304" title="Go to source code">compileDropIfExists</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop table (if exists) command.</p>
@@ -649,7 +757,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDropColumn">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#270-284" title="Go to source code">compileDropColumn</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#306-320" title="Go to source code">compileDropColumn</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop column command.</p>
@@ -690,7 +798,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDropPrimary">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#286-296" title="Go to source code">compileDropPrimary</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#322-332" title="Go to source code">compileDropPrimary</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop primary key command.</p>
@@ -731,7 +839,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDropUnique">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#316-326" title="Go to source code">compileDropUnique</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#352-362" title="Go to source code">compileDropUnique</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop unique key command.</p>
@@ -772,7 +880,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDropIndex">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#328-338" title="Go to source code">compileDropIndex</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#364-374" title="Go to source code">compileDropIndex</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop index command.</p>
@@ -813,7 +921,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileDropForeign">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#340-350" title="Go to source code">compileDropForeign</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#376-386" title="Go to source code">compileDropForeign</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a drop foreign key command.</p>
@@ -854,7 +962,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileRename">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#352-364" title="Go to source code">compileRename</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#388-400" title="Go to source code">compileRename</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a rename table command.</p>
@@ -895,7 +1003,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileRenameColumn">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#366-382" title="Go to source code">compileRenameColumn</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span>, <span>Illuminate\Database\Connection <var>$connection</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#402-418" title="Go to source code">compileRenameColumn</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$command</var></span>, <span>Illuminate\Database\Connection <var>$connection</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a rename column command.</p>
@@ -938,7 +1046,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeChar">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#384-393" title="Go to source code">typeChar</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#420-429" title="Go to source code">typeChar</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a char type.</p>
@@ -977,7 +1085,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeString">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#395-404" title="Go to source code">typeString</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#431-440" title="Go to source code">typeString</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a string type.</p>
@@ -1016,7 +1124,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeText">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#406-415" title="Go to source code">typeText</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#442-451" title="Go to source code">typeText</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a text type.</p>
@@ -1055,7 +1163,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeMediumText">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#417-426" title="Go to source code">typeMediumText</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#453-462" title="Go to source code">typeMediumText</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a medium text type.</p>
@@ -1094,7 +1202,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeLongText">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#428-437" title="Go to source code">typeLongText</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#464-473" title="Go to source code">typeLongText</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a long text type.</p>
@@ -1133,7 +1241,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeInteger">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#439-450" title="Go to source code">typeInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#475-486" title="Go to source code">typeInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a integer type.</p>
@@ -1172,7 +1280,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeBigInteger">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#452-463" title="Go to source code">typeBigInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#488-499" title="Go to source code">typeBigInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a integer type.</p>
@@ -1211,7 +1319,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeMediumInteger">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#465-476" title="Go to source code">typeMediumInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#501-512" title="Go to source code">typeMediumInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a medium integer type.</p>
@@ -1250,7 +1358,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeSmallInteger">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#478-489" title="Go to source code">typeSmallInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#514-525" title="Go to source code">typeSmallInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a small integer type.</p>
@@ -1289,7 +1397,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeTinyInteger">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#491-502" title="Go to source code">typeTinyInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#527-538" title="Go to source code">typeTinyInteger</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a tiny integer type.</p>
@@ -1328,7 +1436,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeFloat">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#504-513" title="Go to source code">typeFloat</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#540-549" title="Go to source code">typeFloat</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a float type.</p>
@@ -1367,7 +1475,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeDouble">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#515-524" title="Go to source code">typeDouble</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#551-560" title="Go to source code">typeDouble</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a double type.</p>
@@ -1406,7 +1514,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeDecimal">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#526-535" title="Go to source code">typeDecimal</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#562-571" title="Go to source code">typeDecimal</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a decimal type.</p>
@@ -1445,7 +1553,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeBoolean">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#537-546" title="Go to source code">typeBoolean</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#573-582" title="Go to source code">typeBoolean</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a boolean type.</p>
@@ -1484,7 +1592,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeEnum">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#548-559" title="Go to source code">typeEnum</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#584-595" title="Go to source code">typeEnum</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a enum type.</p>
@@ -1523,7 +1631,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeDate">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#561-570" title="Go to source code">typeDate</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#597-606" title="Go to source code">typeDate</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a date type.</p>
@@ -1562,7 +1670,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeDateTime">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#572-581" title="Go to source code">typeDateTime</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#608-617" title="Go to source code">typeDateTime</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a date-time type.</p>
@@ -1601,7 +1709,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeTime">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#583-592" title="Go to source code">typeTime</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#619-628" title="Go to source code">typeTime</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a time type.</p>
@@ -1640,7 +1748,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeTimestamp">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#594-603" title="Go to source code">typeTimestamp</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#630-639" title="Go to source code">typeTimestamp</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a timestamp type.</p>
@@ -1679,7 +1787,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeTimestampTz">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#605-614" title="Go to source code">typeTimestampTz</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#641-650" title="Go to source code">typeTimestampTz</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a timestamp type with timezone.</p>
@@ -1718,7 +1826,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_typeBinary">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#616-625" title="Go to source code">typeBinary</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#652-661" title="Go to source code">typeBinary</a>( <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Create the column definition for a binary type.</p>
@@ -1757,7 +1865,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_modifyNullable">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#627-650" title="Go to source code">modifyNullable</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#663-686" title="Go to source code">modifyNullable</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Get the SQL for a nullable column modifier.</p>
@@ -1798,7 +1906,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_modifyDefault">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#652-663" title="Go to source code">modifyDefault</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#688-699" title="Go to source code">modifyDefault</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Get the SQL for a default column modifier.</p>
@@ -1839,7 +1947,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_modifyIncrement">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#665-677" title="Go to source code">modifyIncrement</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#701-713" title="Go to source code">modifyIncrement</a>( <span>Illuminate\Database\Schema\Blueprint <var>$blueprint</var></span>, <span>Illuminate\Support\Fluent <var>$column</var></span> )</code>
 
 		<div class="description short">
 			<p>Get the SQL for an auto-increment column modifier.</p>
@@ -1880,7 +1988,7 @@ Illuminate\Database\Schema\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_wrapValue">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#679-692" title="Go to source code">wrapValue</a>( <span>string <var>$value</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#715-728" title="Go to source code">wrapValue</a>( <span>string <var>$value</var></span> )</code>
 
 		<div class="description short">
 			<p>Wrap a single string in keyword identifiers.</p>
@@ -2002,6 +2110,31 @@ Illuminate\Database\Schema\Grammars\Grammar
 			<div>
 				<a href="#$serials" class="anchor">#</a>
 				<code>[<span class="php-quote">'bigInteger'</span>, <span class="php-quote">'integer'</span>, <span class="php-quote">'mediumInteger'</span>, <span class="php-quote">'smallInteger'</span>, <span class="php-quote">'tinyInteger'</span>]</code>
+			</div>
+		</td>
+	</tr>
+	<tr data-order="schema_prefix" id="$schema_prefix">
+		<td class="attributes"><code>
+			protected  
+			string
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html#36-39" title="Go to source code"><var>$schema_prefix</var></a>
+
+			<div class="description short">
+				
+			</div>
+
+			<div class="description detailed hidden">
+				
+
+			</div>
+		</td>
+		<td class="value">
+			<div>
+				<a href="#$schema_prefix" class="anchor">#</a>
+				<code><span class="php-quote">''</span></code>
 			</div>
 		</td>
 	</tr>
