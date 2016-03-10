@@ -47,17 +47,18 @@ This will copy the configuration file to `config/oracle.php`.
 > Note: For [Laravel Lumen configuration](http://lumen.laravel.com/docs/configuration#configuration-files), make sure you have a `config/database.php` file on your project and append the configuration below:
 
 ```php
-'oracle' => array(
-    'driver'   => 'oracle',
-    'tns'      => env('DB_TNS', ''),
-    'host'     => env('DB_HOST', ''),
-    'port'     => env('DB_PORT', '1521'),
-    'database' => env('DB_DATABASE', ''),
-    'username' => env('DB_USERNAME', ''),
-    'password' => env('DB_PASSWORD', ''),
-    'charset'  => env('DB_CHARSET', 'AL32UTF8'),
-    'prefix'   => env('DB_PREFIX', ''),
-)
+'oracle' => [
+    'driver'        => 'oracle',
+    'tns'           => env('DB_TNS', ''),
+    'host'          => env('DB_HOST', ''),
+    'port'          => env('DB_PORT', '1521'),
+    'database'      => env('DB_DATABASE', ''),
+    'username'      => env('DB_USERNAME', ''),
+    'password'      => env('DB_PASSWORD', ''),
+    'charset'       => env('DB_CHARSET', 'AL32UTF8'),
+    'prefix'        => env('DB_PREFIX', ''),
+    'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
+],
 ```
 
 And run your laravel installation...
