@@ -158,7 +158,11 @@ class OracleGrammar extends Grammar
             $sequence = 'id';
         }
 
-        $values[$sequence] = null;
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[3]['object'];
+
+        if (method_exists($backtrace, 'getModel')) {
+            $values[$sequence] = null;
+        }
 
         return $this->compileInsert($query, $values) . ' returning ' . $this->wrap($sequence) . ' into ?';
     }
