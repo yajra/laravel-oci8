@@ -158,6 +158,8 @@ class OracleGrammar extends Grammar
             $sequence = 'id';
         }
 
+        $values[$sequence] = null;
+
         return $this->compileInsert($query, $values) . ' returning ' . $this->wrap($sequence) . ' into ?';
     }
 

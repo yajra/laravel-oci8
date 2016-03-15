@@ -23,6 +23,15 @@ class OracleProcessor extends Processor
         $parameter = 0;
         $statement = $this->prepareStatement($query, $sql);
 
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[3]['object'];
+
+        if (method_exists($backtrace, 'getModel')) {
+            $model = $backtrace->getModel();
+            if($model->sequence && !isset($values[$model->getKeyName()]) && $model->incrementing) {
+                $values[] = $model->getConnection()->getSequence()->nextValue($model->sequence);
+            }
+        }
+
         $parameter = $this->bindValues($values, $statement, $parameter);
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
         $statement->execute();
