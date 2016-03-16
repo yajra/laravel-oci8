@@ -12,9 +12,9 @@ class OracleProcessor extends Processor
      * Process an "insert get ID" query.
      *
      * @param  Builder $query
-     * @param  string $sql
-     * @param  array $values
-     * @param  string $sequence
+     * @param  string  $sql
+     * @param  array   $values
+     * @param  string  $sequence
      * @return int
      */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
@@ -24,8 +24,27 @@ class OracleProcessor extends Processor
 
         $statement = $this->prepareStatement($query, $sql);
 
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[3]['object'];
-        $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[2]['args'];
+        $values = $this->incrementBySequence($values, $sequence);
+
+        $parameter = $this->bindValues($values, $statement, $parameter);
+
+        $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
+        $statement->execute();
+
+        return (int) $id;
+    }
+
+    /**
+     * Insert a new record and get the value of the primary key.
+     *
+     * @param array $values
+     * @param string $sequence
+     * @return array
+     */
+    protected function incrementBySequence(array $values, $sequence)
+    {
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[4]['object'];
+        $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['args'];
 
         if (! isset($builder[1][0][$sequence])) {
             if (method_exists($backtrace, 'getModel')) {
@@ -36,11 +55,7 @@ class OracleProcessor extends Processor
             }
         }
 
-        $parameter = $this->bindValues($values, $statement, $parameter);
-        $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
-        $statement->execute();
-
-        return (int) $id;
+        return $values;
     }
 
     /**
