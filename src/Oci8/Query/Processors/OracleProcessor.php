@@ -21,14 +21,18 @@ class OracleProcessor extends Processor
     {
         $id        = 0;
         $parameter = 0;
+
         $statement = $this->prepareStatement($query, $sql);
 
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[3]['object'];
+        $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[2]['args'];
 
-        if (method_exists($backtrace, 'getModel')) {
-            $model = $backtrace->getModel();
-            if($model->sequence && !isset($values[$model->getKeyName()]) && $model->incrementing) {
-                $values[] = $model->getConnection()->getSequence()->nextValue($model->sequence);
+        if (! isset($builder[1][0][$sequence])) {
+            if (method_exists($backtrace, 'getModel')) {
+                $model = $backtrace->getModel();
+                if ($model->sequence && $model->incrementing) {
+                    $values[] = (int)$model->getConnection()->getSequence()->nextValue($model->sequence);
+                }
             }
         }
 
