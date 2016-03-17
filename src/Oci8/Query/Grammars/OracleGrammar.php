@@ -357,7 +357,7 @@ class OracleGrammar extends Grammar
         // intended records are updated by the SQL statements we generate to run.
         $where = $this->compileWheres($query);
 
-        return trim("update  ".$this->getSchemaPrefix()."{$table}{$joins} set $columns $where");
+        return trim("update ".$this->getSchemaPrefix()."{$table}{$joins} set $columns $where");
     }
 
     /**
