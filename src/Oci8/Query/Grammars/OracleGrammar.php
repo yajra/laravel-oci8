@@ -304,6 +304,23 @@ class OracleGrammar extends Grammar
     }
 
 
+
+    /**
+     * Compile a delete statement into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return string
+     */
+    public function compileDelete(Builder $query)
+    {
+        $table = $this->wrapTable($query->from);
+
+        $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
+
+        return trim("delete from ".$this->getSchemaPrefix()."$table ".$where);
+    }
+
+
     /**
      * Compile an update statement into SQL.
      *
