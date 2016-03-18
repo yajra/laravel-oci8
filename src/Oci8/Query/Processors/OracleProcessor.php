@@ -12,26 +12,36 @@ class OracleProcessor extends Processor
      * Process an "insert get ID" query.
      *
      * @param  Builder $query
-     * @param  string  $sql
-     * @param  array   $values
-     * @param  string  $sequence
+     * @param  string $sql
+     * @param  array $values
+     * @param  string $sequence
      * @return int
      */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
         $id        = 0;
         $parameter = 0;
-
         $statement = $this->prepareStatement($query, $sql);
-
-        $values = $this->incrementBySequence($values, $sequence);
-
+        $values    = $this->incrementBySequence($values, $sequence);
         $parameter = $this->bindValues($values, $statement, $parameter);
-
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
         $statement->execute();
 
         return (int) $id;
+    }
+
+    /**
+     * Get prepared statement.
+     *
+     * @param Builder $query
+     * @param string $sql
+     * @return \PDOStatement|\Yajra\Pdo\Oci8
+     */
+    private function prepareStatement(Builder $query, $sql)
+    {
+        $pdo = $query->getConnection()->getPdo();
+
+        return $pdo->prepare($sql);
     }
 
     /**
@@ -43,33 +53,19 @@ class OracleProcessor extends Processor
      */
     protected function incrementBySequence(array $values, $sequence)
     {
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[4]['object'];
-        $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['args'];
+        $builder     = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[4]['object'];
+        $builderArgs = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['args'];
 
-        if (! isset($builder[1][0][$sequence])) {
-            if (method_exists($backtrace, 'getModel')) {
-                $model = $backtrace->getModel();
+        if (! isset($builderArgs[1][0][$sequence])) {
+            if (method_exists($builder, 'getModel')) {
+                $model = $builder->getModel();
                 if ($model->sequence && $model->incrementing) {
-                    $values[] = (int)$model->getConnection()->getSequence()->nextValue($model->sequence);
+                    $values[] = (int) $model->getConnection()->getSequence()->nextValue($model->sequence);
                 }
             }
         }
 
         return $values;
-    }
-
-    /**
-     * Get prepared statement.
-     *
-     * @param Builder $query
-     * @param string $sql
-     * @return \PDOStatement | \Yajra\Pdo\Oci8
-     */
-    private function prepareStatement(Builder $query, $sql)
-    {
-        $pdo = $query->getConnection()->getPdo();
-
-        return $pdo->prepare($sql);
     }
 
     /**
