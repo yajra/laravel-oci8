@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.2 - 2016-03-18
+- Auto increment primary key using custom sequence without trigger.
+- PR #156. Credits to @ChaosPower.
+
 #v5.2.1 - 2016-03-09
 - Implement schema prefix option.
 - PR #154, credits to @mfrancois.
