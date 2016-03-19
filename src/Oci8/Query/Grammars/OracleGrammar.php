@@ -33,7 +33,7 @@ class OracleGrammar extends Grammar
         $q          = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
-            ->whereRaw("rownum = 1");
+          ->whereRaw("rownum = 1");
 
         return $this->compileSelect($q);
     }
@@ -209,7 +209,7 @@ class OracleGrammar extends Grammar
         }
         $parameters = implode(', ', $value);
 
-        return "insert into ".$this->getSchemaPrefix()."$table ($columns) values $parameters";
+        return "insert into " . $this->getSchemaPrefix() . "$table ($columns) values $parameters";
     }
 
     /**
@@ -250,7 +250,7 @@ class OracleGrammar extends Grammar
         $value      = array_merge($value, $binaryValue);
         $parameters = implode(', ', array_filter($value));
 
-        return "insert into ".$this->getSchemaPrefix()."$table ($columns) values ($parameters) returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
+        return "insert into " . $this->getSchemaPrefix() . "$table ($columns) values ($parameters) returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
     }
 
     /**
@@ -309,15 +309,13 @@ class OracleGrammar extends Grammar
         // intended records are updated by the SQL statements we generate to run.
         $where = $this->compileWheres($query);
 
-        return "update ".$this->getSchemaPrefix()."{$table}{$joins} set $columns$binarySql $where returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
+        return "update " . $this->getSchemaPrefix() . "{$table}{$joins} set $columns$binarySql $where returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
     }
-
-
 
     /**
      * Compile a delete statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  \Illuminate\Database\Query\Builder $query
      * @return string
      */
     public function compileDelete(Builder $query)
@@ -326,15 +324,14 @@ class OracleGrammar extends Grammar
 
         $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
 
-        return trim("delete from ".$this->getSchemaPrefix()."$table ".$where);
+        return trim("delete from " . $this->getSchemaPrefix() . "$table " . $where);
     }
-
 
     /**
      * Compile an update statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $values
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $values
      * @return string
      */
     public function compileUpdate(Builder $query, $values)
@@ -347,7 +344,7 @@ class OracleGrammar extends Grammar
         $columns = [];
 
         foreach ($values as $key => $value) {
-            $columns[] = $this->wrap($key).' = '.$this->parameter($value);
+            $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
         }
 
         $columns = implode(', ', $columns);
@@ -356,7 +353,7 @@ class OracleGrammar extends Grammar
         // and compile them so we can attach them to this update, as update queries
         // can get join statements to attach to other tables when they're needed.
         if (isset($query->joins)) {
-            $joins = ' '.$this->compileJoins($query, $query->joins);
+            $joins = ' ' . $this->compileJoins($query, $query->joins);
         } else {
             $joins = '';
         }
@@ -366,7 +363,7 @@ class OracleGrammar extends Grammar
         // intended records are updated by the SQL statements we generate to run.
         $where = $this->compileWheres($query);
 
-        return trim("update ".$this->getSchemaPrefix()."{$table}{$joins} set $columns $where");
+        return trim("update " . $this->getSchemaPrefix() . "{$table}{$joins} set $columns $where");
     }
 
     /**
