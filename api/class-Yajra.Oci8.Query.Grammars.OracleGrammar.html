@@ -155,7 +155,7 @@ Illuminate\Database\Query\Grammars\Grammar
 		<b>Namespace:</b> <a href="namespace-Yajra.html">Yajra</a>\<a href="namespace-Yajra.Oci8.html">Oci8</a>\<a href="namespace-Yajra.Oci8.Query.html">Query</a>\<a href="namespace-Yajra.Oci8.Query.Grammars.html">Grammars</a><br>
 		
 
-			<b>Located at</b> <a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#9-443" title="Go to source code">Oci8/Query/Grammars/OracleGrammar.php</a>
+			<b>Located at</b> <a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#9-506" title="Go to source code">Oci8/Query/Grammars/OracleGrammar.php</a>
 		<br>
 	</div>
 
@@ -456,7 +456,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileInsertGetId">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#147-162" title="Go to source code">compileInsertGetId</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span>, <span>string <var>$sequence</var> = <span class="php-quote">'id'</span></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#147-171" title="Go to source code">compileInsertGetId</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span>, <span>string <var>$sequence</var> = <span class="php-quote">'id'</span></span> )</code>
 
 		<div class="description short">
 			<p>Compile an insert and get ID statement into SQL.</p>
@@ -499,7 +499,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileInsert">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#164-204" title="Go to source code">compileInsert</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#173-213" title="Go to source code">compileInsert</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile an insert statement into SQL.</p>
@@ -540,7 +540,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileInsertLob">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#206-245" title="Go to source code">compileInsertLob</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span>, <span>array <var>$binaries</var></span>, <span>string <var>$sequence</var> = <span class="php-quote">'id'</span></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#215-254" title="Go to source code">compileInsertLob</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span>, <span>array <var>$binaries</var></span>, <span>string <var>$sequence</var> = <span class="php-quote">'id'</span></span> )</code>
 
 		<div class="description short">
 			<p>Compile an insert with blob field statement into SQL.</p>
@@ -585,7 +585,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileUpdateLob">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#247-304" title="Go to source code">compileUpdateLob</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span>, <span>array <var>$binaries</var></span>, <span>string <var>$sequence</var> = <span class="php-quote">'id'</span></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#256-313" title="Go to source code">compileUpdateLob</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span>, <span>array <var>$binaries</var></span>, <span>string <var>$sequence</var> = <span class="php-quote">'id'</span></span> )</code>
 
 		<div class="description short">
 			<p>Compile an update statement into SQL.</p>
@@ -618,6 +618,86 @@ Illuminate\Database\Query\Grammars\Grammar
 		</div>
 		</div></td>
 	</tr>
+	<tr data-order="compileDelete" id="_compileDelete">
+
+		<td class="attributes"><code>
+			 public 
+
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_compileDelete">#</a>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#315-328" title="Go to source code">compileDelete</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span> )</code>
+
+		<div class="description short">
+			<p>Compile a delete statement into SQL.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Compile a delete statement into SQL.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$query</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					string
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="compileUpdate" id="_compileUpdate">
+
+		<td class="attributes"><code>
+			 public 
+
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_compileUpdate">#</a>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#330-367" title="Go to source code">compileUpdate</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$values</var></span> )</code>
+
+		<div class="description short">
+			<p>Compile an update statement into SQL.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Compile an update statement into SQL.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$query</var></dt>
+					<dd></dd>
+					<dt><var>$values</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					string
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
 	<tr data-order="compileLock" id="_compileLock">
 
 		<td class="attributes"><code>
@@ -630,7 +710,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileLock">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#306-324" title="Go to source code">compileLock</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>boolean|string <var>$value</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#369-387" title="Go to source code">compileLock</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>boolean|string <var>$value</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile the lock into SQL.</p>
@@ -671,7 +751,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileLimit">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#326-336" title="Go to source code">compileLimit</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>integer <var>$limit</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#389-399" title="Go to source code">compileLimit</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>integer <var>$limit</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile the "limit" portions of the query.</p>
@@ -712,7 +792,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileOffset">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#338-348" title="Go to source code">compileOffset</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>integer <var>$offset</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#401-411" title="Go to source code">compileOffset</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>integer <var>$offset</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile the "offset" portions of the query.</p>
@@ -753,7 +833,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_whereDate">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#350-362" title="Go to source code">whereDate</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$where</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#413-425" title="Go to source code">whereDate</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$where</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a "where date" clause.</p>
@@ -794,7 +874,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_dateBasedWhere">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#364-377" title="Go to source code">dateBasedWhere</a>( <span>string <var>$type</var></span>, <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$where</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#427-440" title="Go to source code">dateBasedWhere</a>( <span>string <var>$type</var></span>, <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>array <var>$where</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile a date based where clause.</p>
@@ -837,7 +917,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_wrapValue">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#379-392" title="Go to source code">wrapValue</a>( <span>string <var>$value</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#442-455" title="Go to source code">wrapValue</a>( <span>string <var>$value</var></span> )</code>
 
 		<div class="description short">
 			<p>Wrap a single string in keyword identifiers.</p>
@@ -876,7 +956,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_compileFrom">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#394-411" title="Go to source code">compileFrom</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>string <var>$table</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#457-474" title="Go to source code">compileFrom</a>( <span>Illuminate\Database\Query\Builder <var>$query</var></span>, <span>string <var>$table</var></span> )</code>
 
 		<div class="description short">
 			<p>Compile the "from" portion of the query.</p>
@@ -917,7 +997,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_isSubQuery">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#413-422" title="Go to source code">isSubQuery</a>( <span>string <var>$query</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#476-485" title="Go to source code">isSubQuery</a>( <span>string <var>$query</var></span> )</code>
 
 		<div class="description short">
 			<p>Check if given query is a sub-query.</p>
@@ -956,7 +1036,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_getSchemaPrefix">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#424-432" title="Go to source code">getSchemaPrefix</a>( )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#487-495" title="Go to source code">getSchemaPrefix</a>( )</code>
 
 		<div class="description short">
 			<p>Return the schema prefix</p>
@@ -990,7 +1070,7 @@ Illuminate\Database\Query\Grammars\Grammar
 
 		<td class="name"><div>
 		<a class="anchor" href="#_setSchemaPrefix">#</a>
-		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#434-442" title="Go to source code">setSchemaPrefix</a>( <span>string <var>$prefix</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Query.Grammars.OracleGrammar.html#497-505" title="Go to source code">setSchemaPrefix</a>( <span>string <var>$prefix</var></span> )</code>
 
 		<div class="description short">
 			<p>Set the shema prefix</p>
