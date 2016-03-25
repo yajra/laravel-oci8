@@ -158,7 +158,7 @@ class OracleGrammar extends Grammar
      */
     public function compileTableExists()
     {
-        return "select * from user_tables where upper(table_name) = upper(?)";
+        return "select * from all_tables where upper(table_name) = upper(?)";
     }
 
     /**
@@ -168,7 +168,7 @@ class OracleGrammar extends Grammar
      */
     public function compileColumnExists($table)
     {
-        return "select column_name from user_tab_columns where table_name = upper('" . $table . "')";
+        return "select column_name from all_tab_cols where table_name = upper('" . $table . "')";
     }
 
     /**
