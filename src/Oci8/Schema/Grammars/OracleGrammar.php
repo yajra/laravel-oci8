@@ -170,7 +170,7 @@ class OracleGrammar extends Grammar
      */
     public function compileColumnExists($database, $table)
     {
-        return "select column_name from all_tab_cols where  upper(owner) = upper('{$database}') and table_name = upper('{$table}')";
+        return "select column_name from all_tab_cols where upper(owner) = upper('{$database}') and upper(table_name) = upper('{$table}')";
     }
 
     /**
