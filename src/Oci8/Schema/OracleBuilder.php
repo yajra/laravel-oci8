@@ -128,4 +128,20 @@ class OracleBuilder extends Builder
 
         return count($this->connection->select($sql, [$database, $table])) > 0;
     }
+
+    /**
+     * Get the column listing for a given table.
+     *
+     * @param  string $table
+     * @return array
+     */
+    public function getColumnListing($table)
+    {
+        $database = $this->connection->getConfig('username');
+        $table    = $this->connection->getTablePrefix() . $table;
+
+        $results = $this->connection->select($this->grammar->compileColumnExists($database, $table));
+
+        return $this->connection->getPostProcessor()->processColumnListing($results);
+    }
 }
