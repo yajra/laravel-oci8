@@ -114,4 +114,20 @@ class OracleBuilder extends Builder
         $this->helper->dropAutoIncrementObjects($table);
         parent::dropIfExists($table);
     }
+
+    /**
+     * Determine if the given table exists.
+     *
+     * @param  string $table
+     * @return bool
+     */
+    public function hasTable($table)
+    {
+        $sql = $this->grammar->compileTableExists();
+
+        $database = $this->connection->getConfig('username');
+        $table    = $this->connection->getTablePrefix() . $table;
+
+        return count($this->connection->select($sql, [$database, $table])) > 0;
+    }
 }

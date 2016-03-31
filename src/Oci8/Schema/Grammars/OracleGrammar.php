@@ -158,7 +158,7 @@ class OracleGrammar extends Grammar
      */
     public function compileTableExists()
     {
-        return "select * from all_tables where upper(table_name) = upper(?)";
+        return "select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)";
     }
 
     /**
