@@ -164,7 +164,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile the query to determine the list of columns.
      *
-     * @param $database
+     * @param string $database
      * @param string $table
      * @return string
      */
