@@ -33,7 +33,7 @@ class OracleGrammar extends Grammar
         $q          = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
-            ->whereRaw("rownum = 1");
+          ->whereRaw("rownum = 1");
 
         return $this->compileSelect($q);
     }
@@ -312,8 +312,6 @@ class OracleGrammar extends Grammar
         return "update {$table}{$joins} set $columns$binarySql $where returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
     }
 
-
-
     /**
      * Compile the lock into SQL.
      *
@@ -402,7 +400,6 @@ class OracleGrammar extends Grammar
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
 
-
     /**
      * Return the schema prefix
      *
@@ -423,11 +420,10 @@ class OracleGrammar extends Grammar
         $this->schema_prefix = $prefix;
     }
 
-
     /**
      * Wrap a table in keyword identifiers.
      *
-     * @param  \Illuminate\Database\Query\Expression|string  $table
+     * @param  \Illuminate\Database\Query\Expression|string $table
      * @return string
      */
     public function wrapTable($table)
@@ -436,6 +432,6 @@ class OracleGrammar extends Grammar
             return $this->getValue($table);
         }
 
-        return $this->getSchemaPrefix() .$this->wrap($this->tablePrefix.$table, true);
+        return $this->getSchemaPrefix() . $this->wrap($this->tablePrefix . $table, true);
     }
 }
