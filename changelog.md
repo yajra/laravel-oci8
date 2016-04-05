@@ -1,5 +1,11 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.4 - 2016-04-05
+- Refactor add prefix and fix join prefix.
+- Replace user_tables with all_tables
+- Replace user_tab_columns with all_tab_columns.
+- Update unit tests.
+
 #v5.2.3 - 2016-03-19
 - Fix prefix schema on update, insert, delete query.
 - PR #158. Credits to @mfrancois.
