@@ -59,4 +59,16 @@ class OracleBlueprint extends Blueprint
         // max index name length is 30 chars
         return substr(str_replace(['-', '.'], '_', $index), 0, 30);
     }
+
+    /**
+     * Create a new nvarchar2 column on the table.
+     *
+     * @param string $column
+     * @param int $length
+     * @return \Illuminate\Support\Fluent
+     */
+    public function nvarchar2($column, $length = 255)
+    {
+        return $this->addColumn('nvarchar2', $column, compact('length'));
+    }
 }

@@ -442,6 +442,17 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create column definition for a nvarchar type.
+     *
+     * @param \Illuminate\Support\Fluent $column
+     * @return string
+     */
+    protected function typeNvarchar2(Fluent $column)
+    {
+        return "nvarchar2({$column->length})";
+    }
+
+    /**
      * Create the column definition for a text type.
      *
      * @param  \Illuminate\Support\Fluent $column
