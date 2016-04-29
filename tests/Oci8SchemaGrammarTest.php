@@ -88,6 +88,25 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
+
+    public function testBasicCreateTableWithNvarchar2()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->create();
+        $blueprint->increments('id');
+        $blueprint->nvarchar2('first_name');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals(
+            'create table users ( id number(10,0) not null, first_name nvarchar2(255) not null, constraint users_id_pk primary key ( id ) )',
+            $statements[0]
+        );
+    }
+
     public function testBasicCreateTableWithDefaultValueAndIsNotNull()
     {
         $blueprint = new Blueprint('users');
