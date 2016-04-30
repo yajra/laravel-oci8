@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.1 - 2016-04-30
+- Add nvarchar2 support for schema builder.
+- PR #168, credits to @pawel-damasiewicz.
+
 #v5.1.0 - 2016-03-08
 - Add a dedicated branch/tag for Laravel 5.1 support.
 
