@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.5 - 2016-04-30
+- Add nvarchar2 support for schema builder.
+- PR #168, credits to @pawel-damasiewicz.
+
 #v5.2.4 - 2016-04-05
 - Refactor add prefix and fix join prefix.
 - Replace user_tables with all_tables
