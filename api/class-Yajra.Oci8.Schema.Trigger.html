@@ -131,6 +131,15 @@
 
 
 
+	<dl class="tree">
+		<dd style="padding-left:0px">
+<b><span>Yajra\Oci8\Schema\Trigger</span></b>			
+			
+			 uses 
+					<a href="class-Yajra.Oci8.OracleReservedWords.html"><span>Yajra\Oci8\OracleReservedWords</span></a>
+			
+		</dd>
+	</dl>
 
 
 
@@ -145,7 +154,7 @@
 		<b>Namespace:</b> <a href="namespace-Yajra.html">Yajra</a>\<a href="namespace-Yajra.Oci8.html">Oci8</a>\<a href="namespace-Yajra.Oci8.Schema.html">Schema</a><br>
 		
 
-			<b>Located at</b> <a href="source-class-Yajra.Oci8.Schema.Trigger.html#7-71" title="Go to source code">Oci8/Schema/Trigger.php</a>
+			<b>Located at</b> <a href="source-class-Yajra.Oci8.Schema.Trigger.html#8-88" title="Go to source code">Oci8/Schema/Trigger.php</a>
 		<br>
 	</div>
 
@@ -165,7 +174,7 @@
 
 		<td class="name"><div>
 		<a class="anchor" href="#___construct">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#14-20" title="Go to source code">__construct</a>( <span>Illuminate\Database\Connection <var>$connection</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#17-23" title="Go to source code">__construct</a>( <span>Illuminate\Database\Connection <var>$connection</var></span> )</code>
 
 		<div class="description short">
 			
@@ -200,14 +209,14 @@
 
 		<td class="name"><div>
 		<a class="anchor" href="#_autoIncrement">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#22-46" title="Go to source code">autoIncrement</a>( <span>string <var>$table</var></span>, <span>string <var>$column</var></span>, <span>string <var>$triggerName</var></span>, <span>string <var>$sequenceName</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#25-52" title="Go to source code">autoIncrement</a>( <span>string <var>$table</var></span>, <span>string <var>$column</var></span>, <span>string <var>$triggerName</var></span>, <span>string <var>$sequenceName</var></span> )</code>
 
 		<div class="description short">
-			<p>function to create auto increment trigger for a table</p>
+			<p>Function to create auto increment trigger for a table.</p>
 		</div>
 
 		<div class="description detailed hidden">
-			<p>function to create auto increment trigger for a table</p>
+			<p>Function to create auto increment trigger for a table.</p>
 
 
 				<h4>Parameters</h4>
@@ -233,6 +242,45 @@
 		</div>
 		</div></td>
 	</tr>
+	<tr data-order="wrapValue" id="_wrapValue">
+
+		<td class="attributes"><code>
+			 protected 
+
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_wrapValue">#</a>
+		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#54-63" title="Go to source code">wrapValue</a>( <span>string <var>$value</var></span> )</code>
+
+		<div class="description short">
+			<p>Wrap value if reserved word.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Wrap value if reserved word.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$value</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					string
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
 	<tr data-order="drop" id="_drop">
 
 		<td class="attributes"><code>
@@ -245,14 +293,14 @@
 
 		<td class="name"><div>
 		<a class="anchor" href="#_drop">#</a>
-		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#48-70" title="Go to source code">drop</a>( <span>string <var>$name</var></span> )</code>
+		<code><a href="source-class-Yajra.Oci8.Schema.Trigger.html#65-87" title="Go to source code">drop</a>( <span>string <var>$name</var></span> )</code>
 
 		<div class="description short">
-			<p>function to safely drop trigger db object</p>
+			<p>Function to safely drop trigger db object.</p>
 		</div>
 
 		<div class="description detailed hidden">
-			<p>function to safely drop trigger db object</p>
+			<p>Function to safely drop trigger db object.</p>
 
 
 				<h4>Parameters</h4>
@@ -275,6 +323,14 @@
 	</table>
 
 
+	<table class="summary used">
+	<caption>Methods used from <a href="class-Yajra.Oci8.OracleReservedWords.html#methods">Yajra\Oci8\OracleReservedWords</a></caption>
+	<tr>
+		<td><code>
+			<a href="class-Yajra.Oci8.OracleReservedWords.html#_isReserved">isReserved()</a>
+		</code></td>
+	</tr>
+	</table>
 
 
 
@@ -294,7 +350,7 @@
 		</code></td>
 
 		<td class="name">
-				<a href="source-class-Yajra.Oci8.Schema.Trigger.html#9-12" title="Go to source code"><var>$connection</var></a>
+				<a href="source-class-Yajra.Oci8.Schema.Trigger.html#12-15" title="Go to source code"><var>$connection</var></a>
 
 			<div class="description short">
 				
@@ -315,6 +371,14 @@
 	</table>
 
 
+	<table class="summary used">
+	<caption>Properties used from <a href="class-Yajra.Oci8.OracleReservedWords.html#properties">Yajra\Oci8\OracleReservedWords</a></caption>
+	<tr>
+		<td><code>
+			<a href="class-Yajra.Oci8.OracleReservedWords.html#$reserves"><var>$reserves</var></a>
+		</code></td>
+	</tr>
+	</table>
 
 
 
