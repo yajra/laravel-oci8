@@ -54,12 +54,12 @@ class Trigger
     /**
      * Wrap value if reserved word.
      *
-     * @param string $table
+     * @param string $value
      * @return string
      */
-    protected function wrapValue($table)
+    protected function wrapValue($value)
     {
-        return $this->isReserved($table) ? '"' . $table . '"' : $table;
+        return $this->isReserved($value) ? '"' . $value . '"' : $value;
     }
 
     /**
