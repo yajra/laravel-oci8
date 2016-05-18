@@ -23,7 +23,7 @@ class Trigger
     }
 
     /**
-     * function to create auto increment trigger for a table
+     * Function to create auto increment trigger for a table.
      *
      * @param  string $table
      * @param  string $column
@@ -52,7 +52,7 @@ class Trigger
     }
 
     /**
-     * Wrap table value if reserved word.
+     * Wrap value if reserved word.
      *
      * @param string $table
      * @return string
@@ -63,7 +63,7 @@ class Trigger
     }
 
     /**
-     * function to safely drop trigger db object
+     * Function to safely drop trigger db object.
      *
      * @param  string $name
      * @return boolean
