@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.7 - 2016-05-18
+- Fix fetching of primary key.
+- Patch docblocks.
+
 #v5.2.6 - 2016-05-18
 - Fix/Add wrapper when creating auto-increment trigger that contains reserved words.
 - Update Trigger class docblocks.
