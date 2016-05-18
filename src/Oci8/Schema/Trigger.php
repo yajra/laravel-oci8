@@ -3,9 +3,12 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
+use Yajra\Oci8\OracleReservedWords;
 
 class Trigger
 {
+    use OracleReservedWords;
+
     /**
      * @var \Illuminate\Database\Connection
      */
@@ -34,6 +37,9 @@ class Trigger
             return false;
         }
 
+        $table  = $this->wrapValue($table);
+        $column = $this->wrapValue($column);
+
         return $this->connection->statement("
             create trigger $triggerName
             before insert on {$table}
@@ -43,6 +49,17 @@ class Trigger
                 select {$sequenceName}.nextval into :new.{$column} from dual;
             end if;
             end;");
+    }
+
+    /**
+     * Wrap table value if reserved word.
+     *
+     * @param string $table
+     * @return string
+     */
+    protected function wrapValue($table)
+    {
+        return $this->isReserved($table) ? '"' . $table . '"' : $table;
     }
 
     /**
