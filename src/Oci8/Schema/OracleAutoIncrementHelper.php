@@ -64,7 +64,7 @@ class OracleAutoIncrementHelper
     }
 
     /**
-     * get qualified autoincrement column
+     * Get qualified autoincrement column.
      *
      * @param  Blueprint $blueprint
      * @return Fluent|null
@@ -85,7 +85,7 @@ class OracleAutoIncrementHelper
     }
 
     /**
-     * Create an object name that limits to 30chars
+     * Create an object name that limits to 30 chars.
      *
      * @param  string $prefix
      * @param  string $table
@@ -100,7 +100,7 @@ class OracleAutoIncrementHelper
     }
 
     /**
-     * drop sequence and triggers if exists, autoincrement objects
+     * Drop sequence and triggers if exists, autoincrement objects.
      *
      * @param  string $table
      * @return null
@@ -124,7 +124,7 @@ class OracleAutoIncrementHelper
     }
 
     /**
-     * get table's primary key
+     * Get table's primary key.
      *
      * @param  string $table
      * @return string
@@ -138,7 +138,7 @@ class OracleAutoIncrementHelper
         $data = $this->connection->selectOne("
             SELECT cols.column_name
             FROM all_constraints cons, all_cons_columns cols
-            WHERE cols.table_name = upper('{$table}')
+            WHERE upper(cols.table_name) = upper('{$table}')
                 AND cons.constraint_type = 'P'
                 AND cons.constraint_name = cols.constraint_name
                 AND cons.owner = cols.owner
@@ -155,6 +155,8 @@ class OracleAutoIncrementHelper
     }
 
     /**
+     * Get sequence instance.
+     *
      * @return Sequence
      */
     public function getSequence()
@@ -163,6 +165,8 @@ class OracleAutoIncrementHelper
     }
 
     /**
+     * Set sequence instance.
+     *
      * @param Sequence $sequence
      */
     public function setSequence($sequence)
@@ -171,6 +175,8 @@ class OracleAutoIncrementHelper
     }
 
     /**
+     * Get trigger instance.
+     *
      * @return Trigger
      */
     public function getTrigger()
@@ -179,6 +185,8 @@ class OracleAutoIncrementHelper
     }
 
     /**
+     * Set the trigger instance.
+     *
      * @param Trigger $trigger
      */
     public function setTrigger($trigger)
