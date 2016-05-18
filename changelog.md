@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.6 - 2016-05-18
+- Fix/Add wrapper when creating auto-increment trigger that contains reserved words.
+- Update Trigger class docblocks.
+
 #v5.2.5 - 2016-04-30
 - Add nvarchar2 support for schema builder.
 - PR #168, credits to @pawel-damasiewicz.
