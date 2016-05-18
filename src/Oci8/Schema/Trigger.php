@@ -3,9 +3,12 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
+use Yajra\Oci8\OracleReservedWords;
 
 class Trigger
 {
+    use OracleReservedWords;
+
     /**
      * @var \Illuminate\Database\Connection
      */
@@ -20,7 +23,7 @@ class Trigger
     }
 
     /**
-     * function to create auto increment trigger for a table
+     * Function to create auto increment trigger for a table.
      *
      * @param  string $table
      * @param  string $column
@@ -34,6 +37,9 @@ class Trigger
             return false;
         }
 
+        $table  = $this->wrapValue($table);
+        $column = $this->wrapValue($column);
+
         return $this->connection->statement("
             create trigger $triggerName
             before insert on {$table}
@@ -46,7 +52,18 @@ class Trigger
     }
 
     /**
-     * function to safely drop trigger db object
+     * Wrap value if reserved word.
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        return $this->isReserved($value) ? '"' . $value . '"' : $value;
+    }
+
+    /**
+     * Function to safely drop trigger db object.
      *
      * @param  string $name
      * @return boolean
