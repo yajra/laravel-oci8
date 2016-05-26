@@ -160,5 +160,3 @@ class OracleProcessor extends Processor
         return array_map($mapping, $results);
     }
 }
-
-}
