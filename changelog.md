@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.8 - 2016-06-12
+- Fix hasColumn function. Fix #175
+- PR #176, credits to @azrael-sub7.
+
 #v5.2.7 - 2016-05-18
 - Fix fetching of primary key.
 - Patch docblocks.
