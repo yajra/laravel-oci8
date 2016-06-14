@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.9 - 2016-06-14
+- OracleEloquent switch QueryBuilder implementation depending grammar.
+- PR #178, credits to @MTon.
+
 #v5.2.8 - 2016-06-12
 - Fix hasColumn function. Fix #175
 - PR #176, credits to @azrael-sub7.
