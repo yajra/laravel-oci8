@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>Class Yajra\Oci8\Oci8Connection</title>
+
+	<link rel="stylesheet" href="resources/style.css?e99947befd7bf673c6b43ff75e9e0f170c88a60e">
+
+</head>
+
+<body>
+<div id="left">
+	<div id="menu">
+		<a href="index.html" title="Overview"><span>Overview</span></a>
+
+
+		<div id="groups">
+				<h3>Namespaces</h3>
+			<ul>
+				<li>
+					<a href="namespace-None.html">
+						None					</a>
+
+						</li>
+				<li class="active">
+					<a href="namespace-Yajra.html">
+						Yajra<span></span>
+					</a>
+
+						<ul>
+				<li class="active">
+					<a href="namespace-Yajra.Oci8.html">
+						Oci8<span></span>
+					</a>
+
+						<ul>
+				<li>
+					<a href="namespace-Yajra.Oci8.Connectors.html">
+						Connectors					</a>
+
+						</li>
+				<li>
+					<a href="namespace-Yajra.Oci8.Eloquent.html">
+						Eloquent					</a>
+
+						</li>
+				<li>
+					<a href="namespace-Yajra.Oci8.Query.html">
+						Query<span></span>
+					</a>
+
+						<ul>
+				<li>
+					<a href="namespace-Yajra.Oci8.Query.Grammars.html">
+						Grammars					</a>
+
+						</li>
+				<li>
+					<a href="namespace-Yajra.Oci8.Query.Processors.html">
+						Processors					</a>
+
+						</li>
+							</ul></li>
+				<li>
+					<a href="namespace-Yajra.Oci8.Schema.html">
+						Schema<span></span>
+					</a>
+
+						<ul>
+				<li>
+					<a href="namespace-Yajra.Oci8.Schema.Grammars.html">
+						Grammars					</a>
+
+						</li>
+							</ul></li></ul></li></ul></li>
+			</ul>
+		</div>
+
+		<hr>
+
+
+		<div id="elements">
+			<h3>Classes</h3>
+			<ul>
+				<li class="active"><a href="class-Yajra.Oci8.Oci8Connection.html">Oci8Connection</a></li>
+				<li><a href="class-Yajra.Oci8.Oci8ServiceProvider.html">Oci8ServiceProvider</a></li>
+			</ul>
+
+
+			<h3>Traits</h3>
+			<ul>
+				<li><a href="class-Yajra.Oci8.OracleReservedWords.html">OracleReservedWords</a></li>
+			</ul>
+
+
+
+		</div>
+	</div>
+</div>
+
+<div id="splitter"></div>
+
+<div id="right">
+<div id="rightInner">
+	<form id="search">
+		<input type="hidden" name="cx" value="">
+		<input type="hidden" name="ie" value="UTF-8">
+		<input type="text" name="q" class="text" placeholder="Search">
+	</form>
+
+	<div id="navigation">
+		<ul>
+			<li>
+				<a href="index.html" title="Overview"><span>Overview</span></a>
+			</li>
+			<li>
+				<a href="namespace-Yajra.Oci8.html" title="Summary of Yajra\Oci8"><span>Namespace</span></a>
+			</li>
+			<li class="active">
+<span>Class</span>			</li>
+		</ul>
+		<ul>
+		</ul>
+		<ul>
+		</ul>
+	</div>
+
+<div id="content" class="class">
+	<h1>Class Oci8Connection</h1>
+
+
+
+	<dl class="tree">
+		<dd style="padding-left:0px">
+Illuminate\Database\Connection
+			
+			
+		</dd>
+		<dd style="padding-left:30px">
+			<img src="resources/inherit.png" alt="Extended by">
+<b><span>Yajra\Oci8\Oci8Connection</span></b>			
+			
+			
+		</dd>
+	</dl>
+
+
+
+
+
+
+
+
+	<div class="info">
+		
+		
+		<b>Namespace:</b> <a href="namespace-Yajra.html">Yajra</a>\<a href="namespace-Yajra.Oci8.html">Oci8</a><br>
+		
+
+			<b>Located at</b> <a href="source-class-Yajra.Oci8.Oci8Connection.html#18-247" title="Go to source code">Oci8/Oci8Connection.php</a>
+		<br>
+	</div>
+
+
+
+	<table class="summary methods" id="methods">
+	<caption>Methods summary</caption>
+	<tr data-order="__construct" id="___construct">
+
+		<td class="attributes"><code>
+			 public 
+
+			
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#___construct">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#35-46" title="Go to source code">__construct</a>( <span>PDO|Closure <var>$pdo</var></span>, <span>string <var>$database</var> = <span class="php-quote">''</span></span>, <span>string <var>$tablePrefix</var> = <span class="php-quote">''</span></span>, <span>array <var>$config</var> = []</span> )</code>
+
+		<div class="description short">
+			
+		</div>
+
+		<div class="description detailed hidden">
+			
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$pdo</var></dt>
+					<dd></dd>
+					<dt><var>$database</var></dt>
+					<dd></dd>
+					<dt><var>$tablePrefix</var></dt>
+					<dd></dd>
+					<dt><var>$config</var></dt>
+					<dd></dd>
+				</dl></div>
+
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getSchema" id="_getSchema">
+
+		<td class="attributes"><code>
+			 public 
+
+			string
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getSchema">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#48-56" title="Go to source code">getSchema</a>( )</code>
+
+		<div class="description short">
+			<p>Get current schema.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get current schema.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					string
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="setSchema" id="_setSchema">
+
+		<td class="attributes"><code>
+			 public 
+
+			
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_setSchema">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#58-72" title="Go to source code">setSchema</a>( <span>string <var>$schema</var></span> )</code>
+
+		<div class="description short">
+			<p>Set current schema.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Set current schema.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$schema</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<br>$this
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="setSessionVars" id="_setSessionVars">
+
+		<td class="attributes"><code>
+			 public 
+
+			
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_setSessionVars">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#74-94" title="Go to source code">setSessionVars</a>( <span>array <var>$sessionVars</var></span> )</code>
+
+		<div class="description short">
+			<p>Update oracle session variables.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Update oracle session variables.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$sessionVars</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<br>$this
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getSequence" id="_getSequence">
+
+		<td class="attributes"><code>
+			 public 
+
+			<code><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getSequence">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#96-104" title="Go to source code">getSequence</a>( )</code>
+
+		<div class="description short">
+			<p>Get sequence class.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get sequence class.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="setSequence" id="_setSequence">
+
+		<td class="attributes"><code>
+			 public 
+
+			<code><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_setSequence">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#106-115" title="Go to source code">setSequence</a>( <span><code><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></code> <var>$sequence</var></span> )</code>
+
+		<div class="description short">
+			<p>Set sequence class.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Set sequence class.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$sequence</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getTrigger" id="_getTrigger">
+
+		<td class="attributes"><code>
+			 public 
+
+			<code><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getTrigger">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#117-125" title="Go to source code">getTrigger</a>( )</code>
+
+		<div class="description short">
+			<p>Get oracle trigger class.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get oracle trigger class.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="setTrigger" id="_setTrigger">
+
+		<td class="attributes"><code>
+			 public 
+
+			<code><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_setTrigger">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#127-136" title="Go to source code">setTrigger</a>( <span><code><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></code> <var>$trigger</var></span> )</code>
+
+		<div class="description short">
+			<p>Set oracle trigger class.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Set oracle trigger class.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$trigger</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getSchemaBuilder" id="_getSchemaBuilder">
+
+		<td class="attributes"><code>
+			 public 
+
+			<code><a href="class-Yajra.Oci8.Schema.OracleBuilder.html">Yajra\Oci8\Schema\OracleBuilder</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getSchemaBuilder">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#138-150" title="Go to source code">getSchemaBuilder</a>( )</code>
+
+		<div class="description short">
+			<p>Get a schema builder instance for the connection.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get a schema builder instance for the connection.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Schema.OracleBuilder.html">Yajra\Oci8\Schema\OracleBuilder</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="table" id="_table">
+
+		<td class="attributes"><code>
+			 public 
+
+			<code><a href="class-Yajra.Oci8.Query.OracleBuilder.html">Yajra\Oci8\Query\OracleBuilder</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_table">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#152-165" title="Go to source code">table</a>( <span>string <var>$table</var></span> )</code>
+
+		<div class="description short">
+			<p>Begin a fluent query against a database table.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Begin a fluent query against a database table.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$table</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Query.OracleBuilder.html">Yajra\Oci8\Query\OracleBuilder</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="setDateFormat" id="_setDateFormat">
+
+		<td class="attributes"><code>
+			 public 
+
+			
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_setDateFormat">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#167-181" title="Go to source code">setDateFormat</a>( <span>string <var>$format</var> = <span class="php-quote">'YYYY-MM-DD HH24:MI:SS'</span></span> )</code>
+
+		<div class="description short">
+			<p>Set oracle session date format.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Set oracle session date format.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$format</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					<br>$this
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getDoctrineConnection" id="_getDoctrineConnection">
+
+		<td class="attributes"><code>
+			 public 
+
+			Doctrine\DBAL\Connection
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getDoctrineConnection">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#183-195" title="Go to source code">getDoctrineConnection</a>( )</code>
+
+		<div class="description short">
+			<p>Get doctrine connection.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get doctrine connection.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					Doctrine\DBAL\Connection
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getDoctrineDriver" id="_getDoctrineDriver">
+
+		<td class="attributes"><code>
+			 protected 
+
+			Doctrine\DBAL\Driver\OCI8\Driver
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getDoctrineDriver">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#197-205" title="Go to source code">getDoctrineDriver</a>( )</code>
+
+		<div class="description short">
+			<p>Get doctrine driver.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get doctrine driver.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					Doctrine\DBAL\Driver\OCI8\Driver
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getDefaultQueryGrammar" id="_getDefaultQueryGrammar">
+
+		<td class="attributes"><code>
+			 protected 
+
+			<code><a href="class-Yajra.Oci8.Query.Grammars.OracleGrammar.html">Yajra\Oci8\Query\Grammars\OracleGrammar</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getDefaultQueryGrammar">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#207-215" title="Go to source code">getDefaultQueryGrammar</a>( )</code>
+
+		<div class="description short">
+			<p>Get the default query grammar instance.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get the default query grammar instance.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Query.Grammars.OracleGrammar.html">Yajra\Oci8\Query\Grammars\OracleGrammar</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="withTablePrefix" id="_withTablePrefix">
+
+		<td class="attributes"><code>
+			 public 
+
+			Illuminate\Database\Grammar
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_withTablePrefix">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#217-226" title="Go to source code">withTablePrefix</a>( <span>Illuminate\Database\Grammar <var>$grammar</var></span> )</code>
+
+		<div class="description short">
+			<p>Set the table prefix and return the grammar.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Set the table prefix and return the grammar.</p>
+
+
+				<h4>Parameters</h4>
+				<div class="list"><dl>
+					<dt><var>$grammar</var></dt>
+					<dd></dd>
+				</dl></div>
+
+				<h4>Returns</h4>
+				<div class="list">
+					Illuminate\Database\Grammar
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getDefaultSchemaGrammar" id="_getDefaultSchemaGrammar">
+
+		<td class="attributes"><code>
+			 protected 
+
+			<code><a href="class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html">Yajra\Oci8\Schema\Grammars\OracleGrammar</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getDefaultSchemaGrammar">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#228-236" title="Go to source code">getDefaultSchemaGrammar</a>( )</code>
+
+		<div class="description short">
+			<p>Get the default schema grammar instance.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get the default schema grammar instance.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html">Yajra\Oci8\Schema\Grammars\OracleGrammar</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	<tr data-order="getDefaultPostProcessor" id="_getDefaultPostProcessor">
+
+		<td class="attributes"><code>
+			 protected 
+
+			<code><a href="class-Yajra.Oci8.Query.Processors.OracleProcessor.html">Yajra\Oci8\Query\Processors\OracleProcessor</a></code>
+			
+			</code>
+		</td>
+
+		<td class="name"><div>
+		<a class="anchor" href="#_getDefaultPostProcessor">#</a>
+		<code><a href="source-class-Yajra.Oci8.Oci8Connection.html#238-246" title="Go to source code">getDefaultPostProcessor</a>( )</code>
+
+		<div class="description short">
+			<p>Get the default post processor instance.</p>
+		</div>
+
+		<div class="description detailed hidden">
+			<p>Get the default post processor instance.</p>
+
+
+
+				<h4>Returns</h4>
+				<div class="list">
+					<code><a href="class-Yajra.Oci8.Query.Processors.OracleProcessor.html">Yajra\Oci8\Query\Processors\OracleProcessor</a></code>
+				</div>
+
+
+
+
+		</div>
+		</div></td>
+	</tr>
+	</table>
+
+
+
+
+
+
+
+
+
+
+
+
+	<table class="summary properties" id="properties">
+	<caption>Properties summary</caption>
+	<tr data-order="schema" id="$schema">
+		<td class="attributes"><code>
+			protected  
+			string
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-Yajra.Oci8.Oci8Connection.html#20-23" title="Go to source code"><var>$schema</var></a>
+
+			<div class="description short">
+				
+			</div>
+
+			<div class="description detailed hidden">
+				
+
+			</div>
+		</td>
+		<td class="value">
+			<div>
+				<a href="#$schema" class="anchor">#</a>
+				<code></code>
+			</div>
+		</td>
+	</tr>
+	<tr data-order="sequence" id="$sequence">
+		<td class="attributes"><code>
+			protected  
+			<code><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></code>
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-Yajra.Oci8.Oci8Connection.html#25-28" title="Go to source code"><var>$sequence</var></a>
+
+			<div class="description short">
+				
+			</div>
+
+			<div class="description detailed hidden">
+				
+
+			</div>
+		</td>
+		<td class="value">
+			<div>
+				<a href="#$sequence" class="anchor">#</a>
+				<code></code>
+			</div>
+		</td>
+	</tr>
+	<tr data-order="trigger" id="$trigger">
+		<td class="attributes"><code>
+			protected  
+			<code><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></code>
+		</code></td>
+
+		<td class="name">
+				<a href="source-class-Yajra.Oci8.Oci8Connection.html#30-33" title="Go to source code"><var>$trigger</var></a>
+
+			<div class="description short">
+				
+			</div>
+
+			<div class="description detailed hidden">
+				
+
+			</div>
+		</td>
+		<td class="value">
+			<div>
+				<a href="#$trigger" class="anchor">#</a>
+				<code></code>
+			</div>
+		</td>
+	</tr>
+	</table>
+
+
+
+
+
+
+</div>
+
+	<div id="footer">
+		 API documentation generated by <a href="http://apigen.org">ApiGen</a>
+	</div>
+</div>
+</div>
+<script src="resources/combined.js"></script>
+<script src="elementlist.js"></script>
+</body>
+</html>

@@ -1,191 +1,69 @@
 <!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Laravel-OCI8 by yajra</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Laravel-OCI8</h1>
+      <h2 class="project-tagline">Oracle DB driver for Laravel 4|5</h2>
+      <a href="https://github.com/yajra/laravel-oci8" class="btn">View on GitHub</a>
+      <a href="https://github.com/yajra/laravel-oci8/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/yajra/laravel-oci8/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-	<title>Overview</title>
+    <section class="main-content">
+      <h1>
+<a id="laravel-45-oracle-oci8-db-support" class="anchor" href="#laravel-45-oracle-oci8-db-support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Laravel 4|5 Oracle (OCI8) DB Support</h1>
 
-	<link rel="stylesheet" href="resources/style.css?e99947befd7bf673c6b43ff75e9e0f170c88a60e">
+<h3>
+	<a id="laravel-oci8" class="anchor" href="#laravel-oci8" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+	Laravel-OCI8
+</h3>
 
-</head>
+<p><a href="https://travis-ci.org/yajra/laravel-oci8"><img src="https://img.shields.io/travis/yajra/laravel-oci8.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/downloads.png" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/stable.png" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/unstable.svg" alt="Latest Unstable Version"></a>
+<a href="https://scrutinizer-ci.com/g/yajra/laravel-oci8/?branch=master"><img src="https://scrutinizer-ci.com/g/yajra/laravel-oci8/badges/quality-score.png?b=master" alt="Scrutinizer Code Quality"></a>
+<a href="https://github.com/yajra/laravel-oci8/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a></p>
 
-<body>
-<div id="left">
-	<div id="menu">
-<span>Overview</span>
+<p>Laravel-OCI8 is an Oracle Database Driver package for <a href="http://laravel.com/">Laravel</a>. Laravel-OCI8 is an extension of <a href="https://github.com/illuminate/database">Illuminate/Database</a> that uses <a href="http://php.net/oci8">OCI8</a> extension to communicate with Oracle. Thanks to <a href="https://github.com/taylorotwell" class="user-mention">@taylorotwell</a>.</p>
 
-		<div id="groups">
-				<h3>Namespaces</h3>
-			<ul>
-				<li>
-					<a href="namespace-None.html">
-						None					</a>
+<h3>
+	<a id="documentations" class="anchor" href="#documentations" aria-hidden="true"><span class="octicon octicon-link"></span></a>API Documentations
+</h3>
 
-						</li>
-				<li>
-					<a href="namespace-Yajra.html">
-						Yajra<span></span>
-					</a>
-
-						<ul>
-				<li>
-					<a href="namespace-Yajra.Oci8.html">
-						Oci8<span></span>
-					</a>
-
-						<ul>
-				<li>
-					<a href="namespace-Yajra.Oci8.Connectors.html">
-						Connectors					</a>
-
-						</li>
-				<li>
-					<a href="namespace-Yajra.Oci8.Eloquent.html">
-						Eloquent					</a>
-
-						</li>
-				<li>
-					<a href="namespace-Yajra.Oci8.Query.html">
-						Query<span></span>
-					</a>
-
-						<ul>
-				<li>
-					<a href="namespace-Yajra.Oci8.Query.Grammars.html">
-						Grammars					</a>
-
-						</li>
-				<li>
-					<a href="namespace-Yajra.Oci8.Query.Processors.html">
-						Processors					</a>
-
-						</li>
-							</ul></li>
-				<li>
-					<a href="namespace-Yajra.Oci8.Schema.html">
-						Schema<span></span>
-					</a>
-
-						<ul>
-				<li>
-					<a href="namespace-Yajra.Oci8.Schema.Grammars.html">
-						Grammars					</a>
-
-						</li>
-							</ul></li></ul></li></ul></li>
-			</ul>
-		</div>
-
-		<hr>
-
-
-		<div id="elements">
-			<h3>Classes</h3>
-			<ul>
-				<li><a href="class-Yajra.Oci8.Connectors.OracleConnector.html">Yajra\Oci8\Connectors\OracleConnector</a></li>
-				<li><a href="class-Yajra.Oci8.Eloquent.OracleEloquent.html">Yajra\Oci8\Eloquent\OracleEloquent</a></li>
-				<li><a href="class-Yajra.Oci8.Oci8Connection.html">Yajra\Oci8\Oci8Connection</a></li>
-				<li><a href="class-Yajra.Oci8.Oci8ServiceProvider.html">Yajra\Oci8\Oci8ServiceProvider</a></li>
-				<li><a href="class-Yajra.Oci8.Query.Grammars.OracleGrammar.html">Yajra\Oci8\Query\Grammars\OracleGrammar</a></li>
-				<li><a href="class-Yajra.Oci8.Query.OracleBuilder.html">Yajra\Oci8\Query\OracleBuilder</a></li>
-				<li><a href="class-Yajra.Oci8.Query.Processors.OracleProcessor.html">Yajra\Oci8\Query\Processors\OracleProcessor</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.Comment.html">Yajra\Oci8\Schema\Comment</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.Grammars.OracleGrammar.html">Yajra\Oci8\Schema\Grammars\OracleGrammar</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.OracleAutoIncrementHelper.html">Yajra\Oci8\Schema\OracleAutoIncrementHelper</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.OracleBlueprint.html">Yajra\Oci8\Schema\OracleBlueprint</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.OracleBuilder.html">Yajra\Oci8\Schema\OracleBuilder</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.Sequence.html">Yajra\Oci8\Schema\Sequence</a></li>
-				<li><a href="class-Yajra.Oci8.Schema.Trigger.html">Yajra\Oci8\Schema\Trigger</a></li>
-			</ul>
-
-
-			<h3>Traits</h3>
-			<ul>
-				<li><a href="class-Yajra.Oci8.OracleReservedWords.html">Yajra\Oci8\OracleReservedWords</a></li>
-			</ul>
-
-
-
-			<h3>Functions</h3>
-			<ul>
-				<li><a href="function-config_path.html">config_path</a></li>
-			</ul>
-		</div>
-	</div>
+<div id="documentations">
+	<ul>
+		<li><a href="http://yajra.github.io/laravel-oci8/api/5.2">Laravel 5.2 API</a></li>
+		<li><a href="http://yajra.github.io/laravel-oci8/api/5.1">Laravel 5.1 API</a></li>
+	</ul>
 </div>
 
-<div id="splitter"></div>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
 
-<div id="right">
-<div id="rightInner">
-	<form id="search">
-		<input type="hidden" name="cx" value="">
-		<input type="hidden" name="ie" value="UTF-8">
-		<input type="text" name="q" class="text" placeholder="Search" autofocus>
-	</form>
+<p>Licensed under the <a href="https://github.com/yajra/laravel-oci8/blob/master/LICENSE">MIT License</a>.</p>
 
-	<div id="navigation">
-		<ul>
-			<li class="active">
-<span>Overview</span>			</li>
-			<li>
-<span>Namespace</span>			</li>
-			<li>
-<span>Class</span>			</li>
-		</ul>
-		<ul>
-		</ul>
-		<ul>
-		</ul>
-	</div>
+<h3>
+<a id="buy-me-a-beer" class="anchor" href="#buy-me-a-beer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Buy me a beer</h3>
 
-<div id="content">
-	<h1>Overview</h1>
+<p><a href="https://pledgie.com/campaigns/29516"><img alt="Click here to lend your support to: Laravel-OCI8 and make a donation at pledgie.com !" src="https://pledgie.com/campaigns/29516.png?skin_name=chrome" border="0"></a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/yajra/laravel-oci8">Laravel-OCI8</a> is maintained by <a href="https://github.com/yajra">yajra</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
 
 
-	<table class="summary" id="namespaces">
-		<caption>Namespaces summary</caption>
-			<tr>
-				<td class="name"><a href="namespace-None.html">None</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.html">Yajra</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.html">Yajra\Oci8</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Connectors.html">Yajra\Oci8\Connectors</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Eloquent.html">Yajra\Oci8\Eloquent</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Query.html">Yajra\Oci8\Query</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Query.Grammars.html">Yajra\Oci8\Query\Grammars</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Query.Processors.html">Yajra\Oci8\Query\Processors</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Schema.html">Yajra\Oci8\Schema</a></td>
-			</tr>
-			<tr>
-				<td class="name"><a href="namespace-Yajra.Oci8.Schema.Grammars.html">Yajra\Oci8\Schema\Grammars</a></td>
-			</tr>
-	</table>
-
-
-</div>
-
-	<div id="footer">
-		 API documentation generated by <a href="http://apigen.org">ApiGen</a>
-	</div>
-</div>
-</div>
-<script src="resources/combined.js?cd021bc814832c24a7cec5319ea03335bfba1caf"></script>
-<script src="elementlist.js?a86cfd8efa1dd9d4cde91890b1927a89a282d391"></script>
-</body>
+  </body>
 </html>
