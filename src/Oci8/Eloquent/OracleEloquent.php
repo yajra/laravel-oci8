@@ -3,8 +3,10 @@
 namespace Yajra\Oci8\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Yajra\Oci8\Oci8Connection;
+use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 
 class OracleEloquent extends Model
@@ -142,11 +144,15 @@ class OracleEloquent extends Model
      */
     protected function newBaseQueryBuilder()
     {
-        $conn = $this->getConnection();
 
-        $grammar = $conn->getQueryGrammar();
+        $conn      = $this->getConnection();
+        $grammar   = $conn->getQueryGrammar();
 
-        return new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
+        if ($grammar instanceof OracleGrammar) {
+            return new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
+        }
+
+        return new IlluminateQueryBuilder($conn, $grammar, $conn->getPostProcessor());
     }
 
     /**
