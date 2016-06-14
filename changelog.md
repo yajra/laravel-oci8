@@ -1,6 +1,10 @@
 #Laravel-OCI8 Change Log
 
-#v5.2.1 - 2016-04-30
+#v5.1.2 - 2016-06-14
+- OracleEloquent switch QueryBuilder implementation depending grammar.
+- PR #179, credits to @MTon.
+
+#v5.1.1 - 2016-04-30
 - Add nvarchar2 support for schema builder.
 - PR #168, credits to @pawel-damasiewicz.
 
