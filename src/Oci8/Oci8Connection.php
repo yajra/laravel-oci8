@@ -237,6 +237,39 @@ class Oci8Connection extends Connection
 
         return $grammar;
     }
+    
+    
+    /**
+     * Execute a PL/SQL Function and return its value.
+     * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' => 'bye'], PDO::PARAM_LOB)
+     * 
+     * @author Tylerian - jairo.eog@outlook.com
+     * 
+     * @param $sql (mixed)
+     * @param $bindings (kvp array)
+     * @param $returnType (PDO::PARAM_*)
+     * @return $returnType
+     */
+     public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
+    {
+        $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
+        
+        foreach ($bindings as $key => &$value)
+        {
+            if (!preg_match('/^:(.*)$/i', $key))
+            {
+                $key = ':' . $key;
+            }
+            
+            $query->bindParam($key, $value);
+        }
+        
+        $query->bindParam(':result', $result, $returnType);
+        
+        $query->execute();
+        
+        return $result;
+    }
 
     /**
      * Get config schema prefix.
