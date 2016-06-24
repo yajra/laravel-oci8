@@ -189,7 +189,7 @@ class Oci8Connection extends Connection
     {
         $driver = $this->getDoctrineDriver();
 
-        $data = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('database')];
+        $data = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
 
         return new DoctrineConnection($data, $driver);
     }
