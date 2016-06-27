@@ -87,8 +87,10 @@ class Oci8Connection extends Connection
                 $vars[] = "$option  = '$value'";
             }
         }
-        $sql = "ALTER SESSION SET " . implode(" ", $vars);
-        $this->statement($sql);
+        if($vars){
+            $sql = "ALTER SESSION SET " . implode(" ", $vars);
+            $this->statement($sql);
+        }
 
         return $this;
     }
