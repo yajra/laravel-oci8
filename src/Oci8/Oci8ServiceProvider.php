@@ -42,7 +42,7 @@ class Oci8ServiceProvider extends ServiceProvider
             $connection = $connector->connect($config);
             $db         = new Oci8Connection($connection, $config["database"], $config["prefix"], $config);
 
-            if (!empty($config['skip_session_vars'])) {
+            if (! empty($config['skip_session_vars'])) {
                 return $db;
             }
 
