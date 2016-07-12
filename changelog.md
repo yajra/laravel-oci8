@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.11 - 2016-07-12
+- Added option for skipping setSessionVars. #185
+- Update OCi8Connection->setSessionVars(). #184
+
 #v5.2.10 - 2016-06-24
 - Fix 'user' param when creating a Doctrine connection. PR #182
 - Function to execute PL/SQL functions at one shoot. PR #183
