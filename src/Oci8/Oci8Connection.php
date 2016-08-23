@@ -302,4 +302,22 @@ class Oci8Connection extends Connection
     {
         return new Processor;
     }
+
+    /**
+     * Bind values to their parameters in the given statement.
+     *
+     * @param  \PDOStatement $statement
+     * @param  array  $bindings
+     * @return void
+     */
+    public function bindValues($statement, $bindings)
+    {
+        foreach ($bindings as $key => $value) {
+            $statement->bindParam(
+                $key,
+                $bindings[$key],
+                ! is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+            );
+        }
+    }
 }
