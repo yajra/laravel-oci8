@@ -207,6 +207,53 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Execute a PL/SQL Function and return its value.
+     * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' =>
+     * 'bye'], PDO::PARAM_LOB)
+     *
+     * @author Tylerian - jairo.eog@outlook.com
+     * @param $sql (mixed)
+     * @param $bindings (kvp array)
+     * @param $returnType (PDO::PARAM_*)
+     * @return $returnType
+     */
+    public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
+    {
+        $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
+
+        foreach ($bindings as $key => &$value) {
+            if (! preg_match('/^:(.*)$/i', $key)) {
+                $key = ':' . $key;
+            }
+
+            $query->bindParam($key, $value);
+        }
+
+        $query->bindParam(':result', $result, $returnType);
+        $query->execute();
+
+        return $result;
+    }
+
+    /**
+     * Bind values to their parameters in the given statement.
+     *
+     * @param  \PDOStatement $statement
+     * @param  array $bindings
+     * @return void
+     */
+    public function bindValues($statement, $bindings)
+    {
+        foreach ($bindings as $key => $value) {
+            $statement->bindParam(
+                $key,
+                $bindings[$key],
+                ! is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+            );
+        }
+    }
+
+    /**
      * Get the default query grammar instance.
      *
      * @return \Yajra\Oci8\Query\Grammars\OracleGrammar
@@ -239,39 +286,6 @@ class Oci8Connection extends Connection
 
         return $grammar;
     }
-    
-    
-    /**
-     * Execute a PL/SQL Function and return its value.
-     * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' => 'bye'], PDO::PARAM_LOB)
-     * 
-     * @author Tylerian - jairo.eog@outlook.com
-     * 
-     * @param $sql (mixed)
-     * @param $bindings (kvp array)
-     * @param $returnType (PDO::PARAM_*)
-     * @return $returnType
-     */
-     public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
-    {
-        $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
-        
-        foreach ($bindings as $key => &$value)
-        {
-            if (!preg_match('/^:(.*)$/i', $key))
-            {
-                $key = ':' . $key;
-            }
-            
-            $query->bindParam($key, $value);
-        }
-        
-        $query->bindParam(':result', $result, $returnType);
-        
-        $query->execute();
-        
-        return $result;
-    }
 
     /**
      * Get config schema prefix.
@@ -301,23 +315,5 @@ class Oci8Connection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new Processor;
-    }
-
-    /**
-     * Bind values to their parameters in the given statement.
-     *
-     * @param  \PDOStatement $statement
-     * @param  array  $bindings
-     * @return void
-     */
-    public function bindValues($statement, $bindings)
-    {
-        foreach ($bindings as $key => $value) {
-            $statement->bindParam(
-                $key,
-                $bindings[$key],
-                ! is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
-            );
-        }
     }
 }
