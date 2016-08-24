@@ -39,7 +39,9 @@ class OracleProcessor extends Processor
      */
     private function prepareStatement(Builder $query, $sql)
     {
-        $pdo = $query->getConnection()->getPdo();
+        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        $connection = $query->getConnection();
+        $pdo        = $connection->getPdo();
 
         return $pdo->prepare($sql);
     }
