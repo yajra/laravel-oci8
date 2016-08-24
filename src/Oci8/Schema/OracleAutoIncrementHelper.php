@@ -112,7 +112,7 @@ class OracleAutoIncrementHelper
         // get the actual primary column name from table
         $col = $this->getPrimaryKey($prefix . $table);
         // if primary key col is set, drop auto increment objects
-        if (isset($col) and ! empty($col)) {
+        if (isset($col) && ! empty($col)) {
             // drop sequence for auto increment
             $sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
             $this->sequence->drop($sequenceName);

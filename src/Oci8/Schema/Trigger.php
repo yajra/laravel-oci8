@@ -33,7 +33,7 @@ class Trigger
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
     {
-        if (! $table or ! $column or ! $triggerName or ! $sequenceName) {
+        if (! $table || ! $column || ! $triggerName || ! $sequenceName) {
             return false;
         }
 

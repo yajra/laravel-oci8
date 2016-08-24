@@ -47,7 +47,7 @@ class Sequence
     public function drop($name)
     {
         // check if a valid name and sequence exists
-        if (! $name or ! $this->exists($name)) {
+        if (! $name || ! $this->exists($name)) {
             return false;
         }
 
@@ -115,7 +115,7 @@ class Sequence
     public function lastInsertId($name)
     {
         // check if a valid name and sequence exists
-        if (! $name or ! $this->exists($name)) {
+        if (! $name || ! $this->exists($name)) {
             return 0;
         }
 

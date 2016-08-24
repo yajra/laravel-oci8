@@ -92,7 +92,7 @@ class OracleEloquent extends Model
         // If attributes contains binary field
         // extract binary fields to new array
         $binaries = [];
-        if ($this->checkBinary($attributes) and $this->getConnection() instanceof Oci8Connection) {
+        if ($this->checkBinary($attributes) && $this->getConnection() instanceof Oci8Connection) {
             foreach ($attributes as $key => $value) {
                 if (in_array($key, $this->binaries)) {
                     $binaries[$key] = $value;

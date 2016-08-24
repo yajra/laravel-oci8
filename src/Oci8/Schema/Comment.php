@@ -30,18 +30,16 @@ class Comment extends Grammar
      */
     public function setComments(OracleBlueprint $blueprint)
     {
-        // Comment set by $table->comment = 'comment';
         $this->commentTable($blueprint);
 
-        // Comments set by $table->string('column')->comment('comment');
         $this->fluentComments($blueprint);
 
-        // Comments set by $table->commentColumns = ['column' => 'comment'];
         $this->commentColumns($blueprint);
     }
 
     /**
      * Run the comment on table statement.
+     * Comment set by $table->comment = 'comment';
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
      */
@@ -67,6 +65,7 @@ class Comment extends Grammar
 
     /**
      * Add comments set via fluent setter.
+     * Comments set by $table->string('column')->comment('comment');
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
      */
@@ -97,6 +96,7 @@ class Comment extends Grammar
 
     /**
      * Add comments on columns.
+     * Comments set by $table->commentColumns = ['column' => 'comment'];
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
      */
