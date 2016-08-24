@@ -241,32 +241,31 @@ class Oci8Connection extends Connection
      *
      * $bindings looks like:
      *         $bindings = [
-     *                  'p_userid'  => [
-     *                      'value' => $id,
-     *                      'type'  => PDO::PARAM_INT,
-     *                  ]
-     *         ],
+     *                  'p_userid'  => $id
+     *         ];
      *
-     * @param $procedureName
-     * @param $bindings
+     * @param     $procedureName
+     * @param     $bindings
+     * @param int $returnType
+     *
      * @return array
      */
-    private function executeProcedure($procedureName, $bindings)
+    public function executeProcedure($procedureName, $bindings, $returnType = PDO::PARAM_STMT)
     {
         $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
 
         $stmt = $this->getPdo()->prepare($command);
 
-        foreach ($bindings as $bindingName => $bindingOption) {
-            $stmt->bindParam(':' . $bindingName, $bindingOption['value'], $bindingOption['type']);
+        foreach ($bindings as $bindingName => &$bindingValue) {
+            $stmt->bindParam(':' . $bindingName, $bindingValue, $this->suggestValueType($bindingValue));
         }
 
         $cursor = null;
 
-        $stmt->bindParam(':cursor', $cursor, PDO::PARAM_STMT);
+        $stmt->bindParam(':cursor', $cursor, $returnType);
         $stmt->execute();
 
-        oci_execute($cursor, OCI_DEFAULT);
+        oci_execute($cursor, OCI_NO_AUTO_COMMIT);
         oci_fetch_all($cursor, $array, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
         oci_free_cursor($cursor);
 
@@ -286,7 +285,7 @@ class Oci8Connection extends Connection
             $statement->bindParam(
                 $key,
                 $bindings[$key],
-                !is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+                $this->suggestValueType($value)
             );
         }
     }
@@ -353,5 +352,17 @@ class Oci8Connection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new Processor;
+    }
+
+    /**
+     * Returns PDO constant based on value type.
+     *
+     * @param $value
+     *
+     * @return int
+     */
+    private function suggestValueType($value)
+    {
+        return !is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
     }
 }
