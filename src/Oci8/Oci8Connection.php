@@ -212,10 +212,10 @@ class Oci8Connection extends Connection
      * 'bye'], PDO::PARAM_LOB)
      *
      * @author Tylerian - jairo.eog@outlook.com
-     * @param $sql (mixed)
-     * @param $bindings (kvp array)
-     * @param $returnType (PDO::PARAM_*)
-     * @return $returnType
+     * @param string $sql (mixed)
+     * @param array $bindings (kvp array)
+     * @param int $returnType (PDO::PARAM_*)
+     * @return mixed $returnType
      */
     public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
     {
@@ -256,7 +256,7 @@ class Oci8Connection extends Connection
     /**
      * Get the default query grammar instance.
      *
-     * @return \Yajra\Oci8\Query\Grammars\OracleGrammar
+     * @return \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar
      */
     protected function getDefaultQueryGrammar()
     {
@@ -300,7 +300,7 @@ class Oci8Connection extends Connection
     /**
      * Get the default schema grammar instance.
      *
-     * @return \Yajra\Oci8\Schema\Grammars\OracleGrammar
+     * @return \Illuminate\Database\Grammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar
      */
     protected function getDefaultSchemaGrammar()
     {

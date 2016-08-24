@@ -67,7 +67,7 @@ class OracleAutoIncrementHelper
      * Get qualified autoincrement column.
      *
      * @param  Blueprint $blueprint
-     * @return Fluent|null
+     * @return \Illuminate\Support\Fluent|null
      */
     public function getQualifiedAutoIncrementColumn(Blueprint $blueprint)
     {
@@ -135,8 +135,7 @@ class OracleAutoIncrementHelper
             return '';
         }
 
-        $data = $this->connection->selectOne("
-            SELECT cols.column_name
+        $sql  = "SELECT cols.column_name
             FROM all_constraints cons, all_cons_columns cols
             WHERE upper(cols.table_name) = upper('{$table}')
                 AND cons.constraint_type = 'P'
@@ -144,8 +143,8 @@ class OracleAutoIncrementHelper
                 AND cons.owner = cols.owner
                 AND cols.position = 1
                 AND cons.owner = (select user from dual)
-            ORDER BY cols.table_name, cols.position
-            ");
+            ORDER BY cols.table_name, cols.position";
+        $data = $this->connection->selectOne($sql);
 
         if (count($data)) {
             return $data->column_name;

@@ -2,7 +2,6 @@
 
 namespace Yajra\Oci8\Connectors;
 
-use Illuminate\Database\Connectors;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
 use PDO;
@@ -61,10 +60,12 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Parse configurations.
+     *
      * @param array $config
      * @return array
      */
-    private function parseConfig(array $config)
+    protected function parseConfig(array $config)
     {
         $config = $this->setHost($config);
         $config = $this->setPort($config);
@@ -77,10 +78,12 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set host from config.
+     *
      * @param array $config
      * @return array
      */
-    private function setHost(array $config)
+    protected function setHost(array $config)
     {
         $config['host'] = isset($config['host']) ? $config['host'] : $config['hostname'];
 
@@ -88,6 +91,8 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set port from config.
+     *
      * @param array $config
      * @return array
      */
@@ -99,6 +104,8 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set protocol from config.
+     *
      * @param array $config
      * @return array
      */
@@ -110,10 +117,12 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set service id from config.
+     *
      * @param array $config
      * @return array
      */
-    private function setServiceId(array $config)
+    protected function setServiceId(array $config)
     {
         $config['service'] = empty($config['service_name'])
             ? $service_param = 'SID = ' . $config['database']
@@ -123,10 +132,12 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set tns from config.
+     *
      * @param array $config
      * @return array
      */
-    private function setTNS(array $config)
+    protected function setTNS(array $config)
     {
         $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
 
@@ -134,10 +145,12 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set charset from config.
+     *
      * @param array $config
      * @return array
      */
-    private function setCharset(array $config)
+    protected function setCharset(array $config)
     {
         if (! isset($config['charset'])) {
             $config['charset'] = 'AL32UTF8';
@@ -147,10 +160,12 @@ class OracleConnector extends Connector implements ConnectorInterface
     }
 
     /**
+     * Set DSN host from config.
+     *
      * @param array $config
      * @return array
      */
-    private function checkMultipleHostDsn(array $config)
+    protected function checkMultipleHostDsn(array $config)
     {
         $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
 

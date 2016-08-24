@@ -7,7 +7,7 @@ use Illuminate\Database\Connection;
 class Sequence
 {
     /**
-     * @var \Illuminate\Database\Connection
+     * @var \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
      */
     protected $connection;
 
@@ -75,12 +75,9 @@ class Sequence
             return false;
         }
 
-        return $this->connection->selectOne("select *
-            from all_sequences
-            where
-                sequence_name=upper('{$name}')
-                and sequence_owner=upper(user)
-            ");
+        return $this->connection->selectOne(
+            "select * from all_sequences where sequence_name=upper('{$name}') and sequence_owner=upper(user)"
+        );
     }
 
     /**

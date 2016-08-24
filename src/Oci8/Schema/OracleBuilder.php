@@ -23,10 +23,9 @@ class OracleBuilder extends Builder
      */
     public function __construct(Connection $connection)
     {
-        $this->connection = $connection;
-        $this->grammar    = $connection->getSchemaGrammar();
-        $this->helper     = new OracleAutoIncrementHelper($connection);
-        $this->comment    = new Comment($connection);
+        parent::__construct($connection);
+        $this->helper  = new OracleAutoIncrementHelper($connection);
+        $this->comment = new Comment($connection);
     }
 
     /**
@@ -49,6 +48,21 @@ class OracleBuilder extends Builder
         $this->comment->setComments($blueprint);
 
         $this->helper->createAutoIncrementObjects($blueprint, $table);
+    }
+
+    /**
+     * Create a new command set with a Closure.
+     *
+     * @param  string $table
+     * @param  Closure $callback
+     * @return \Illuminate\Database\Schema\Blueprint
+     */
+    protected function createBlueprint($table, Closure $callback = null)
+    {
+        $blueprint = new OracleBlueprint($table, $callback);
+        $blueprint->setTablePrefix($this->connection->getTablePrefix());
+
+        return $blueprint;
     }
 
     /**
@@ -76,21 +90,6 @@ class OracleBuilder extends Builder
     }
 
     /**
-     * Create a new command set with a Closure.
-     *
-     * @param  string $table
-     * @param  Closure $callback
-     * @return \Illuminate\Database\Schema\Blueprint
-     */
-    protected function createBlueprint($table, Closure $callback = null)
-    {
-        $blueprint = new OracleBlueprint($table, $callback);
-        $blueprint->setTablePrefix($this->connection->getTablePrefix());
-
-        return $blueprint;
-    }
-
-    /**
      * Drop a table from the schema.
      *
      * @param  string $table
@@ -105,6 +104,7 @@ class OracleBuilder extends Builder
     /**
      * Indicate that the table should be dropped if it exists.
      *
+     * @param string $table
      * @return \Illuminate\Support\Fluent
      */
     public function dropIfExists($table)
@@ -121,7 +121,9 @@ class OracleBuilder extends Builder
      */
     public function hasTable($table)
     {
-        $sql = $this->grammar->compileTableExists();
+        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $sql     = $grammar->compileTableExists();
 
         $database = $this->connection->getConfig('username');
         $table    = $this->connection->getTablePrefix() . $table;
@@ -139,8 +141,9 @@ class OracleBuilder extends Builder
     {
         $database = $this->connection->getConfig('username');
         $table    = $this->connection->getTablePrefix() . $table;
-
-        $results = $this->connection->select($this->grammar->compileColumnExists($database, $table));
+        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $results = $this->connection->select($grammar->compileColumnExists($database, $table));
 
         return $this->connection->getPostProcessor()->processColumnListing($results);
     }

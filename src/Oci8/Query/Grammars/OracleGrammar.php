@@ -145,6 +145,41 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Wrap a table in keyword identifiers.
+     *
+     * @param  \Illuminate\Database\Query\Expression|string $table
+     * @return string
+     */
+    public function wrapTable($table)
+    {
+        if ($this->isExpression($table)) {
+            return $this->getValue($table);
+        }
+
+        return $this->getSchemaPrefix() . $this->wrap($this->tablePrefix . $table, true);
+    }
+
+    /**
+     * Return the schema prefix
+     *
+     * @return string
+     */
+    public function getSchemaPrefix()
+    {
+        return ! empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+    }
+
+    /**
+     * Set the shema prefix
+     *
+     * @param string $prefix
+     */
+    public function setSchemaPrefix($prefix)
+    {
+        $this->schema_prefix = $prefix;
+    }
+
+    /**
      * Compile an insert and get ID statement into SQL.
      *
      * @param  \Illuminate\Database\Query\Builder $query
@@ -398,40 +433,5 @@ class OracleGrammar extends Grammar
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
-    }
-
-    /**
-     * Return the schema prefix
-     *
-     * @return string
-     */
-    public function getSchemaPrefix()
-    {
-        return ! empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
-    }
-
-    /**
-     * Set the shema prefix
-     *
-     * @param string $prefix
-     */
-    public function setSchemaPrefix($prefix)
-    {
-        $this->schema_prefix = $prefix;
-    }
-
-    /**
-     * Wrap a table in keyword identifiers.
-     *
-     * @param  \Illuminate\Database\Query\Expression|string $table
-     * @return string
-     */
-    public function wrapTable($table)
-    {
-        if ($this->isExpression($table)) {
-            return $this->getValue($table);
-        }
-
-        return $this->getSchemaPrefix() . $this->wrap($this->tablePrefix . $table, true);
     }
 }

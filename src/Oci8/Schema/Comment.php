@@ -55,6 +55,17 @@ class Comment extends Grammar
     }
 
     /**
+     * Wrap reserved words.
+     *
+     * @param string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        return $this->isReserved($value) ? parent::wrapValue($value) : $value;
+    }
+
+    /**
      * Add comments set via fluent setter.
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
@@ -94,16 +105,5 @@ class Comment extends Grammar
         foreach ($blueprint->commentColumns as $column => $comment) {
             $this->commentColumn($blueprint->getTable(), $column, $comment);
         }
-    }
-
-    /**
-     * Wrap reserved words.
-     *
-     * @param string $value
-     * @return string
-     */
-    protected function wrapValue($value)
-    {
-        return $this->isReserved($value) ? parent::wrapValue($value) : $value;
     }
 }

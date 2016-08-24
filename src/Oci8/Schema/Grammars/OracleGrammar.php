@@ -78,7 +78,7 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * Return the schema prefix
+     * Get the schema prefix.
      *
      * @return string
      */
@@ -88,7 +88,7 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * Set the shema prefix
+     * Set the schema prefix.
      *
      * @param string $prefix
      */

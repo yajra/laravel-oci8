@@ -3,8 +3,8 @@
 namespace Yajra\Oci8\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
@@ -12,16 +12,18 @@ use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 class OracleEloquent extends Model
 {
     /**
-     * List of binary (blob) columns
+     * List of binary (blob) columns.
      *
      * @var array
      */
     protected $binaries = [];
 
     /**
+     * List of binary fields for storage.
+     *
      * @var array
      */
-    protected $wrapBinaries = [];
+    protected $binaryFields = [];
 
     /**
      * Sequence name variable
@@ -45,21 +47,23 @@ class OracleEloquent extends Model
     }
 
     /**
-     * Set sequence name
+     * Set sequence name.
      *
      * @param string $name
-     * @return string
+     * @return $this
      */
     public function setSequenceName($name)
     {
-        return $this->sequence = $name;
+        $this->sequence = $name;
+
+        return $this;
     }
 
     /**
      * Update the model in the database.
      *
-     * @param  array  $attributes
-     * @param  array  $options
+     * @param  array $attributes
+     * @param  array $options
      * @return bool|int
      */
     public function update(array $attributes = [], array $options = [])
@@ -67,8 +71,8 @@ class OracleEloquent extends Model
         if (! $this->exists) {
             // If dirty attributes contains binary field
             // extract binary fields to new array
-            if ($this->wrapBinary($dirty)) {
-                return $this->newQuery()->updateLob($attributes, $this->wrapBinaries, $this->getKeyName());
+            if ($this->extractBinaries($dirty)) {
+                return $this->newQuery()->updateLob($attributes, $this->binaryFields, $this->getKeyName());
             }
 
             return $this->newQuery()->update($attributes);
@@ -78,12 +82,12 @@ class OracleEloquent extends Model
     }
 
     /**
-     * wrap binaries to each attributes
+     * Extract binary fields from given attributes.
      *
      * @param  array $attributes
      * @return array
      */
-    public function wrapBinary(&$attributes)
+    protected function extractBinaries(&$attributes)
     {
         // If attributes contains binary field
         // extract binary fields to new array
@@ -97,16 +101,16 @@ class OracleEloquent extends Model
             }
         }
 
-        return $this->wrapBinaries = $binaries;
+        return $this->binaryFields = $binaries;
     }
 
     /**
-     * Check if attributes contains binary field
+     * Check if attributes contains binary field.
      *
      * @param  array $attributes
      * @return boolean
      */
-    public function checkBinary(array $attributes)
+    protected function checkBinary(array $attributes)
     {
         foreach ($attributes as $key => $value) {
             // if attribute is in binary field list
@@ -131,22 +135,22 @@ class OracleEloquent extends Model
             return $this->getTable() . '.' . $this->getKeyName();
         } else {
             $table  = substr($this->getTable(), 0, $pos);
-            $dblink = substr($this->getTable(), $pos);
+            $dbLink = substr($this->getTable(), $pos);
 
-            return $table . '.' . $this->getKeyName() . $dblink;
+            return $table . '.' . $this->getKeyName() . $dbLink;
         }
     }
 
     /**
      * Get a new query builder instance for the connection.
      *
-     * @return \Yajra\Oci8\Query\OracleBuilder
+     * @return \Illuminate\Database\Query\Builder|\Yajra\Oci8\Query\OracleBuilder
      */
     protected function newBaseQueryBuilder()
     {
 
-        $conn      = $this->getConnection();
-        $grammar   = $conn->getQueryGrammar();
+        $conn    = $this->getConnection();
+        $grammar = $conn->getQueryGrammar();
 
         if ($grammar instanceof OracleGrammar) {
             return new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
@@ -199,14 +203,16 @@ class OracleEloquent extends Model
     }
 
     /**
+     * Update model with binary (blob) fields.
+     *
      * @param Builder $query
      * @param array $dirty
      * @param array $options
      */
     protected function updateBinary(Builder $query, $dirty, $options = [])
     {
-        if ($this->wrapBinary($dirty)) {
-            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->wrapBinaries, $this->getKeyName());
+        if ($this->extractBinaries($dirty)) {
+            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->binaryFields, $this->getKeyName());
         } else {
             $this->setKeysForSaveQuery($query)->update($dirty, $options);
         }
@@ -247,8 +253,8 @@ class OracleEloquent extends Model
         else {
             // If attributes contains binary field
             // extract binary fields to new array
-            if ($this->wrapBinary($attributes)) {
-                $query->getQuery()->insertLob($attributes, $this->wrapBinaries, $this->getKeyName());
+            if ($this->extractBinaries($attributes)) {
+                $query->getQuery()->insertLob($attributes, $this->binaryFields, $this->getKeyName());
             } else {
                 $query->insert($attributes);
             }
@@ -275,7 +281,7 @@ class OracleEloquent extends Model
      */
     protected function insertAndSetId(Builder $query, $attributes)
     {
-        if ($binaries = $this->wrapBinary($attributes)) {
+        if ($binaries = $this->extractBinaries($attributes)) {
             $id = $query->getQuery()->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
         } else {
             $id = $query->insertGetId($attributes, $keyName = $this->getKeyName());

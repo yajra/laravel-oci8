@@ -10,7 +10,7 @@ class Trigger
     use OracleReservedWords;
 
     /**
-     * @var \Illuminate\Database\Connection
+     * @var \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
      */
     protected $connection;
 
@@ -74,8 +74,7 @@ class Trigger
             return false;
         }
 
-        return $this->connection->statement("
-            declare
+        return $this->connection->statement("declare
                 e exception;
                 pragma exception_init(e,-4080);
             begin
