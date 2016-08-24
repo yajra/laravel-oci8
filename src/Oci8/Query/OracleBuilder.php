@@ -2,40 +2,10 @@
 
 namespace Yajra\Oci8\Query;
 
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
-use Yajra\Oci8\Query\Grammars\OracleGrammar;
-use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {
-    /**
-     * The database query grammar instance.
-     *
-     * @var OracleGrammar
-     */
-    protected $grammar;
-
-    /**
-     * The database query post processor instance.
-     *
-     * @var OracleProcessor
-     */
-    protected $processor;
-
-    /**
-     * @param ConnectionInterface $connection
-     * @param OracleGrammar $grammar
-     * @param OracleProcessor $processor
-     */
-    public function __construct(
-        ConnectionInterface $connection,
-        OracleGrammar $grammar,
-        OracleProcessor $processor
-    ) {
-        parent::__construct($connection, $grammar, $processor);
-    }
-
     /**
      * Insert a new record and get the value of the primary key.
      *
@@ -46,12 +16,17 @@ class OracleBuilder extends Builder
      */
     public function insertLob(array $values, array $binaries, $sequence = 'id')
     {
-        $sql = $this->grammar->compileInsertLob($this, $values, $binaries, $sequence);
+        /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $sql     = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
         $values   = $this->cleanBindings($values);
         $binaries = $this->cleanBindings($binaries);
 
-        return $this->processor->saveLob($this, $sql, $values, $binaries);
+        /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
+        $processor = $this->processor;
+
+        return $processor->saveLob($this, $sql, $values, $binaries);
     }
 
     /**
@@ -66,12 +41,17 @@ class OracleBuilder extends Builder
     {
         $bindings = array_values(array_merge($values, $this->getBindings()));
 
-        $sql = $this->grammar->compileUpdateLob($this, $values, $binaries, $sequence);
+        /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $sql     = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
         $values   = $this->cleanBindings($bindings);
         $binaries = $this->cleanBindings($binaries);
 
-        return $this->processor->saveLob($this, $sql, $values, $binaries);
+        /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
+        $processor = $this->processor;
+
+        return $processor->saveLob($this, $sql, $values, $binaries);
     }
 
     /**
@@ -83,7 +63,7 @@ class OracleBuilder extends Builder
      * @param  mixed $values
      * @param  string $boolean
      * @param  bool $not
-     * @return $this
+     * @return \Illuminate\Database\Query\Builder|\Yajra\Oci8\Query\OracleBuilder
      */
     public function whereIn($column, $values, $boolean = 'and', $not = false)
     {
@@ -99,7 +79,6 @@ class OracleBuilder extends Builder
                     $query->$sqlClause($column, $ch);
                     $firstIteration = false;
                 }
-
             }, null, null, $boolean);
         }
 
