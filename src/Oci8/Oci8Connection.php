@@ -34,15 +34,15 @@ class Oci8Connection extends Connection
 
     /**
      * @param PDO|\Closure $pdo
-     * @param string $database
-     * @param string $tablePrefix
-     * @param array $config
+     * @param string       $database
+     * @param string       $tablePrefix
+     * @param array        $config
      */
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
         $this->sequence = new Sequence($this);
-        $this->trigger  = new Trigger($this);
+        $this->trigger = new Trigger($this);
     }
 
     /**
@@ -64,7 +64,7 @@ class Oci8Connection extends Connection
     public function setSchema($schema)
     {
         $this->schema = $schema;
-        $sessionVars  = [
+        $sessionVars = [
             'CURRENT_SCHEMA' => $schema,
         ];
 
@@ -212,9 +212,9 @@ class Oci8Connection extends Connection
      * 'bye'], PDO::PARAM_LOB)
      *
      * @author Tylerian - jairo.eog@outlook.com
-     * @param string $sql (mixed)
-     * @param array $bindings (kvp array)
-     * @param int $returnType (PDO::PARAM_*)
+     * @param string $sql        (mixed)
+     * @param array  $bindings   (kvp array)
+     * @param int    $returnType (PDO::PARAM_*)
      * @return mixed $returnType
      */
     public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
@@ -222,7 +222,7 @@ class Oci8Connection extends Connection
         $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
 
         foreach ($bindings as $key => &$value) {
-            if (! preg_match('/^:(.*)$/i', $key)) {
+            if (!preg_match('/^:(.*)$/i', $key)) {
                 $key = ':' . $key;
             }
 
@@ -236,10 +236,49 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Execute a PL/SQL Procedure and return its result.
+     * Usage: DB::executeProcedure($procedureName, $bindings)
+     *
+     * $bindings looks like:
+     *         $bindings = [
+     *                  'p_userid'  => [
+     *                  'value' => $id,
+     *                  'type'  => PDO::PARAM_INT,
+     *         ],
+     *
+     * @param $procedureName
+     * @param $bindings
+     * @return array
+     */
+    private function executeProcedure($procedureName, $bindings)
+    {
+        $pdo = DB::getPdo();
+
+        $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
+
+        $stmt = $pdo->prepare($command);
+
+        foreach ($bindings as $bindingName => $bindingOption) {
+            $stmt->bindParam(':' . $bindingName, $bindingOption['value'], $bindingOption['type']);
+        }
+
+        $cursor = null;
+
+        $stmt->bindParam(':cursor', $cursor, PDO::PARAM_STMT);
+        $stmt->execute();
+
+        oci_execute($cursor, OCI_DEFAULT);
+        oci_fetch_all($cursor, $array, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+        oci_free_cursor($cursor);
+
+        return $array;
+    }
+
+    /**
      * Bind values to their parameters in the given statement.
      *
      * @param  \PDOStatement $statement
-     * @param  array $bindings
+     * @param  array         $bindings
      * @return void
      */
     public function bindValues($statement, $bindings)
@@ -248,7 +287,7 @@ class Oci8Connection extends Connection
             $statement->bindParam(
                 $key,
                 $bindings[$key],
-                ! is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+                !is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
             );
         }
     }
