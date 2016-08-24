@@ -253,11 +253,9 @@ class Oci8Connection extends Connection
      */
     private function executeProcedure($procedureName, $bindings)
     {
-        $pdo = DB::getPdo();
-
         $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
 
-        $stmt = $pdo->prepare($command);
+        $stmt = $this->getPdo()->prepare($command);
 
         foreach ($bindings as $bindingName => $bindingOption) {
             $stmt->bindParam(':' . $bindingName, $bindingOption['value'], $bindingOption['type']);
