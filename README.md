@@ -1,4 +1,4 @@
-# Laravel 4|5 Oracle (OCI8) DB Support
+# Oracle DB driver for Laravel 4|5 via OCI8
 
 ## Laravel-OCI8
 
