@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.0 - 2016-08-24
+- Laravel 5.3 support.
+
 #v5.2.11 - 2016-07-12
 - Added option for skipping setSessionVars. #185
 - Update OCi8Connection->setSessionVars(). #184
