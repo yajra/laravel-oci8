@@ -158,3 +158,7 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
         $class::setConnectionResolver($resolver);
     }
 }
+
+class OracleEloquentStub extends \Yajra\Oci8\Eloquent\OracleEloquent
+{
+}

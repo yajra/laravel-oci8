@@ -11,7 +11,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
 
     public function testCreateConnection()
     {
-        $connector = new OracleConnectorStub();
+        $connector = new OracleConnectorStub;
         $tns       = "Connection String";
         $config    = [
             'driver'   => 'oracle',
@@ -42,8 +42,8 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector  = $this->getMock(Yajra\Oci8\Connectors\OracleConnector::class, ['createConnection', 'getOptions']);
-        $connection = m::mock('stdClass');
+        $connector = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)->setMethods(['createConnection', 'getOptions'])->getMock();
+        $connection = m::mock('PDO');
         $connector->expects($this->once())
                   ->method('getOptions')
                   ->with($this->equalTo($config))
@@ -176,5 +176,21 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
                 ['driver' => 'pdo-via-oci8', 'tns' => 'xe'],
             ],
         ];
+    }
+}
+
+class OracleConnectorStub extends \Yajra\Oci8\Connectors\OracleConnector
+{
+    public function createConnection($tns, array $config, array $options)
+    {
+        return new Oci8Stub($tns, $config['username'], $config['password'], $config['options']);
+    }
+}
+
+class Oci8Stub extends \Yajra\Pdo\Oci8
+{
+    public function __construct($dsn, $username, $password, array $options = [])
+    {
+        return true;
     }
 }
