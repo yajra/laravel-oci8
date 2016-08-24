@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.1 - 2016-08-24
+- Apply patch for best practices as suggested by scrutinizer.
+
 #v5.3.0 - 2016-08-24
 - Laravel 5.3 support.
 
