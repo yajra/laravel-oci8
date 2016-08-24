@@ -242,8 +242,9 @@ class Oci8Connection extends Connection
      * $bindings looks like:
      *         $bindings = [
      *                  'p_userid'  => [
-     *                  'value' => $id,
-     *                  'type'  => PDO::PARAM_INT,
+     *                      'value' => $id,
+     *                      'type'  => PDO::PARAM_INT,
+     *                  ]
      *         ],
      *
      * @param $procedureName
