@@ -370,7 +370,7 @@ class Oci8Connection extends Connection
     /**
      * Returns PDO constant based on value type.
      *
-     * @param $value
+     * @param string|int $value
      *
      * @return int
      */
