@@ -34,9 +34,9 @@ class Oci8Connection extends Connection
 
     /**
      * @param PDO|\Closure $pdo
-     * @param string       $database
-     * @param string       $tablePrefix
-     * @param array        $config
+     * @param string $database
+     * @param string $tablePrefix
+     * @param array $config
      */
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
@@ -212,9 +212,9 @@ class Oci8Connection extends Connection
      * 'bye'], PDO::PARAM_LOB)
      *
      * @author Tylerian - jairo.eog@outlook.com
-     * @param string $sql        (mixed)
-     * @param array  $bindings   (kvp array)
-     * @param int    $returnType (PDO::PARAM_*)
+     * @param string $sql (mixed)
+     * @param array $bindings (kvp array)
+     * @param int $returnType (PDO::PARAM_*)
      * @return mixed $returnType
      */
     public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
@@ -244,9 +244,9 @@ class Oci8Connection extends Connection
      *                  'p_userid'  => $id
      *         ];
      *
-     * @param     $procedureName
-     * @param     $bindings
-     * @param int $returnType
+     * @param string $procedureName
+     * @param array  $bindings
+     * @param mixed $returnType
      *
      * @return array
      */
@@ -265,18 +265,22 @@ class Oci8Connection extends Connection
         $stmt->bindParam(':cursor', $cursor, $returnType);
         $stmt->execute();
 
-        oci_execute($cursor, OCI_NO_AUTO_COMMIT);
-        oci_fetch_all($cursor, $array, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
-        oci_free_cursor($cursor);
+        if ($returnType === PDO::PARAM_STMT) {
+            oci_execute($cursor, OCI_NO_AUTO_COMMIT);
+            oci_fetch_all($cursor, $results, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
+            oci_free_cursor($cursor);
 
-        return $array;
+            return $results;
+        }
+
+        return $cursor;
     }
 
     /**
      * Bind values to their parameters in the given statement.
      *
      * @param  \PDOStatement $statement
-     * @param  array         $bindings
+     * @param  array $bindings
      * @return void
      */
     public function bindValues($statement, $bindings)
@@ -361,7 +365,7 @@ class Oci8Connection extends Connection
      *
      * @return int
      */
-    private function suggestValueType($value)
+    protected function suggestValueType($value)
     {
         return !is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
     }
