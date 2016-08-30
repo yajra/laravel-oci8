@@ -14,6 +14,7 @@ use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
 use Yajra\Oci8\Schema\Sequence;
 use Yajra\Oci8\Schema\Trigger;
+use Yajra\Pdo\Oci8\Statement;
 
 class Oci8Connection extends Connection
 {
@@ -88,7 +89,7 @@ class Oci8Connection extends Connection
             }
         }
         if ($vars) {
-            $sql = "ALTER SESSION SET " . implode(" ", $vars);
+            $sql = 'ALTER SESSION SET ' . implode(' ', $vars);
             $this->statement($sql);
         }
 
@@ -154,7 +155,7 @@ class Oci8Connection extends Connection
     /**
      * Begin a fluent query against a database table.
      *
-     * @param  string $table
+     * @param string $table
      * @return \Yajra\Oci8\Query\OracleBuilder
      */
     public function table($table)
@@ -203,13 +204,13 @@ class Oci8Connection extends Connection
      */
     protected function getDoctrineDriver()
     {
-        return new DoctrineDriver;
+        return new DoctrineDriver();
     }
 
     /**
      * Execute a PL/SQL Function and return its value.
      * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' =>
-     * 'bye'], PDO::PARAM_LOB)
+     * 'bye'], PDO::PARAM_LOB).
      *
      * @author Tylerian - jairo.eog@outlook.com
      * @param string $sql (mixed)
@@ -236,20 +237,55 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Execute a PL/SQL Procedure and return its result.
+     * Usage: DB::executeProcedure($procedureName, $bindings).
+     * $bindings looks like:
+     *         $bindings = [
+     *                  'p_userid'  => $id
+     *         ];
+     *
+     * @param string $procedureName
+     * @param array $bindings
+     * @param mixed $returnType
+     * @return array
+     */
+    public function executeProcedure($procedureName, $bindings, $returnType = PDO::PARAM_STMT)
+    {
+        $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
+
+        $stmt = $this->getPdo()->prepare($command);
+
+        foreach ($bindings as $bindingName => &$bindingValue) {
+            $stmt->bindParam(':' . $bindingName, $bindingValue);
+        }
+
+        $cursor = null;
+
+        $stmt->bindParam(':cursor', $cursor, $returnType);
+        $stmt->execute();
+
+        if ($returnType === PDO::PARAM_STMT) {
+            $statement = new Statement($cursor, $this->getPdo(), $this->getPdo()->getOptions());
+            $statement->execute();
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
+
+            return $results;
+        }
+
+        return $cursor;
+    }
+
+    /**
      * Bind values to their parameters in the given statement.
      *
-     * @param  \PDOStatement $statement
-     * @param  array $bindings
-     * @return void
+     * @param \PDOStatement $statement
+     * @param array $bindings
      */
     public function bindValues($statement, $bindings)
     {
         foreach ($bindings as $key => $value) {
-            $statement->bindParam(
-                $key,
-                $bindings[$key],
-                ! is_string($value) && is_numeric($value) ? PDO::PARAM_INT : PDO::PARAM_STR
-            );
+            $statement->bindParam($key, $bindings[$key]);
         }
     }
 
@@ -260,7 +296,7 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        return $this->withTablePrefix(new QueryGrammar);
+        return $this->withTablePrefix(new QueryGrammar());
     }
 
     /**
@@ -304,7 +340,7 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultSchemaGrammar()
     {
-        return $this->withTablePrefix(new SchemaGrammar);
+        return $this->withTablePrefix(new SchemaGrammar());
     }
 
     /**
@@ -314,6 +350,6 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultPostProcessor()
     {
-        return new Processor;
+        return new Processor();
     }
 }
