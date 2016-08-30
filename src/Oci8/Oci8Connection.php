@@ -14,6 +14,7 @@ use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
 use Yajra\Oci8\Schema\Sequence;
 use Yajra\Oci8\Schema\Trigger;
+use Yajra\Pdo\Oci8\Statement;
 
 class Oci8Connection extends Connection
 {
@@ -264,9 +265,10 @@ class Oci8Connection extends Connection
         $stmt->execute();
 
         if ($returnType === PDO::PARAM_STMT) {
-            oci_execute($cursor, OCI_NO_AUTO_COMMIT);
-            oci_fetch_all($cursor, $results, 0, -1, OCI_FETCHSTATEMENT_BY_ROW + OCI_ASSOC);
-            oci_free_cursor($cursor);
+            $statement = new Statement($cursor, $this->getPdo(), $this->getPdo()->getOptions());
+            $statement->execute();
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $statement->closeCursor();
 
             return $results;
         }
