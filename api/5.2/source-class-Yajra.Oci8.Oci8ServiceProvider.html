@@ -186,37 +186,41 @@
 </span><span id="42" class="l"><a href="#42">42: </a>            <span class="php-var">$connection</span> = <span class="php-var">$connector</span>-&gt;connect(<span class="php-var">$config</span>);
 </span><span id="43" class="l"><a href="#43">43: </a>            <span class="php-var">$db</span>         = <span class="php-keyword1">new</span> Oci8Connection(<span class="php-var">$connection</span>, <span class="php-var">$config</span>[<span class="php-quote">&quot;database&quot;</span>], <span class="php-var">$config</span>[<span class="php-quote">&quot;prefix&quot;</span>], <span class="php-var">$config</span>);
 </span><span id="44" class="l"><a href="#44">44: </a>
-</span><span id="45" class="l"><a href="#45">45: </a>            <span class="php-comment">// set oracle session variables</span>
-</span><span id="46" class="l"><a href="#46">46: </a>            <span class="php-var">$sessionVars</span> = [
-</span><span id="47" class="l"><a href="#47">47: </a>                <span class="php-quote">'NLS_TIME_FORMAT'</span>         =&gt; <span class="php-quote">'HH24:MI:SS'</span>,
-</span><span id="48" class="l"><a href="#48">48: </a>                <span class="php-quote">'NLS_DATE_FORMAT'</span>         =&gt; <span class="php-quote">'YYYY-MM-DD HH24:MI:SS'</span>,
-</span><span id="49" class="l"><a href="#49">49: </a>                <span class="php-quote">'NLS_TIMESTAMP_FORMAT'</span>    =&gt; <span class="php-quote">'YYYY-MM-DD HH24:MI:SS'</span>,
-</span><span id="50" class="l"><a href="#50">50: </a>                <span class="php-quote">'NLS_TIMESTAMP_TZ_FORMAT'</span> =&gt; <span class="php-quote">'YYYY-MM-DD HH24:MI:SS TZH:TZM'</span>,
-</span><span id="51" class="l"><a href="#51">51: </a>                <span class="php-quote">'NLS_NUMERIC_CHARACTERS'</span>  =&gt; <span class="php-quote">'.,'</span>,
-</span><span id="52" class="l"><a href="#52">52: </a>            ];
-</span><span id="53" class="l"><a href="#53">53: </a>
-</span><span id="54" class="l"><a href="#54">54: </a>            <span class="php-comment">// Like Postgres, Oracle allows the concept of &quot;schema&quot;</span>
-</span><span id="55" class="l"><a href="#55">55: </a>            <span class="php-keyword1">if</span> (<span class="php-keyword1">isset</span>(<span class="php-var">$config</span>[<span class="php-quote">'schema'</span>])) {
-</span><span id="56" class="l"><a href="#56">56: </a>                <span class="php-var">$sessionVars</span>[<span class="php-quote">'CURRENT_SCHEMA'</span>] = <span class="php-var">$config</span>[<span class="php-quote">'schema'</span>];
-</span><span id="57" class="l"><a href="#57">57: </a>            }
-</span><span id="58" class="l"><a href="#58">58: </a>
-</span><span id="59" class="l"><a href="#59">59: </a>            <span class="php-var">$db</span>-&gt;setSessionVars(<span class="php-var">$sessionVars</span>);
-</span><span id="60" class="l"><a href="#60">60: </a>
-</span><span id="61" class="l"><a href="#61">61: </a>            <span class="php-keyword1">return</span> <span class="php-var">$db</span>;
-</span><span id="62" class="l"><a href="#62">62: </a>        });
-</span><span id="63" class="l"><a href="#63">63: </a>    }
+</span><span id="45" class="l"><a href="#45">45: </a>            <span class="php-keyword1">if</span> (! <span class="php-keyword1">empty</span>(<span class="php-var">$config</span>[<span class="php-quote">'skip_session_vars'</span>])) {
+</span><span id="46" class="l"><a href="#46">46: </a>                <span class="php-keyword1">return</span> <span class="php-var">$db</span>;
+</span><span id="47" class="l"><a href="#47">47: </a>            }
+</span><span id="48" class="l"><a href="#48">48: </a>
+</span><span id="49" class="l"><a href="#49">49: </a>            <span class="php-comment">// set oracle session variables</span>
+</span><span id="50" class="l"><a href="#50">50: </a>            <span class="php-var">$sessionVars</span> = [
+</span><span id="51" class="l"><a href="#51">51: </a>                <span class="php-quote">'NLS_TIME_FORMAT'</span>         =&gt; <span class="php-quote">'HH24:MI:SS'</span>,
+</span><span id="52" class="l"><a href="#52">52: </a>                <span class="php-quote">'NLS_DATE_FORMAT'</span>         =&gt; <span class="php-quote">'YYYY-MM-DD HH24:MI:SS'</span>,
+</span><span id="53" class="l"><a href="#53">53: </a>                <span class="php-quote">'NLS_TIMESTAMP_FORMAT'</span>    =&gt; <span class="php-quote">'YYYY-MM-DD HH24:MI:SS'</span>,
+</span><span id="54" class="l"><a href="#54">54: </a>                <span class="php-quote">'NLS_TIMESTAMP_TZ_FORMAT'</span> =&gt; <span class="php-quote">'YYYY-MM-DD HH24:MI:SS TZH:TZM'</span>,
+</span><span id="55" class="l"><a href="#55">55: </a>                <span class="php-quote">'NLS_NUMERIC_CHARACTERS'</span>  =&gt; <span class="php-quote">'.,'</span>,
+</span><span id="56" class="l"><a href="#56">56: </a>            ];
+</span><span id="57" class="l"><a href="#57">57: </a>
+</span><span id="58" class="l"><a href="#58">58: </a>            <span class="php-comment">// Like Postgres, Oracle allows the concept of &quot;schema&quot;</span>
+</span><span id="59" class="l"><a href="#59">59: </a>            <span class="php-keyword1">if</span> (<span class="php-keyword1">isset</span>(<span class="php-var">$config</span>[<span class="php-quote">'schema'</span>])) {
+</span><span id="60" class="l"><a href="#60">60: </a>                <span class="php-var">$sessionVars</span>[<span class="php-quote">'CURRENT_SCHEMA'</span>] = <span class="php-var">$config</span>[<span class="php-quote">'schema'</span>];
+</span><span id="61" class="l"><a href="#61">61: </a>            }
+</span><span id="62" class="l"><a href="#62">62: </a>
+</span><span id="63" class="l"><a href="#63">63: </a>            <span class="php-var">$db</span>-&gt;setSessionVars(<span class="php-var">$sessionVars</span>);
 </span><span id="64" class="l"><a href="#64">64: </a>
-</span><span id="65" class="l"><a href="#65">65: </a>    <span class="php-comment">/**
-</span></span><span id="66" class="l"><a href="#66">66: </a><span class="php-comment">     * Get the services provided by the provider.
-</span></span><span id="67" class="l"><a href="#67">67: </a><span class="php-comment">     *
-</span></span><span id="68" class="l"><a href="#68">68: </a><span class="php-comment">     * @return string[]
-</span></span><span id="69" class="l"><a href="#69">69: </a><span class="php-comment">     */</span>
-</span><span id="70" class="l"><a href="#70">70: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> provides()
-</span><span id="71" class="l"><a href="#71">71: </a>    {
-</span><span id="72" class="l"><a href="#72">72: </a>        <span class="php-keyword1">return</span> [];
-</span><span id="73" class="l"><a href="#73">73: </a>    }
-</span><span id="74" class="l"><a href="#74">74: </a>}
-</span><span id="75" class="l"><a href="#75">75: </a></span></code></pre>
+</span><span id="65" class="l"><a href="#65">65: </a>            <span class="php-keyword1">return</span> <span class="php-var">$db</span>;
+</span><span id="66" class="l"><a href="#66">66: </a>        });
+</span><span id="67" class="l"><a href="#67">67: </a>    }
+</span><span id="68" class="l"><a href="#68">68: </a>
+</span><span id="69" class="l"><a href="#69">69: </a>    <span class="php-comment">/**
+</span></span><span id="70" class="l"><a href="#70">70: </a><span class="php-comment">     * Get the services provided by the provider.
+</span></span><span id="71" class="l"><a href="#71">71: </a><span class="php-comment">     *
+</span></span><span id="72" class="l"><a href="#72">72: </a><span class="php-comment">     * @return string[]
+</span></span><span id="73" class="l"><a href="#73">73: </a><span class="php-comment">     */</span>
+</span><span id="74" class="l"><a href="#74">74: </a>    <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> provides()
+</span><span id="75" class="l"><a href="#75">75: </a>    {
+</span><span id="76" class="l"><a href="#76">76: </a>        <span class="php-keyword1">return</span> [];
+</span><span id="77" class="l"><a href="#77">77: </a>    }
+</span><span id="78" class="l"><a href="#78">78: </a>}
+</span><span id="79" class="l"><a href="#79">79: </a></span></code></pre>
 
 	<div id="footer">
 		 API documentation generated by <a href="http://apigen.org">ApiGen</a>
