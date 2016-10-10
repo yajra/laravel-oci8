@@ -5,7 +5,6 @@ namespace Yajra\Oci8\Query\Grammars;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Yajra\Oci8\OracleReservedWords;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class OracleGrammar extends Grammar
 {
@@ -141,6 +140,25 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Wrap a table in keyword identifiers.
+     *
+     * @param  \Illuminate\Database\Query\Expression|string $table
+     * @return string
+     */
+    public function wrapTable($table)
+    {
+        if ($this->isExpression($table)) {
+            return $this->getValue($table);
+        }
+
+        if (strpos(strtolower($table), ' as ') !== false) {
+            $table = str_replace(' as ', ' ', $table);
+        }
+
+        return $this->wrap($this->tablePrefix . $table, true);
+    }
+
+    /**
      * Compile an insert and get ID statement into SQL.
      *
      * @param  \Illuminate\Database\Query\Builder $query
@@ -191,7 +209,6 @@ class OracleGrammar extends Grammar
                 $insertQueries[] = "select " . $parameter . " from dual ";
             }
             $parameters = implode('union all ', $insertQueries);
-
 
             return "insert into $table ($columns) $parameters";
         }
