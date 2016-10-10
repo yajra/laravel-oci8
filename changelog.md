@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.12 - 2016-10-10
+- Fix table wrapper that uses as keyword. Fix #211.
+
 #v5.2.11 - 2016-07-12
 - Added option for skipping setSessionVars. #185
 - Update OCi8Connection->setSessionVars(). #184
