@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.3 - 2016-10-10
+- Fix table wrapper that uses as keyword. Fix #211.
+
 #v5.3.2 - 2016-08-30
 - Implement executeProcedure method. Credits to @mstaack.
 - Fix ORA-01790: expression must have same datatype as corresponding expression.
