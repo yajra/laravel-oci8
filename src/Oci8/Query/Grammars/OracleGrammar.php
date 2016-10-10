@@ -432,6 +432,10 @@ class OracleGrammar extends Grammar
             return $this->getValue($table);
         }
 
+        if (strpos(strtolower($table), ' as ') !== false) {
+            $table = str_replace(' as ', ' ', $table);
+        }
+
         return $this->getSchemaPrefix() . $this->wrap($this->tablePrefix . $table, true);
     }
 }
