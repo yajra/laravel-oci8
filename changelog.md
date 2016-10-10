@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.1.3 - 2016-10-10
+- Fix table wrapper that uses as keyword. Fix #211
+- Remove unused import and excess new line.
+
 #v5.1.2 - 2016-06-14
 - OracleEloquent switch QueryBuilder implementation depending grammar.
 - PR #179, credits to @MTon.
