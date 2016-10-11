@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.4 - 2016-10-11
+- Add support for wrapping of schema changes in transaction.
+- https://github.com/laravel/framework/pull/15780
+
 #v5.3.3 - 2016-10-10
 - Fix table wrapper that uses as keyword. Fix #211.
 
