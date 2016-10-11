@@ -39,6 +39,13 @@ class OracleGrammar extends Grammar
     protected $schema_prefix = '';
 
     /**
+     * If this Grammar supports schema changes wrapped in a transaction.
+     *
+     * @var bool
+     */
+    protected $transactions = true;
+
+    /**
      * Compile a create table command.
      *
      * @param  \Illuminate\Database\Schema\Blueprint $blueprint
