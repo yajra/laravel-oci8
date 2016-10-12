@@ -3,7 +3,9 @@
 namespace Yajra\Oci8;
 
 use Illuminate\Support\ServiceProvider;
+use Yajra\Oci8\Auth\OracleUserProvider;
 use Yajra\Oci8\Connectors\OracleConnector as Connector;
+use Illuminate\Support\Facades\Auth;
 
 class Oci8ServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,10 @@ class Oci8ServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/oracle.php' => config_path('oracle.php'),
         ], 'oracle');
+
+        Auth::provider('oracle', function ($app, array $config) {
+            return new OracleUserProvider($app['hash'], $config['model']);
+        });
     }
 
     /**
