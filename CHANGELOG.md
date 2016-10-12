@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.5 - 2016-10-12
+- Implement oracle user provider.
+
 #v5.3.4 - 2016-10-11
 - Add support for wrapping of schema changes in transaction.
 - https://github.com/laravel/framework/pull/15780
