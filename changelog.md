@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.13 - 2016-10-12
+- Implement oracle user provider.
+
 #v5.2.12 - 2016-10-10
 - Fix table wrapper that uses as keyword. Fix #211.
 
