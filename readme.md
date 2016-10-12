@@ -63,8 +63,21 @@ This will copy the configuration file to `config/oracle.php`.
 
 And run your laravel installation...
 
-###License
+## [Laravel 5.2] Oracle User Provider
+When using oracle, we may encounter a problem on authentication because oracle queries are case sensitive by default. 
+By using this oracle user provider, we will now be able to avoid user issues when logging in and doing a forgot password failure because of case sensitive search.
 
+To use, just update `auth.php` config and set the driver to `oracle`
+```php
+'providers' => [
+	'users' => [
+		'driver' => 'oracle',
+		'model' => App\User::class,
+	],
+]
+```
+
+###License
 Licensed under the [MIT License](https://github.com/yajra/laravel-oci8/blob/master/LICENSE).
 
 ###Buy me a beer
