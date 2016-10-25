@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
@@ -160,7 +161,7 @@ class OracleGrammar extends Grammar
             $table = str_replace(' as ', ' ', $table);
         }
 
-        return $this->getSchemaPrefix() . $this->wrap($this->tablePrefix . $table, true);
+        return $this->getSchemaPrefix() . $this->tablePrefix . $table;
     }
 
     /**
@@ -432,10 +433,12 @@ class OracleGrammar extends Grammar
      */
     protected function wrapValue($value)
     {
-        if ($this->isReserved($value)) {
-            return parent::wrapValue($value);
+        if ($value === '*') {
+            return $value;
         }
 
-        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+        $value = $this->isReserved($value) ? Str::lower($value) : Str::upper($value);
+
+        return '"' . str_replace('"', '""', $value) . '"';
     }
 }
