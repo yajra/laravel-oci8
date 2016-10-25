@@ -38,7 +38,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('foo')->addSelect('bar')->addSelect(['baz', 'boom'])->from('users');
-        $this->assertEquals('select foo, bar, baz, boom from users', $builder->toSql());
+        $this->assertEquals('select "FOO", "BAR", "BAZ", "BOOM" from users', $builder->toSql());
     }
 
     public function testBasicSelectWithPrefix()
@@ -53,32 +53,28 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->distinct()->select('foo', 'bar')->from('users');
-        $this->assertEquals('select distinct foo, bar from users', $builder->toSql());
+        $this->assertEquals('select distinct "FOO", "BAR" from users', $builder->toSql());
     }
 
     public function testBasicAlias()
     {
         $builder = $this->getBuilder();
         $builder->select('foo as bar')->from('users');
-        $this->assertEquals('select foo as bar from users', $builder->toSql());
+        $this->assertEquals('select "FOO" as "BAR" from users', $builder->toSql());
     }
 
     public function testBasicTableWrappingReservedWords()
     {
-        /**
-         * NOTE: this should not be allowed in real world app
-         * as Oracle will not allow creation of such objects.
-         */
         $builder = $this->getBuilder();
         $builder->select('*')->from('schema.users');
-        $this->assertEquals('select * from "schema".users', $builder->toSql());
+        $this->assertEquals('select * from schema.users', $builder->toSql());
     }
 
     public function testBasicWheres()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
-        $this->assertEquals('select * from users where id = ?', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ?', $builder->toSql());
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
@@ -94,12 +90,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereBetween('id', [1, 2]);
-        $this->assertEquals('select * from users where id between ? and ?', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" between ? and ?', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotBetween('id', [1, 2]);
-        $this->assertEquals('select * from users where id not between ? and ?', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" not between ? and ?', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
 
@@ -107,7 +103,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhere('email', '=', 'foo');
-        $this->assertEquals('select * from users where id = ? or email = ?', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ? or "EMAIL" = ?', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
@@ -123,7 +119,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereRaw('email = ?', ['foo']);
-        $this->assertEquals('select * from users where id = ? or email = ?', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ? or email = ?', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
@@ -131,12 +127,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', [1, 2, 3]);
-        $this->assertEquals('select * from users where id in (?, ?, ?)', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" in (?, ?, ?)', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereIn('id', [1, 2, 3]);
-        $this->assertEquals('select * from users where id = ? or id in (?, ?, ?)', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ? or "ID" in (?, ?, ?)', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 1, 2 => 2, 3 => 3], $builder->getBindings());
     }
 
@@ -144,12 +140,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotIn('id', [1, 2, 3]);
-        $this->assertEquals('select * from users where id not in (?, ?, ?)', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" not in (?, ?, ?)', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereNotIn('id', [1, 2, 3]);
-        $this->assertEquals('select * from users where id = ? or id not in (?, ?, ?)', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ? or "ID" not in (?, ?, ?)', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 1, 2 => 2, 3 => 3], $builder->getBindings());
     }
 
@@ -158,7 +154,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
-        $this->assertEquals('select * from users where id = ? union select * from users where id = ?',
+        $this->assertEquals('select * from users where "ID" = ? union select * from users where "ID" = ?',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
@@ -168,7 +164,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->unionAll($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
-        $this->assertEquals('select * from users where id = ? union all select * from users where id = ?',
+        $this->assertEquals('select * from users where "ID" = ? union all select * from users where "ID" = ?',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
@@ -179,7 +175,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 3));
-        $this->assertEquals('select * from users where id = ? union select * from users where id = ? union select * from users where id = ?',
+        $this->assertEquals('select * from users where "ID" = ? union select * from users where "ID" = ? union select * from users where "ID" = ?',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
     }
@@ -190,7 +186,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->unionAll($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
         $builder->unionAll($this->getBuilder()->select('*')->from('users')->where('id', '=', 3));
-        $this->assertEquals('select * from users where id = ? union all select * from users where id = ? union all select * from users where id = ?',
+        $this->assertEquals('select * from users where "ID" = ? union all select * from users where "ID" = ? union all select * from users where "ID" = ?',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
     }
@@ -201,7 +197,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
-        $this->assertEquals('select * from users where id in (select t2.* from ( select rownum AS "rn", t1.* from (select id from users where age > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+        $this->assertEquals('select * from users where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from users where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
             $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
 
@@ -209,7 +205,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
-        $this->assertEquals('select * from users where id not in (select t2.* from ( select rownum AS "rn", t1.* from (select id from users where age > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+        $this->assertEquals('select * from users where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from users where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
             $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
     }
@@ -218,12 +214,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNull('id');
-        $this->assertEquals('select * from users where id is null', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" is null', $builder->toSql());
         $this->assertEquals([], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereNull('id');
-        $this->assertEquals('select * from users where id = ? or id is null', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ? or "ID" is null', $builder->toSql());
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
@@ -231,12 +227,12 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotNull('id');
-        $this->assertEquals('select * from users where id is not null', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" is not null', $builder->toSql());
         $this->assertEquals([], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '>', 1)->orWhereNotNull('id');
-        $this->assertEquals('select * from users where id > ? or id is not null', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" > ? or "ID" is not null', $builder->toSql());
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
@@ -244,18 +240,18 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->groupBy('id', 'email');
-        $this->assertEquals('select * from users group by id, email', $builder->toSql());
+        $this->assertEquals('select * from users group by "ID", "EMAIL"', $builder->toSql());
     }
 
     public function testOrderBys()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orderBy('email')->orderBy('age', 'desc');
-        $this->assertEquals('select * from users order by email asc, age desc', $builder->toSql());
+        $this->assertEquals('select * from users order by "EMAIL" asc, "AGE" desc', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orderBy('email')->orderByRaw('age ? desc', ['bar']);
-        $this->assertEquals('select * from users order by email asc, age ? desc', $builder->toSql());
+        $this->assertEquals('select * from users order by "EMAIL" asc, age ? desc', $builder->toSql());
         $this->assertEquals(['bar'], $builder->getBindings());
     }
 
@@ -263,15 +259,15 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->having('email', '>', 1);
-        $this->assertEquals('select * from users having email > ?', $builder->toSql());
+        $this->assertEquals('select * from users having "EMAIL" > ?', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->groupBy('email')->having('email', '>', 1);
-        $this->assertEquals('select * from users group by email having email > ?', $builder->toSql());
+        $this->assertEquals('select * from users group by "EMAIL" having "EMAIL" > ?', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('email as foo_email')->from('users')->having('foo_email', '>', 1);
-        $this->assertEquals('select email as foo_email from users having foo_email > ?', $builder->toSql());
+        $this->assertEquals('select "EMAIL" as "FOO_EMAIL" from users having "FOO_EMAIL" > ?', $builder->toSql());
     }
 
     public function testRawHavings()
@@ -282,7 +278,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->having('baz', '=', 1)->orHavingRaw('user_foo < user_bar');
-        $this->assertEquals('select * from users having baz = ? or user_foo < user_bar', $builder->toSql());
+        $this->assertEquals('select * from users having "BAZ" = ? or user_foo < user_bar', $builder->toSql());
     }
 
     public function testLimitsAndOffsets()
@@ -321,7 +317,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhere('name', 'foo');
-        $this->assertEquals('select * from users where id = ? or name = ?', $builder->toSql());
+        $this->assertEquals('select * from users where "ID" = ? or "NAME" = ?', $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
@@ -331,7 +327,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->where('email', '=', 'foo')->orWhere(function ($q) {
             $q->where('name', '=', 'bar')->where('age', '=', 25);
         });
-        $this->assertEquals('select * from users where email = ? or (name = ? and age = ?)', $builder->toSql());
+        $this->assertEquals('select * from users where "EMAIL" = ? or ("NAME" = ? and "AGE" = ?)', $builder->toSql());
         $this->assertEquals([0 => 'foo', 1 => 'bar', 2 => 25], $builder->getBindings());
     }
 
@@ -342,7 +338,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
             $q->select(new Raw('max(id)'))->from('users')->where('email', '=', 'bar');
         });
 
-        $this->assertEquals('select * from users where email = ? or id = (select max(id) from users where email = ?)',
+        $this->assertEquals('select * from users where "EMAIL" = ? or "ID" = (select max(id) from users where "EMAIL" = ?)',
             $builder->toSql());
         $this->assertEquals([0 => 'foo', 1 => 'bar'], $builder->getBindings());
     }
@@ -353,28 +349,28 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('orders')->whereExists(function ($q) {
             $q->select('*')->from('products')->where('products.id', '=', new Raw('orders.id'));
         });
-        $this->assertEquals('select * from orders where exists (select * from products where products.id = orders.id)',
+        $this->assertEquals('select * from orders where exists (select * from products where products."ID" = orders.id)',
             $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->whereNotExists(function ($q) {
             $q->select('*')->from('products')->where('products.id', '=', new Raw('orders.id'));
         });
-        $this->assertEquals('select * from orders where not exists (select * from products where products.id = orders.id)',
+        $this->assertEquals('select * from orders where not exists (select * from products where products."ID" = orders.id)',
             $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->where('id', '=', 1)->orWhereExists(function ($q) {
             $q->select('*')->from('products')->where('products.id', '=', new Raw('orders.id'));
         });
-        $this->assertEquals('select * from orders where id = ? or exists (select * from products where products.id = orders.id)',
+        $this->assertEquals('select * from orders where "ID" = ? or exists (select * from products where products."ID" = orders.id)',
             $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->where('id', '=', 1)->orWhereNotExists(function ($q) {
             $q->select('*')->from('products')->where('products.id', '=', new Raw('orders.id'));
         });
-        $this->assertEquals('select * from orders where id = ? or not exists (select * from products where products.id = orders.id)',
+        $this->assertEquals('select * from orders where "ID" = ? or not exists (select * from products where products."ID" = orders.id)',
             $builder->toSql());
     }
 
@@ -385,7 +381,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 ->from('users')
                 ->join('contacts', 'users.id', '=', 'contacts.id')
                 ->leftJoin('photos', 'users.id', '=', 'photos.id');
-        $this->assertEquals('select * from users inner join contacts on users.id = contacts.id left join photos on users.id = photos.id',
+        $this->assertEquals('select * from users inner join contacts on users."ID" = contacts."ID" left join photos on users."ID" = photos."ID"',
             $builder->toSql());
 
         $builder = $this->getBuilder();
@@ -393,7 +389,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 ->from('users')
                 ->leftJoinWhere('photos', 'users.id', '=', 'bar')
                 ->joinWhere('photos', 'users.id', '=', 'foo');
-        $this->assertEquals('select * from users left join photos on users.id = ? inner join photos on users.id = ?',
+        $this->assertEquals('select * from users left join photos on users."ID" = ? inner join photos on users."ID" = ?',
             $builder->toSql());
         $this->assertEquals(['bar', 'foo'], $builder->getBindings());
     }
@@ -404,14 +400,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->join('contacts', function ($j) {
             $j->on('users.id', '=', 'contacts.id')->orOn('users.name', '=', 'contacts.name');
         });
-        $this->assertEquals('select * from users inner join contacts on users.id = contacts.id or users.name = contacts.name',
+        $this->assertEquals('select * from users inner join contacts on users."ID" = contacts."ID" or users."NAME" = contacts."NAME"',
             $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
             $j->where('users.id', '=', 'foo')->orWhere('users.name', '=', 'bar');
         });
-        $this->assertEquals('select * from users inner join contacts on users.id = ? or users.name = ?',
+        $this->assertEquals('select * from users inner join contacts on users."ID" = ? or users."NAME" = ?',
             $builder->toSql());
         $this->assertEquals(['foo', 'bar'], $builder->getBindings());
     }
@@ -429,7 +425,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select * from (select * from users where id = ?) where rownum = 1',
+                ->with('select * from (select * from users where "ID" = ?) where rownum = 1',
                     [1], true)
                 ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
@@ -449,7 +445,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select * from (select * from users where id = ?) where rownum = 1',
+                ->with('select * from (select * from users where "ID" = ?) where rownum = 1',
                     [1], true)
                 ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
@@ -543,7 +539,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select max(id) as aggregate from users', [], true)
+                ->with('select max("ID") as aggregate from users', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -558,7 +554,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select min(id) as aggregate from users', [], true)
+                ->with('select min("ID") as aggregate from users', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -573,7 +569,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select sum(id) as aggregate from users', [], true)
+                ->with('select sum("ID") as aggregate from users', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -588,7 +584,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('insert')
                 ->once()
-                ->with('insert into users (email) values (?)', ['foo'])
+                ->with('insert into users ("EMAIL") values (?)', ['foo'])
                 ->andReturn(true);
         $result = $builder->from('users')->insert(['email' => 'foo']);
         $this->assertTrue($result);
@@ -600,7 +596,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('insert')
                 ->once()
-                ->with('insert into users (email) select ? from dual union all select ? from dual ', ['foo', 'foo'])
+                ->with('insert into users ("EMAIL") select ? from dual union all select ? from dual ', ['foo', 'foo'])
                 ->andReturn(true);
         $data[] = ['email' => 'foo'];
         $data[] = ['email' => 'foo'];
@@ -614,7 +610,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getProcessor()
                 ->shouldReceive('processInsertGetId')
                 ->once()
-                ->with($builder, 'insert into users (email) values (?) returning id into ?', ['foo'], 'id')
+                ->with($builder, 'insert into users ("EMAIL") values (?) returning "ID" into ?', ['foo'], 'id')
                 ->andReturn(1);
         $result = $builder->from('users')->insertGetId(['email' => 'foo'], 'id');
         $this->assertEquals(1, $result);
@@ -627,7 +623,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 ->shouldReceive('saveLob')
                 ->once()
                 ->with($builder,
-                    'insert into users (email, myblob) values (?, EMPTY_BLOB()) returning myblob, id into ?, ?',
+                    'insert into users ("EMAIL", "MYBLOB") values (?, EMPTY_BLOB()) returning "MYBLOB", "ID" into ?, ?',
                     ['foo'], ['test data'])
                 ->andReturn(1);
         $result = $builder->from('users')->insertLob(['email' => 'foo'], ['myblob' => 'test data'], 'id');
@@ -640,7 +636,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getProcessor()
                 ->shouldReceive('saveLob')
                 ->once()
-                ->with($builder, 'insert into users (myblob) values (EMPTY_BLOB()) returning myblob, id into ?, ?', [],
+                ->with($builder, 'insert into users ("MYBLOB") values (EMPTY_BLOB()) returning "MYBLOB", "ID" into ?, ?', [],
                     ['test data'])
                 ->andReturn(1);
         $result = $builder->from('users')->insertLob([], ['myblob' => 'test data'], 'id');
@@ -654,7 +650,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
                 ->shouldReceive('saveLob')
                 ->once()
                 ->with($builder,
-                    'update users set email = ?, myblob = EMPTY_BLOB() where id = ? returning myblob, id into ?, ?',
+                    'update users set "EMAIL" = ?, "MYBLOB" = EMPTY_BLOB() where "ID" = ? returning "MYBLOB", "ID" into ?, ?',
                     ['foo', 1],
                     ['test data'])
                 ->andReturn(1);
@@ -670,7 +666,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getProcessor()
                 ->shouldReceive('saveLob')
                 ->once()
-                ->with($builder, 'update users set myblob = EMPTY_BLOB() where id = ? returning myblob, id into ?, ?',
+                ->with($builder, 'update users set "MYBLOB" = EMPTY_BLOB() where "ID" = ? returning "MYBLOB", "ID" into ?, ?',
                     [1],
                     ['test data'])
                 ->andReturn(1);
@@ -686,11 +682,10 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getProcessor()
                 ->shouldReceive('processInsertGetId')
                 ->once()
-                ->with($builder, 'insert into users (email, bar) values (?, bar) returning id into ?', ['foo'], 'id')
+                ->with($builder, 'insert into users ("EMAIL", "BAR") values (?, bar) returning "ID" into ?', ['foo'], 'id')
                 ->andReturn(1);
         $result = $builder->from('users')
-                          ->insertGetId(['email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')],
-                              'id');
+                          ->insertGetId(['email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -700,7 +695,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('insert')
                 ->once()
-                ->with('insert into users (email) values (CURRENT TIMESTAMP)', [])
+                ->with('insert into users ("EMAIL") values (CURRENT TIMESTAMP)', [])
                 ->andReturn(true);
         $result = $builder->from('users')->insert(['email' => new Raw('CURRENT TIMESTAMP')]);
         $this->assertTrue($result);
@@ -712,7 +707,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('update')
                 ->once()
-                ->with('update users set email = ?, name = ? where id = ?', ['foo', 'bar', 1])
+                ->with('update users set "EMAIL" = ?, "NAME" = ? where "ID" = ?', ['foo', 'bar', 1])
                 ->andReturn(1);
         $result = $builder->from('users')->where('id', '=', 1)->update(['email' => 'foo', 'name' => 'bar']);
         $this->assertEquals(1, $result);
@@ -724,7 +719,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('update')
                 ->once()
-                ->with('update users inner join orders on users.id = orders.user_id set email = ?, name = ? where users.id = ?',
+                ->with('update users inner join orders on users."ID" = orders."USER_ID" set "EMAIL" = ?, "NAME" = ? where users."ID" = ?',
                     ['foo', 'bar', 1])
                 ->andReturn(1);
         $result = $builder->from('users')
@@ -740,7 +735,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('update')
                 ->once()
-                ->with('update users set email = foo, name = ? where id = ?', ['bar', 1])
+                ->with('update users set "EMAIL" = foo, "NAME" = ? where "ID" = ?', ['bar', 1])
                 ->andReturn(1);
         $result = $builder->from('users')->where('id', '=', 1)->update(['email' => new Raw('foo'), 'name' => 'bar']);
         $this->assertEquals(1, $result);
@@ -752,7 +747,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('delete')
                 ->once()
-                ->with('delete from users where email = ?', ['foo'])
+                ->with('delete from users where "EMAIL" = ?', ['foo'])
                 ->andReturn(1);
         $result = $builder->from('users')->where('email', '=', 'foo')->delete();
         $this->assertEquals(1, $result);
@@ -761,7 +756,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('delete')
                 ->once()
-                ->with('delete from users where id = ?', [1])
+                ->with('delete from users where "ID" = ?', [1])
                 ->andReturn(1);
         $result = $builder->from('users')->delete(1);
         $this->assertEquals(1, $result);
@@ -787,7 +782,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('foo', null);
-        $this->assertEquals('select * from users where foo is null', $builder->toSql());
+        $this->assertEquals('select * from users where "FOO" is null', $builder->toSql());
     }
 
     public function testDynamicWhere()
@@ -844,7 +839,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock();
-        $this->assertEquals('select * from foo where bar = ? for update', $builder->toSql());
+        $this->assertEquals('select * from foo where "BAR" = ? for update', $builder->toSql());
         $this->assertEquals(['baz'], $builder->getBindings());
 
         $builder = $this->getBuilder();
@@ -861,7 +856,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', '=', '2015-12-20');
-        $this->assertEquals('select * from users where trunc(created_at) = ?', $builder->toSql());
+        $this->assertEquals('select * from users where trunc("CREATED_AT") = ?', $builder->toSql());
         $this->assertEquals([0 => '2015-12-20'], $builder->getBindings());
     }
 
@@ -869,7 +864,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDay('created_at', '=', 20);
-        $this->assertEquals('select * from users where extract (day from created_at) = ?', $builder->toSql());
+        $this->assertEquals('select * from users where extract (day from "CREATED_AT") = ?', $builder->toSql());
         $this->assertEquals([0 => 20], $builder->getBindings());
     }
 
@@ -877,7 +872,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereMonth('created_at', '=', 12);
-        $this->assertEquals('select * from users where extract (month from created_at) = ?', $builder->toSql());
+        $this->assertEquals('select * from users where extract (month from "CREATED_AT") = ?', $builder->toSql());
         $this->assertEquals([0 => 12], $builder->getBindings());
     }
 
@@ -885,7 +880,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereYear('created_at', '=', 2015);
-        $this->assertEquals('select * from users where extract (year from created_at) = ?', $builder->toSql());
+        $this->assertEquals('select * from users where extract (year from "CREATED_AT") = ?', $builder->toSql());
         $this->assertEquals([0 => 2015], $builder->getBindings());
     }
 
@@ -984,7 +979,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
         $builder->orderBy('id', 'desc');
-        $this->assertEquals('select * from users where id = ? union select * from users where id = ? order by id desc',
+        $this->assertEquals('select * from users where "ID" = ? union select * from users where "ID" = ? order by "ID" desc',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
