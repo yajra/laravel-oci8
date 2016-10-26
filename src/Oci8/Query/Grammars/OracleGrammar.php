@@ -161,7 +161,13 @@ class OracleGrammar extends Grammar
             $table = str_replace(' as ', ' ', $table);
         }
 
-        return $this->getSchemaPrefix() . $this->tablePrefix . $table;
+        $tableName = $this->wrap($this->tablePrefix . $table, true);
+        $segments  = explode(' ', $table);
+        if (count($segments) > 1) {
+            $tableName = $this->wrap($this->tablePrefix . $segments[0]) . ' ' . $segments[1];
+        }
+
+        return $this->getSchemaPrefix() . $tableName;
     }
 
     /**
@@ -171,7 +177,7 @@ class OracleGrammar extends Grammar
      */
     public function getSchemaPrefix()
     {
-        return ! empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix) . '.' : '';
     }
 
     /**
@@ -182,6 +188,23 @@ class OracleGrammar extends Grammar
     public function setSchemaPrefix($prefix)
     {
         $this->schema_prefix = $prefix;
+    }
+
+    /**
+     * Wrap a single string in keyword identifiers.
+     *
+     * @param  string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        if ($value === '*') {
+            return $value;
+        }
+
+        $value = $this->isReserved($value) ? Str::lower($value) : Str::upper($value);
+
+        return '"' . str_replace('"', '""', $value) . '"';
     }
 
     /**
@@ -423,22 +446,5 @@ class OracleGrammar extends Grammar
         $value = $this->parameter($where['value']);
 
         return "extract ($type from {$this->wrap($where['column'])}) {$where['operator']} $value";
-    }
-
-    /**
-     * Wrap a single string in keyword identifiers.
-     *
-     * @param  string $value
-     * @return string
-     */
-    protected function wrapValue($value)
-    {
-        if ($value === '*') {
-            return $value;
-        }
-
-        $value = $this->isReserved($value) ? Str::lower($value) : Str::upper($value);
-
-        return '"' . str_replace('"', '""', $value) . '"';
     }
 }
