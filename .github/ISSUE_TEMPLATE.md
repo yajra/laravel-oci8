@@ -28,4 +28,4 @@ over other users requests/tickets.
 - Operating System
 - PHP Version
 - Laravel Version
-- Laravel-Datatables Version
+- Laravel-OCI8 Version
