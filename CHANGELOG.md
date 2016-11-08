@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.6 - 2016-11-08
+- Fix git attributes and github template.
+- Fix wrapping of schema, table and column name.
+
 #v5.3.5 - 2016-10-12
 - Implement oracle user provider.
 
