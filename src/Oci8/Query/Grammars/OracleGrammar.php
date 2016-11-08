@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
@@ -160,27 +161,50 @@ class OracleGrammar extends Grammar
             $table = str_replace(' as ', ' ', $table);
         }
 
-        return $this->getSchemaPrefix() . $this->wrap($this->tablePrefix . $table, true);
+        $tableName = $this->wrap($this->tablePrefix . $table, true);
+        $segments  = explode(' ', $table);
+        if (count($segments) > 1) {
+            $tableName = $this->wrap($this->tablePrefix . $segments[0]) . ' ' . $segments[1];
+        }
+
+        return $this->getSchemaPrefix() . $tableName;
     }
 
     /**
-     * Return the schema prefix
+     * Return the schema prefix.
      *
      * @return string
      */
     public function getSchemaPrefix()
     {
-        return ! empty($this->schema_prefix) ? $this->schema_prefix . '.' : '';
+        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix) . '.' : '';
     }
 
     /**
-     * Set the shema prefix
+     * Set the schema prefix.
      *
      * @param string $prefix
      */
     public function setSchemaPrefix($prefix)
     {
         $this->schema_prefix = $prefix;
+    }
+
+    /**
+     * Wrap a single string in keyword identifiers.
+     *
+     * @param  string $value
+     * @return string
+     */
+    protected function wrapValue($value)
+    {
+        if ($value === '*') {
+            return $value;
+        }
+
+        $value = $this->isReserved($value) ? Str::lower($value) : Str::upper($value);
+
+        return '"' . str_replace('"', '""', $value) . '"';
     }
 
     /**
@@ -422,20 +446,5 @@ class OracleGrammar extends Grammar
         $value = $this->parameter($where['value']);
 
         return "extract ($type from {$this->wrap($where['column'])}) {$where['operator']} $value";
-    }
-
-    /**
-     * Wrap a single string in keyword identifiers.
-     *
-     * @param  string $value
-     * @return string
-     */
-    protected function wrapValue($value)
-    {
-        if ($this->isReserved($value)) {
-            return parent::wrapValue($value);
-        }
-
-        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
     }
 }
