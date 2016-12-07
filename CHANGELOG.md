@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.7 - 2016-12-07
+- Allow update of sessionVars from config. PR #232, credits to @XavRsl 
+
 #v5.3.6 - 2016-11-08
 - Fix git attributes and github template.
 - Fix wrapping of schema, table and column name.
