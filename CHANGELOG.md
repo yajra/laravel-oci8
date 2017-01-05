@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.8 - 2017-01-05
+- Rename phpunit.xml to fix export-ignore.
+- Update license to 2017.
+
 #v5.3.7 - 2016-12-07
 - Allow update of sessionVars from config. PR #232, credits to @XavRsl 
 
