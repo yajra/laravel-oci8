@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.0 - 2017-01-25
+- Add support for Laravel 5.4.
+
 #v5.3.8 - 2017-01-05
 - Rename phpunit.xml to fix export-ignore.
 - Update license to 2017.
