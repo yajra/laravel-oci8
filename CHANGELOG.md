@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.1 - 2017-02-02
+- Update pdo-via-oci8 to ^1.3.1
+- Fix #246 fetchAll fetchMode issue.
+
 #v5.4.0 - 2017-01-25
 - Add support for Laravel 5.4.
 
