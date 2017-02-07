@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.2 - 2017-02-07
+- Fix error while migrate:rollback: PR #253, credits to @vystepanenko.
+
 #v5.4.1 - 2017-02-02
 - Update pdo-via-oci8 to ^1.3.1
 - Fix #246 fetchAll fetchMode issue.
