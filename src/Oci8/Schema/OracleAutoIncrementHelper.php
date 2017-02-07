@@ -147,7 +147,7 @@ class OracleAutoIncrementHelper
         $data = $this->connection->selectOne($sql);
 
         if (count($data)) {
-            return $data['column_name'];
+            return $data->column_name;
         }
 
         return '';
