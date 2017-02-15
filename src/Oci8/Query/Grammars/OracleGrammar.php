@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Query\Grammars;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
@@ -223,7 +224,7 @@ class OracleGrammar extends Grammar
 
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[2]['object'];
 
-        if (method_exists($backtrace, 'getModel')) {
+        if ($backtrace instanceof EloquentBuilder) {
             $model = $backtrace->getModel();
             if ($model->sequence && ! isset($values[$model->getKeyName()]) && $model->incrementing) {
                 $values[$sequence] = null;
