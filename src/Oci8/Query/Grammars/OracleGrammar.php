@@ -221,7 +221,7 @@ class OracleGrammar extends Grammar
             $sequence = 'id';
         }
 
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[3]['object'];
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 4)[2]['object'];
 
         if (method_exists($backtrace, 'getModel')) {
             $model = $backtrace->getModel();
