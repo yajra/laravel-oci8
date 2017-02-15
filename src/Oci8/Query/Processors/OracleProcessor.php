@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Query\Processors;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
 use PDO;
@@ -55,11 +56,11 @@ class OracleProcessor extends Processor
      */
     protected function incrementBySequence(array $values, $sequence)
     {
-        $builder     = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[4]['object'];
-        $builderArgs = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['args'];
+        $builder     = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['object'];
+        $builderArgs = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[2]['args'];
 
         if (! isset($builderArgs[1][0][$sequence])) {
-            if (method_exists($builder, 'getModel')) {
+            if ($builder instanceof EloquentBuilder) {
                 $model = $builder->getModel();
                 if ($model->sequence && $model->incrementing) {
                     $values[] = (int) $model->getConnection()->getSequence()->nextValue($model->sequence);
