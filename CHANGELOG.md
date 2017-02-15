@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.3 - 2017-02-15
+- Fix #254.
+- Patch custom sequence compatibility. #256
+
 #v5.4.2 - 2017-02-07
 - Fix error while migrate:rollback: PR #253, credits to @vystepanenko.
 
