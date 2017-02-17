@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.4 - 2017-02-17
+- When updating OracleEloquent, pass save options through. 
+- PR #257, credits to @kmcgill88.
+
 #v5.4.3 - 2017-02-15
 - Fix #254.
 - Patch custom sequence compatibility. #256
