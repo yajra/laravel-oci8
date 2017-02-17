@@ -78,7 +78,7 @@ class OracleEloquent extends Model
             return $this->newQuery()->update($attributes);
         }
 
-        return $this->fill($attributes)->save();
+        return $this->fill($attributes)->save($options);
     }
 
     /**
