@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.3.9 - 2017-02-17
+- When updating OracleEloquent, pass save options through. 
+- PR #257, credits to @kmcgill88.
+
 #v5.3.8 - 2017-01-05
 - Rename phpunit.xml to fix export-ignore.
 - Update license to 2017.
