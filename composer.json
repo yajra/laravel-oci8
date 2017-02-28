@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": ">=5.6.4",
+        "php-oci8": "*"
         "illuminate/support": "5.4.*",
         "illuminate/database": "5.4.*",
         "yajra/laravel-pdo-via-oci8": "^1.3.1"
