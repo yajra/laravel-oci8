@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.5 - 2017-03-01
+- Add oci8 dependency for composer. 
+- PR #261, credits to @mstaack.
+
 #v5.4.4 - 2017-02-17
 - When updating OracleEloquent, pass save options through. 
 - PR #257, credits to @kmcgill88.
