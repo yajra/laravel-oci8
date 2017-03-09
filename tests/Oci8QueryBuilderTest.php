@@ -31,7 +31,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('exists', 'drop', 'group')->from('users');
-        $this->assertEquals('select "exists", "drop", "group" from "USERS"', $builder->toSql());
+        $this->assertEquals('select "EXISTS", "DROP", "GROUP" from "USERS"', $builder->toSql());
     }
 
     public function testAddingSelects()
@@ -74,14 +74,14 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('schema.users');
-        $this->assertEquals('select * from "schema"."USERS"', $builder->toSql());
+        $this->assertEquals('select * from "SCHEMA"."USERS"', $builder->toSql());
     }
 
     public function testBasicColumnWrappingReservedWords()
     {
         $builder = $this->getBuilder();
         $builder->select('order')->from('users');
-        $this->assertEquals('select "order" from "USERS"', $builder->toSql());
+        $this->assertEquals('select "ORDER" from "USERS"', $builder->toSql());
     }
 
     public function testBasicWheres()
@@ -96,7 +96,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('blob', '=', 1);
-        $this->assertEquals('select * from "USERS" where "blob" = ?', $builder->toSql());
+        $this->assertEquals('select * from "USERS" where "BLOB" = ?', $builder->toSql());
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
@@ -770,7 +770,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('delete')
                 ->once()
-                ->with('delete from "USERS" where "ID" = ?', [1])
+                ->with('delete from "USERS" where "USERS"."ID" = ?', [1])
                 ->andReturn(1);
         $result = $builder->from('users')->delete(1);
         $this->assertEquals(1, $result);
