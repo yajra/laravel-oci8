@@ -83,6 +83,13 @@ class OracleGrammar extends Grammar
      */
     protected function compileAnsiOffset(Builder $query, $components)
     {
+        if ($query->getConnection()->getConfig("server_version") == "12c") {
+            $offset = $query->offset ?: 0;
+            $limit = $query->limit;
+            $components["limit"] = "offset $offset rows fetch next $limit rows only";
+            return $this->concatenate($components);
+        }
+
         $constraint = $this->compileRowConstraint($query);
 
         $sql = $this->concatenate($components);
