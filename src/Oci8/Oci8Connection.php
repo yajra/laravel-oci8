@@ -216,6 +216,7 @@ class Oci8Connection extends Connection
      * @param string $sql (mixed)
      * @param array $bindings (kvp array)
      * @param int $returnType (PDO::PARAM_*)
+     * @param int $length
      * @return mixed $returnType
      */
     public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
