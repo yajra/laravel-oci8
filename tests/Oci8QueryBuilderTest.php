@@ -770,7 +770,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
         $builder->getConnection()
                 ->shouldReceive('delete')
                 ->once()
-                ->with('delete from "USERS" where "ID" = ?', [1])
+                ->with('delete from "USERS" where "USERS"."ID" = ?', [1])
                 ->andReturn(1);
         $result = $builder->from('users')->delete(1);
         $this->assertEquals(1, $result);
