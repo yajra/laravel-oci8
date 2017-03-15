@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.6 - 2017-03-15
+- Convert reserved words to lower case.
+- Fix #250, delete unit test.
+
 #v5.4.5 - 2017-03-01
 - Add oci8 dependency for composer. 
 - PR #261, credits to @mstaack.
