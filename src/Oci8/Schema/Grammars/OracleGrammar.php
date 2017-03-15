@@ -6,6 +6,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
@@ -741,7 +742,7 @@ class OracleGrammar extends Grammar
     protected function wrapValue($value)
     {
         if ($this->isReserved($value)) {
-            return parent::wrapValue($value);
+            return Str::lower(parent::wrapValue($value));
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
