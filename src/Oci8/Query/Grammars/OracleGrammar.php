@@ -89,6 +89,7 @@ class OracleGrammar extends Grammar
             $offset = $query->offset ?: 0;
             $limit = $query->limit;
             $components["limit"] = "offset $offset rows fetch next $limit rows only";
+
             return $this->concatenate($components);
         }
 
