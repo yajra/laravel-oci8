@@ -216,9 +216,10 @@ class Oci8Connection extends Connection
      * @param string $sql (mixed)
      * @param array $bindings (kvp array)
      * @param int $returnType (PDO::PARAM_*)
+     * @param int $length
      * @return mixed $returnType
      */
-    public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR)
+    public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
     {
         $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
 
@@ -230,7 +231,7 @@ class Oci8Connection extends Connection
             $query->bindParam($key, $value);
         }
 
-        $query->bindParam(':result', $result, $returnType);
+        $query->bindParam(':result', $result, $returnType, $length);
         $query->execute();
 
         return $result;
