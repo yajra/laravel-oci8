@@ -219,7 +219,8 @@ class Oci8Connection extends Connection
      */
     public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
     {
-        $command = sprintf('begin :result := %s( :%s ); end;', $functionName, implode(', :', array_keys($bindings)));
+        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+        $command = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
         $stmt = $this->getPdo()->prepare($command);
 
         foreach ($bindings as $bindingName => &$bindingValue) {
@@ -245,9 +246,10 @@ class Oci8Connection extends Connection
      * @param mixed $returnType
      * @return array
      */
-    public function executeProcedure($procedureName, $bindings, $returnType = PDO::PARAM_STMT)
+    public function executeProcedure($procedureName, array $bindings = [], $returnType = PDO::PARAM_STMT)
     {
-        $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
+        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) . ',' : '';
+        $command = sprintf('begin %s(%s:cursor); end;', $procedureName, $bindings);
 
         $stmt = $this->getPdo()->prepare($command);
 
