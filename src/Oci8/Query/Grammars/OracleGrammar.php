@@ -48,7 +48,7 @@ class OracleGrammar extends Grammar
      */
     public function compileSelect(Builder $query)
     {
-        if (is_null($query->columns)) {
+        if (empty($query->columns)) {
             $query->columns = ['*'];
         }
 
