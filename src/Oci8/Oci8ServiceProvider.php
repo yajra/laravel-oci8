@@ -2,10 +2,11 @@
 
 namespace Yajra\Oci8;
 
+use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Yajra\Oci8\Auth\OracleUserProvider;
 use Yajra\Oci8\Connectors\OracleConnector as Connector;
-use Illuminate\Support\Facades\Auth;
 
 class Oci8ServiceProvider extends ServiceProvider
 {
@@ -43,10 +44,10 @@ class Oci8ServiceProvider extends ServiceProvider
             $this->mergeConfigFrom(__DIR__ . '/../config/oracle.php', 'database.connections');
         }
 
-        $this->app['db']->extend('oracle', function ($config) {
+        Connection::resolverFor('oracle', function ($connection, $database, $prefix, $config) {
             $connector  = new Connector();
             $connection = $connector->connect($config);
-            $db         = new Oci8Connection($connection, $config["database"], $config["prefix"], $config);
+            $db         = new Oci8Connection($connection, $database, $prefix, $config);
 
             if (! empty($config['skip_session_vars'])) {
                 return $db;
@@ -65,7 +66,7 @@ class Oci8ServiceProvider extends ServiceProvider
             if (isset($config['schema'])) {
                 $sessionVars['CURRENT_SCHEMA'] = $config['schema'];
             }
-            
+
             if (isset($config['session'])) {
                 $sessionVars = array_merge($sessionVars, $config['session']);
             }
