@@ -1,5 +1,9 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.9 - 2017-05-10
+- Upgrade connection resolver for Oracle DB driver registration. #285
+- Fix #279.
+
 #v5.4.8 - 2017-05-01
 - Change getDoctrineConnection() to use a singleton.
 - PR #282, credits to @abdgad.
