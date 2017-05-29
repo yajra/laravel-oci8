@@ -46,7 +46,7 @@ Yajra\Oci8\Oci8ServiceProvider::class,
 
 ## Configuration (OPTIONAL)
 Finally you can optionally publish a configuration file by running the following Artisan command.
-If config file is not publish, the package will automatically use what is declared on your `.env` file database configuartion.
+If config file is not publish, the package will automatically use what is declared on your `.env` file database configuration.
 
 ```
 $ php artisan vendor:publish --tag=oracle
