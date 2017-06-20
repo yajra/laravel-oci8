@@ -1,5 +1,12 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.10 - 2017-06-20
+- Patch OracleEloquent compatibility. #304
+- Patch performInsert & Update method.
+- Patch update method.
+- Fix whereIn, whereNotIn queries when collection was passed.
+- Fix whereNotIn query and always use `where` clause.
+
 #v5.4.9 - 2017-05-10
 - Upgrade connection resolver for Oracle DB driver registration. #285
 - Fix #279.
