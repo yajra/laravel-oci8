@@ -69,13 +69,13 @@ class OracleEloquent extends Model
     public function update(array $attributes = [], array $options = [])
     {
         if (! $this->exists) {
-            // If dirty attributes contains binary field
-            // extract binary fields to new array
-            if ($this->extractBinaries($dirty)) {
-                return $this->newQuery()->updateLob($attributes, $this->binaryFields, $this->getKeyName());
-            }
+            return false;
+        }
 
-            return $this->newQuery()->update($attributes);
+        // If dirty attributes contains binary field
+        // extract binary fields to new array
+        if ($this->extractBinaries($dirty)) {
+            return $this->newQuery()->updateLob($attributes, $this->binaryFields, $this->getKeyName());
         }
 
         return $this->fill($attributes)->save($options);
