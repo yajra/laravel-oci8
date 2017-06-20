@@ -148,7 +148,6 @@ class OracleEloquent extends Model
      */
     protected function newBaseQueryBuilder()
     {
-
         $conn    = $this->getConnection();
         $grammar = $conn->getQueryGrammar();
 
@@ -163,40 +162,35 @@ class OracleEloquent extends Model
      * Perform a model update operation.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  array $options
      * @return boolean
      */
-    protected function performUpdate(Builder $query, array $options = [])
+    protected function performUpdate(Builder $query)
     {
+        // If the updating event returns false, we will cancel the update operation so
+        // developers can hook Validation systems into their models and cancel this
+        // operation if the model does not pass validation. Otherwise, we update.
+        if ($this->fireModelEvent('updating') === false) {
+            return false;
+        }
+
+        // First we need to create a fresh query instance and touch the creation and
+        // update timestamp on the model which are maintained by us for developer
+        // convenience. Then we will just continue saving the model instances.
+        if ($this->usesTimestamps()) {
+            $this->updateTimestamps();
+        }
+
+        // Once we have run the update operation, we will fire the "updated" event for
+        // this model instance. This will allow developers to hook into these after
+        // models are updated, giving them a chance to do any special processing.
         $dirty = $this->getDirty();
 
         if (count($dirty) > 0) {
-            // If the updating event returns false, we will cancel the update operation so
-            // developers can hook Validation systems into their models and cancel this
-            // operation if the model does not pass validation. Otherwise, we update.
-            if ($this->fireModelEvent('updating') === false) {
-                return false;
-            }
+            // If dirty attributes contains binary field
+            // extract binary fields to new array
+            $this->updateBinary($query, $dirty);
 
-            // First we need to create a fresh query instance and touch the creation and
-            // update timestamp on the model which are maintained by us for developer
-            // convenience. Then we will just continue saving the model instances.
-            if ($this->timestamps && array_get($options, 'timestamps', true)) {
-                $this->updateTimestamps();
-            }
-
-            // Once we have run the update operation, we will fire the "updated" event for
-            // this model instance. This will allow developers to hook into these after
-            // models are updated, giving them a chance to do any special processing.
-            $dirty = $this->getDirty();
-
-            if (count($dirty) > 0) {
-                // If dirty attributes contains binary field
-                // extract binary fields to new array
-                $this->updateBinary($query, $dirty, $options);
-
-                $this->fireModelEvent('updated', false);
-            }
+            $this->fireModelEvent('updated', false);
         }
 
         return true;
@@ -207,14 +201,15 @@ class OracleEloquent extends Model
      *
      * @param Builder $query
      * @param array $dirty
-     * @param array $options
      */
-    protected function updateBinary(Builder $query, $dirty, $options = [])
+    protected function updateBinary(Builder $query, $dirty)
     {
+        $builder = $this->setKeysForSaveQuery($query);
+
         if ($this->extractBinaries($dirty)) {
-            $this->setKeysForSaveQuery($query)->updateLob($dirty, $this->binaryFields, $this->getKeyName());
+            $builder->updateLob($dirty, $this->binaryFields, $this->getKeyName());
         } else {
-            $this->setKeysForSaveQuery($query)->update($dirty, $options);
+            $builder->update($dirty, $options);
         }
     }
 
@@ -222,10 +217,9 @@ class OracleEloquent extends Model
      * Perform a model insert operation.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  array $options
      * @return bool
      */
-    protected function performInsert(Builder $query, array $options = [])
+    protected function performInsert(Builder $query)
     {
         if ($this->fireModelEvent('creating') === false) {
             return false;
@@ -234,7 +228,7 @@ class OracleEloquent extends Model
         // First we'll need to create a fresh query instance and touch the creation and
         // update timestamps on this model, which are maintained by us for developer
         // convenience. After, we will just continue saving these model instances.
-        if ($this->timestamps && array_get($options, 'timestamps', true)) {
+        if ($this->usesTimestamps()) {
             $this->updateTimestamps();
         }
 
@@ -243,7 +237,7 @@ class OracleEloquent extends Model
         // table from the database. Not all tables have to be incrementing though.
         $attributes = $this->attributes;
 
-        if ($this->incrementing) {
+        if ($this->getIncrementing()) {
             $this->insertAndSetId($query, $attributes);
         }
 
@@ -251,6 +245,10 @@ class OracleEloquent extends Model
         // are, as this attributes arrays must contain an "id" column already placed
         // there by the developer as the manually determined key for these models.
         else {
+            if (empty($attributes)) {
+                return true;
+            }
+
             // If attributes contains binary field
             // extract binary fields to new array
             if ($this->extractBinaries($attributes)) {
