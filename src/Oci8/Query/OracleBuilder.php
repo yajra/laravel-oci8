@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Query;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 
 class OracleBuilder extends Builder
@@ -69,6 +70,10 @@ class OracleBuilder extends Builder
     {
         $type = $not ? 'NotIn' : 'In';
 
+        if ($values instanceof Arrayable) {
+            $values = $values->toArray();
+        }
+
         if (count($values) > 1000) {
             $chunks = array_chunk($values, 1000);
 
@@ -76,7 +81,7 @@ class OracleBuilder extends Builder
                 $firstIteration = true;
                 foreach ($chunks as $ch) {
                     $sqlClause = $firstIteration ? 'where' . $type : 'orWhere' . $type;
-                    $query->$sqlClause($column, $ch);
+                    $query->{$sqlClause}($column, $ch);
                     $firstIteration = false;
                 }
             }, null, null, $boolean);
