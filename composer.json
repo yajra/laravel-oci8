@@ -35,6 +35,6 @@
                 "Yajra\\Oci8\\Oci8ServiceProvider"
             ]
         }
-    }
+    },
     "minimum-stability": "stable"
 }
