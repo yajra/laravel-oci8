@@ -209,7 +209,7 @@ class OracleEloquent extends Model
         if ($this->extractBinaries($dirty)) {
             $builder->updateLob($dirty, $this->binaryFields, $this->getKeyName());
         } else {
-            $builder->update($dirty, $options);
+            $builder->update($dirty);
         }
     }
 
