@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.11 - 2017-06-23
+- Fix attributes passed. Fix #306. #307
+
 #v5.4.10 - 2017-06-20
 - Patch OracleEloquent compatibility. #304
 - Patch performInsert & Update method.
