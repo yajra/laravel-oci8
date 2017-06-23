@@ -74,7 +74,7 @@ class OracleEloquent extends Model
 
         // If dirty attributes contains binary field
         // extract binary fields to new array
-        if ($this->extractBinaries($dirty)) {
+        if ($this->extractBinaries($attributes)) {
             return $this->newQuery()->updateLob($attributes, $this->binaryFields, $this->getKeyName());
         }
 
@@ -209,7 +209,7 @@ class OracleEloquent extends Model
         if ($this->extractBinaries($dirty)) {
             $builder->updateLob($dirty, $this->binaryFields, $this->getKeyName());
         } else {
-            $builder->update($dirty, $options);
+            $builder->update($dirty);
         }
     }
 
