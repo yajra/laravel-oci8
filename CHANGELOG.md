@@ -1,5 +1,10 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.12 - 2017-07-04
+- Fix missing table prefix when adding comment. #314
+- Fix #310.
+- Credits to @manuzcom.
+
 #v5.4.11 - 2017-06-23
 - Fix attributes passed. Fix #306. #307
 
