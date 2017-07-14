@@ -1,5 +1,10 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.13 - 2017-07-14
+- Set OracleEloquent sequence property as public. #316
+- Patch docblocks and comments.
+- Fix #315.
+
 #v5.4.12 - 2017-07-04
 - Fix missing table prefix when adding comment. #314
 - Fix #310.
