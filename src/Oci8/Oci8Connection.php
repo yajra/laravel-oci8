@@ -212,30 +212,26 @@ class Oci8Connection extends Connection
 
     /**
      * Execute a PL/SQL Function and return its value.
-     * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' =>
-     * 'bye'], PDO::PARAM_LOB).
-     *
-     * @author Tylerian - jairo.eog@outlook.com
-     * @param string $sql (mixed)
+     * Usage: DB::executeFunction('function_name', ['binding_1' => 'hi', 'binding_n' => 'bye'], PDO::PARAM_LOB, 2000).
+     * @author Tylerian - jairo.eog@outlook.com & Ardani - master.ardani@gmail.com
+     * @param string $functionName (mixed)
      * @param array $bindings (kvp array)
      * @param int $returnType (PDO::PARAM_*)
      * @param int $length
      * @return mixed $returnType
      */
-    public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
+    public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
     {
-        $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
+        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+        $command = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
+        $stmt = $this->getPdo()->prepare($command);
 
-        foreach ($bindings as $key => &$value) {
-            if (! preg_match('/^:(.*)$/i', $key)) {
-                $key = ':' . $key;
-            }
-
-            $query->bindParam($key, $value);
+        foreach ($bindings as $bindingName => &$bindingValue) {
+            $stmt->bindParam(':' . $bindingName, $bindingValue);
         }
 
-        $query->bindParam(':result', $result, $returnType, $length);
-        $query->execute();
+        $stmt->bindParam(':result', $result, $returnType, $length);
+        $stmt->execute();
 
         return $result;
     }
@@ -253,9 +249,10 @@ class Oci8Connection extends Connection
      * @param mixed $returnType
      * @return array
      */
-    public function executeProcedure($procedureName, $bindings, $returnType = PDO::PARAM_STMT)
+    public function executeProcedure($procedureName, array $bindings = [], $returnType = PDO::PARAM_STMT)
     {
-        $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
+        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) . ',' : '';
+        $command = sprintf('begin %s(%s:cursor); end;', $procedureName, $bindings);
 
         $stmt = $this->getPdo()->prepare($command);
 
