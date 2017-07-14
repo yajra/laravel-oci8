@@ -61,9 +61,12 @@ class OracleProcessor extends Processor
 
         if (! isset($builderArgs[1][0][$sequence])) {
             if ($builder instanceof EloquentBuilder) {
+                /** @var \Yajra\Oci8\Eloquent\OracleEloquent $model */
                 $model = $builder->getModel();
+                /** @var \Yajra\Oci8\Oci8Connection $connection */
+                $connection = $model->getConnection();
                 if ($model->sequence && $model->incrementing) {
-                    $values[] = (int) $model->getConnection()->getSequence()->nextValue($model->sequence);
+                    $values[] = (int) $connection->getSequence()->nextValue($model->sequence);
                 }
             }
         }
