@@ -26,14 +26,14 @@ class OracleEloquent extends Model
     protected $binaryFields = [];
 
     /**
-     * Sequence name variable
+     * Sequence name variable.
      *
      * @var string
      */
-    protected $sequence = null;
+    public $sequence = null;
 
     /**
-     * Get model's sequence name
+     * Get model's sequence name.
      *
      * @return string
      */
