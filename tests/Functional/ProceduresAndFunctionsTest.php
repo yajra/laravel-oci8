@@ -4,8 +4,9 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Yajra\Oci8\Oci8Connection;
+use Yajra\Oci8\OracleTypeCaster;
 
-class ProceduresTest extends PHPUnit_Framework_TestCase
+class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 {
     public function testConnection()
     {
@@ -38,8 +39,12 @@ class ProceduresTest extends PHPUnit_Framework_TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        //@todo we should not need to cast here...
-        $this->assertSame($input * 2, (int)$output);
+        //@todo
+        //unfortunately we need to cast here.. any better ideas?
+        //internal auto-casting and removing the & reference in the bindings would be nice :)
+        $output = OracleTypeCaster::tryNumeric($output);
+
+        $this->assertSame($input * 2, $output);
     }
 
     public function testProcedureWithStrings()
@@ -58,9 +63,12 @@ class ProceduresTest extends PHPUnit_Framework_TestCase
 
         $connection->getPdo()->exec($command);
 
-        $first  = 'hello';
-        $last   = 'world';
-        $output = str_repeat(' ', 1000);
+        $first = 'hello';
+        $last  = 'world';
+
+        //@todo
+        // for now we need to have a long enough return value to hold the plsql return value
+        $output = $first . $last;
 
         $bindings = [
             'p1' => $first,
@@ -110,6 +118,33 @@ class ProceduresTest extends PHPUnit_Framework_TestCase
         $result = $connection->executeProcedureWithCursor($procedureName);
 
         $this->assertSame($rows, $result);
+    }
+
+
+    public function testFunctionWithNumbers()
+    {
+        /** @var Oci8Connection $connection */
+        $connection = $this->createConnection();
+
+        $procedureName = 'add_two';
+
+        $command = "
+            CREATE OR REPLACE FUNCTION  add_two (p1 IN NUMBER) RETURN NUMBER IS
+            BEGIN
+                 RETURN p1 + 2;
+            END;
+        ";
+
+        $connection->getPdo()->exec($command);
+
+        $first    = 5;
+        $bindings = [
+            'p1' => $first,
+        ];
+
+        $result = $connection->executeFunction($procedureName, $bindings);
+
+        $this->assertSame($first + 2, $result);
     }
 
     /**

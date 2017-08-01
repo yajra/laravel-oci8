@@ -232,6 +232,9 @@ class Oci8Connection extends Connection
         $stmt->bindParam(':result', $result, $returnType, $length);
         $stmt->execute();
 
+        // auto convert strings like "343" and "23434.23" to int and float
+        $result = OracleTypeCaster::tryNumeric($result);
+
         return $result;
     }
 
