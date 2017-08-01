@@ -66,9 +66,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
         $first = 'hello';
         $last  = 'world';
 
-        //@todo
-        // for now we need to have a long enough return value to hold the plsql return value
-        $output = $first . $last;
+        $output = null;
 
         $bindings = [
             'p1' => $first,
