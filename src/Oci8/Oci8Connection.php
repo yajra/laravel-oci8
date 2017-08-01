@@ -215,13 +215,10 @@ class Oci8Connection extends Connection
      * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' =>
      * 'bye'], PDO::PARAM_LOB).
      *
-     * @author Tylerian - jairo.eog@outlook.com
-     *
-     * @param       $functionName
-     * @param array $bindings (kvp array)
-     * @param int   $returnType (PDO::PARAM_*)
-     * @param int   $length
-     *
+     * @param string $functionName
+     * @param array  $bindings   (kvp array)
+     * @param int    $returnType (PDO::PARAM_*)
+     * @param int    $length
      * @return mixed $returnType
      */
     public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
@@ -247,9 +244,8 @@ class Oci8Connection extends Connection
      *                  'p_userid'  => $id
      *         ];
      *
-     * @param string $procedureName
-     * @param array  $bindings
-     *
+     * @param  string $procedureName
+     * @param  array  $bindings
      * @return bool
      */
     public function executeProcedure($procedureName, array $bindings = [])
@@ -269,10 +265,9 @@ class Oci8Connection extends Connection
      *
      * https://docs.oracle.com/cd/E17781_01/appdev.112/e18555/ch_six_ref_cur.htm#TDPPH218
      *
-     * @param string $procedureName
-     * @param array  $bindings
-     * @param string $cursorName
-     *
+     * @param  string $procedureName
+     * @param  array  $bindings
+     * @param  string $cursorName
      * @return array
      */
     public function executeProcedureWithCursor($procedureName, array $bindings = [], $cursorName = ':cursor')
@@ -298,10 +293,9 @@ class Oci8Connection extends Connection
     /**
      * Creates sql command to run a procedure with bindings
      *
-     * @param             $procedureName
-     * @param array       $bindings
-     * @param string|bool $cursor
-     *
+     * @param  string      $procedureName
+     * @param  array       $bindings
+     * @param  string|bool $cursor
      * @return string
      */
     public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
@@ -319,10 +313,9 @@ class Oci8Connection extends Connection
     /**
      * Creates statement from procedure
      *
-     * @param       $procedureName
-     * @param array $bindings
-     * @param       $cursorName
-     *
+     * @param  string      $procedureName
+     * @param  array        $bindings
+     * @param  string|bool $cursorName
      * @return PDOStatement
      */
     public function createStatementFromProcedure($procedureName, array $bindings, $cursorName = false)
@@ -335,8 +328,8 @@ class Oci8Connection extends Connection
     /**
      * Create statement from function
      *
-     * @param       $functionName
-     * @param array $bindings
+     * @param string $functionName
+     * @param array  $bindings
      *
      * @return PDOStatement
      */

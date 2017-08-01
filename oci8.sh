@@ -18,8 +18,6 @@ sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
 sudo ln -s /opt/oracle/instantclient/libclntsh.so.12.1 /opt/oracle/instantclient/libclntsh.so
 sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/libocci.so
 
-PHP_VERSION="$(php --version | head -n 1 | cut -d " " -f 2 | cut -c 1,3)"
-
 # php 7.0/7.1 install
 if [ $(phpenv version-name) == "7.1" ] || [ $(phpenv version-name) == "7.0" ]; then
     echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
