@@ -197,6 +197,7 @@ class Oci8Connection extends Connection
                 $data, $this->getDoctrineDriver()
             );
         }
+        
         return $this->doctrineConnection;
     }
 
