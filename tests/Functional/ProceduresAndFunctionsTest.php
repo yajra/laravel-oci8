@@ -67,7 +67,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
         $last  = 'world';
 
         //this needs to be large enough to hold the plsql return value
-        $output = str_repeat('', 1000);
+        $output = str_repeat(' ', 1000);
 
         $bindings = [
             'p1' => $first,
