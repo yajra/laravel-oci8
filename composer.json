@@ -19,15 +19,20 @@
     "require-dev": {
         "mockery/mockery": "~0.9.4",
         "scrutinizer/ocular": "~1.1",
-        "phpunit/phpunit": "~5.4"
+        "phpunit/phpunit": "~5.4",
+        "friendsofphp/php-cs-fixer": "^2.4"
     },
     "autoload": {
         "files": [
-          "src/helper.php"
+            "src/helper.php"
         ],
         "psr-4": {
             "Yajra\\": "src/"
         }
+    },
+    "config": {
+        "bin-dir": "bin",
+        "sort-packages": true
     },
     "minimum-stability": "stable"
 }

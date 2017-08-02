@@ -194,10 +194,11 @@ class Oci8Connection extends Connection
         if (is_null($this->doctrineConnection)) {
             $data = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
             $this->doctrineConnection = new DoctrineConnection(
-                $data, $this->getDoctrineDriver()
+                $data,
+                $this->getDoctrineDriver()
             );
         }
-        
+
         return $this->doctrineConnection;
     }
 
