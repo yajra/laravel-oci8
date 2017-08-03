@@ -234,9 +234,6 @@ class Oci8Connection extends Connection
         $stmt->bindParam(':result', $result, $returnType, $length);
         $stmt->execute();
 
-        // auto convert strings like "343" and "23434.23" to int and float
-        $result = OracleTypeCaster::tryNumeric($result);
-
         return $result;
     }
 
@@ -296,7 +293,7 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Creates sql command to run a procedure with bindings
+     * Creates sql command to run a procedure with bindings.
      *
      * @param  string      $procedureName
      * @param  array       $bindings
@@ -316,7 +313,7 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Creates statement from procedure
+     * Creates statement from procedure.
      *
      * @param  string      $procedureName
      * @param  array        $bindings
@@ -331,7 +328,7 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Create statement from function
+     * Create statement from function.
      *
      * @param string $functionName
      * @param array  $bindings

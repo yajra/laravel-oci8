@@ -19,8 +19,7 @@
     "require-dev": {
         "mockery/mockery": "~0.9.4",
         "scrutinizer/ocular": "~1.1",
-        "phpunit/phpunit": "~5.4",
-        "friendsofphp/php-cs-fixer": "^2.4"
+        "phpunit/phpunit": "~5.4"
     },
     "autoload": {
         "files": [

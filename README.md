@@ -94,10 +94,6 @@ To use, just update `auth.php` config and set the driver to `oracle`
 - [Jimmy Felder](https://github.com/jfelder/Laravel-OracleDB)
 - [All Contributors][link-contributors]
 
-## Development
-
-- Code Style is being done via `./bin/php-cs-fixer fix`
-
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
