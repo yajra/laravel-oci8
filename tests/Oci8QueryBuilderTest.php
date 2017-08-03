@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
-use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
+use Yajra\Oci8\Query\OracleBuilder as Builder;
+use Illuminate\Database\Query\Expression as Raw;
 
 class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 {
@@ -21,7 +21,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     protected function getBuilder()
     {
-        $grammar   = new Yajra\Oci8\Query\Grammars\OracleGrammar;
+        $grammar = new Yajra\Oci8\Query\Grammars\OracleGrammar;
         $processor = m::mock(Yajra\Oci8\Query\Processors\OracleProcessor::class);
 
         return new Builder(m::mock(Illuminate\Database\ConnectionInterface::class), $grammar, $processor);
@@ -785,7 +785,7 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     public function testMergeWheresCanMergeWheresAndBindings()
     {
-        $builder         = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->wheres = ['foo'];
         $builder->mergeWheres(['wheres'], [12 => 'foo', 13 => 'bar']);
         $this->assertEquals(['foo', 'wheres'], $builder->wheres);
@@ -801,11 +801,11 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     public function testDynamicWhere()
     {
-        $method     = 'whereFooBarAndBazOrQux';
+        $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
-        $grammar    = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor  = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar = new Yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('foo_bar', '=', $parameters[0], 'and')->once()->andReturn($builder);
@@ -817,11 +817,11 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
 
     public function testDynamicWhereIsNotGreedy()
     {
-        $method     = 'whereIosVersionAndAndroidVersionOrOrientation';
+        $method = 'whereIosVersionAndAndroidVersionOrOrientation';
         $parameters = ['6.1', '4.2', 'Vertical'];
-        $grammar    = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor  = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar = new Yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('ios_version', '=', '6.1', 'and')->once()->andReturn($builder);
@@ -968,8 +968,8 @@ class Oci8QueryBuilderTest extends PHPUnit_Framework_TestCase
     public function testSubQueriesBindings()
     {
         $builder = $this->getBuilder();
-        $second  = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
-        $third   = $this->getBuilder()
+        $second = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
+        $third = $this->getBuilder()
                         ->select('*')
                         ->from('users')
                         ->where('id', 3)

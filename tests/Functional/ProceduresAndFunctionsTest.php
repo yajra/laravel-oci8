@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Yajra\Oci8\Oci8Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Connectors\OracleConnector;
-use Yajra\Oci8\Oci8Connection;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 {
@@ -18,16 +18,16 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $procedureName = 'demo';
 
-        $command = "
+        $command = '
             CREATE OR REPLACE PROCEDURE demo(p1 IN NUMBER, p2 OUT NUMBER) AS
             BEGIN
                 p2 := p1 * 2;
             END;
-        ";
+        ';
 
         $connection->getPdo()->exec($command);
 
-        $input  = 2;
+        $input = 2;
         $output = 0;
 
         $bindings = [
@@ -38,7 +38,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
         $connection->executeProcedure($procedureName, $bindings);
 
         //unfortunately we need to cast here.. any better ideas?
-        $output = (int)$output;
+        $output = (int) $output;
 
         $this->assertSame($input * 2, $output);
     }
@@ -49,17 +49,17 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $procedureName = 'demo';
 
-        $command = "
+        $command = '
             CREATE OR REPLACE PROCEDURE demo(p1 IN VARCHAR2, p2 IN VARCHAR2, p3 OUT VARCHAR2) AS
             BEGIN
                 p3 := p1 || p2;
             END;
-        ";
+        ';
 
         $connection->getPdo()->exec($command);
 
         $first = 'hello';
-        $last  = 'world';
+        $last = 'world';
 
         //this needs to be large enough to hold the plsql return value
         $output = str_repeat(' ', 1000);
@@ -72,7 +72,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        $this->assertSame($first . $last, $output);
+        $this->assertSame($first.$last, $output);
     }
 
     public function testRefCursorFromTable()
@@ -88,15 +88,15 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $rows = [
             [
-                'name' => 'Max'
+                'name' => 'Max',
             ],
             [
-                'name' => 'John'
-            ]
+                'name' => 'John',
+            ],
         ];
         $connection->table('demotable')->insert($rows);
 
-        $command = "
+        $command = '
             CREATE OR REPLACE PROCEDURE demo(p1 OUT SYS_REFCURSOR) AS
             BEGIN
                 OPEN p1 
@@ -104,7 +104,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
                 SELECT name
                 FROM demotable; 
             END;
-        ";
+        ';
 
         $connection->getPdo()->exec($command);
 
@@ -113,23 +113,22 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
         $this->assertSame($rows, $result);
     }
 
-
     public function testFunctionWithNumbers()
     {
         $connection = $this->createConnection();
 
         $procedureName = 'add_two';
 
-        $command = "
+        $command = '
             CREATE OR REPLACE FUNCTION  add_two (p1 IN NUMBER) RETURN NUMBER IS
             BEGIN
                  RETURN p1 + 2;
             END;
-        ";
+        ';
 
         $connection->getPdo()->exec($command);
 
-        $first    = 5;
+        $first = 5;
         $bindings = [
             'p1' => $first,
         ];
@@ -137,7 +136,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
         $result = $connection->executeFunction($procedureName, $bindings);
 
         // we need to cast here b/c oracle returns strings
-        $result = (int)$result;
+        $result = (int) $result;
 
         $this->assertSame($first + 2, $result);
     }
@@ -151,9 +150,9 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $manager = $capsule->getDatabaseManager();
         $manager->extend('oracle', function ($config) {
-            $connector  = new OracleConnector();
+            $connector = new OracleConnector();
             $connection = $connector->connect($config);
-            $db         = new Oci8Connection($connection, $config["database"], $config["prefix"]);
+            $db = new Oci8Connection($connection, $config['database'], $config['prefix']);
 
             // set oracle session variables
             $sessionVars = [
@@ -182,12 +181,11 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
             'username'     => 'system',
             'password'     => 'oracle',
             'prefix'       => '',
-            'port'         => 49161
+            'port'         => 49161,
         ]);
 
         // Make this Capsule instance available globally via static methods... (optional)
         $capsule->setAsGlobal();
-
 
         return $capsule->getConnection();
     }

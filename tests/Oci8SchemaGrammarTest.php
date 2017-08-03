@@ -88,7 +88,6 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
-
     public function testBasicCreateTableWithNvarchar2()
     {
         $blueprint = new Blueprint('users');
@@ -281,17 +280,17 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
 
     public function testCompileTableExistsMethod()
     {
-        $grammar  = $this->getGrammar();
+        $grammar = $this->getGrammar();
         $expected = 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
-        $sql      = $grammar->compileTableExists();
+        $sql = $grammar->compileTableExists();
         $this->assertEquals($expected, $sql);
     }
 
     public function testCompileColumnExistsMethod()
     {
-        $grammar  = $this->getGrammar();
+        $grammar = $this->getGrammar();
         $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\')';
-        $sql      = $grammar->compileColumnExists("schema", "test_table");
+        $sql = $grammar->compileColumnExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
     }
 

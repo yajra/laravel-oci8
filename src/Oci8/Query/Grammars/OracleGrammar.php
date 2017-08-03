@@ -2,11 +2,11 @@
 
 namespace Yajra\Oci8\Query\Grammars;
 
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class OracleGrammar extends Grammar
 {
@@ -32,10 +32,10 @@ class OracleGrammar extends Grammar
      */
     public function compileExists(Builder $query)
     {
-        $q          = clone $query;
+        $q = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
-          ->whereRaw("rownum = 1");
+          ->whereRaw('rownum = 1');
 
         return $this->compileSelect($q);
     }
@@ -106,7 +106,7 @@ class OracleGrammar extends Grammar
         $start = $query->offset + 1;
 
         if ($query->limit == 1) {
-            return "= 1";
+            return '= 1';
         }
 
         if ($query->limit > 1) {
@@ -143,7 +143,7 @@ class OracleGrammar extends Grammar
      */
     public function compileTruncate(Builder $query)
     {
-        return ['truncate table ' . $this->wrapTable($query->from) => []];
+        return ['truncate table '.$this->wrapTable($query->from) => []];
     }
 
     /**
@@ -162,13 +162,13 @@ class OracleGrammar extends Grammar
             $table = str_replace(' as ', ' ', $table);
         }
 
-        $tableName = $this->wrap($this->tablePrefix . $table, true);
-        $segments  = explode(' ', $table);
+        $tableName = $this->wrap($this->tablePrefix.$table, true);
+        $segments = explode(' ', $table);
         if (count($segments) > 1) {
-            $tableName = $this->wrap($this->tablePrefix . $segments[0]) . ' ' . $segments[1];
+            $tableName = $this->wrap($this->tablePrefix.$segments[0]).' '.$segments[1];
         }
 
-        return $this->getSchemaPrefix() . $tableName;
+        return $this->getSchemaPrefix().$tableName;
     }
 
     /**
@@ -178,7 +178,7 @@ class OracleGrammar extends Grammar
      */
     public function getSchemaPrefix()
     {
-        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix) . '.' : '';
+        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix).'.' : '';
     }
 
     /**
@@ -205,7 +205,7 @@ class OracleGrammar extends Grammar
 
         $value = $this->isReserved($value) ? Str::lower($value) : Str::upper($value);
 
-        return '"' . str_replace('"', '""', $value) . '"';
+        return '"'.str_replace('"', '""', $value).'"';
     }
 
     /**
@@ -231,7 +231,7 @@ class OracleGrammar extends Grammar
             }
         }
 
-        return $this->compileInsert($query, $values) . ' returning ' . $this->wrap($sequence) . ' into ?';
+        return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence).' into ?';
     }
 
     /**
@@ -264,8 +264,8 @@ class OracleGrammar extends Grammar
         if (count($value) > 1) {
             $insertQueries = [];
             foreach ($value as $parameter) {
-                $parameter       = (str_replace(['(', ')'], '', $parameter));
-                $insertQueries[] = "select " . $parameter . " from dual ";
+                $parameter = (str_replace(['(', ')'], '', $parameter));
+                $insertQueries[] = 'select '.$parameter.' from dual ';
             }
             $parameters = implode('union all ', $insertQueries);
 
@@ -301,20 +301,20 @@ class OracleGrammar extends Grammar
             $binaries = [$binaries];
         }
 
-        $columns       = $this->columnize(array_keys(reset($values)));
+        $columns = $this->columnize(array_keys(reset($values)));
         $binaryColumns = $this->columnize(array_keys(reset($binaries)));
-        $columns .= (empty($columns) ? '' : ', ') . $binaryColumns;
+        $columns .= (empty($columns) ? '' : ', ').$binaryColumns;
 
-        $parameters       = $this->parameterize(reset($values));
+        $parameters = $this->parameterize(reset($values));
         $binaryParameters = $this->parameterize(reset($binaries));
 
-        $value       = array_fill(0, count($values), "$parameters");
+        $value = array_fill(0, count($values), "$parameters");
         $binaryValue = array_fill(0, count($binaries), str_replace('?', 'EMPTY_BLOB()', $binaryParameters));
 
-        $value      = array_merge($value, $binaryValue);
+        $value = array_merge($value, $binaryValue);
         $parameters = implode(', ', array_filter($value));
 
-        return "insert into $table ($columns) values ($parameters) returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
+        return "insert into $table ($columns) values ($parameters) returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
     }
 
     /**
@@ -336,7 +336,7 @@ class OracleGrammar extends Grammar
         $columns = [];
 
         foreach ($values as $key => $value) {
-            $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
+            $columns[] = $this->wrap($key).' = '.$this->parameter($value);
         }
 
         $columns = implode(', ', $columns);
@@ -345,7 +345,7 @@ class OracleGrammar extends Grammar
         if (! is_array(reset($binaries))) {
             $binaries = [$binaries];
         }
-        $binaryColumns    = $this->columnize(array_keys(reset($binaries)));
+        $binaryColumns = $this->columnize(array_keys(reset($binaries)));
         $binaryParameters = $this->parameterize(reset($binaries));
 
         // create EMPTY_BLOB sql for each binary
@@ -356,14 +356,14 @@ class OracleGrammar extends Grammar
 
         // prepare binary SQLs
         if (count($binarySql)) {
-            $binarySql = (empty($columns) ? '' : ', ') . implode(',', $binarySql);
+            $binarySql = (empty($columns) ? '' : ', ').implode(',', $binarySql);
         }
 
         // If the query has any "join" clauses, we will setup the joins on the builder
         // and compile them so we can attach them to this update, as update queries
         // can get join statements to attach to other tables when they're needed.
         if (isset($query->joins)) {
-            $joins = ' ' . $this->compileJoins($query, $query->joins);
+            $joins = ' '.$this->compileJoins($query, $query->joins);
         } else {
             $joins = '';
         }
@@ -373,7 +373,7 @@ class OracleGrammar extends Grammar
         // intended records are updated by the SQL statements we generate to run.
         $where = $this->compileWheres($query);
 
-        return "update {$table}{$joins} set $columns$binarySql $where returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
+        return "update {$table}{$joins} set $columns$binarySql $where returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
     }
 
     /**

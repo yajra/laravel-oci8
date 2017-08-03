@@ -12,8 +12,8 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
     public function testCreateConnection()
     {
         $connector = new OracleConnectorStub;
-        $tns       = "Connection String";
-        $config    = [
+        $tns = 'Connection String';
+        $config = [
             'driver'   => 'oracle',
             'host'     => 'host',
             'database' => 'database',
@@ -23,7 +23,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
             'charset'  => 'charset',
             'options'  => [],
         ];
-        $oci8      = $connector->createConnection($tns, $config, []);
+        $oci8 = $connector->createConnection($tns, $config, []);
         $this->assertInstanceOf(Yajra\Pdo\Oci8::class, $oci8);
     }
 
