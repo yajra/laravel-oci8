@@ -4,7 +4,6 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Yajra\Oci8\Oci8Connection;
-use Yajra\Oci8\OracleTypeCaster;
 
 class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 {
@@ -15,7 +14,6 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
     public function testProcedureWithNumbers()
     {
-        /** @var Oci8Connection $connection */
         $connection = $this->createConnection();
 
         $procedureName = 'demo';
@@ -39,17 +37,14 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        //@todo
         //unfortunately we need to cast here.. any better ideas?
-        //internal auto-casting and removing the & reference in the bindings would be nice :)
-        $output = OracleTypeCaster::tryNumeric($output);
+        $output = (int)$output;
 
         $this->assertSame($input * 2, $output);
     }
 
     public function testProcedureWithStrings()
     {
-        /** @var Oci8Connection $connection */
         $connection = $this->createConnection();
 
         $procedureName = 'demo';
@@ -82,7 +77,6 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
     public function testRefCursorFromTable()
     {
-        /** @var Oci8Connection $connection */
         $connection = $this->createConnection();
 
         $procedureName = 'demo';
@@ -122,7 +116,6 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
     public function testFunctionWithNumbers()
     {
-        /** @var Oci8Connection $connection */
         $connection = $this->createConnection();
 
         $procedureName = 'add_two';
@@ -147,7 +140,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Illuminate\Database\Connection
+     * @return Oci8Connection
      */
     private function createConnection()
     {
