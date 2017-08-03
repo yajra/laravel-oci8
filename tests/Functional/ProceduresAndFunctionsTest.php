@@ -136,6 +136,9 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $result = $connection->executeFunction($procedureName, $bindings);
 
+        // we need to cast here b/c oracle returns strings
+        $result = (int)$result;
+
         $this->assertSame($first + 2, $result);
     }
 
