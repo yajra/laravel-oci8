@@ -33,6 +33,20 @@ class OracleEloquent extends Model
     public $sequence = null;
 
     /**
+     * Get next value of the model sequence.
+     *
+     * @return int
+     */
+    public static function nextValue()
+    {
+        $instance = new static;
+
+        return $instance->getConnection()
+                        ->getSequence()
+                        ->nextValue($instance->getSequenceName());
+    }
+
+    /**
      * Get model's sequence name.
      *
      * @return string
