@@ -110,7 +110,8 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $result = $connection->executeProcedureWithCursor($procedureName);
 
-        $this->assertSame($rows, $result);
+        $this->assertSame($rows[0]['name'], $result[0]->name);
+        $this->assertSame($rows[1]['name'], $result[1]->name);
     }
 
 
