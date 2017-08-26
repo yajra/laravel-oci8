@@ -286,7 +286,7 @@ class Oci8Connection extends Connection
 
         $statement = new Statement($cursor, $this->getPdo(), $this->getPdo()->getOptions());
         $statement->execute();
-        $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $results = $statement->fetchAll(PDO::FETCH_OBJ);
         $statement->closeCursor();
 
         return $results;
