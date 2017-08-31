@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.15 - 2017-08-31
+- Add UUID Support #325, credits to @ChaosPower.
+
 #v5.4.14 - 2017-08-31
 - Refactor Procedures & Functions + CI Updates #319, credits to @mstaack
 
