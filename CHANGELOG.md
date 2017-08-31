@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.14 - 2017-08-31
+- Refactor Procedures & Functions + CI Updates #319, credits to @mstaack
+
 #v5.4.13 - 2017-07-14
 - Set OracleEloquent sequence property as public. #316
 - Patch docblocks and comments.
