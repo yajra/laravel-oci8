@@ -83,6 +83,16 @@ class OracleGrammar extends Grammar
      */
     protected function compileAnsiOffset(Builder $query, $components)
     {
+        // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries
+        if ($query->getConnection()->getConfig("server_version") == "12c") {
+            $components["columns"] = str_replace("select", "select /*+ FIRST_ROWS({$query->limit}) */", $components["columns"]);
+            $offset = $query->offset ?: 0;
+            $limit = $query->limit;
+            $components["limit"] = "offset $offset rows fetch next $limit rows only";
+
+            return $this->concatenate($components);
+        }
+
         $constraint = $this->compileRowConstraint($query);
 
         $sql = $this->concatenate($components);
