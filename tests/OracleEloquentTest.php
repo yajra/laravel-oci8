@@ -1,26 +1,25 @@
 <?php
 
-use Mockery as m;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;
 use Illuminate\Database\Query\Grammars\SQLiteGrammar;
+use Illuminate\Database\Query\Grammars\SqlServerGrammar;
 use Illuminate\Database\Query\Processors\MySqlProcessor;
 use Illuminate\Database\Query\Processors\PostgresProcessor;
 use Illuminate\Database\Query\Processors\SQLiteProcessor;
 use Illuminate\Database\Query\Processors\SqlServerProcessor;
-use Illuminate\Database\Query\Grammars\SqlServerGrammar;
+use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
-
 /**
  * {@inheritDoc}
  */
-class OracleEloquentTest extends PHPUnit_Framework_TestCase
+class OracleEloquentTest extends TestCase
 {
-
     /**
      * {@inheritDoc}
      */
@@ -43,9 +42,50 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(OracleBuilder::class, $builder);
         $this->assertInstanceOf(OracleGrammar::class, $builder->getGrammar());
         $this->assertInstanceOf(OracleProcessor::class,
-                                $builder->getProcessor());
+            $builder->getProcessor());
+    }
 
+    /**
+     * @param $model
+     * @param $database
+     */
+    protected function mockConnectionForModel($model, $database)
+    {
+        if ($database == 'Oracle') {
+            $grammarClass   = OracleGrammar::class;
+            $processorClass = OracleProcessor::class;
+            $grammar        = new $grammarClass;
+            $processor      = new $processorClass;
+            $connection     =
+                m::mock('Illuminate\Database\ConnectionInterface', [
+                    'getQueryGrammar'  => $grammar,
+                    'getPostProcessor' => $processor,
+                ]);
+            $resolver       =
+                m::mock('Illuminate\Database\ConnectionResolverInterface',
+                    ['connection' => $connection]);
+            $class          = get_class($model);
+            $class::setConnectionResolver($resolver);
 
+            return;
+        }
+
+        $grammarClass   =
+            'Illuminate\Database\Query\Grammars\\' . $database . 'Grammar';
+        $processorClass =
+            'Illuminate\Database\Query\Processors\\' . $database . 'Processor';
+        $grammar        = new $grammarClass;
+        $processor      = new $processorClass;
+        $connection     =
+            m::mock('Illuminate\Database\ConnectionInterface', [
+                'getQueryGrammar'  => $grammar,
+                'getPostProcessor' => $processor,
+            ]);
+        $resolver       =
+            m::mock('Illuminate\Database\ConnectionResolverInterface',
+                ['connection' => $connection]);
+        $class          = get_class($model);
+        $class::setConnectionResolver($resolver);
     }
 
     /**
@@ -61,7 +101,7 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Builder::class, $builder);
         $this->assertInstanceOf(SQLiteGrammar::class, $builder->getGrammar());
         $this->assertInstanceOf(SQLiteProcessor::class,
-                                $builder->getProcessor());
+            $builder->getProcessor());
     }
 
     /**
@@ -76,7 +116,7 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Builder::class, $builder);
         $this->assertInstanceOf(MySqlGrammar::class, $builder->getGrammar());
         $this->assertInstanceOf(MySqlProcessor::class,
-                                $builder->getProcessor());
+            $builder->getProcessor());
     }
 
     /**
@@ -92,8 +132,12 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Builder::class, $builder);
         $this->assertInstanceOf(PostgresGrammar::class, $builder->getGrammar());
         $this->assertInstanceOf(PostgresProcessor::class,
-                                $builder->getProcessor());
+            $builder->getProcessor());
     }
+
+    // #########################################################################
+    // HELPER FUNCTIONS
+    // #########################################################################
 
     /**
      * @test
@@ -107,55 +151,9 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(Builder::class, $builder);
         $this->assertInstanceOf(SqlServerGrammar::class,
-                                $builder->getGrammar());
+            $builder->getGrammar());
         $this->assertInstanceOf(SqlServerProcessor::class,
-                                $builder->getProcessor());
-    }
-
-    // #########################################################################
-    // HELPER FUNCTIONS
-    // #########################################################################
-    /**
-     * @param $model
-     * @param $database
-     */
-    protected function mockConnectionForModel($model, $database)
-    {
-        if ($database == 'Oracle') {
-            $grammarClass = OracleGrammar::class;
-            $processorClass = OracleProcessor::class;
-            $grammar = new $grammarClass;
-            $processor = new $processorClass;
-            $connection =
-              m::mock('Illuminate\Database\ConnectionInterface', [
-                'getQueryGrammar'  => $grammar,
-                'getPostProcessor' => $processor,
-              ]);
-            $resolver =
-              m::mock('Illuminate\Database\ConnectionResolverInterface',
-                      ['connection' => $connection]);
-            $class = get_class($model);
-            $class::setConnectionResolver($resolver);
-
-            return;
-        }
-
-        $grammarClass =
-          'Illuminate\Database\Query\Grammars\\' . $database . 'Grammar';
-        $processorClass =
-          'Illuminate\Database\Query\Processors\\' . $database . 'Processor';
-        $grammar = new $grammarClass;
-        $processor = new $processorClass;
-        $connection =
-          m::mock('Illuminate\Database\ConnectionInterface', [
-            'getQueryGrammar'  => $grammar,
-            'getPostProcessor' => $processor,
-          ]);
-        $resolver =
-          m::mock('Illuminate\Database\ConnectionResolverInterface',
-                  ['connection' => $connection]);
-        $class = get_class($model);
-        $class::setConnectionResolver($resolver);
+            $builder->getProcessor());
     }
 }
 

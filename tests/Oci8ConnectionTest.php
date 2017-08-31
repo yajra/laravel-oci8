@@ -1,8 +1,9 @@
 <?php
 
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 
-class DatabaseConnectionTest extends PHPUnit_Framework_TestCase
+class DatabaseConnectionTest extends TestCase
 {
     public function tearDown()
     {
@@ -43,9 +44,10 @@ class DatabaseConnectionTest extends PHPUnit_Framework_TestCase
 
     protected function getMockConnection($methods = [], $pdo = null)
     {
-        $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;
-        $defaults = ['getDefaultQueryGrammar', 'getDefaultPostProcessor', 'getDefaultSchemaGrammar'];
-        $connection = $this->getMockBuilder('Illuminate\Database\Connection')->setMethods(array_merge($defaults, $methods))->setConstructorArgs([$pdo])->getMock();
+        $pdo        = $pdo ?: new DatabaseConnectionTestMockPDO;
+        $defaults   = ['getDefaultQueryGrammar', 'getDefaultPostProcessor', 'getDefaultSchemaGrammar'];
+        $connection = $this->getMockBuilder('Illuminate\Database\Connection')->setMethods(array_merge($defaults,
+            $methods))->setConstructorArgs([$pdo])->getMock();
         $connection->enableQueryLog();
 
         return $connection;

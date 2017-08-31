@@ -1,9 +1,10 @@
 <?php
 
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Schema\Sequence;
 
-class SequenceTest extends PHPUnit_Framework_TestCase
+class SequenceTest extends TestCase
 {
     public function tearDown()
     {

@@ -1,9 +1,10 @@
 <?php
 
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 
-class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
+class Oci8SchemaGrammarTest extends TestCase
 {
     public function tearDown()
     {
@@ -26,6 +27,16 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
+    protected function getConnection()
+    {
+        return m::mock('Illuminate\Database\Connection');
+    }
+
+    public function getGrammar()
+    {
+        return new Yajra\Oci8\Schema\Grammars\OracleGrammar;
+    }
+
     public function testBasicCreateTableWithReservedWords()
     {
         $blueprint = new Blueprint('users');
@@ -40,16 +51,6 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($statements));
         $this->assertEquals('create table users ( id number(10,0) not null, "group" varchar2(255) not null, constraint users_id_pk primary key ( id ) )',
             $statements[0]);
-    }
-
-    protected function getConnection()
-    {
-        return m::mock('Illuminate\Database\Connection');
-    }
-
-    public function getGrammar()
-    {
-        return new Yajra\Oci8\Schema\Grammars\OracleGrammar;
     }
 
     public function testBasicCreateTableWithPrimary()
@@ -87,7 +88,6 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, foo_id number(10,0) not null, constraint users_foo_id_fk foreign key ( foo_id ) references prefix_orders ( id ), constraint users_id_pk primary key ( id ) )',
             $statements[0]);
     }
-
 
     public function testBasicCreateTableWithNvarchar2()
     {

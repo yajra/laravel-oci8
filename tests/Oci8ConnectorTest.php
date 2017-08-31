@@ -1,8 +1,9 @@
 <?php
 
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 
-class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
+class DatabaseConnectorTest extends TestCase
 {
     public function tearDown()
     {
@@ -42,7 +43,9 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)->setMethods(['createConnection', 'getOptions'])->getMock();
+        $connector  = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)
+                           ->setMethods(['createConnection', 'getOptions'])
+                           ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
                   ->method('getOptions')
@@ -99,11 +102,12 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
             ],
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SID = ORCL)))',
-                ['driver'   => 'pdo-via-oci8',
-                 'host'     => 'localhost',
-                 'port'     => '1234',
-                 'database' => 'ORCL',
-                 'tns'      => '',
+                [
+                    'driver'   => 'pdo-via-oci8',
+                    'host'     => 'localhost',
+                    'port'     => '1234',
+                    'database' => 'ORCL',
+                    'tns'      => '',
                 ],
             ],
             // using config with alias (service name)
