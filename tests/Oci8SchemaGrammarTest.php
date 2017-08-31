@@ -723,6 +723,24 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
+    public function testAddingJson()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->json('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
+    }
+
+    public function testAddingJsonb()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->jsonb('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
+    }
+
     public function testAddingDate()
     {
         $blueprint = new Blueprint('users');

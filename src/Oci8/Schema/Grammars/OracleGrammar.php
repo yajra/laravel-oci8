@@ -693,6 +693,28 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a json type.
+     *
+     * @param  \Illuminate\Support\Fluent $column
+     * @return string
+     */
+    protected function typeJson(Fluent $column)
+    {
+        return 'clob';
+    }
+
+    /**
+     * Create the column definition for a jsonb type.
+     *
+     * @param  \Illuminate\Support\Fluent $column
+     * @return string
+     */
+    protected function typeJsonb(Fluent $column)
+    {
+        return 'clob';
+    }
+
+    /**
      * Get the SQL for a nullable column modifier.
      *
      * @param  \Illuminate\Database\Schema\Blueprint $blueprint
