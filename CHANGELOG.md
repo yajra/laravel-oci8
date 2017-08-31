@@ -1,5 +1,11 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.16 - 2017-08-31
+- Consider 'prefix_schema' for sequences and triggers #301, credits @renanwilliam.
+- Add Oracle 12c ansi pagination support #265, credits to @peyobr.
+- Implement StyleCI fixes.
+- Fix tests related to PR #301 and #265.
+
 #v5.4.15 - 2017-08-31
 - Add UUID Support #325, credits to @ChaosPower.
 
