@@ -2,12 +2,12 @@
 
 namespace Yajra\Oci8\Schema\Grammars;
 
+use Illuminate\Support\Str;
+use Illuminate\Support\Fluent;
 use Illuminate\Database\Connection;
+use Yajra\Oci8\OracleReservedWords;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
-use Illuminate\Support\Fluent;
-use Illuminate\Support\Str;
-use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
 {
@@ -28,7 +28,7 @@ class OracleGrammar extends Grammar
     protected $modifiers = ['Increment', 'Nullable', 'Default'];
 
     /**
-     * The possible column serials
+     * The possible column serials.
      *
      * @var array
      */
@@ -59,7 +59,7 @@ class OracleGrammar extends Grammar
 
         $sql = 'create table ' . $this->wrapTable($blueprint) . " ( $columns";
 
-        /**
+        /*
          * To be able to name the primary/foreign keys when the table is
          * initially created we will need to check for a primary/foreign
          * key commands and add the columns to the table's declaration
@@ -156,7 +156,7 @@ class OracleGrammar extends Grammar
             return ", constraint {$primary->index} primary key ( {$columns} )";
         }
 
-        return "";
+        return '';
     }
 
     /**
@@ -166,7 +166,7 @@ class OracleGrammar extends Grammar
      */
     public function compileTableExists()
     {
-        return "select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)";
+        return 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
     }
 
     /**
@@ -266,7 +266,7 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command)
     {
-        return "alter table " . $this->wrapTable($blueprint) . " add constraint {$command->index} unique ( " . $this->columnize($command->columns) . " )";
+        return 'alter table ' . $this->wrapTable($blueprint) . " add constraint {$command->index} unique ( " . $this->columnize($command->columns) . ' )';
     }
 
     /**
@@ -278,7 +278,7 @@ class OracleGrammar extends Grammar
      */
     public function compileIndex(Blueprint $blueprint, Fluent $command)
     {
-        return "create index {$command->index} on " . $this->wrapTable($blueprint) . " ( " . $this->columnize($command->columns) . " )";
+        return "create index {$command->index} on " . $this->wrapTable($blueprint) . ' ( ' . $this->columnize($command->columns) . ' )';
     }
 
     /**
@@ -468,7 +468,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeText(Fluent $column)
     {
-        return "clob";
+        return 'clob';
     }
 
     /**
@@ -599,7 +599,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeBoolean(Fluent $column)
     {
-        return "char(1)";
+        return 'char(1)';
     }
 
     /**
@@ -682,6 +682,17 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a uuid type.
+     *
+     * @param  \Illuminate\Support\Fluent  $column
+     * @return string
+     */
+    protected function typeUuid(Fluent $column)
+    {
+        return 'char(36)';
+    }
+
+    /**
      * Get the SQL for a nullable column modifier.
      *
      * @param  \Illuminate\Database\Schema\Blueprint $blueprint
@@ -691,7 +702,7 @@ class OracleGrammar extends Grammar
     protected function modifyNullable(Blueprint $blueprint, Fluent $column)
     {
         // check if field is declared as enum
-        $enum = "";
+        $enum = '';
         if (count((array) $column->allowed)) {
             $enum = " check ({$column->name} in ('" . implode("', '", $column->allowed) . "'))";
         }
@@ -700,7 +711,7 @@ class OracleGrammar extends Grammar
         $null .= $enum;
 
         if (! is_null($column->default)) {
-            return " default " . $this->getDefaultValue($column->default) . $null;
+            return ' default ' . $this->getDefaultValue($column->default) . $null;
         }
 
         return $null;
@@ -716,7 +727,7 @@ class OracleGrammar extends Grammar
     protected function modifyDefault(Blueprint $blueprint, Fluent $column)
     {
         // implemented @modifyNullable
-        return "";
+        return '';
     }
 
     /**

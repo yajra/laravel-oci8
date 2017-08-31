@@ -14,7 +14,7 @@ class OracleBlueprint extends Blueprint
     public $comment = null;
 
     /**
-     * Column comments
+     * Column comments.
      *
      * @var array
      */

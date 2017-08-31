@@ -1,5 +1,31 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.15 - 2017-08-31
+- Add UUID Support #325, credits to @ChaosPower.
+
+#v5.4.14 - 2017-08-31
+- Refactor Procedures & Functions + CI Updates #319, credits to @mstaack
+
+#v5.4.13 - 2017-07-14
+- Set OracleEloquent sequence property as public. #316
+- Patch docblocks and comments.
+- Fix #315.
+
+#v5.4.12 - 2017-07-04
+- Fix missing table prefix when adding comment. #314
+- Fix #310.
+- Credits to @manuzcom.
+
+#v5.4.11 - 2017-06-23
+- Fix attributes passed. Fix #306. #307
+
+#v5.4.10 - 2017-06-20
+- Patch OracleEloquent compatibility. #304
+- Patch performInsert & Update method.
+- Patch update method.
+- Fix whereIn, whereNotIn queries when collection was passed.
+- Fix whereNotIn query and always use `where` clause.
+
 #v5.4.9 - 2017-05-10
 - Upgrade connection resolver for Oracle DB driver registration. #285
 - Fix #279.

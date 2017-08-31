@@ -2,19 +2,20 @@
 
 namespace Yajra\Oci8;
 
-use Doctrine\DBAL\Connection as DoctrineConnection;
-use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Grammar;
 use PDO;
-use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
+use PDOStatement;
+use Yajra\Pdo\Oci8\Statement;
+use Yajra\Oci8\Schema\Trigger;
+use Yajra\Oci8\Schema\Sequence;
+use Illuminate\Database\Grammar;
+use Illuminate\Database\Connection;
+use Doctrine\DBAL\Connection as DoctrineConnection;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
+use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
-use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
-use Yajra\Oci8\Schema\Sequence;
-use Yajra\Oci8\Schema\Trigger;
-use Yajra\Pdo\Oci8\Statement;
 
 class Oci8Connection extends Connection
 {
@@ -191,12 +192,13 @@ class Oci8Connection extends Connection
     public function getDoctrineConnection()
     {
         if (is_null($this->doctrineConnection)) {
-            $data = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
+            $data                     = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
             $this->doctrineConnection = new DoctrineConnection(
-                $data, $this->getDoctrineDriver()
+                $data,
+                $this->getDoctrineDriver()
             );
         }
-        
+
         return $this->doctrineConnection;
     }
 
@@ -215,75 +217,137 @@ class Oci8Connection extends Connection
      * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' =>
      * 'bye'], PDO::PARAM_LOB).
      *
-     * @author Tylerian - jairo.eog@outlook.com
-     * @param string $sql (mixed)
-     * @param array $bindings (kvp array)
-     * @param int $returnType (PDO::PARAM_*)
-     * @param int $length
+     * @param string $functionName
+     * @param array  $bindings   (kvp array)
+     * @param int    $returnType (PDO::PARAM_*)
+     * @param int    $length
      * @return mixed $returnType
      */
-    public function executeFunction($sql, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
+    public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
     {
-        $query = $this->getPdo()->prepare('begin :result := ' . $sql . '; end;');
+        $stmt = $this->createStatementFromFunction($functionName, $bindings);
 
         foreach ($bindings as $key => &$value) {
-            if (! preg_match('/^:(.*)$/i', $key)) {
-                $key = ':' . $key;
-            }
-
-            $query->bindParam($key, $value);
+            $stmt->bindParam($key, $value);
         }
 
-        $query->bindParam(':result', $result, $returnType, $length);
-        $query->execute();
+        $stmt->bindParam(':result', $result, $returnType, $length);
+        $stmt->execute();
 
         return $result;
     }
 
     /**
-     * Execute a PL/SQL Procedure and return its result.
+     * Execute a PL/SQL Procedure and return its results.
+     *
      * Usage: DB::executeProcedure($procedureName, $bindings).
      * $bindings looks like:
      *         $bindings = [
      *                  'p_userid'  => $id
      *         ];
      *
-     * @param string $procedureName
-     * @param array $bindings
-     * @param mixed $returnType
+     * @param  string $procedureName
+     * @param  array  $bindings
+     * @return bool
+     */
+    public function executeProcedure($procedureName, array $bindings = [])
+    {
+        $stmt = $this->createStatementFromProcedure($procedureName, $bindings);
+
+        foreach ($bindings as $key => &$value) {
+            $stmt->bindParam(':' . $key, $value);
+        }
+
+        return $stmt->execute();
+    }
+
+    /**
+     * Execute a PL/SQL Procedure and return its cursor result.
+     * Usage: DB::executeProcedureWithCursor($procedureName, $bindings).
+     *
+     * https://docs.oracle.com/cd/E17781_01/appdev.112/e18555/ch_six_ref_cur.htm#TDPPH218
+     *
+     * @param  string $procedureName
+     * @param  array  $bindings
+     * @param  string $cursorName
      * @return array
      */
-    public function executeProcedure($procedureName, $bindings, $returnType = PDO::PARAM_STMT)
+    public function executeProcedureWithCursor($procedureName, array $bindings = [], $cursorName = ':cursor')
     {
-        $command = sprintf('begin %s(:%s, :cursor); end;', $procedureName, implode(', :', array_keys($bindings)));
+        $stmt = $this->createStatementFromProcedure($procedureName, $bindings, $cursorName);
 
-        $stmt = $this->getPdo()->prepare($command);
-
-        foreach ($bindings as $bindingName => &$bindingValue) {
-            $stmt->bindParam(':' . $bindingName, $bindingValue);
+        foreach ($bindings as $key => &$value) {
+            $stmt->bindParam(':' . $key, $value);
         }
 
         $cursor = null;
-
-        $stmt->bindParam(':cursor', $cursor, $returnType);
+        $stmt->bindParam($cursorName, $cursor, PDO::PARAM_STMT);
         $stmt->execute();
 
-        if ($returnType === PDO::PARAM_STMT) {
-            $statement = new Statement($cursor, $this->getPdo(), $this->getPdo()->getOptions());
-            $statement->execute();
-            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-            $statement->closeCursor();
+        $statement = new Statement($cursor, $this->getPdo(), $this->getPdo()->getOptions());
+        $statement->execute();
+        $results = $statement->fetchAll(PDO::FETCH_OBJ);
+        $statement->closeCursor();
 
-            return $results;
-        }
+        return $results;
+    }
 
-        return $cursor;
+    /**
+     * Creates sql command to run a procedure with bindings.
+     *
+     * @param  string      $procedureName
+     * @param  array       $bindings
+     * @param  string|bool $cursor
+     * @return string
+     */
+    public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
+    {
+        $paramsString = implode(',', array_map(function ($param) {
+            return ':' . $param;
+        }, array_keys($bindings)));
+
+        $prefix = count($bindings) ? ',' : '';
+        $cursor = $cursor ? $prefix . $cursor : null;
+
+        return sprintf('begin %s(%s%s); end;', $procedureName, $paramsString, $cursor);
+    }
+
+    /**
+     * Creates statement from procedure.
+     *
+     * @param  string      $procedureName
+     * @param  array        $bindings
+     * @param  string|bool $cursorName
+     * @return PDOStatement
+     */
+    public function createStatementFromProcedure($procedureName, array $bindings, $cursorName = false)
+    {
+        $sql = $this->createSqlFromProcedure($procedureName, $bindings, $cursorName);
+
+        return $this->getPdo()->prepare($sql);
+    }
+
+    /**
+     * Create statement from function.
+     *
+     * @param string $functionName
+     * @param array  $bindings
+     *
+     * @return PDOStatement
+     */
+    public function createStatementFromFunction($functionName, array $bindings)
+    {
+        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+
+        $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
+
+        return $this->getPdo()->prepare($sql);
     }
 
     /**
      * Bind values to their parameters in the given statement.
      *
-     * @param \PDOStatement $statement
+     * @param PDOStatement $statement
      * @param array $bindings
      */
     public function bindValues($statement, $bindings)

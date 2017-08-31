@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Query;
 
 use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Support\Arrayable;
 
 class OracleBuilder extends Builder
 {
@@ -35,7 +36,7 @@ class OracleBuilder extends Builder
      * @param  array $values
      * @param  array $binaries
      * @param  string $sequence
-     * @return boolean
+     * @return bool
      */
     public function updateLob(array $values, array $binaries, $sequence = 'id')
     {
@@ -57,7 +58,7 @@ class OracleBuilder extends Builder
     /**
      * Add a "where in" clause to the query.
      * Split one WHERE IN clause into multiple clauses each
-     * with up to 1000 expressions to avoid ORA-01795
+     * with up to 1000 expressions to avoid ORA-01795.
      *
      * @param  string $column
      * @param  mixed $values
@@ -69,15 +70,17 @@ class OracleBuilder extends Builder
     {
         $type = $not ? 'NotIn' : 'In';
 
+        if ($values instanceof Arrayable) {
+            $values = $values->toArray();
+        }
+
         if (count($values) > 1000) {
             $chunks = array_chunk($values, 1000);
 
-            return $this->where(function ($query) use ($column, $chunks, $type) {
-                $firstIteration = true;
+            return $this->where(function ($query) use ($column, $chunks, $type, $not) {
                 foreach ($chunks as $ch) {
-                    $sqlClause = $firstIteration ? 'where' . $type : 'orWhere' . $type;
-                    $query->$sqlClause($column, $ch);
-                    $firstIteration = false;
+                    $sqlClause = $not ? 'where' . $type : 'orWhere' . $type;
+                    $query->{$sqlClause}($column, $ch);
                 }
             }, null, null, $boolean);
         }

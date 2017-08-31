@@ -12,7 +12,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
     public function testCreateConnection()
     {
         $connector = new OracleConnectorStub;
-        $tns       = "Connection String";
+        $tns       = 'Connection String';
         $config    = [
             'driver'   => 'oracle',
             'host'     => 'host',
@@ -42,7 +42,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)->setMethods(['createConnection', 'getOptions'])->getMock();
+        $connector  = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)->setMethods(['createConnection', 'getOptions'])->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
                   ->method('getOptions')

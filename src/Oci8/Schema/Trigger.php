@@ -29,7 +29,7 @@ class Trigger
      * @param  string $column
      * @param  string $triggerName
      * @param  string $sequenceName
-     * @return boolean
+     * @return bool
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
     {
@@ -72,7 +72,7 @@ class Trigger
      * Function to safely drop trigger db object.
      *
      * @param  string $name
-     * @return boolean
+     * @return bool
      */
     public function drop($name)
     {

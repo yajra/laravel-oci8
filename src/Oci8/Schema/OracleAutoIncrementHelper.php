@@ -33,7 +33,7 @@ class OracleAutoIncrementHelper
     }
 
     /**
-     * create sequence and trigger for autoIncrement support
+     * create sequence and trigger for autoIncrement support.
      *
      * @param  Blueprint $blueprint
      * @param  string $table
@@ -80,8 +80,6 @@ class OracleAutoIncrementHelper
                 return $column;
             }
         }
-
-        return null;
     }
 
     /**

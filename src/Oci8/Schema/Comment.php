@@ -3,8 +3,8 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
-use Illuminate\Database\Schema\Grammars\Grammar;
 use Yajra\Oci8\OracleReservedWords;
+use Illuminate\Database\Schema\Grammars\Grammar;
 
 class Comment extends Grammar
 {
@@ -39,7 +39,7 @@ class Comment extends Grammar
 
     /**
      * Run the comment on table statement.
-     * Comment set by $table->comment = 'comment';
+     * Comment set by $table->comment = 'comment';.
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
      */
@@ -65,7 +65,7 @@ class Comment extends Grammar
 
     /**
      * Add comments set via fluent setter.
-     * Comments set by $table->string('column')->comment('comment');
+     * Comments set by $table->string('column')->comment('comment');.
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
      */
@@ -79,7 +79,7 @@ class Comment extends Grammar
     }
 
     /**
-     * Run the comment on column statement
+     * Run the comment on column statement.
      *
      * @param  string $table
      * @param  string $column
@@ -87,8 +87,8 @@ class Comment extends Grammar
      */
     private function commentColumn($table, $column, $comment)
     {
-        $table = $this->wrapValue($table);
-
+        $table  = $this->wrapValue($table);
+        $table  = $this->connection->getTablePrefix() . $table;
         $column = $this->wrapValue($column);
 
         $this->connection->statement("comment on column {$table}.{$column} is '{$comment}'");
@@ -96,7 +96,7 @@ class Comment extends Grammar
 
     /**
      * Add comments on columns.
-     * Comments set by $table->commentColumns = ['column' => 'comment'];
+     * Comments set by $table->commentColumns = ['column' => 'comment'];.
      *
      * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
      */
