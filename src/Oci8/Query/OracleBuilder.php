@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Query;
 
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Support\Arrayable;
 
 class OracleBuilder extends Builder
 {
@@ -36,7 +36,7 @@ class OracleBuilder extends Builder
      * @param  array $values
      * @param  array $binaries
      * @param  string $sequence
-     * @return boolean
+     * @return bool
      */
     public function updateLob(array $values, array $binaries, $sequence = 'id')
     {
@@ -58,7 +58,7 @@ class OracleBuilder extends Builder
     /**
      * Add a "where in" clause to the query.
      * Split one WHERE IN clause into multiple clauses each
-     * with up to 1000 expressions to avoid ORA-01795
+     * with up to 1000 expressions to avoid ORA-01795.
      *
      * @param  string $column
      * @param  mixed $values

@@ -1,28 +1,26 @@
 <?php
 
 use Mockery as m;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Grammars\MySqlGrammar;
-use Illuminate\Database\Query\Grammars\PostgresGrammar;
-use Illuminate\Database\Query\Grammars\SQLiteGrammar;
-use Illuminate\Database\Query\Processors\MySqlProcessor;
-use Illuminate\Database\Query\Processors\PostgresProcessor;
-use Illuminate\Database\Query\Processors\SQLiteProcessor;
-use Illuminate\Database\Query\Processors\SqlServerProcessor;
-use Illuminate\Database\Query\Grammars\SqlServerGrammar;
-use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder;
+use Illuminate\Database\Query\Builder;
+use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
-
+use Illuminate\Database\Query\Grammars\MySqlGrammar;
+use Illuminate\Database\Query\Grammars\SQLiteGrammar;
+use Illuminate\Database\Query\Grammars\PostgresGrammar;
+use Illuminate\Database\Query\Grammars\SqlServerGrammar;
+use Illuminate\Database\Query\Processors\MySqlProcessor;
+use Illuminate\Database\Query\Processors\SQLiteProcessor;
+use Illuminate\Database\Query\Processors\PostgresProcessor;
+use Illuminate\Database\Query\Processors\SqlServerProcessor;
 
 /**
- * {@inheritDoc}
+ * {@inheritdoc}
  */
 class OracleEloquentTest extends PHPUnit_Framework_TestCase
 {
-
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function tearDown()
     {
@@ -44,8 +42,6 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(OracleGrammar::class, $builder->getGrammar());
         $this->assertInstanceOf(OracleProcessor::class,
                                 $builder->getProcessor());
-
-
     }
 
     /**
@@ -115,6 +111,7 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
     // #########################################################################
     // HELPER FUNCTIONS
     // #########################################################################
+
     /**
      * @param $model
      * @param $database
@@ -122,11 +119,11 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
     protected function mockConnectionForModel($model, $database)
     {
         if ($database == 'Oracle') {
-            $grammarClass = OracleGrammar::class;
+            $grammarClass   = OracleGrammar::class;
             $processorClass = OracleProcessor::class;
-            $grammar = new $grammarClass;
-            $processor = new $processorClass;
-            $connection =
+            $grammar        = new $grammarClass;
+            $processor      = new $processorClass;
+            $connection     =
               m::mock('Illuminate\Database\ConnectionInterface', [
                 'getQueryGrammar'  => $grammar,
                 'getPostProcessor' => $processor,
@@ -144,8 +141,8 @@ class OracleEloquentTest extends PHPUnit_Framework_TestCase
           'Illuminate\Database\Query\Grammars\\' . $database . 'Grammar';
         $processorClass =
           'Illuminate\Database\Query\Processors\\' . $database . 'Processor';
-        $grammar = new $grammarClass;
-        $processor = new $processorClass;
+        $grammar    = new $grammarClass;
+        $processor  = new $processorClass;
         $connection =
           m::mock('Illuminate\Database\ConnectionInterface', [
             'getQueryGrammar'  => $grammar,

@@ -18,7 +18,7 @@ class Oci8ServiceProvider extends ServiceProvider
     protected $defer = false;
 
     /**
-     * Boot Oci8 Provider
+     * Boot Oci8 Provider.
      */
     public function boot()
     {
