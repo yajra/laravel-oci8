@@ -2,10 +2,10 @@
 
 namespace Yajra\Oci8\Connectors;
 
-use Illuminate\Database\Connectors\Connector;
-use Illuminate\Database\Connectors\ConnectorInterface;
 use PDO;
 use Yajra\Pdo\Oci8;
+use Illuminate\Database\Connectors\Connector;
+use Illuminate\Database\Connectors\ConnectorInterface;
 
 class OracleConnector extends Connector implements ConnectorInterface
 {
@@ -125,8 +125,8 @@ class OracleConnector extends Connector implements ConnectorInterface
     protected function setServiceId(array $config)
     {
         $config['service'] = empty($config['service_name'])
-            ? $service_param = 'SID = ' . $config['database']
-            : $service_param = 'SERVICE_NAME = ' . $config['service_name'];
+            ? $service_param = 'SID = '.$config['database']
+            : $service_param = 'SERVICE_NAME = '.$config['service_name'];
 
         return $config;
     }
@@ -171,9 +171,9 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         $count = count($host);
         if ($count > 1) {
-            $address = "";
+            $address = '';
             for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = ' . $config["protocol"] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
+                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
             }
 
             // create a tns with multiple address connection
@@ -198,7 +198,7 @@ class OracleConnector extends Connector implements ConnectorInterface
             return parent::createConnection($tns, $config, $options);
         }
 
-        $config             = $this->setCharset($config);
+        $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
         return new Oci8($tns, $config['username'], $config['password'], $options);

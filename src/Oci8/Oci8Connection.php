@@ -2,20 +2,20 @@
 
 namespace Yajra\Oci8;
 
-use Doctrine\DBAL\Connection as DoctrineConnection;
-use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Grammar;
 use PDO;
 use PDOStatement;
-use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
+use Yajra\Pdo\Oci8\Statement;
+use Yajra\Oci8\Schema\Trigger;
+use Yajra\Oci8\Schema\Sequence;
+use Illuminate\Database\Grammar;
+use Illuminate\Database\Connection;
+use Doctrine\DBAL\Connection as DoctrineConnection;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
+use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
-use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
-use Yajra\Oci8\Schema\Sequence;
-use Yajra\Oci8\Schema\Trigger;
-use Yajra\Pdo\Oci8\Statement;
 
 class Oci8Connection extends Connection
 {
@@ -44,7 +44,7 @@ class Oci8Connection extends Connection
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
         $this->sequence = new Sequence($this);
-        $this->trigger  = new Trigger($this);
+        $this->trigger = new Trigger($this);
     }
 
     /**
@@ -66,7 +66,7 @@ class Oci8Connection extends Connection
     public function setSchema($schema)
     {
         $this->schema = $schema;
-        $sessionVars  = [
+        $sessionVars = [
             'CURRENT_SCHEMA' => $schema,
         ];
 
@@ -90,7 +90,7 @@ class Oci8Connection extends Connection
             }
         }
         if ($vars) {
-            $sql = 'ALTER SESSION SET ' . implode(' ', $vars);
+            $sql = 'ALTER SESSION SET '.implode(' ', $vars);
             $this->statement($sql);
         }
 
@@ -255,7 +255,7 @@ class Oci8Connection extends Connection
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings);
 
         foreach ($bindings as $key => &$value) {
-            $stmt->bindParam(':' . $key, $value);
+            $stmt->bindParam(':'.$key, $value);
         }
 
         return $stmt->execute();
@@ -277,7 +277,7 @@ class Oci8Connection extends Connection
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings, $cursorName);
 
         foreach ($bindings as $key => &$value) {
-            $stmt->bindParam(':' . $key, $value);
+            $stmt->bindParam(':'.$key, $value);
         }
 
         $cursor = null;
@@ -303,11 +303,11 @@ class Oci8Connection extends Connection
     public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
     {
         $paramsString = implode(',', array_map(function ($param) {
-            return ':' . $param;
+            return ':'.$param;
         }, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
-        $cursor = $cursor ? $prefix . $cursor : null;
+        $cursor = $cursor ? $prefix.$cursor : null;
 
         return sprintf('begin %s(%s%s); end;', $procedureName, $paramsString, $cursor);
     }
@@ -337,7 +337,7 @@ class Oci8Connection extends Connection
      */
     public function createStatementFromFunction($functionName, array $bindings)
     {
-        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+        $bindings = $bindings ? ':'.implode(', :', array_keys($bindings)) : '';
 
         $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
 

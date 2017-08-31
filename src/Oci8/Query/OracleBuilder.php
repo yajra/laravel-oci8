@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Query;
 
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Support\Arrayable;
 
 class OracleBuilder extends Builder
 {
@@ -19,9 +19,9 @@ class OracleBuilder extends Builder
     {
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
+        $sql = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
-        $values   = $this->cleanBindings($values);
+        $values = $this->cleanBindings($values);
         $binaries = $this->cleanBindings($binaries);
 
         /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
@@ -36,7 +36,7 @@ class OracleBuilder extends Builder
      * @param  array $values
      * @param  array $binaries
      * @param  string $sequence
-     * @return boolean
+     * @return bool
      */
     public function updateLob(array $values, array $binaries, $sequence = 'id')
     {
@@ -44,9 +44,9 @@ class OracleBuilder extends Builder
 
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
+        $sql = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
-        $values   = $this->cleanBindings($bindings);
+        $values = $this->cleanBindings($bindings);
         $binaries = $this->cleanBindings($binaries);
 
         /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
@@ -58,7 +58,7 @@ class OracleBuilder extends Builder
     /**
      * Add a "where in" clause to the query.
      * Split one WHERE IN clause into multiple clauses each
-     * with up to 1000 expressions to avoid ORA-01795
+     * with up to 1000 expressions to avoid ORA-01795.
      *
      * @param  string $column
      * @param  mixed $values
@@ -79,7 +79,7 @@ class OracleBuilder extends Builder
 
             return $this->where(function ($query) use ($column, $chunks, $type, $not) {
                 foreach ($chunks as $ch) {
-                    $sqlClause = $not ? 'where' . $type : 'orWhere' . $type;
+                    $sqlClause = $not ? 'where'.$type : 'orWhere'.$type;
                     $query->{$sqlClause}($column, $ch);
                 }
             }, null, null, $boolean);

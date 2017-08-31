@@ -14,7 +14,7 @@ class OracleBlueprint extends Blueprint
     public $comment = null;
 
     /**
-     * Column comments
+     * Column comments.
      *
      * @var array
      */
@@ -54,7 +54,7 @@ class OracleBlueprint extends Blueprint
 
         $type = isset($short_type[$type]) ? $short_type[$type] : $type;
 
-        $index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
+        $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
 
         // max index name length is 30 chars
         return substr(str_replace(['-', '.'], '_', $index), 0, 30);
