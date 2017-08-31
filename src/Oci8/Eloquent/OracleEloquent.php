@@ -2,12 +2,12 @@
 
 namespace Yajra\Oci8\Eloquent;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Yajra\Oci8\Oci8Connection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
+use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 
 class OracleEloquent extends Model
 {
@@ -57,7 +57,7 @@ class OracleEloquent extends Model
             return $this->sequence;
         }
 
-        return $this->getTable() . '_' . $this->getKeyName() . '_seq';
+        return $this->getTable().'_'.$this->getKeyName().'_seq';
     }
 
     /**
@@ -122,7 +122,7 @@ class OracleEloquent extends Model
      * Check if attributes contains binary field.
      *
      * @param  array $attributes
-     * @return boolean
+     * @return bool
      */
     protected function checkBinary(array $attributes)
     {
@@ -146,12 +146,12 @@ class OracleEloquent extends Model
         $pos = strpos($this->getTable(), '@');
 
         if ($pos === false) {
-            return $this->getTable() . '.' . $this->getKeyName();
+            return $this->getTable().'.'.$this->getKeyName();
         } else {
-            $table  = substr($this->getTable(), 0, $pos);
+            $table = substr($this->getTable(), 0, $pos);
             $dbLink = substr($this->getTable(), $pos);
 
-            return $table . '.' . $this->getKeyName() . $dbLink;
+            return $table.'.'.$this->getKeyName().$dbLink;
         }
     }
 
@@ -162,7 +162,7 @@ class OracleEloquent extends Model
      */
     protected function newBaseQueryBuilder()
     {
-        $conn    = $this->getConnection();
+        $conn = $this->getConnection();
         $grammar = $conn->getQueryGrammar();
 
         if ($grammar instanceof OracleGrammar) {
@@ -176,7 +176,7 @@ class OracleEloquent extends Model
      * Perform a model update operation.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @return boolean
+     * @return bool
      */
     protected function performUpdate(Builder $query)
     {

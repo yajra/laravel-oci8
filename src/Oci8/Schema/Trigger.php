@@ -29,7 +29,7 @@ class Trigger
      * @param  string $column
      * @param  string $triggerName
      * @param  string $sequenceName
-     * @return boolean
+     * @return bool
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
     {
@@ -37,7 +37,7 @@ class Trigger
             return false;
         }
 
-        $table  = $this->wrapValue($table);
+        $table = $this->wrapValue($table);
         $column = $this->wrapValue($column);
 
         return $this->connection->statement("
@@ -59,14 +59,14 @@ class Trigger
      */
     protected function wrapValue($value)
     {
-        return $this->isReserved($value) ? '"' . $value . '"' : $value;
+        return $this->isReserved($value) ? '"'.$value.'"' : $value;
     }
 
     /**
      * Function to safely drop trigger db object.
      *
      * @param  string $name
-     * @return boolean
+     * @return bool
      */
     public function drop($name)
     {

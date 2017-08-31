@@ -28,12 +28,12 @@ class OracleAutoIncrementHelper
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->sequence   = new Sequence($connection);
-        $this->trigger    = new Trigger($connection);
+        $this->sequence = new Sequence($connection);
+        $this->trigger = new Trigger($connection);
     }
 
     /**
-     * create sequence and trigger for autoIncrement support
+     * create sequence and trigger for autoIncrement support.
      *
      * @param  Blueprint $blueprint
      * @param  string $table
@@ -48,7 +48,7 @@ class OracleAutoIncrementHelper
             return;
         }
 
-        $col   = $column->name;
+        $col = $column->name;
         $start = isset($column->start) ? $column->start : 1;
 
         // get table prefix
@@ -60,7 +60,7 @@ class OracleAutoIncrementHelper
 
         // create trigger for auto increment work around
         $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-        $this->trigger->autoIncrement($prefix . $table, $col, $triggerName, $sequenceName);
+        $this->trigger->autoIncrement($prefix.$table, $col, $triggerName, $sequenceName);
     }
 
     /**
@@ -80,8 +80,6 @@ class OracleAutoIncrementHelper
                 return $column;
             }
         }
-
-        return null;
     }
 
     /**
@@ -96,7 +94,7 @@ class OracleAutoIncrementHelper
     private function createObjectName($prefix, $table, $col, $type)
     {
         // max object name length is 30 chars
-        return substr($prefix . $table . '_' . $col . '_' . $type, 0, 30);
+        return substr($prefix.$table.'_'.$col.'_'.$type, 0, 30);
     }
 
     /**
@@ -110,7 +108,7 @@ class OracleAutoIncrementHelper
         // drop sequence and trigger object
         $prefix = $this->connection->getTablePrefix();
         // get the actual primary column name from table
-        $col = $this->getPrimaryKey($prefix . $table);
+        $col = $this->getPrimaryKey($prefix.$table);
         // if primary key col is set, drop auto increment objects
         if (isset($col) && ! empty($col)) {
             // drop sequence for auto increment
@@ -135,7 +133,7 @@ class OracleAutoIncrementHelper
             return '';
         }
 
-        $sql  = "SELECT cols.column_name
+        $sql = "SELECT cols.column_name
             FROM all_constraints cons, all_cons_columns cols
             WHERE upper(cols.table_name) = upper('{$table}')
                 AND cons.constraint_type = 'P'
