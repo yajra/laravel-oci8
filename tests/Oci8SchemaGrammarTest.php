@@ -806,6 +806,15 @@ class Oci8SchemaGrammarTest extends PHPUnit_Framework_TestCase
             $statements[0]);
     }
 
+    public function testAddingUuid()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->uuid('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table users add ( foo char(36) not null )', $statements[0]);
+    }
+
     public function testAddingBinary()
     {
         $blueprint = new Blueprint('users');
