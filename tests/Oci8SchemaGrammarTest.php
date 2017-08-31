@@ -291,7 +291,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $grammar  = $this->getGrammar();
         $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\')';
-        $sql      = $grammar->compileColumnExists("schema", "test_table");
+        $sql      = $grammar->compileColumnExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
     }
 

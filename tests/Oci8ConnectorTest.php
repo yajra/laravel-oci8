@@ -13,7 +13,7 @@ class DatabaseConnectorTest extends TestCase
     public function testCreateConnection()
     {
         $connector = new OracleConnectorStub;
-        $tns       = "Connection String";
+        $tns       = 'Connection String';
         $config    = [
             'driver'   => 'oracle',
             'host'     => 'host',
