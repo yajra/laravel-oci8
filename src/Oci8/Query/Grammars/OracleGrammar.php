@@ -2,11 +2,11 @@
 
 namespace Yajra\Oci8\Query\Grammars;
 
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class OracleGrammar extends Grammar
 {
@@ -35,7 +35,7 @@ class OracleGrammar extends Grammar
         $q          = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
-          ->whereRaw("rownum = 1");
+          ->whereRaw('rownum = 1');
 
         return $this->compileSelect($q);
     }
@@ -106,7 +106,7 @@ class OracleGrammar extends Grammar
         $start = $query->offset + 1;
 
         if ($query->limit == 1) {
-            return "= 1";
+            return '= 1';
         }
 
         if ($query->limit > 1) {
@@ -265,7 +265,7 @@ class OracleGrammar extends Grammar
             $insertQueries = [];
             foreach ($value as $parameter) {
                 $parameter       = (str_replace(['(', ')'], '', $parameter));
-                $insertQueries[] = "select " . $parameter . " from dual ";
+                $insertQueries[] = 'select ' . $parameter . ' from dual ';
             }
             $parameters = implode('union all ', $insertQueries);
 
