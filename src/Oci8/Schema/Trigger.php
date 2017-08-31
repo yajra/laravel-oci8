@@ -33,17 +33,17 @@ class Trigger
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
     {
-        if (!$table || !$column || !$triggerName || !$sequenceName) {
+        if (! $table || ! $column || ! $triggerName || ! $sequenceName) {
             return false;
         }
 
         if ($this->connection->getConfig('prefix_schema')) {
-            $table = $this->connection->getConfig('prefix_schema') . '.' . $table;
-            $triggerName = $this->connection->getConfig('prefix_schema') . '.' . $triggerName;
+            $table        = $this->connection->getConfig('prefix_schema') . '.' . $table;
+            $triggerName  = $this->connection->getConfig('prefix_schema') . '.' . $triggerName;
             $sequenceName = $this->connection->getConfig('prefix_schema') . '.' . $sequenceName;
         }
 
-        $table = $this->wrapValue($table);
+        $table  = $this->wrapValue($table);
         $column = $this->wrapValue($column);
 
         return $this->connection->statement("
@@ -76,7 +76,7 @@ class Trigger
      */
     public function drop($name)
     {
-        if (!$name) {
+        if (! $name) {
             return false;
         }
 

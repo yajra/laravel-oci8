@@ -29,7 +29,7 @@ class Sequence
      */
     public function create($name, $start = 1, $nocache = false)
     {
-        if (!$name) {
+        if (! $name) {
             return false;
         }
 
@@ -51,7 +51,7 @@ class Sequence
     public function drop($name)
     {
         // check if a valid name and sequence exists
-        if (!$name || !$this->exists($name)) {
+        if (! $name || ! $this->exists($name)) {
             return false;
         }
 
@@ -75,7 +75,7 @@ class Sequence
      */
     public function exists($name)
     {
-        if (!$name) {
+        if (! $name) {
             return false;
         }
 
@@ -92,7 +92,7 @@ class Sequence
      */
     public function nextValue($name)
     {
-        if (!$name) {
+        if (! $name) {
             return 0;
         }
 
@@ -119,7 +119,7 @@ class Sequence
     public function lastInsertId($name)
     {
         // check if a valid name and sequence exists
-        if (!$name || !$this->exists($name)) {
+        if (! $name || ! $this->exists($name)) {
             return 0;
         }
 
