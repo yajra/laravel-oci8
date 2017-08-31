@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
-use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
+use Yajra\Oci8\Query\OracleBuilder as Builder;
+use Illuminate\Database\Query\Expression as Raw;
 
 class Oci8QueryBuilderTest extends TestCase
 {
