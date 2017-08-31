@@ -33,6 +33,10 @@ class Sequence
             return false;
         }
 
+        if ($this->connection->getConfig('prefix_schema')) {
+            $name = $this->connection->getConfig('prefix_schema') . '.' . $name;
+        }
+
         $nocache = $nocache ? 'nocache' : '';
 
         return $this->connection->statement("create sequence {$name} start with {$start} {$nocache}");

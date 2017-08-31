@@ -126,6 +126,9 @@ class OracleBuilder extends Builder
         $sql     = $grammar->compileTableExists();
 
         $database = $this->connection->getConfig('username');
+        if ($this->connection->getConfig('prefix_schema')) {
+            $database = $this->connection->getConfig('prefix_schema');
+        }
         $table    = $this->connection->getTablePrefix() . $table;
 
         return count($this->connection->select($sql, [$database, $table])) > 0;

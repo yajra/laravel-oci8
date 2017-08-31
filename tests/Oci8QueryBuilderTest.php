@@ -1,10 +1,10 @@
 <?php
 
+use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
-use Illuminate\Database\Query\Expression as Raw;
+use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
 {
@@ -208,7 +208,9 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testSubSelectWhereIns()
     {
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
@@ -216,7 +218,10 @@ class Oci8QueryBuilderTest extends TestCase
             $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
 
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
+
         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
@@ -298,31 +303,43 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testLimitsAndOffsets()
     {
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(10);
         $this->assertEquals('select * from (select * from "USERS") where rownum >= 11', $builder->toSql());
 
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(5)->limit(10);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
             $builder->toSql());
 
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->skip(5)->take(10);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
             $builder->toSql());
 
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->skip(-5)->take(10);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
             $builder->toSql());
 
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->forPage(2, 15);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
             $builder->toSql());
 
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->forPage(-2, 15);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
             $builder->toSql());
@@ -436,7 +453,9 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFindReturnsFirstResultByID()
     {
-        $builder = $this->getBuilder();
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
@@ -456,13 +475,14 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFirstMethodReturnsFirstResult()
     {
-        $builder = $this->getBuilder();
-        $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
-                    [1], true)
-                ->andReturn([['foo' => 'bar']]);
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
+        $connection->shouldReceive('select')
+                   ->once()
+                   ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
+                       [1], true)
+                   ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
                 ->shouldReceive('processSelect')
                 ->once()

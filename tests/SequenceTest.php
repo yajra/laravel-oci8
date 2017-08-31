@@ -16,6 +16,7 @@ class SequenceTest extends TestCase
     {
         $connection = $this->getConnection();
         $sequence   = new Sequence($connection);
+        $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('statement')->andReturn(true);
         $success = $sequence->create('users_id_seq');
         $this->assertEquals(true, $success);
