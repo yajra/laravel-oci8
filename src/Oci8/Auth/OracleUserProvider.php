@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Auth;
 
-use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Support\Str;
+use Illuminate\Auth\EloquentUserProvider;
 
 class OracleUserProvider extends EloquentUserProvider
 {
