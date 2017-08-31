@@ -1,5 +1,10 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.17 - 2017-08-31
+- Add test for PR #325 UUID datatype. #335
+- Add support for json & jsonb datatype. #334
+- Fix #283.
+
 #v5.4.16 - 2017-08-31
 - Consider 'prefix_schema' for sequences and triggers #301, credits @renanwilliam.
 - Add Oracle 12c ansi pagination support #265, credits to @peyobr.

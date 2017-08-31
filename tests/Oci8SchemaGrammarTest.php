@@ -724,6 +724,24 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function testAddingJson()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->json('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
+    }
+
+    public function testAddingJsonb()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->jsonb('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table users add ( foo clob not null )', $statements[0]);
+    }
+
     public function testAddingDate()
     {
         $blueprint = new Blueprint('users');
@@ -805,6 +823,15 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals(1, count($statements));
         $this->assertEquals('alter table users add ( created_at timestamp with time zone null, updated_at timestamp with time zone null )',
             $statements[0]);
+    }
+
+    public function testAddingUuid()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->uuid('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table users add ( foo char(36) not null )', $statements[0]);
     }
 
     public function testAddingBinary()
