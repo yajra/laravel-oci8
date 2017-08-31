@@ -86,10 +86,10 @@ By using this oracle user provider, we will now be able to avoid user issues whe
 To use, just update `auth.php` config and set the driver to `oracle`
 ```php
 'providers' => [
-	'users' => [
-		'driver' => 'oracle',
-		'model' => App\User::class,
-	],
+    'users' => [
+        'driver' => 'oracle',
+        'model' => App\User::class,
+    ],
 ]
 ```
 
