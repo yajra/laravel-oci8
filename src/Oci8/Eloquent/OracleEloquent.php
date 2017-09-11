@@ -147,12 +147,12 @@ class OracleEloquent extends Model
 
         if ($pos === false) {
             return $this->getTable() . '.' . $this->getKeyName();
-        } else {
-            $table  = substr($this->getTable(), 0, $pos);
-            $dbLink = substr($this->getTable(), $pos);
-
-            return $table . '.' . $this->getKeyName() . $dbLink;
         }
+
+        $table  = substr($this->getTable(), 0, $pos);
+        $dbLink = substr($this->getTable(), $pos);
+
+        return $table . '.' . $this->getKeyName() . $dbLink;
     }
 
     /**
@@ -293,11 +293,9 @@ class OracleEloquent extends Model
      */
     protected function insertAndSetId(Builder $query, $attributes)
     {
-        if ($binaries = $this->extractBinaries($attributes)) {
-            $id = $query->getQuery()->insertLob($attributes, $binaries, $keyName = $this->getKeyName());
-        } else {
-            $id = $query->insertGetId($attributes, $keyName = $this->getKeyName());
-        }
+        $id = ($binaries = $this->extractBinaries($attributes))  ?
+            $query->getQuery()->insertLob($attributes, $binaries, $keyName = $this->getKeyName()) :
+            $query->insertGetId($attributes, $keyName = $this->getKeyName());
 
         $this->setAttribute($keyName, $id);
     }
