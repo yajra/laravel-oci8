@@ -61,6 +61,7 @@ class Oci8Connection extends Connection
      * Set current schema.
      *
      * @param string $schema
+     *
      * @return $this
      */
     public function setSchema($schema)
@@ -77,6 +78,7 @@ class Oci8Connection extends Connection
      * Update oracle session variables.
      *
      * @param array $sessionVars
+     *
      * @return $this
      */
     public function setSessionVars(array $sessionVars)
@@ -90,7 +92,7 @@ class Oci8Connection extends Connection
             }
         }
         if ($vars) {
-            $sql = 'ALTER SESSION SET '.implode(' ', $vars);
+            $sql = 'ALTER SESSION SET ' . implode(' ', $vars);
             $this->statement($sql);
         }
 
@@ -111,6 +113,7 @@ class Oci8Connection extends Connection
      * Set sequence class.
      *
      * @param \Yajra\Oci8\Schema\Sequence $sequence
+     *
      * @return \Yajra\Oci8\Schema\Sequence
      */
     public function setSequence(Sequence $sequence)
@@ -132,6 +135,7 @@ class Oci8Connection extends Connection
      * Set oracle trigger class.
      *
      * @param \Yajra\Oci8\Schema\Trigger $trigger
+     *
      * @return \Yajra\Oci8\Schema\Trigger
      */
     public function setTrigger(Trigger $trigger)
@@ -157,6 +161,7 @@ class Oci8Connection extends Connection
      * Begin a fluent query against a database table.
      *
      * @param string $table
+     *
      * @return \Yajra\Oci8\Query\OracleBuilder
      */
     public function table($table)
@@ -172,6 +177,7 @@ class Oci8Connection extends Connection
      * Set oracle session date format.
      *
      * @param string $format
+     *
      * @return $this
      */
     public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
@@ -221,6 +227,7 @@ class Oci8Connection extends Connection
      * @param array  $bindings (kvp array)
      * @param int    $returnType (PDO::PARAM_*)
      * @param int    $length
+     *
      * @return mixed $returnType
      */
     public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
@@ -246,6 +253,7 @@ class Oci8Connection extends Connection
      *
      * @param  string $procedureName
      * @param  array  $bindings
+     *
      * @return bool
      */
     public function executeProcedure($procedureName, array $bindings = [])
@@ -266,6 +274,7 @@ class Oci8Connection extends Connection
      * @param  string $procedureName
      * @param  array  $bindings
      * @param  string $cursorName
+     *
      * @return array
      */
     public function executeProcedureWithCursor($procedureName, array $bindings = [], $cursorName = ':cursor')
@@ -292,16 +301,17 @@ class Oci8Connection extends Connection
      * @param  string      $procedureName
      * @param  array       $bindings
      * @param  string|bool $cursor
+     *
      * @return string
      */
     public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
     {
         $paramsString = implode(',', array_map(function ($param) {
-            return ':'.$param;
+            return ':' . $param;
         }, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
-        $cursor = $cursor ? $prefix.$cursor : null;
+        $cursor = $cursor ? $prefix . $cursor : null;
 
         return sprintf('begin %s(%s%s); end;', $procedureName, $paramsString, $cursor);
     }
@@ -312,6 +322,7 @@ class Oci8Connection extends Connection
      * @param  string      $procedureName
      * @param  array       $bindings
      * @param  string|bool $cursorName
+     *
      * @return PDOStatement
      */
     public function createStatementFromProcedure($procedureName, array $bindings, $cursorName = false)
@@ -331,7 +342,7 @@ class Oci8Connection extends Connection
      */
     public function createStatementFromFunction($functionName, array $bindings)
     {
-        $bindings = $bindings ? ':'.implode(', :', array_keys($bindings)) : '';
+        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
 
         $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
 
@@ -365,6 +376,7 @@ class Oci8Connection extends Connection
      * Set the table prefix and return the grammar.
      *
      * @param \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar
+     *
      * @return \Illuminate\Database\Grammar
      */
     public function withTablePrefix(Grammar $grammar)
@@ -376,6 +388,7 @@ class Oci8Connection extends Connection
      * Set the schema prefix and return the grammar.
      *
      * @param \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar
+     *
      * @return \Illuminate\Database\Grammar
      */
     public function withSchemaPrefix(Grammar $grammar)
@@ -427,16 +440,19 @@ class Oci8Connection extends Connection
     {
         foreach ($bindings as $key => &$binding) {
 
-            $type  = PDO::PARAM_STR;
-            $value = &$binding;
+            //defaults
+            $value  = &$binding;
+            $type   = PDO::PARAM_STR;
+            $length = null;
 
             // extended array syntax for bindings
             if (is_array($binding)) {
-                $value = &$binding['value'];
-                $type  = $binding['type'];
+                $value  = &$binding['value'];
+                $type   = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
+                $length = array_key_exists('length', $binding) ? $binding['length'] : null;
             }
 
-            $stmt->bindParam(':' . $key, $value, $type);
+            $stmt->bindParam(':' . $key, $value, $type, $length);
         }
 
         return $stmt;

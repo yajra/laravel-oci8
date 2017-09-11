@@ -40,9 +40,6 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        //unfortunately we need to cast here.. any better ideas?
-        $output = (int)$output;
-
         $this->assertSame($input * 2, $output);
     }
 
@@ -75,7 +72,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        $this->assertSame($first.$last, $output);
+        $this->assertSame($first . $last, $output);
     }
 
     public function testRefCursorFromTable()
