@@ -36,9 +36,9 @@ class Oci8Connection extends Connection
 
     /**
      * @param PDO|\Closure $pdo
-     * @param string $database
-     * @param string $tablePrefix
-     * @param array $config
+     * @param string       $database
+     * @param string       $tablePrefix
+     * @param array        $config
      */
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
@@ -90,7 +90,7 @@ class Oci8Connection extends Connection
             }
         }
         if ($vars) {
-            $sql = 'ALTER SESSION SET ' . implode(' ', $vars);
+            $sql = 'ALTER SESSION SET '.implode(' ', $vars);
             $this->statement($sql);
         }
 
@@ -218,7 +218,7 @@ class Oci8Connection extends Connection
      * 'bye'], PDO::PARAM_LOB).
      *
      * @param string $functionName
-     * @param array  $bindings   (kvp array)
+     * @param array  $bindings (kvp array)
      * @param int    $returnType (PDO::PARAM_*)
      * @param int    $length
      * @return mixed $returnType
@@ -227,9 +227,7 @@ class Oci8Connection extends Connection
     {
         $stmt = $this->createStatementFromFunction($functionName, $bindings);
 
-        foreach ($bindings as $key => &$value) {
-            $stmt->bindParam($key, $value);
-        }
+        $stmt = $this->addBindingsToStatement($stmt, $bindings);
 
         $stmt->bindParam(':result', $result, $returnType, $length);
         $stmt->execute();
@@ -254,9 +252,7 @@ class Oci8Connection extends Connection
     {
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings);
 
-        foreach ($bindings as $key => &$value) {
-            $stmt->bindParam(':' . $key, $value);
-        }
+        $stmt = $this->addBindingsToStatement($stmt, $bindings);
 
         return $stmt->execute();
     }
@@ -276,9 +272,7 @@ class Oci8Connection extends Connection
     {
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings, $cursorName);
 
-        foreach ($bindings as $key => &$value) {
-            $stmt->bindParam(':' . $key, $value);
-        }
+        $stmt = $this->addBindingsToStatement($stmt, $bindings);
 
         $cursor = null;
         $stmt->bindParam($cursorName, $cursor, PDO::PARAM_STMT);
@@ -303,11 +297,11 @@ class Oci8Connection extends Connection
     public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
     {
         $paramsString = implode(',', array_map(function ($param) {
-            return ':' . $param;
+            return ':'.$param;
         }, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
-        $cursor = $cursor ? $prefix . $cursor : null;
+        $cursor = $cursor ? $prefix.$cursor : null;
 
         return sprintf('begin %s(%s%s); end;', $procedureName, $paramsString, $cursor);
     }
@@ -316,7 +310,7 @@ class Oci8Connection extends Connection
      * Creates statement from procedure.
      *
      * @param  string      $procedureName
-     * @param  array        $bindings
+     * @param  array       $bindings
      * @param  string|bool $cursorName
      * @return PDOStatement
      */
@@ -337,7 +331,7 @@ class Oci8Connection extends Connection
      */
     public function createStatementFromFunction($functionName, array $bindings)
     {
-        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+        $bindings = $bindings ? ':'.implode(', :', array_keys($bindings)) : '';
 
         $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
 
@@ -348,7 +342,7 @@ class Oci8Connection extends Connection
      * Bind values to their parameters in the given statement.
      *
      * @param PDOStatement $statement
-     * @param array $bindings
+     * @param array        $bindings
      */
     public function bindValues($statement, $bindings)
     {
@@ -419,5 +413,32 @@ class Oci8Connection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new Processor();
+    }
+
+    /**
+     * Add bindings to statement
+     *
+     * @param  array        $bindings
+     * @param  PDOStatement $stmt
+     *
+     * @return PDOStatement
+     */
+    public function addBindingsToStatement(PDOStatement $stmt, array $bindings)
+    {
+        foreach ($bindings as $key => &$binding) {
+
+            $type  = PDO::PARAM_STR;
+            $value = &$binding;
+
+            // extended array syntax for bindings
+            if (is_array($binding)) {
+                $value = &$binding['value'];
+                $type  = $binding['type'];
+            }
+
+            $stmt->bindParam(':' . $key, $value, $type);
+        }
+
+        return $stmt;
     }
 }
