@@ -140,9 +140,9 @@ class OracleGrammar extends Grammar
     {
         if ($query->limit > 1) {
             return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
-        } else {
-            return "select * from ({$sql}) where rownum {$constraint}";
         }
+
+        return "select * from ({$sql}) where rownum {$constraint}";
     }
 
     /**
@@ -372,10 +372,9 @@ class OracleGrammar extends Grammar
         // If the query has any "join" clauses, we will setup the joins on the builder
         // and compile them so we can attach them to this update, as update queries
         // can get join statements to attach to other tables when they're needed.
+        $joins = '';
         if (isset($query->joins)) {
             $joins = ' ' . $this->compileJoins($query, $query->joins);
-        } else {
-            $joins = '';
         }
 
         // Of course, update queries may also be constrained by where clauses so we'll

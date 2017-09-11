@@ -107,13 +107,17 @@ class OracleProcessor extends Processor
     {
         if (is_int($value)) {
             return PDO::PARAM_INT;
-        } elseif (is_bool($value)) {
-            return PDO::PARAM_BOOL;
-        } elseif (is_null($value)) {
-            return PDO::PARAM_NULL;
-        } else {
-            return PDO::PARAM_STR;
         }
+
+        if (is_bool($value)) {
+            return PDO::PARAM_BOOL;
+        }
+
+        if (is_null($value)) {
+            return PDO::PARAM_NULL;
+        }
+
+        return PDO::PARAM_STR;
     }
 
     /**
