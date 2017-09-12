@@ -293,7 +293,7 @@ class OracleEloquent extends Model
      */
     protected function insertAndSetId(Builder $query, $attributes)
     {
-        $id = ($binaries = $this->extractBinaries($attributes))  ?
+        $id = ($binaries = $this->extractBinaries($attributes)) ?
             $query->getQuery()->insertLob($attributes, $binaries, $keyName = $this->getKeyName()) :
             $query->insertGetId($attributes, $keyName = $this->getKeyName());
 
