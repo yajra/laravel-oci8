@@ -77,18 +77,18 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $connection->getPdo()->exec($command);
 
-        $input  = 2;
+        $input  = 20;
         $output = 0;
 
         $bindings = [
             'p1' => $input,
-            'p2' => &$output,
+            'p2' => [
+                'value' => &$output,
+                'type'  => PDO::PARAM_INT|PDO::PARAM_INPUT_OUTPUT
+            ]
         ];
 
         $connection->executeProcedure($procedureName, $bindings);
-
-        //unfortunately we need to cast here.. any better ideas?
-        $output = (int) $output;
 
         $this->assertSame($input * 2, $output);
     }
@@ -117,7 +117,10 @@ class ProceduresAndFunctionsTest extends TestCase
         $bindings = [
             'p1' => $first,
             'p2' => $last,
-            'p3' => &$output,
+            'p3' => [
+                'value' => &$output,
+                'type'  => PDO::PARAM_STR|PDO::PARAM_INPUT_OUTPUT
+            ]
         ];
 
         $connection->executeProcedure($procedureName, $bindings);
