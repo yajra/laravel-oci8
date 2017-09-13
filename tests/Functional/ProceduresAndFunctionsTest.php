@@ -84,8 +84,8 @@ class ProceduresAndFunctionsTest extends TestCase
             'p1' => $input,
             'p2' => [
                 'value' => &$output,
-                'type'  => PDO::PARAM_INT|PDO::PARAM_INPUT_OUTPUT
-            ]
+                'type'  => PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT,
+            ],
         ];
 
         $connection->executeProcedure($procedureName, $bindings);
@@ -119,8 +119,8 @@ class ProceduresAndFunctionsTest extends TestCase
             'p2' => $last,
             'p3' => [
                 'value' => &$output,
-                'type'  => PDO::PARAM_STR|PDO::PARAM_INPUT_OUTPUT
-            ]
+                'type'  => PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT,
+            ],
         ];
 
         $connection->executeProcedure($procedureName, $bindings);
