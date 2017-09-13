@@ -39,6 +39,9 @@
             ]
         }
     },
+    "scripts": {
+        "docker": "docker run -d -p 49160:22 -p 49161:1521 wnameless/oracle-xe-11g"
+    },
     "config": {
         "sort-packages": true
     },
