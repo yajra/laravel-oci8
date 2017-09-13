@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Yajra\Oci8\Oci8Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Connectors\OracleConnector;
-use Yajra\Oci8\Oci8Connection;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
 {
