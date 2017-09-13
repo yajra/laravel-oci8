@@ -375,7 +375,6 @@ class Oci8Connection extends Connection
      * Set the schema prefix and return the grammar.
      *
      * @param \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar
-     *
      * @return \Illuminate\Database\Grammar
      */
     public function withSchemaPrefix(Grammar $grammar)
