@@ -1,5 +1,11 @@
 #Laravel-OCI8 Change Log
 
+#v5.4.18 - 2017-09-13
+- Allow failure on PHP 5.6 #342
+- Add composer docker script to setup test environment.
+- Extended configuration for parameter bindings #340.
+- Fixes #337, credits to @mstaack.
+
 #v5.4.17 - 2017-08-31
 - Add test for PR #325 UUID datatype. #335
 - Add support for json & jsonb datatype. #334
@@ -15,7 +21,7 @@
 - Add UUID Support #325, credits to @ChaosPower.
 
 #v5.4.14 - 2017-08-31
-- Refactor Procedures & Functions + CI Updates #319, credits to @mstaack
+- Refactor Procedures & Functions + CI Updates #319, credits to @mstaack.
 
 #v5.4.13 - 2017-07-14
 - Set OracleEloquent sequence property as public. #316
