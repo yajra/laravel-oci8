@@ -34,7 +34,7 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
             'p1' => $input,
             'p2' => [
                 'value' => &$output,
-                'type'  => PDO::PARAM_INT
+                'type'  => PDO::PARAM_INT|PDO::PARAM_INPUT_OUTPUT
             ]
         ];
 
@@ -67,7 +67,10 @@ class ProceduresAndFunctionsTest extends PHPUnit_Framework_TestCase
         $bindings = [
             'p1' => $first,
             'p2' => $last,
-            'p3' => &$output,
+            'p3' => [
+                'value' => &$output,
+                'type'  => PDO::PARAM_STR|PDO::PARAM_INPUT_OUTPUT
+            ]
         ];
 
         $connection->executeProcedure($procedureName, $bindings);
