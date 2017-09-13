@@ -415,7 +415,7 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Add bindings to statement
+     * Add bindings to statement.
      *
      * @param  array        $bindings
      * @param  PDOStatement $stmt
