@@ -156,7 +156,6 @@ class OracleGrammar extends Grammar
         return ['truncate table ' . $this->wrapTable($query->from) => []];
     }
 
-
     /**
      * Wrap a value in keyword identifiers.
      *
