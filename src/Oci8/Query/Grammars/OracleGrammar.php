@@ -159,17 +159,18 @@ class OracleGrammar extends Grammar
 
     /**
      * Wrap a value in keyword identifiers.
-     * 
+     *
      * Override due to laravel's stringify integers.
-     * 
+     *
      * @param  \Illuminate\Database\Query\Expression|string  $value
      * @param  bool    $prefixAlias
      * @return string
-    */
+     */
     public function wrap($value, $prefixAlias = false)
     {
-        if(is_int($value) || is_float($value))
+        if (is_int($value) || is_float($value)) {
             return $value;
+        }
 
         return parent::wrap($value, $prefixAlias);
     }
