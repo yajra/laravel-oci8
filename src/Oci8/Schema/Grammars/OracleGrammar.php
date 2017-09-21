@@ -775,7 +775,7 @@ class OracleGrammar extends Grammar
     protected function wrapValue($value)
     {
         if ($this->isReserved($value)) {
-            return Str::lower(parent::wrapValue($value));
+            return Str::upper(parent::wrapValue($value));
         }
 
         return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
