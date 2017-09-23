@@ -54,7 +54,15 @@ class OracleBlueprint extends Blueprint
 
         $type = isset($short_type[$type]) ? $short_type[$type] : $type;
 
-        $index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
+        $index = vsprintf('%s_%s_%s', [
+            implode('_', $columns),
+            $this->table,
+            $type,
+        ]);
+
+        if($this->prefix){
+            $index .= '_' . $this->prefix;
+        }
 
         // max index name length is 30 chars
         return substr(str_replace(['-', '.'], '_', $index), 0, 30);
