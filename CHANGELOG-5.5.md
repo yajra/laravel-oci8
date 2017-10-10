@@ -1,22 +1,40 @@
 # Laravel-OCI8 5.5 CHANGELOG
 
-## v5.5.3 - (21-SEP-2017)
-- Use uppercase for reserved words on schema builder. #351
-- Fix #350.
+## [Unreleased]
 
-## v5.5.2 - (19-SEP-2017)
-- Do not wrap numeric values. Fix #346. 
-- PR #348, credits to @ircop.
+## [v5.5.3] - 2017-09-21
+- Use uppercase for reserved words on schema builder. [#351]
+- Fix [#350].
 
-## v5.5.1 - (13-SEP-2017)
-- Apply clean code concepts #339, credits to @joaorobertopb.
-- Merge changes from 5.4 from PR #340 & #342.
-- Extended configuration for parameter bindings #340, credits to @mstaack.
+## [v5.5.2] - 2017-09-19
+- Do not wrap numeric values. Fix [#346]. 
+- PR [#348], credits to [@ircop](https://github.com/ircop).
 
-## v5.5.0 - (31-AUG-2017)
+## [v5.5.1] - 2017-09-13
+- Apply clean code concepts [#339], credits to [@joaorobertopb](https://github.com/joaorobertopb).
+- Merge changes from 5.4 from PR [#340] & [#342].
+- Extended configuration for parameter bindings [#340], credits to [@mstaack](https://github.com/mstaack).
+
+## [v5.5.0] - 2017-08-31
 ### Added
 - Added support for Laravel 5.5
-- Added automatic package discovery for Laravel 5.5 #305, credits to @mazedlx.
+- Added automatic package discovery for Laravel 5.5 [#305], credits to [@mazedlx](https://github.com/mazedlx).
 
 ### Changed
-- Use upper case column name for reserved words. #262, credits to @aleister999.
+- Use upper case column name for reserved words. [#262], credits to [@aleister999](https://github.com/aleister999).
+
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.3...5.5
+[v5.5.3]: https://github.com/yajra/laravel-oci8/compare/v5.5.2...v5.5.3
+[v5.5.2]: https://github.com/yajra/laravel-oci8/compare/v5.5.1...v5.5.2
+[v5.5.1]: https://github.com/yajra/laravel-oci8/compare/v5.5.0...v5.5.1
+[v5.5.0]: https://github.com/yajra/laravel-oci8/compare/v5.4.18...v5.5.0
+
+[#351]: https://github.com/yajra/laravel-oci8/pull/351
+[#350]: https://github.com/yajra/laravel-oci8/issue/350
+[#348]: https://github.com/yajra/laravel-oci8/pull/348
+[#346]: https://github.com/yajra/laravel-oci8/pull/346
+[#342]: https://github.com/yajra/laravel-oci8/pull/342
+[#340]: https://github.com/yajra/laravel-oci8/pull/340
+[#339]: https://github.com/yajra/laravel-oci8/pull/339
+[#305]: https://github.com/yajra/laravel-oci8/pull/305
+[#262]: https://github.com/yajra/laravel-oci8/pull/262
