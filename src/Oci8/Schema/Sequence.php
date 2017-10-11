@@ -27,7 +27,7 @@ class Sequence
      * @param  bool $nocache
      * @return bool
      */
-    public function create($name, $start = 1, $nocache = false, $min = 1, $max = 10000, $increment = 1)
+    public function create($name, $start = 1, $nocache = false, $min = 1, $max = false, $increment = 1)
     {
         if (! $name) {
             return false;
@@ -35,7 +35,9 @@ class Sequence
 
         $nocache = $nocache ? 'nocache' : '';
 
-        $sequence_stmt = "create sequence {$name} minvalue {$min} maxvalue {$max} start with {$start} increment by {$increment} {$nocache}";
+        $sequence_stmt = "create sequence {$name} minvalue {$min}";
+        if ($max) { $sequence_stmt .= " maxvalue {$max}"; }
+        $sequence_stmt .= " start with {$start} increment by {$increment} {$nocache}";
 
         return $this->connection->statement($sequence_stmt);
 
