@@ -35,7 +35,7 @@ class Sequence
 
         $nocache = $nocache ? 'nocache' : '';
 
-        $max = $max ? ' maxvalue {$max}' : '';
+        $max = $max ? " maxvalue {$max}" : "";
 
         $sequence_stmt = "create sequence {$name} minvalue {$min} {$max} start with {$start} increment by {$increment} {$nocache}";
 
