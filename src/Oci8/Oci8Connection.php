@@ -2,23 +2,27 @@
 
 namespace Yajra\Oci8;
 
+use Doctrine\DBAL\Connection as DoctrineConnection;
+use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
+use Exception;
+use Illuminate\Database\Connection;
+use Illuminate\Database\Grammar;
+use Illuminate\Support\Str;
 use PDO;
 use PDOStatement;
-use Yajra\Pdo\Oci8\Statement;
-use Yajra\Oci8\Schema\Trigger;
-use Yajra\Oci8\Schema\Sequence;
-use Illuminate\Database\Grammar;
-use Illuminate\Database\Connection;
-use Doctrine\DBAL\Connection as DoctrineConnection;
-use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
-use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
-use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
+use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
+use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use Yajra\Oci8\Schema\Sequence;
+use Yajra\Oci8\Schema\Trigger;
+use Yajra\Pdo\Oci8\Statement;
 
 class Oci8Connection extends Connection
 {
+    const RECONNECT_ERRORS = 'reconnect_errors';
+
     /**
      * @var string
      */
@@ -146,7 +150,7 @@ class Oci8Connection extends Connection
      */
     public function getSchemaBuilder()
     {
-        if (is_null($this->schemaGrammar)) {
+        if ($this->schemaGrammar === null) {
             $this->useDefaultSchemaGrammar();
         }
 
@@ -191,7 +195,7 @@ class Oci8Connection extends Connection
      */
     public function getDoctrineConnection()
     {
-        if (is_null($this->doctrineConnection)) {
+        if ($this->doctrineConnection === null) {
             $data                     = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
             $this->doctrineConnection = new DoctrineConnection(
                 $data,
@@ -441,5 +445,36 @@ class Oci8Connection extends Connection
         }
 
         return $stmt;
+    }
+
+    public function causedByLostConnection(Exception $e)
+    {
+        if (parent::causedByLostConnection($e)) {
+            return true;
+        }
+
+        $lostConnectionErrors = [
+            'ORA-03113',    //End-of-file on communication channel
+            'ORA-03114',    //Not Connected to Oracle
+            'ORA-03135',    //Connection lost contact
+            'ORA-12170',    //Connect timeout occurred
+            'ORA-12537',    //Connection closed
+            'ORA-27146',    //Post/wait initialization failed
+            'ORA-25408',    //Can not safely replay call
+            'ORA-56600',    //Illegal Call
+        ];
+
+        $additionalErrors = null;
+
+        if (array_key_exists(static::RECONNECT_ERRORS, $this->config['options'])) {
+            $additionalErrors = $this->config['options'][static::RECONNECT_ERRORS];
+        }
+
+        if (is_array($additionalErrors)) {
+            $lostConnectionErrors = array_merge($lostConnectionErrors,
+                $this->config['options'][static::RECONNECT_ERRORS]);
+        }
+
+        return Str::contains($e->getMessage(), $lostConnectionErrors);
     }
 }
