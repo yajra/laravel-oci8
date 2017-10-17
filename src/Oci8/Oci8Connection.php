@@ -150,7 +150,7 @@ class Oci8Connection extends Connection
      */
     public function getSchemaBuilder()
     {
-        if ($this->schemaGrammar === null) {
+        if (is_null($this->schemaGrammar)) {
             $this->useDefaultSchemaGrammar();
         }
 
@@ -195,7 +195,7 @@ class Oci8Connection extends Connection
      */
     public function getDoctrineConnection()
     {
-        if ($this->doctrineConnection === null) {
+        if (is_null($this->doctrineConnection)) {
             $data                     = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
             $this->doctrineConnection = new DoctrineConnection(
                 $data,
