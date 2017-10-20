@@ -3,7 +3,9 @@
 namespace Yajra\Oci8;
 
 use PDO;
+use Exception;
 use PDOStatement;
+use Illuminate\Support\Str;
 use Yajra\Pdo\Oci8\Statement;
 use Yajra\Oci8\Schema\Trigger;
 use Yajra\Oci8\Schema\Sequence;
@@ -19,6 +21,8 @@ use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 
 class Oci8Connection extends Connection
 {
+    const RECONNECT_ERRORS = 'reconnect_errors';
+
     /**
      * @var string
      */
@@ -441,5 +445,42 @@ class Oci8Connection extends Connection
         }
 
         return $stmt;
+    }
+
+    /**
+     * Determine if the given exception was caused by a lost connection.
+     *
+     * @param  \Exception  $e
+     * @return bool
+     */
+    public function causedByLostConnection(Exception $e)
+    {
+        if (parent::causedByLostConnection($e)) {
+            return true;
+        }
+
+        $lostConnectionErrors = [
+            'ORA-03113',    //End-of-file on communication channel
+            'ORA-03114',    //Not Connected to Oracle
+            'ORA-03135',    //Connection lost contact
+            'ORA-12170',    //Connect timeout occurred
+            'ORA-12537',    //Connection closed
+            'ORA-27146',    //Post/wait initialization failed
+            'ORA-25408',    //Can not safely replay call
+            'ORA-56600',    //Illegal Call
+        ];
+
+        $additionalErrors = null;
+
+        if (array_key_exists(static::RECONNECT_ERRORS, $this->config['options'])) {
+            $additionalErrors = $this->config['options'][static::RECONNECT_ERRORS];
+        }
+
+        if (is_array($additionalErrors)) {
+            $lostConnectionErrors = array_merge($lostConnectionErrors,
+                $this->config['options'][static::RECONNECT_ERRORS]);
+        }
+
+        return Str::contains($e->getMessage(), $lostConnectionErrors);
     }
 }
