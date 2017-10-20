@@ -1,6 +1,8 @@
 # Laravel-OCI8 CHANGELOG
 
-## Unreleased
+## v5.4.19 - 2017-10-20
+- Fix docs and PR links. [#367]
+- Fix Oracle Error Reconnect Handling. [#365] credits to @Stoffo
 
 ## v5.4.18 - 2017-09-13
 - Allow failure on PHP 5.6 [#342]
@@ -346,6 +348,8 @@
 ## v1.15.0
 - Stable version for Laravel 4.0, 4.1 and 4.2
 
+[#367]: https://github.com/yajra/laravel-oci8/pull/367
+[#365]: https://github.com/yajra/laravel-oci8/pull/365
 [#342]: https://github.com/yajra/laravel-oci8/pull/342
 [#340]: https://github.com/yajra/laravel-oci8/pull/340
 [#335]: https://github.com/yajra/laravel-oci8/pull/335
@@ -385,3 +389,4 @@
 [#112]: https://github.com/yajra/laravel-oci8/pull/112
 [#101]: https://github.com/yajra/laravel-oci8/pull/101
 [#79]: https://github.com/yajra/laravel-oci8/pull/79
+
