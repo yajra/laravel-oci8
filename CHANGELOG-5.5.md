@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [v5.5.4] - 2017-10-21
+- Add Reconnect Logic. [#368], credits to [@Stoffo](https://github.com/Stoffo). 
+
 ## [v5.5.3] - 2017-09-21
 - Use uppercase for reserved words on schema builder. [#351]
 - Fix [#350].
@@ -23,12 +26,14 @@
 ### Changed
 - Use upper case column name for reserved words. [#262], credits to [@aleister999](https://github.com/aleister999).
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.3...5.5
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.4...5.5
+[v5.5.4]: https://github.com/yajra/laravel-oci8/compare/v5.5.3...v5.5.4
 [v5.5.3]: https://github.com/yajra/laravel-oci8/compare/v5.5.2...v5.5.3
 [v5.5.2]: https://github.com/yajra/laravel-oci8/compare/v5.5.1...v5.5.2
 [v5.5.1]: https://github.com/yajra/laravel-oci8/compare/v5.5.0...v5.5.1
 [v5.5.0]: https://github.com/yajra/laravel-oci8/compare/v5.4.18...v5.5.0
 
+[#368]: https://github.com/yajra/laravel-oci8/pull/368
 [#351]: https://github.com/yajra/laravel-oci8/pull/351
 [#350]: https://github.com/yajra/laravel-oci8/issue/350
 [#348]: https://github.com/yajra/laravel-oci8/pull/348
