@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8;
 
+use Closure;
 use PDO;
 use Exception;
 use PDOStatement;
@@ -445,6 +446,17 @@ class Oci8Connection extends Connection
         }
 
         return $stmt;
+    }
+
+    protected function tryAgainIfCausedByLostConnection(Exception $e, $query, $bindings, Closure $callback)
+    {
+        if (parent::causedByLostConnection($e->getPrevious()) || $this->causedByLostConnection($e->getPrevious())) {
+            $this->reconnect();
+
+            return $this->runQueryCallback($query, $bindings, $callback);
+        }
+
+        throw $e;
     }
 
     /**
