@@ -3,6 +3,7 @@
 namespace Yajra\Oci8;
 
 use Closure;
+use Illuminate\Database\QueryException;
 use PDO;
 use Exception;
 use PDOStatement;
@@ -448,7 +449,20 @@ class Oci8Connection extends Connection
         return $stmt;
     }
 
-    protected function tryAgainIfCausedByLostConnection(Exception $e, $query, $bindings, Closure $callback)
+    /**
+     * Handle a query exception that occurred during query execution.
+     *
+     * @param  \Illuminate\Database\QueryException $e
+     * @param  string                              $query
+     * @param  array                               $bindings
+     * @param  \Closure                            $callback
+     *
+     * @return mixed
+     * @throws \LogicException
+     *
+     * @throws \Illuminate\Database\QueryException
+     */
+    protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
     {
         if (parent::causedByLostConnection($e->getPrevious()) || $this->causedByLostConnection($e->getPrevious())) {
             $this->reconnect();
