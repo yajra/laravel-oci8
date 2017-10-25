@@ -464,7 +464,7 @@ class Oci8Connection extends Connection
      */
     protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
     {
-        if (parent::causedByLostConnection($e->getPrevious()) || $this->causedByLostConnection($e->getPrevious())) {
+        if ($this->causedByLostConnection($e->getPrevious())) {
             $this->reconnect();
 
             return $this->runQueryCallback($query, $bindings, $callback);
