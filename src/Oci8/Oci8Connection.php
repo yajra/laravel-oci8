@@ -21,7 +21,6 @@ use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 
-
 class Oci8Connection extends Connection
 {
     const RECONNECT_ERRORS = 'reconnect_errors';
