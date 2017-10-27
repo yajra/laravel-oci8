@@ -3,6 +3,7 @@
 namespace Yajra\Oci8;
 
 use PDO;
+use Closure;
 use Exception;
 use PDOStatement;
 use Illuminate\Support\Str;
@@ -11,6 +12,7 @@ use Yajra\Oci8\Schema\Trigger;
 use Yajra\Oci8\Schema\Sequence;
 use Illuminate\Database\Grammar;
 use Illuminate\Database\Connection;
+use Illuminate\Database\QueryException;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
@@ -448,12 +450,36 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Handle a query exception that occurred during query execution.
+     *
+     * @param  \Illuminate\Database\QueryException $e
+     * @param  string                              $query
+     * @param  array                               $bindings
+     * @param  \Closure                            $callback
+     *
+     * @return mixed
+     * @throws \LogicException
+     *
+     * @throws \Illuminate\Database\QueryException
+     */
+    protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
+    {
+        if ($this->causedByLostConnection($e->getPrevious())) {
+            $this->reconnect();
+
+            return $this->runQueryCallback($query, $bindings, $callback);
+        }
+
+        throw $e;
+    }
+
+    /**
      * Determine if the given exception was caused by a lost connection.
      *
      * @param  \Exception  $e
      * @return bool
      */
-    public function causedByLostConnection(Exception $e)
+    protected function causedByLostConnection(Exception $e)
     {
         if (parent::causedByLostConnection($e)) {
             return true;
