@@ -1,5 +1,8 @@
 # Laravel-OCI8 CHANGELOG
 
+## v5.4.20 - 2017-11-11
+- Fix undefined index options. [#376], credits to @reyvhernandez.
+
 ## v5.4.19 - 2017-10-20
 - Fix docs and PR links. [#367]
 - Fix Oracle Error Reconnect Handling. [#365] credits to @Stoffo
@@ -348,6 +351,7 @@
 ## v1.15.0
 - Stable version for Laravel 4.0, 4.1 and 4.2
 
+[#376]: https://github.com/yajra/laravel-oci8/pull/376
 [#367]: https://github.com/yajra/laravel-oci8/pull/367
 [#365]: https://github.com/yajra/laravel-oci8/pull/365
 [#342]: https://github.com/yajra/laravel-oci8/pull/342
