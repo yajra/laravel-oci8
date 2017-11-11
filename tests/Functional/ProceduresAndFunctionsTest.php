@@ -22,9 +22,9 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $manager = $capsule->getDatabaseManager();
         $manager->extend('oracle', function ($config) {
-            $connector  = new OracleConnector();
+            $connector = new OracleConnector();
             $connection = $connector->connect($config);
-            $db         = new Oci8Connection($connection, $config['database'], $config['prefix']);
+            $db = new Oci8Connection($connection, $config['database'], $config['prefix']);
 
             // set oracle session variables
             $sessionVars = [
