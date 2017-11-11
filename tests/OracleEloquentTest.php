@@ -56,35 +56,29 @@ class OracleEloquentTest extends TestCase
             $processorClass = OracleProcessor::class;
             $grammar        = new $grammarClass;
             $processor      = new $processorClass;
-            $connection     =
-                m::mock('Illuminate\Database\ConnectionInterface', [
+            $connection     = m::mock('Illuminate\Database\ConnectionInterface', [
                     'getQueryGrammar'  => $grammar,
                     'getPostProcessor' => $processor,
                 ]);
-            $resolver       =
-                m::mock('Illuminate\Database\ConnectionResolverInterface',
+            $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
                     ['connection' => $connection]);
-            $class          = get_class($model);
+            $class = get_class($model);
             $class::setConnectionResolver($resolver);
 
             return;
         }
 
-        $grammarClass   =
-            'Illuminate\Database\Query\Grammars\\' . $database . 'Grammar';
-        $processorClass =
-            'Illuminate\Database\Query\Processors\\' . $database . 'Processor';
+        $grammarClass   = 'Illuminate\Database\Query\Grammars\\' . $database . 'Grammar';
+        $processorClass = 'Illuminate\Database\Query\Processors\\' . $database . 'Processor';
         $grammar        = new $grammarClass;
         $processor      = new $processorClass;
-        $connection     =
-            m::mock('Illuminate\Database\ConnectionInterface', [
+        $connection     = m::mock('Illuminate\Database\ConnectionInterface', [
                 'getQueryGrammar'  => $grammar,
                 'getPostProcessor' => $processor,
             ]);
-        $resolver       =
-            m::mock('Illuminate\Database\ConnectionResolverInterface',
+        $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
                 ['connection' => $connection]);
-        $class          = get_class($model);
+        $class = get_class($model);
         $class::setConnectionResolver($resolver);
     }
 
