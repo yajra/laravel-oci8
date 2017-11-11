@@ -45,9 +45,9 @@ class Oci8ServiceProvider extends ServiceProvider
         }
 
         Connection::resolverFor('oracle', function ($connection, $database, $prefix, $config) {
-            $connector  = new Connector();
+            $connector = new Connector();
             $connection = $connector->connect($config);
-            $db         = new Oci8Connection($connection, $database, $prefix, $config);
+            $db = new Oci8Connection($connection, $database, $prefix, $config);
 
             if (! empty($config['skip_session_vars'])) {
                 return $db;

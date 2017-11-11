@@ -133,7 +133,7 @@ class OracleAutoIncrementHelper
             return '';
         }
 
-        $sql  = "SELECT cols.column_name
+        $sql = "SELECT cols.column_name
             FROM all_constraints cons, all_cons_columns cols
             WHERE upper(cols.table_name) = upper('{$table}')
                 AND cons.constraint_type = 'P'

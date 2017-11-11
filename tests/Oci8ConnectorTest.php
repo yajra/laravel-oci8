@@ -24,7 +24,7 @@ class DatabaseConnectorTest extends TestCase
             'charset'  => 'charset',
             'options'  => [],
         ];
-        $oci8      = $connector->createConnection($tns, $config, []);
+        $oci8 = $connector->createConnection($tns, $config, []);
         $this->assertInstanceOf(Yajra\Pdo\Oci8::class, $oci8);
     }
 
@@ -43,7 +43,7 @@ class DatabaseConnectorTest extends TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector  = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)
+        $connector = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)
                            ->setMethods(['createConnection', 'getOptions'])
                            ->getMock();
         $connection = m::mock('PDO');
