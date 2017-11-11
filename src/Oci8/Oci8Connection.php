@@ -471,7 +471,8 @@ class Oci8Connection extends Connection
 
         $additionalErrors = null;
 
-        if (array_key_exists(static::RECONNECT_ERRORS, $this->config['options'])) {
+        $options = isset($this->config['options']) ? $this->config['options'] : [];
+        if (array_key_exists(static::RECONNECT_ERRORS, $options)) {
             $additionalErrors = $this->config['options'][static::RECONNECT_ERRORS];
         }
 
