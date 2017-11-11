@@ -1,345 +1,50 @@
-# Laravel-OCI8 Change Log
-
-## v5.4.18 - 2017-09-13
-- Allow failure on PHP 5.6 #342
-- Add composer docker script to setup test environment.
-- Extended configuration for parameter bindings #340.
-- Fixes #337, credits to @mstaack.
-
-## v5.4.17 - 2017-08-31
-- Add test for PR #325 UUID datatype. #335
-- Add support for json & jsonb datatype. #334
-- Fix #283.
-
-## v5.4.16 - 2017-08-31
-- Consider 'prefix_schema' for sequences and triggers #301, credits @renanwilliam.
-- Add Oracle 12c ansi pagination support #265, credits to @peyobr.
-- Implement StyleCI fixes.
-- Fix tests related to PR #301 and #265.
-
-## v5.4.15 - 2017-08-31
-- Add UUID Support #325, credits to @ChaosPower.
-
-## v5.4.14 - 2017-08-31
-- Refactor Procedures & Functions + CI Updates #319, credits to @mstaack.
-
-## v5.4.13 - 2017-07-14
-- Set OracleEloquent sequence property as public. #316
-- Patch docblocks and comments.
-- Fix #315.
-
-## v5.4.12 - 2017-07-04
-- Fix missing table prefix when adding comment. #314
-- Fix #310.
-- Credits to @manuzcom.
-
-## v5.4.11 - 2017-06-23
-- Fix attributes passed. Fix #306. #307
-
-## v5.4.10 - 2017-06-20
-- Patch OracleEloquent compatibility. #304
-- Patch performInsert & Update method.
-- Patch update method.
-- Fix whereIn, whereNotIn queries when collection was passed.
-- Fix whereNotIn query and always use `where` clause.
-
-## v5.4.9 - 2017-05-10
-- Upgrade connection resolver for Oracle DB driver registration. #285
-- Fix #279.
-
-## v5.4.8 - 2017-05-01
-- Change getDoctrineConnection() to use a singleton.
-- PR #282, credits to @abdgad.
-
-## v5.4.7 - 2017-03-16
-- Added parameter length in executeFunction.
-- PR #266, credits to @ardani.
-
-## v5.4.6 - 2017-03-15
-- Convert reserved words to lower case.
-- Fix #250, delete unit test.
-
-## v5.4.5 - 2017-03-01
-- Add oci8 dependency for composer. 
-- PR #261, credits to @mstaack.
-
-## v5.4.4 - 2017-02-17
-- When updating OracleEloquent, pass save options through. 
-- PR #257, credits to @kmcgill88.
-
-## v5.4.3 - 2017-02-15
-- Fix #254.
-- Patch custom sequence compatibility. #256
-
-## v5.4.2 - 2017-02-07
-- Fix error while migrate:rollback: PR #253, credits to @vystepanenko.
-
-## v5.4.1 - 2017-02-02
-- Update pdo-via-oci8 to ^1.3.1
-- Fix #246 fetchAll fetchMode issue.
-
-## v5.4.0 - 2017-01-25
-- Add support for Laravel 5.4.
-
-## v5.3.8 - 2017-01-05
-- Rename phpunit.xml to fix export-ignore.
-- Update license to 2017.
-
-## v5.3.7 - 2016-12-07
-- Allow update of sessionVars from config. PR #232, credits to @XavRsl 
-
-## v5.3.6 - 2016-11-08
-- Fix git attributes and github template.
-- Fix wrapping of schema, table and column name.
-
-## v5.3.5 - 2016-10-12
-- Implement oracle user provider.
-
-## v5.3.4 - 2016-10-11
-- Add support for wrapping of schema changes in transaction.
-- https://github.com/laravel/framework/pull/15780
-
-## v5.3.3 - 2016-10-10
-- Fix table wrapper that uses as keyword. Fix #211.
-
-## v5.3.2 - 2016-08-30
-- Implement executeProcedure method. Credits to @mstaack.
-- Fix ORA-01790: expression must have same datatype as corresponding expression.
-
-## v5.3.1 - 2016-08-24
-- Apply patch for best practices as suggested by scrutinizer.
-
-## v5.3.0 - 2016-08-24
-- Laravel 5.3 support.
-
-## v5.2.11 - 2016-07-12
-- Added option for skipping setSessionVars. #185
-- Update OCi8Connection->setSessionVars(). #184
-
-## v5.2.10 - 2016-06-24
-- Fix 'user' param when creating a Doctrine connection. PR #182
-- Function to execute PL/SQL functions at one shoot. PR #183
-
-## v5.2.9 - 2016-06-14
-- OracleEloquent switch QueryBuilder implementation depending grammar.
-- PR #178, credits to @MTon.
-
-## v5.2.8 - 2016-06-12
-- Fix hasColumn function. Fix #175
-- PR #176, credits to @azrael-sub7.
-
-## v5.2.7 - 2016-05-18
-- Fix fetching of primary key.
-- Patch docblocks.
-
-## v5.2.6 - 2016-05-18
-- Fix/Add wrapper when creating auto-increment trigger that contains reserved words.
-- Update Trigger class docblocks.
-
-## v5.2.5 - 2016-04-30
-- Add nvarchar2 support for schema builder.
-- PR #168, credits to @pawel-damasiewicz.
-
-## v5.2.4 - 2016-04-05
-- Refactor add prefix and fix join prefix.
-- Replace user_tables with all_tables
-- Replace user_tab_columns with all_tab_columns.
-- Update unit tests.
-
-## v5.2.3 - 2016-03-19
-- Fix prefix schema on update, insert, delete query.
-- PR #158. Credits to @mfrancois.
-
-## v5.2.2 - 2016-03-18
-- Auto increment primary key using custom sequence without trigger.
-- PR #156. Credits to @ChaosPower.
-
-## v5.2.1 - 2016-03-09
-- Implement schema prefix option.
-- PR #154, credits to @mfrancois.
-
-## v5.2.0 - 2016-03-08
-- Dedicated branch/tag for Laravel 5.2 support.
-
-## v5.1.0 - 2016-03-08
-- Dedicated branch/tag for Laravel 5.1 support.
-
-## v4.2.6 - 2015-02-09
-- Return empty string instead of throwing lock shared mode exception.
-- Cast all object values to string when binding.
-
-## v4.2.5
-- Remove PDO typehint to allow closure.
-- Use getPdo() when using doctrine connection.
-- Fix #143.
-
-## v4.2.4
-- Fix new instance of Oci8Connection with config on last parameter. PR #142
-
-## v4.2.3
-- Convert DateTime instance to string.
-- Fix issue #134.
-
-## v4.2.2
-- Fix compileColumnExists method. PR #136
-
-## v4.2.1
-- Drop sequence and trigger if table is dropped through Blueprint. Fix #106.
-
-## v4.2.0
-- Use shorter index name. PR #132, Issue #131.
-
-## v4.1.2
-- Wrap reserved words when commenting on table or columns. PR #128
-
-## v4.1.1
-- Fix update method compatibility with L5.2. Fix #127.
-
-## v4.1.0
-- Fix pluck unit tests to passed Laravel 5.2.
-- New feature to add comments on columns and table. #124 - Credits to @rafael-renan-pacheco
-
-    When creating a table:
-    ```php
-    Schema::create('flights', function (Blueprint $table) {
-        $table->increments('id');
-        $table->string('name')->comment('Flight name'); /* Column comment */
-        $table->string('airline')->comment('Airline name'); /* Column comment */
-
-        $table->comment = 'Flights table'; /* Table comment */
-    });
-    ```
-
-    When modifying a table:
-    ```php
-    Schema::table('flights', function ($table) {
-        $table->comment = 'A flights table'; /* Table comment */
-
-        $table->commentColumns = [
-            'name' => 'This is the flight name', /* Column comment */
-            'airline' => 'This is the airline name' /* Column comment */
-        ];
-    });
-    ```
-
-## v4.0.3
-- Scrutinizer code refactoring.
-
-## v4.0.2
-- Add config_path for Lumen. Fix #123
-
-## v4.0.1
-- Fix PDO Type detection when binding values. Fix #122
-
-## v4.0.0
-- Change vendor namespace from yajra to Yajra.
-- Remove own pluck implementation. Frameworks implementation works out of the box.
-- Publishing of config file is now optional.
-- Improve query when expecting first row as result.
-- Removes unwanted "rn" column being returned when executing first() queries.
-- Improve exists query. #107
-- Add support for date based queries.
-- Implement quoting of Oracle reserved words. #93
-- Enhance auto-increment trigger and remove unnecessary updating sql. #112
-- Add more tests.
-- Fix compatibility issues with PHP 7.
-
-## v3.0.0
-- Drop support for Laravel 4.2 & 5.0.
-- Drop Support for PHP 5.4.
-- Use PSR-4 auto loading.
-- Add oracle config file.
-- Update CS style using Laravel 5.1 php cs config.
-
-## v2.4.4
-- Add timestampTz support #101.
-
-## v2.4.3
-- Add checker if pdo is in transaction. Fix #83
-- Use ~0.14 as default pdo-via-oci8 version.
-
-## v2.4.2
-- Add support for model using DB Link.
-- Fix #79. Credits to @jbaron30.
-
-## v2.4.1
-- Reverted. Fix UnexpectedValueException when returning response using first().
-- Minor code clean-up and updated doc blocks.
-
-## v2.4.0
-- Converted source code to PSR1/2 coding standard.
-- Fix ORA-01002 when usng lockForUpdate.
-- Fix ORA-00907 issue #76.
-- Fix UnexpectedValueException when returning response using first().
-- Throws Oci8Exception when using sharedLock. Not supported atm.
-- Will now use git flow process when releasing changes.
-
-## v2.3.1
-- Fix OracleEloquent Blob insert/update function when updating only the blob field
-- Fix Issue #70
-
-## v2.3.0
-- added support for Oracle Cursor to be returned via Query Builder
-- requires `yajra/laravel-pdo-via-oci8:~0.12`
-
-## v2.2.0
-- added support for Laravel Lumen
-
-## v2.1.4
-- refactor alter session functions
-- enable query log when app.debug = true
-	- temporary solution for https://github.com/laravel/framework/issues/7085
-
-## v2.1.3
-- fix set schema alter session query
-- enhance oracle alter session variables query
-
-## v2.1.2
-- improve oracle alter session query
-
-## v2.1.1
-- remove boot/package function on Oci8ServiceProvider to fix compatibly with Laravel5
-
-## v2.1.0
-- Added support for CHAR column data type. Fix #51
-- Fix failing/todo unit tests
-
-## v2.0.8
-- Enhance support for TNSNAMES.ORA connection via config[tns]
-- Fix set schema function
-
-## v2.0.7
-- Rollback auto create constraint name
-- As per Laravel Docs, constraint full name should be passed (my bad >.<)
-
-## v2.0.6
-- Refactor drop constraints grammar
-- Fix drop constraint name exceeding 30 chars
-
-## v2.0.5
-- Fix drop primary grammar
-- Fix drop foreign grammar
-- Fix drop unique grammar
-- Fix drop index grammar
-
-## v2.0.4
-- Fix undefined charset
-
-## v2.0.3
-- Code clean up and refactoring
-
-## v2.0.2
-- Refactor OracleAutoIncrementHelper
-- Added Sequence Class
-- Added Trigger Class
-
-## v2.0.1
-- Bug fixes and refactoring
-- Added OracleAutoIncrementHelper
-
-## v2.0.0
-- Added support for Laravel 5
-- Drop support for Laravel 4.0 and 4.1
-
-## v1.15.0
-- Stable version for Laravel 4.0, 4.1 and 4.2
+# Laravel-OCI8 5.5 CHANGELOG
+
+## [Unreleased]
+
+## [v5.5.5] - 2017-10-21
+- Fix undefined index options. [#375], credits to [@Stoffo](https://github.com/reyvhernandez).
+
+## [v5.5.4] - 2017-10-21
+- Add Reconnect Logic. [#368], credits to [@Stoffo](https://github.com/Stoffo). 
+
+## [v5.5.3] - 2017-09-21
+- Use uppercase for reserved words on schema builder. [#351]
+- Fix [#350].
+
+## [v5.5.2] - 2017-09-19
+- Do not wrap numeric values. Fix [#346]. 
+- PR [#348], credits to [@ircop](https://github.com/ircop).
+
+## [v5.5.1] - 2017-09-13
+- Apply clean code concepts [#339], credits to [@joaorobertopb](https://github.com/joaorobertopb).
+- Merge changes from 5.4 from PR [#340] & [#342].
+- Extended configuration for parameter bindings [#340], credits to [@mstaack](https://github.com/mstaack).
+
+## [v5.5.0] - 2017-08-31
+### Added
+- Added support for Laravel 5.5
+- Added automatic package discovery for Laravel 5.5 [#305], credits to [@mazedlx](https://github.com/mazedlx).
+
+### Changed
+- Use upper case column name for reserved words. [#262], credits to [@aleister999](https://github.com/aleister999).
+
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.5...5.5
+[v5.5.5]: https://github.com/yajra/laravel-oci8/compare/v5.5.4...v5.5.5
+[v5.5.4]: https://github.com/yajra/laravel-oci8/compare/v5.5.3...v5.5.4
+[v5.5.3]: https://github.com/yajra/laravel-oci8/compare/v5.5.2...v5.5.3
+[v5.5.2]: https://github.com/yajra/laravel-oci8/compare/v5.5.1...v5.5.2
+[v5.5.1]: https://github.com/yajra/laravel-oci8/compare/v5.5.0...v5.5.1
+[v5.5.0]: https://github.com/yajra/laravel-oci8/compare/v5.4.18...v5.5.0
+
+[#375]: https://github.com/yajra/laravel-oci8/pull/375
+[#368]: https://github.com/yajra/laravel-oci8/pull/368
+[#351]: https://github.com/yajra/laravel-oci8/pull/351
+[#350]: https://github.com/yajra/laravel-oci8/issue/350
+[#348]: https://github.com/yajra/laravel-oci8/pull/348
+[#346]: https://github.com/yajra/laravel-oci8/pull/346
+[#342]: https://github.com/yajra/laravel-oci8/pull/342
+[#340]: https://github.com/yajra/laravel-oci8/pull/340
+[#339]: https://github.com/yajra/laravel-oci8/pull/339
+[#305]: https://github.com/yajra/laravel-oci8/pull/305
+[#262]: https://github.com/yajra/laravel-oci8/pull/262
