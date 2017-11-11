@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ## [v5.5.5] - 2017-10-21
-- Fix undefined index options. [#375], credits to [@Stoffo](https://github.com/reyvhernandez).
+- Fix undefined index options. [#375], credits to [@reyvhernandez](https://github.com/reyvhernandez).
 
 ## [v5.5.4] - 2017-10-21
 - Add Reconnect Logic. [#368], credits to [@Stoffo](https://github.com/Stoffo). 
