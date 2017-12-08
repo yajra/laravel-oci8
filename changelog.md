@@ -1,5 +1,8 @@
 #Laravel-OCI8 Change Log
 
+#v5.2.14 - 2017-12-08
+- Fix whereNotIn query clause. #384
+
 #v5.2.13 - 2016-10-12
 - Implement oracle user provider.
 
