@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Query\Processors;
 
 use PDO;
+use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -87,7 +88,11 @@ class OracleProcessor extends Processor
         $count = count($values);
         for ($i = 0; $i < $count; $i++) {
             if (is_object($values[$i])) {
-                $values[$i] = (string) $values[$i];
+               if ($values[$i] instanceof DateTime) {
+                  $values[$i] = $values[$i]->format('Y-m-d H:i:s');
+               } else {
+                  $values[$i] = (string) $values[$i];
+               }
             }
             $type = $this->getPdoType($values[$i]);
             $statement->bindParam($parameter, $values[$i], $type);
