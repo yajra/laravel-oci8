@@ -7,14 +7,14 @@ env:
 matrix:
   fast_finish: true
   include:
-    - php: 7.1.3
-    - php: 7.1.3
+    - php: 7.1
+    - php: 7.1
       env: setup=lowest
     - php: 7.2
     - php: 7.2
       env: setup=lowest
 
-sudo: false
+sudo: true
 
 cache:
   directories:
@@ -29,6 +29,7 @@ before_install:
   - ./oci8.sh
   - phpenv config-rm xdebug.ini || true
   - echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "extension = oci8.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - printf "\n" | pecl install -f redis
   - travis_retry composer self-update
 
