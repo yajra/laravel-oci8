@@ -90,7 +90,7 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        $this->assertSame($input * 2, (int) $output);
+        $this->assertSame($input * 2, $output);
     }
 
     public function testProcedureWithStrings()
