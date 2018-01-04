@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Schema;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Connection;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -65,6 +66,7 @@ class Trigger
      */
     protected function wrapValue($value)
     {
+        $value = Str::upper($value);
         return $this->isReserved($value) ? '"' . $value . '"' : $value;
     }
 
