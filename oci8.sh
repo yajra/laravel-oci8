@@ -20,13 +20,7 @@ sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/l
 
 sudo pecl channel-update pecl.php.net
 
-# php 5.* install
-if [ $(phpenv version-name) == "5.6" ]; then
-    echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-2.0.10
-else
-    # php 7.0/7.1/7.2 install
-    echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
-fi
+echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
 
 # run oracle db via docker
 docker run -d -p 49160:22 -p 49161:1521 wnameless/oracle-xe-11g
