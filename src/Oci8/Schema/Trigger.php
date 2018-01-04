@@ -67,6 +67,7 @@ class Trigger
     protected function wrapValue($value)
     {
         $value = Str::upper($value);
+
         return $this->isReserved($value) ? '"' . $value . '"' : $value;
     }
 
