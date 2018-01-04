@@ -14,7 +14,7 @@ matrix:
     - php: 7.2
       env: setup=lowest
 
-sudo: true
+sudo: false
 
 cache:
   directories:

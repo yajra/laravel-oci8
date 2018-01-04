@@ -90,7 +90,7 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        $this->assertSame($input * 2, $output);
+        $this->assertSame($input * 2, (int) $output);
     }
 
     public function testProcedureWithStrings()
@@ -152,10 +152,10 @@ class ProceduresAndFunctionsTest extends TestCase
         $command = '
             CREATE OR REPLACE PROCEDURE demo(p1 OUT SYS_REFCURSOR) AS
             BEGIN
-                OPEN p1 
-                FOR 
+                OPEN p1
+                FOR
                 SELECT name
-                FROM demotable; 
+                FROM demotable;
             END;
         ';
 
@@ -189,9 +189,6 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $result = $connection->executeFunction($procedureName, $bindings);
 
-        // we need to cast here b/c oracle returns strings
-        $result = (int) $result;
-
-        $this->assertSame($first + 2, $result);
+        $this->assertSame($first + 2, (int) $result);
     }
 }
