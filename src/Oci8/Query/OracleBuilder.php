@@ -72,17 +72,17 @@ class OracleBuilder extends Builder
 
         if ($values instanceof Arrayable) {
             $values = $values->toArray();
+        }
 
-            if (count($values) > 1000) {
-                $chunks = array_chunk($values, 1000);
+        if (count($values) > 1000) {
+            $chunks = array_chunk($values, 1000);
 
-                return $this->where(function ($query) use ($column, $chunks, $type, $not) {
-                    foreach ($chunks as $ch) {
-                        $sqlClause = $not ? 'where' . $type : 'orWhere' . $type;
-                        $query->{$sqlClause}($column, $ch);
-                    }
-                }, null, null, $boolean);
-            }
+            return $this->where(function ($query) use ($column, $chunks, $type, $not) {
+                foreach ($chunks as $ch) {
+                    $sqlClause = $not ? 'where' . $type : 'orWhere' . $type;
+                    $query->{$sqlClause}($column, $ch);
+                }
+            }, null, null, $boolean);
         }
 
         return parent::whereIn($column, $values, $boolean, $not);
