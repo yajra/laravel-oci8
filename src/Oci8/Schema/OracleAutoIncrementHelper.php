@@ -142,8 +142,13 @@ class OracleAutoIncrementHelper
                 AND cols.position = 1
                 AND cons.owner = (select user from dual)
             ORDER BY cols.table_name, cols.position";
+        $data = $this->connection->selectOne($sql);
 
-        return optional($this->connection->selectOne($sql))->column_name;
+        if (count($data)) {
+            return $data->column_name;
+        }
+
+        return '';
     }
 
     /**
