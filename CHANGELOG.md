@@ -2,11 +2,16 @@
 
 ## [Unreleased]
 
+## [v5.5.7] - 2018-01-26
+
+- Revert "[5.5] Fix php72 compatibility." [#400]
+- Fix [#399]
+
 ## [v5.5.6] - 2018-01-04
 
 - Update to Mockery 1 [#379], credits to [@gabriel-caruso](https://github.com/gabriel-caruso).
-- Fix php72 compatibility. [#395], credits to [@joaorobertopb](https://github.com/joaorobertopb).
-- Test against PHP 7.2 [#382]
+- Fix php72 compatibility. [#395]
+- Test against PHP 7.2 [#382], credits to [@joaorobertopb](https://github.com/joaorobertopb).
 
 ## [v5.5.5] - 2017-10-21
 
@@ -43,7 +48,8 @@
 
 - Use upper case column name for reserved words. [#262], credits to [@aleister999](https://github.com/aleister999).
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.6...5.5
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.7...5.5
+[v5.5.5]: https://github.com/yajra/laravel-oci8/compare/v5.5.6...v5.5.7
 [v5.5.5]: https://github.com/yajra/laravel-oci8/compare/v5.5.5...v5.5.6
 [v5.5.5]: https://github.com/yajra/laravel-oci8/compare/v5.5.4...v5.5.5
 [v5.5.4]: https://github.com/yajra/laravel-oci8/compare/v5.5.3...v5.5.4
@@ -52,6 +58,8 @@
 [v5.5.1]: https://github.com/yajra/laravel-oci8/compare/v5.5.0...v5.5.1
 [v5.5.0]: https://github.com/yajra/laravel-oci8/compare/v5.4.18...v5.5.0
 
+[#400]: https://github.com/yajra/laravel-oci8/pull/400
+[#399]: https://github.com/yajra/laravel-oci8/pull/399
 [#395]: https://github.com/yajra/laravel-oci8/pull/395
 [#382]: https://github.com/yajra/laravel-oci8/pull/382
 [#375]: https://github.com/yajra/laravel-oci8/pull/375
