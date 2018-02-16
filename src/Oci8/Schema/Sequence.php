@@ -27,19 +27,20 @@ class Sequence
      * @param  bool $nocache
      * @return bool
      */
-    public function create($name, $start = 1, $nocache = false)
+    public function create($name, $start = 1, $nocache = false, $min = 1, $max = false, $increment = 1)
     {
         if (! $name) {
             return false;
         }
 
-        if ($this->connection->getConfig('prefix_schema')) {
-            $name = $this->connection->getConfig('prefix_schema') . '.' . $name;
-        }
-
         $nocache = $nocache ? 'nocache' : '';
 
-        return $this->connection->statement("create sequence {$name} start with {$start} {$nocache}");
+        $max = $max ? " maxvalue {$max}" : "";
+
+        $sequence_stmt = "create sequence {$name} minvalue {$min} {$max} start with {$start} increment by {$increment} {$nocache}";
+
+        return $this->connection->statement($sequence_stmt);
+
     }
 
     /**
