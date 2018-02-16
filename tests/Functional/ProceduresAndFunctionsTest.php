@@ -2,7 +2,6 @@
 
 use Yajra\Oci8\Oci8Connection;
 use PHPUnit\Framework\TestCase;
-use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
