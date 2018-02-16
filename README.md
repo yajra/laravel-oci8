@@ -10,7 +10,9 @@
 [![Total Downloads][ico-downloads]][link-downloads]
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
+
 ## Documentations
+
 - You will find user friendly and updated documentation here: [Laravel-OCI8 Docs](https://yajrabox.com/docs/laravel-oci8)
 - You will find updated API documentation here: [Laravel-OCI8 API](http://yajra.github.io/laravel-oci8/api/)
 - All about oracle and php:[The Underground PHPand Oracle Manual](http://www.oracle.com/technetwork/database/database-technologies/php/201212-ug-php-oracle-1884760.pdf)
@@ -24,24 +26,29 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
  5.3.x    | 5.3.x
  5.4.x    | 5.4.x
  5.5.x    | 5.5.x
- 
+ 5.6.x    | 5.6.x
+
 ## Quick Installation
-```
-$ composer require yajra/laravel-oci8:"5.5.*"
+
+```bash
+composer require yajra/laravel-oci8:"5.5.*"
 ```
 
 ## Service Provider (Optional on Laravel 5.5)
+
 Once Composer has installed or updated your packages you need to register Laravel-OCI8. Open up `config/app.php` and find the providers key and add:
+
 ```php
 Yajra\Oci8\Oci8ServiceProvider::class,
 ```
 
 ## Configuration (OPTIONAL)
+
 Finally you can optionally publish a configuration file by running the following Artisan command.
 If config file is not publish, the package will automatically use what is declared on your `.env` file database configuration.
 
-```
-$ php artisan vendor:publish --tag=oracle
+```bash
+php artisan vendor:publish --tag=oracle
 ```
 
 This will copy the configuration file to `config/oracle.php`.
@@ -66,10 +73,12 @@ This will copy the configuration file to `config/oracle.php`.
 And run your laravel installation...
 
 ## [Laravel 5.2++] Oracle User Provider
-When using oracle, we may encounter a problem on authentication because oracle queries are case sensitive by default. 
+
+When using oracle, we may encounter a problem on authentication because oracle queries are case sensitive by default.
 By using this oracle user provider, we will now be able to avoid user issues when logging in and doing a forgot password failure because of case sensitive search.
 
 To use, just update `auth.php` config and set the driver to `oracle`
+
 ```php
 'providers' => [
     'users' => [
@@ -90,6 +99,7 @@ To use, just update `auth.php` config and set the driver to `oracle`
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
 ## Buy me a coffee
+
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/yajra)
 <a href='https://www.patreon.com/bePatron?u=4521203'><img alt='Become a Patron' src='https://s3.amazonaws.com/patreon_public_assets/toolbox/patreon.png' border='0' width='200px' ></a>
 
