@@ -134,10 +134,14 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $procedureName = 'demo';
 
-        $connection->getSchemaBuilder()->dropIfExists('demotable');
-        $connection->getSchemaBuilder()->create('demotable', function (Blueprint $table) {
-            $table->string('name');
-        });
+        try {
+            $command = 'DROP TABLE demotable';
+            $connection->getPdo()->exec($command);
+        } catch (\Exception $e) {
+            // table does not exists.
+        }
+        $command = 'CREATE TABLE demotable(name varchar2(100))';
+        $connection->getPdo()->exec($command);
 
         $rows = [
             [
