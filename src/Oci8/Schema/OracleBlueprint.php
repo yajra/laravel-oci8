@@ -56,8 +56,25 @@ class OracleBlueprint extends Blueprint
 
         $index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
 
-        // max index name length is 30 chars
-        return substr(str_replace(['-', '.'], '_', $index), 0, 30);
+        $index = str_replace(['-', '.'], '_', $index);
+        
+        //shorten the name if it is longer than 30 chars
+        while (strlen($index) > 30) {            
+            $parts = explode("_", $index);
+            
+            for($i = 0; $i < sizeof($parts);$i++)
+            {
+                //if any part is longer than 2 chars, take one off
+                $len = strlen($parts[$i]);
+                if ($len > 2) {
+                    $parts[$i] = substr($parts[$i], 0, $len - 1);
+                }                  
+            }
+            
+            $index = implode('_', $parts);
+        }
+        
+        return $index;
     }
 
     /**
