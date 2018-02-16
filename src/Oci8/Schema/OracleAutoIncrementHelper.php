@@ -144,7 +144,7 @@ class OracleAutoIncrementHelper
             ORDER BY cols.table_name, cols.position";
         $data = $this->connection->selectOne($sql);
 
-        if (count($data)) {
+        if ($data) {
             return $data->column_name;
         }
 
