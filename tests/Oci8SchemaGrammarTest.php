@@ -426,7 +426,8 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table users add constraint users_reset_password_secret_co primary key (reset_password_secret_code)',
+        $this->assertEquals(
+            'alter table users add constraint user_rese_passwor_secre_cod_pk primary key (reset_password_secret_code)',
             $statements[0]);
     }
 
