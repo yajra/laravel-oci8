@@ -4,6 +4,7 @@ namespace Yajra\Oci8;
 
 use PDO;
 use Exception;
+use Throwable;
 use PDOStatement;
 use Illuminate\Support\Str;
 use Yajra\Pdo\Oci8\Statement;
@@ -452,7 +453,7 @@ class Oci8Connection extends Connection
      * @param  \Exception  $e
      * @return bool
      */
-    public function causedByLostConnection(Exception $e)
+    protected function causedByLostConnection(Throwable $e)
     {
         if (parent::causedByLostConnection($e)) {
             return true;
