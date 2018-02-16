@@ -31,10 +31,10 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 ## Quick Installation
 
 ```bash
-composer require yajra/laravel-oci8:"5.5.*"
+composer require yajra/laravel-oci8:"5.6.*"
 ```
 
-## Service Provider (Optional on Laravel 5.5)
+## Service Provider (Optional on Laravel 5.5+)
 
 Once Composer has installed or updated your packages you need to register Laravel-OCI8. Open up `config/app.php` and find the providers key and add:
 
