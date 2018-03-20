@@ -182,6 +182,9 @@ class OracleGrammar extends Grammar
      */
     public function wrapTable($table)
     {
+
+        $table = (is_array($table) ? $table[0] : $table);
+
         if ($this->isExpression($table)) {
             return $this->getValue($table);
         }
