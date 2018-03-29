@@ -59,7 +59,7 @@ class OracleBlueprint extends Blueprint
         $index = str_replace(['-', '.'], '_', $index);
 
         //shorten the name if it is longer than 30 chars
-        while (strlen($index) > 30) {
+        while (strlen($index) > env('DB_LIMIT_CHARACTER', 30)) {
             $parts = explode('_', $index);
 
             for ($i = 0; $i < count($parts); $i++) {
