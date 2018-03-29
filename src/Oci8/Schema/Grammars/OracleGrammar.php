@@ -350,7 +350,7 @@ class OracleGrammar extends Grammar
     private function dropConstraint(Blueprint $blueprint, Fluent $command, $type)
     {
         $table = $this->wrapTable($blueprint);
-        $index = substr($command->index, 0, 30);
+        $index = substr($command->index, 0, env('DB_LIMIT_CHARACTER', 30));
 
         if ($type === 'index') {
             return "drop index {$index}";
