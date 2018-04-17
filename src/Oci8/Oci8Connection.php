@@ -427,17 +427,14 @@ class Oci8Connection extends Connection
     public function addBindingsToStatement(PDOStatement $stmt, array $bindings)
     {
         foreach ($bindings as $key => &$binding) {
-
-            //defaults
             $value  = &$binding;
             $type   = PDO::PARAM_STR;
-            $length = null;
+            $length = -1;
 
-            // extended array syntax for bindings
             if (is_array($binding)) {
                 $value  = &$binding['value'];
                 $type   = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
-                $length = array_key_exists('length', $binding) ? $binding['length'] : null;
+                $length = array_key_exists('length', $binding) ? $binding['length'] : -1;
             }
 
             $stmt->bindParam(':' . $key, $value, $type, $length);
