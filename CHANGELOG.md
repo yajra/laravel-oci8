@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v5.5.9] - 2018-04-17
+
+- Fix [#413], binding issue. 
+
 ## [v5.5.8] - 2018-02-16
 
 - Fix php72 Countable compatibility. [#409]
@@ -52,7 +56,8 @@
 
 - Use upper case column name for reserved words. [#262], credits to [@aleister999](https://github.com/aleister999).
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.8...5.5
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.5.9...5.5
+[v5.5.9]: https://github.com/yajra/laravel-oci8/compare/v5.5.8...v5.5.9
 [v5.5.8]: https://github.com/yajra/laravel-oci8/compare/v5.5.7...v5.5.8
 [v5.5.7]: https://github.com/yajra/laravel-oci8/compare/v5.5.6...v5.5.7
 [v5.5.6]: https://github.com/yajra/laravel-oci8/compare/v5.5.5...v5.5.6
@@ -62,6 +67,8 @@
 [v5.5.2]: https://github.com/yajra/laravel-oci8/compare/v5.5.1...v5.5.2
 [v5.5.1]: https://github.com/yajra/laravel-oci8/compare/v5.5.0...v5.5.1
 [v5.5.0]: https://github.com/yajra/laravel-oci8/compare/v5.4.18...v5.5.0
+
+[#413]: https://github.com/yajra/laravel-oci8/issues/413
 
 [#409]: https://github.com/yajra/laravel-oci8/pull/409
 [#400]: https://github.com/yajra/laravel-oci8/pull/400
