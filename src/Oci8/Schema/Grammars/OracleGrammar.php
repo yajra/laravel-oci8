@@ -726,7 +726,8 @@ class OracleGrammar extends Grammar
         // check if field is declared as enum
         $enum = '';
         if (count((array) $column->allowed)) {
-            $enum = " check ({$column->name} in ('" . implode("', '", $column->allowed) . "'))";
+            $columnName = $this->wrapValue($column->name);
+            $enum = " check ({$columnName} in ('" . implode("', '", $column->allowed) . "'))";
         }
 
         $null = $column->nullable ? ' null' : ' not null';
