@@ -1,4 +1,4 @@
-# Laravel-OCI8 5.5 CHANGELOG
+# Laravel-OCI8 5.6 CHANGELOG
 
 ## [Unreleased]
 
