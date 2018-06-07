@@ -30,6 +30,7 @@
 [v5.6.1]: https://github.com/yajra/laravel-oci8/compare/v5.6.0...v5.6.1
 [v5.6.0]: https://github.com/yajra/laravel-oci8/compare/v5.5.7...v5.6.0
 
+[#355]: https://github.com/yajra/laravel-oci8/pull/355
 [#407]: https://github.com/yajra/laravel-oci8/pull/407
 [#432]: https://github.com/yajra/laravel-oci8/pull/432
 [#437]: https://github.com/yajra/laravel-oci8/pull/437
