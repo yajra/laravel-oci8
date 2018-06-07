@@ -102,6 +102,16 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Drop all tables from the database.
+     *
+     * @return void
+     */
+    public function dropAllTables()
+    {
+        $this->connection->statement($this->grammar->compileDropAllTables());
+    }
+
+    /**
      * Indicate that the table should be dropped if it exists.
      *
      * @param string $table
