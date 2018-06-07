@@ -7,7 +7,7 @@
 - Add support for migrate:fresh command. [#437]
 - Fix [#435].
 
-## [v5.6.2] - 2018-04-17
+## [v5.6.2] - 2018-05-05
 
 - Escape ENUM column name to avoid problems with reserved words [#432], credits to [@Stolz].
 - Fixes issue [#431].
