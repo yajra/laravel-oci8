@@ -150,4 +150,14 @@ class OracleBuilder extends Builder
 
         return $this->connection->getPostProcessor()->processColumnListing($results);
     }
+
+    /**
+     * Drop all tables from the database.
+     *
+     * @return void
+     */
+    public function dropAllTables()
+    {
+        $this->connection->statement($this->grammar->compileDropAllTables());
+    }
 }
