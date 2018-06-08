@@ -72,7 +72,7 @@ class Oci8ServiceProvider extends ServiceProvider
             }
 
             if(isset($config['edition'])) {
-                $sessionVars = array_merge($sessionVars, $config['edition']);
+                $sessionVars = array_merge($sessionVars, ["EDITION" => $config['edition']]);
             }
 
             $db->setSessionVars($sessionVars);
