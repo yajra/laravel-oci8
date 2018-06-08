@@ -89,7 +89,7 @@ class Oci8Connection extends Connection
         $vars = [];
         foreach ($sessionVars as $option => $value) {
 
-            if(strtoupper($option) == 'CURRENT_SCHEMA' || strtoupper($option) == 'EDITION') {
+            if (strtoupper($option) == 'CURRENT_SCHEMA' || strtoupper($option) == 'EDITION') {
                 $vars[] = "$option  = $value";
             } else {
                 $vars[] = "$option  = '$value'";
