@@ -71,10 +71,10 @@ class Oci8ServiceProvider extends ServiceProvider
                 $sessionVars = array_merge($sessionVars, $config['session']);
             }
 
-            if(isset($config['edition'])) {
+            if (isset($config['edition'])) {
                 $sessionVars = array_merge(
                     $sessionVars,
-                    ["EDITION" => $config['edition']]
+                    ['EDITION' => $config['edition']]
                 );
             }
 
