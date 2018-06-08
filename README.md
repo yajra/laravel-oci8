@@ -67,6 +67,7 @@ This will copy the configuration file to `config/oracle.php`.
     'charset'       => env('DB_CHARSET', 'AL32UTF8'),
     'prefix'        => env('DB_PREFIX', ''),
     'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
+    'edition'       => env('DB_EDITION', 'ora$base'),
 ],
 ```
 
