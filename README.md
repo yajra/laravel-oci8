@@ -70,6 +70,22 @@ This will copy the configuration file to `config/oracle.php`.
 ],
 ```
 
+> If you need to connect with the service name instead of tns, you can use the configuration below:
+
+```
+'oracle' => [
+    'driver' => 'oracle',
+    'host' => 'oracle.host',
+    'port' => '1521',
+    'database' => 'xe',
+    'service_name' => 'sid_alias',
+    'username' => 'hr',
+    'password' => 'hr',
+    'charset' => '',
+    'prefix' => '',
+]
+```
+
 And run your laravel installation...
 
 ## [Laravel 5.2++] Oracle User Provider
