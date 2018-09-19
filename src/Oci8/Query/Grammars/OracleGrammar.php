@@ -113,19 +113,18 @@ class OracleGrammar extends Grammar
      */
     protected function compileRowConstraint($query)
     {
-        $start = $query->offset + 1;
+        $start  = $query->offset + 1;
+        $finish = $query->offset + $query->limit;
 
-        if ($query->limit == 1) {
+        if ($query->limit == 1 && is_null($query->offset)) {
             return '= 1';
         }
 
-        if ($query->limit > 1) {
-            $finish = $query->offset + $query->limit;
-
-            return "between {$start} and {$finish}";
+        if ($query->offset && is_null($query->limit)) {
+            return ">= {$start}";
         }
 
-        return ">= {$start}";
+        return "between {$start} and {$finish}";
     }
 
     /**
@@ -138,11 +137,11 @@ class OracleGrammar extends Grammar
      */
     protected function compileTableExpression($sql, $constraint, $query)
     {
-        if ($query->limit > 1) {
-            return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        if ($query->limit == 1 && is_null($query->offset)) {
+            return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select * from ({$sql}) where rownum {$constraint}";
+        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
     }
 
     /**
