@@ -367,7 +367,6 @@ class Oci8QueryBuilderTest extends TestCase
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 2 and 2',
             $builder->toSql()
         );
-
     }
 
     public function testWhereShortcut()
