@@ -301,14 +301,17 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select * from "USERS" having "BAZ" = ? or user_foo < user_bar', $builder->toSql());
     }
 
-    public function testLimitsAndOffsets()
+    public function testOffset()
     {
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(10);
-        $this->assertEquals('select * from (select * from "USERS") where rownum >= 11', $builder->toSql());
+        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" >= 11', $builder->toSql());
+    }
 
+    public function testLimitsAndOffsets()
+    {
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
@@ -343,6 +346,27 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->forPage(-2, 15);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
             $builder->toSql());
+    }
+
+    public function testLimitAndOffsetToPaginateOne()
+    {
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
+        $builder->select('*')->from('users')->offset(0)->limit(1);
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 1',
+            $builder->toSql()
+        );
+
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
+        $builder->select('*')->from('users')->offset(1)->limit(1);
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 2 and 2',
+            $builder->toSql()
+        );
     }
 
     public function testWhereShortcut()
