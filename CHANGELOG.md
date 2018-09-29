@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v5.7.2] - 2018-09-29
+
+- Added Support for Oracle Edition Based Redefinition [#439][#465], credits to [@Adam2Marsh]
+
 ## [v5.7.1] - 2018-09-20
 
 - Fix paginate(1) SQL. [#461]
@@ -34,7 +38,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.7.1...5.7
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.7.2...5.7
+[v5.7.2]: https://github.com/yajra/laravel-oci8/compare/v5.7.1...v5.7.2
 [v5.7.1]: https://github.com/yajra/laravel-oci8/compare/v5.7.0...v5.7.1
 [v5.7.0]: https://github.com/yajra/laravel-oci8/compare/v5.6.2...v5.7.0
 [v5.6.3]: https://github.com/yajra/laravel-oci8/compare/v5.6.2...v5.6.3
@@ -48,6 +53,8 @@
 [#437]: https://github.com/yajra/laravel-oci8/pull/437
 [#457]: https://github.com/yajra/laravel-oci8/pull/457
 [#461]: https://github.com/yajra/laravel-oci8/pull/461
+[#439]: https://github.com/yajra/laravel-oci8/pull/439
+[#465]: https://github.com/yajra/laravel-oci8/pull/465
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
@@ -60,3 +67,4 @@
 [@nikklass]: https://github.com/nikklass
 [@Stolz]: https://github.com/Stolz
 [@gredimano]: https://github.com/gredimano
+[@Adam2Marsh]: https://github.com/Adam2Marsh
