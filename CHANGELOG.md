@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v5.6.4] - 2018-09-29
+
+- Added Support for Oracle Edition Based Redefinition [#439], credits to [@Adam2Marsh]
+
 ## [v5.6.3] - 2018-05-07
 
 - Add support for migrate:fresh command. [#437]
@@ -24,7 +28,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.6.3...5.6
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.6.4...5.6
+[v5.6.4]: https://github.com/yajra/laravel-oci8/compare/v5.6.3...v5.6.4
 [v5.6.3]: https://github.com/yajra/laravel-oci8/compare/v5.6.2...v5.6.3
 [v5.6.2]: https://github.com/yajra/laravel-oci8/compare/v5.6.1...v5.6.2
 [v5.6.1]: https://github.com/yajra/laravel-oci8/compare/v5.6.0...v5.6.1
@@ -34,6 +39,7 @@
 [#407]: https://github.com/yajra/laravel-oci8/pull/407
 [#432]: https://github.com/yajra/laravel-oci8/pull/432
 [#437]: https://github.com/yajra/laravel-oci8/pull/437
+[#439]: https://github.com/yajra/laravel-oci8/pull/439
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
@@ -44,3 +50,4 @@
 [@FabioSmeriglio]: https://github.com/FabioSmeriglio
 [@nikklass]: https://github.com/nikklass
 [@Stolz]: https://github.com/Stolz
+[@Adam2Marsh]: https://github.com/Adam2Marsh
