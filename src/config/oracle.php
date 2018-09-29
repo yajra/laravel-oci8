@@ -12,6 +12,7 @@ return [
         'charset'        => env('DB_CHARSET', 'AL32UTF8'),
         'prefix'         => env('DB_PREFIX', ''),
         'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
+        'edition'        => env('DB_EDITION', 'ora$base'),
         'server_version' => env('DB_SERVER_VERSION', '11g'),
     ],
 ];
