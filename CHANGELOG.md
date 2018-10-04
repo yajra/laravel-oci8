@@ -1,5 +1,9 @@
 # Laravel-OCI8 CHANGELOG
 
+## v5.4.21 - 2018-10-04
+- Fix php72 compatibility [#468].
+- Fix [#467].
+
 ## v5.4.20 - 2017-11-11
 - Fix undefined index options. [#376], credits to @reyvhernandez.
 
@@ -67,11 +71,11 @@
 - Fix #250, delete unit test.
 
 ## v5.4.5 - 2017-03-01
-- Add oci8 dependency for composer. 
+- Add oci8 dependency for composer.
 - PR [#261], credits to @mstaack.
 
 ## v5.4.4 - 2017-02-17
-- When updating OracleEloquent, pass save options through. 
+- When updating OracleEloquent, pass save options through.
 - PR [#257], credits to @kmcgill88.
 
 ## v5.4.3 - 2017-02-15
@@ -93,7 +97,7 @@
 - Update license to 2017.
 
 ## v5.3.7 - 2016-12-07
-- Allow update of sessionVars from config. PR [#232], credits to @XavRsl 
+- Allow update of sessionVars from config. PR [#232], credits to @XavRsl
 
 ## v5.3.6 - 2016-11-08
 - Fix git attributes and github template.
@@ -351,6 +355,7 @@
 ## v1.15.0
 - Stable version for Laravel 4.0, 4.1 and 4.2
 
+[#468]: https://github.com/yajra/laravel-oci8/pull/468
 [#376]: https://github.com/yajra/laravel-oci8/pull/376
 [#367]: https://github.com/yajra/laravel-oci8/pull/367
 [#365]: https://github.com/yajra/laravel-oci8/pull/365
