@@ -74,7 +74,7 @@ class OracleBuilder extends Builder
             $values = $values->toArray();
         }
 
-        if (count($values) > 1000) {
+        if (is_array($values) && count($values) > 1000) {
             $chunks = array_chunk($values, 1000);
 
             return $this->where(function ($query) use ($column, $chunks, $type, $not) {
