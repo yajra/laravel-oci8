@@ -105,4 +105,20 @@ class OracleBuilder extends Builder
 
         return $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
     }
+
+    /**
+     * Makes "from" fetch from a subquery.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
+     * @param  string  $as
+     * @return \Illuminate\Database\Query\Builder|static
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function fromSub($query, $as)
+    {
+        list($query, $bindings) = $this->createSub($query);
+
+        return $this->fromRaw('('.$query.') '.$this->grammar->wrap($as), $bindings);
+    }
 }
