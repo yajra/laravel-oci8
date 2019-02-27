@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v5.8.0] - 2010-02-27
+
+- Add support for Laravel 5.8 [#491].
+
 ## [v5.7.3] - 2010-02-19
 
 - Fix [#485] - Preventing ORA-00933 when using fromSub method. [#486], credits to [@renanwilliam].
@@ -42,7 +46,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.7.3...5.7
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.8.0...5.8
+[v5.8.0]: https://github.com/yajra/laravel-oci8/compare/v5.7.3...v5.8.0
 [v5.7.3]: https://github.com/yajra/laravel-oci8/compare/v5.7.2...v5.7.3
 [v5.7.2]: https://github.com/yajra/laravel-oci8/compare/v5.7.1...v5.7.2
 [v5.7.1]: https://github.com/yajra/laravel-oci8/compare/v5.7.0...v5.7.1
@@ -61,6 +66,7 @@
 [#439]: https://github.com/yajra/laravel-oci8/pull/439
 [#465]: https://github.com/yajra/laravel-oci8/pull/465
 [#486]: https://github.com/yajra/laravel-oci8/pull/486
+[#491]: https://github.com/yajra/laravel-oci8/pull/491
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
