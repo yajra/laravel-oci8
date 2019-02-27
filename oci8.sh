@@ -23,7 +23,7 @@ sudo pecl channel-update pecl.php.net
 echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
 
 # run oracle db via docker
-docker run -d -p 49160:22 -p 49161:1521 wnameless/oracle-xe-11g
+docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g
 
 # wait for start
 sleep 40
