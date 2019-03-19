@@ -2,11 +2,11 @@
 
 ## [Unreleased]
 
-## [v5.8.0] - 2010-02-27
+## [v5.8.0] - 2019-02-27
 
 - Add support for Laravel 5.8 [#491].
 
-## [v5.7.3] - 2010-02-19
+## [v5.7.3] - 2019-02-19
 
 - Fix [#485] - Preventing ORA-00933 when using fromSub method. [#486], credits to [@renanwilliam].
 
