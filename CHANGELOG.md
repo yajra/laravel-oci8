@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 
-## [v5.7.3] - 2010-02-19
+## [v5.7.4] - 2019-04-24
+
+- Facilitate wallet support. [#474], credits to [@Blizzke].
+
+## [v5.7.3] - 2019-02-19
 
 - Fix [#485] - Preventing ORA-00933 when using fromSub method. [#486], credits to [@renanwilliam].
 
@@ -42,7 +46,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.7.3...5.7
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.7.4...5.7
+[v5.7.4]: https://github.com/yajra/laravel-oci8/compare/v5.7.3...v5.7.4
 [v5.7.3]: https://github.com/yajra/laravel-oci8/compare/v5.7.2...v5.7.3
 [v5.7.2]: https://github.com/yajra/laravel-oci8/compare/v5.7.1...v5.7.2
 [v5.7.1]: https://github.com/yajra/laravel-oci8/compare/v5.7.0...v5.7.1
@@ -61,6 +66,7 @@
 [#439]: https://github.com/yajra/laravel-oci8/pull/439
 [#465]: https://github.com/yajra/laravel-oci8/pull/465
 [#486]: https://github.com/yajra/laravel-oci8/pull/486
+[#474]: https://github.com/yajra/laravel-oci8/pull/474
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
@@ -76,3 +82,4 @@
 [@gredimano]: https://github.com/gredimano
 [@Adam2Marsh]: https://github.com/Adam2Marsh
 [@renanwilliam]: https://github.com/renanwilliam
+[@Blizzke]: https://github.com/Blizzke
