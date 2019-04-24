@@ -186,7 +186,7 @@ class OracleGrammar extends Grammar
         }
 
         if (strpos(strtolower($table), ' as ') !== false) {
-            $table = str_replace(' as ', ' ', $table);
+            $table = str_replace(' as ', ' ', strtolower($table));
         }
 
         $tableName = $this->wrap($this->tablePrefix . $table, true);
