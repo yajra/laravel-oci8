@@ -344,19 +344,6 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Bind values to their parameters in the given statement.
-     *
-     * @param PDOStatement $statement
-     * @param array        $bindings
-     */
-    public function bindValues($statement, $bindings)
-    {
-        foreach ($bindings as $key => $value) {
-            $statement->bindParam($key, $bindings[$key]);
-        }
-    }
-
-    /**
      * Get the default query grammar instance.
      *
      * @return \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar
