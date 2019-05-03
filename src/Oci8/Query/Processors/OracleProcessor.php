@@ -22,7 +22,7 @@ class OracleProcessor extends Processor
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
         $id        = 0;
-        $parameter = 0;
+        $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
         $values    = $this->incrementBySequence($values, $sequence);
         $parameter = $this->bindValues($values, $statement, $parameter);
