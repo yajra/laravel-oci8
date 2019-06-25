@@ -117,7 +117,7 @@ class OracleBuilder extends Builder
      */
     public function fromSub($query, $as)
     {
-        list($query, $bindings) = $this->createSub($query);
+        [$query, $bindings] = $this->createSub($query);
 
         return $this->fromRaw('('.$query.') '.$this->grammar->wrap($as), $bindings);
     }
