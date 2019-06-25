@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v5.8.2] - 2019-06-25
+
+- Added illuminate/auth as dependency in composer.json [#508], credits to [@tumainimosha]
+
 ## [v5.8.1] - 2019-04-24
 
 - Fix stripping of AS from table name. [#504]
@@ -48,7 +52,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.8.1...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.8.2...5.8
+[v5.8.2]: https://github.com/yajra/laravel-oci8/compare/v5.8.1...v5.8.2
 [v5.8.1]: https://github.com/yajra/laravel-oci8/compare/v5.8.0...v5.8.1
 [v5.8.0]: https://github.com/yajra/laravel-oci8/compare/v5.7.3...v5.8.0
 [v5.7.3]: https://github.com/yajra/laravel-oci8/compare/v5.7.2...v5.7.3
@@ -73,6 +78,7 @@
 [#504]: https://github.com/yajra/laravel-oci8/pull/504
 [#474]: https://github.com/yajra/laravel-oci8/pull/474
 [#498]: https://github.com/yajra/laravel-oci8/pull/498
+[#508]: https://github.com/yajra/laravel-oci8/pull/508
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
@@ -88,3 +94,4 @@
 [@gredimano]: https://github.com/gredimano
 [@Adam2Marsh]: https://github.com/Adam2Marsh
 [@renanwilliam]: https://github.com/renanwilliam
+[@tumainimosha]: https://github.com/tumainimosha
