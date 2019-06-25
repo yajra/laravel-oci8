@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Connectors;
 
 use PDO;
 use Yajra\Pdo\Oci8;
+use Illuminate\Support\Arr;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
 
@@ -32,7 +33,7 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         $options = $this->getOptions($config);
 
-        if (array_get($options, 'session_mode') === OCI_CRED_EXT) {
+        if (Arr::get($options, 'session_mode') === OCI_CRED_EXT) {
             // External connections can only be used with user / and an empty password
             $config['username'] = '/';
             $config['password'] = null;
