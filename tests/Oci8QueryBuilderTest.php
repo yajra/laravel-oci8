@@ -169,7 +169,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
-        $this->assertEquals('select * from "USERS" where "ID" = ? union select * from "USERS" where "ID" = ?',
+        $this->assertSame('(select * from "USERS" where "ID" = ?) union (select * from "USERS" where "ID" = ?)',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
@@ -179,7 +179,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->unionAll($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
-        $this->assertEquals('select * from "USERS" where "ID" = ? union all select * from "USERS" where "ID" = ?',
+        $this->assertEquals('(select * from "USERS" where "ID" = ?) union all (select * from "USERS" where "ID" = ?)',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
@@ -190,7 +190,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 3));
-        $this->assertEquals('select * from "USERS" where "ID" = ? union select * from "USERS" where "ID" = ? union select * from "USERS" where "ID" = ?',
+        $this->assertEquals('(select * from "USERS" where "ID" = ?) union (select * from "USERS" where "ID" = ?) union (select * from "USERS" where "ID" = ?)',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
     }
@@ -201,7 +201,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->unionAll($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
         $builder->unionAll($this->getBuilder()->select('*')->from('users')->where('id', '=', 3));
-        $this->assertEquals('select * from "USERS" where "ID" = ? union all select * from "USERS" where "ID" = ? union all select * from "USERS" where "ID" = ?',
+        $this->assertEquals('(select * from "USERS" where "ID" = ?) union all (select * from "USERS" where "ID" = ?) union all (select * from "USERS" where "ID" = ?)',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
     }
@@ -307,7 +307,8 @@ class Oci8QueryBuilderTest extends TestCase
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(10);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" >= 11', $builder->toSql());
+        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" >= 11',
+            $builder->toSql());
     }
 
     public function testLimitsAndOffsets()
@@ -1081,7 +1082,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->where('id', '=', 1);
         $builder->union($this->getBuilder()->select('*')->from('users')->where('id', '=', 2));
         $builder->orderBy('id', 'desc');
-        $this->assertEquals('select * from "USERS" where "ID" = ? union select * from "USERS" where "ID" = ? order by "ID" desc',
+        $this->assertEquals('(select * from "USERS" where "ID" = ?) union (select * from "USERS" where "ID" = ?) order by "ID" desc',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
