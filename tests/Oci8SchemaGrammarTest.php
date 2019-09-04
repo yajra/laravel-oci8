@@ -6,7 +6,7 @@ use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 
 class Oci8SchemaGrammarTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         m::close();
     }

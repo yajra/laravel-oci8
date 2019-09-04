@@ -6,7 +6,7 @@ use Yajra\Oci8\Schema\Sequence;
 
 class SequenceTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         m::close();
     }

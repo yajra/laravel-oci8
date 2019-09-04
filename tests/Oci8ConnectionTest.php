@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 class DatabaseConnectionTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         m::close();
     }

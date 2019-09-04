@@ -7,12 +7,15 @@ env:
 matrix:
   fast_finish: true
   include:
-    - php: 7.1
-    - php: 7.1
-      env: setup=lowest
     - php: 7.2
     - php: 7.2
-      env: setup=lowest
+      env: SETUP=lowest
+    - php: 7.3
+    - php: 7.3
+      env: SETUP=lowest
+    - php: 7.4snapshot
+    - php: 7.4snapshot
+      env: SETUP=lowest
 
 sudo: required
 dist: trusty

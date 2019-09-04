@@ -23,7 +23,7 @@ class OracleEloquentTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         m::close();
     }

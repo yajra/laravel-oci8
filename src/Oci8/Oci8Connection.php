@@ -160,18 +160,15 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Begin a fluent query against a database table.
+     * Get a new query builder instance.
      *
-     * @param string $table
-     * @return \Yajra\Oci8\Query\OracleBuilder
+     * @return \Illuminate\Database\Query\Builder
      */
-    public function table($table)
+    public function query()
     {
-        $processor = $this->getPostProcessor();
-
-        $query = new QueryBuilder($this, $this->getQueryGrammar(), $processor);
-
-        return $query->from($table);
+        return new QueryBuilder(
+            $this, $this->getQueryGrammar(), $this->getPostProcessor()
+        );
     }
 
     /**
@@ -341,19 +338,6 @@ class Oci8Connection extends Connection
         $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
 
         return $this->getPdo()->prepare($sql);
-    }
-
-    /**
-     * Bind values to their parameters in the given statement.
-     *
-     * @param PDOStatement $statement
-     * @param array        $bindings
-     */
-    public function bindValues($statement, $bindings)
-    {
-        foreach ($bindings as $key => $value) {
-            $statement->bindParam($key, $bindings[$key]);
-        }
     }
 
     /**
