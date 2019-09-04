@@ -8,7 +8,7 @@ use Illuminate\Database\Query\Expression as Raw;
 
 class Oci8QueryBuilderTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         m::close();
     }
