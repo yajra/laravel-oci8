@@ -160,18 +160,15 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Begin a fluent query against a database table.
+     * Get a new query builder instance.
      *
-     * @param string $table
-     * @return \Yajra\Oci8\Query\OracleBuilder
+     * @return \Illuminate\Database\Query\Builder
      */
-    public function table($table)
+    public function query()
     {
-        $processor = $this->getPostProcessor();
-
-        $query = new QueryBuilder($this, $this->getQueryGrammar(), $processor);
-
-        return $query->from($table);
+        return new QueryBuilder(
+            $this, $this->getQueryGrammar(), $this->getPostProcessor()
+        );
     }
 
     /**
