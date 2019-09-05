@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v6.0.0] - 2019-09-05
+
+- Laravel 6 support. [#505]
+- Allow custom sequence name on model nextValue. [#511]
+
 ## [v5.8.2] - 2019-06-25
 
 - Added illuminate/auth as dependency in composer.json [#508], credits to [@tumainimosha]
@@ -52,7 +57,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v5.8.2...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.0...5.8
+[v6.0.0]: https://github.com/yajra/laravel-oci8/compare/v5.8.2...v6.0.0
 [v5.8.2]: https://github.com/yajra/laravel-oci8/compare/v5.8.1...v5.8.2
 [v5.8.1]: https://github.com/yajra/laravel-oci8/compare/v5.8.0...v5.8.1
 [v5.8.0]: https://github.com/yajra/laravel-oci8/compare/v5.7.3...v5.8.0
@@ -79,6 +85,8 @@
 [#474]: https://github.com/yajra/laravel-oci8/pull/474
 [#498]: https://github.com/yajra/laravel-oci8/pull/498
 [#508]: https://github.com/yajra/laravel-oci8/pull/508
+[#505]: https://github.com/yajra/laravel-oci8/pull/505
+[#511]: https://github.com/yajra/laravel-oci8/pull/511
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
