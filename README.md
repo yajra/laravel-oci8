@@ -118,11 +118,6 @@ To use, just update `auth.php` config and set the driver to `oracle`
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
-## Buy me a coffee
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/yajra)
-<a href='https://www.patreon.com/bePatron?u=4521203'><img alt='Become a Patron' src='https://s3.amazonaws.com/patreon_public_assets/toolbox/patreon.png' border='0' width='200px' ></a>
-
 [ico-version]: https://img.shields.io/packagist/v/yajra/laravel-oci8.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
 [ico-travis]: https://img.shields.io/travis/yajra/laravel-oci8/master.svg?style=flat-square
