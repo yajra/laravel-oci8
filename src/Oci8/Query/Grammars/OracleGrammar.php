@@ -553,6 +553,6 @@ class OracleGrammar extends Grammar
             $i++;
         }
 
-        return $whereClause;
+        return '(' . $whereClause . ')';
     }
 }
