@@ -494,4 +494,65 @@ class OracleGrammar extends Grammar
 
         return "extract ($type from {$this->wrap($where['column'])}) {$where['operator']} $value";
     }
+
+    /**
+     * Compile a "where not in raw" clause.
+     *
+     * For safety, whereIntegerInRaw ensures this method is only used with integer values.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
+     * @return string
+     */
+    protected function whereNotInRaw(Builder $query, $where)
+    {
+        if (! empty($where['values'])) {
+            if (is_array($where['values']) && count($where['values']) > 1000) {
+                return $this->resolveClause($where['column'], $where['values'], 'not in');
+            } else {
+                return $this->wrap($where['column']).' not in ('.implode(', ', $where['values']).')';
+            }
+        }
+
+        return '1 = 1';
+    }
+
+    /**
+     * Compile a "where in raw" clause.
+     *
+     * For safety, whereIntegerInRaw ensures this method is only used with integer values.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
+     * @return string
+     */
+    protected function whereInRaw(Builder $query, $where)
+    {
+        if (! empty($where['values'])) {
+            if (is_array($where['values']) && count($where['values']) > 1000) {
+                return $this->resolveClause($where['column'], $where['values'], 'in');
+            } else {
+                return $this->wrap($where['column']).' in ('.implode(', ', $where['values']).')';
+            }
+        }
+
+        return '0 = 1';
+    }
+
+    private function resolveClause($column, $values, $type)
+    {
+        $chunks = array_chunk($values, 1000);
+        $whereClause = '';
+        $i=0;
+        $type = $this->wrap($column) . ' '.$type.' ';
+        foreach ($chunks as $ch) {
+            if ($i > 0) {
+                $type = ' or '. $this->wrap($column) . ' ' . $type . ' ';
+            }
+            $whereClause  .= $type . '('.implode(', ', $ch).')';
+            $i++;
+        }
+
+        return '(' . $whereClause . ')';
+    }
 }
