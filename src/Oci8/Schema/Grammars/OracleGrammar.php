@@ -712,6 +712,28 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for an IP address type.
+     *
+     * @param  \Illuminate\Support\Fluent  $column
+     * @return string
+     */
+    protected function typeIpAddress(Fluent $column)
+    {
+        return 'varchar(45)';
+    }
+
+    /**
+     * Create the column definition for a MAC address type.
+     *
+     * @param  \Illuminate\Support\Fluent  $column
+     * @return string
+     */
+    protected function typeMacAddress(Fluent $column)
+    {
+        return 'varchar(17)';
+    }
+
+    /**
      * Create the column definition for a json type.
      *
      * @param  \Illuminate\Support\Fluent $column
