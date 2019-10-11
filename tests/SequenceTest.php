@@ -18,8 +18,20 @@ class SequenceTest extends TestCase
         $sequence   = new Sequence($connection);
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('statement')->andReturn(true);
+
         $success = $sequence->create('users_id_seq');
         $this->assertEquals(true, $success);
+    }
+
+    /** @test */
+    public function it_can_wrap_sequence_name_with_schema_prefix()
+    {
+        $connection = $this->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('schema_prefix');
+
+        $sequence = new Sequence($connection);
+        $name     = $sequence->wrap('users_id_seq');
+        $this->assertEquals($name, 'schema_prefix.users_id_seq');
     }
 
     protected function getConnection()
