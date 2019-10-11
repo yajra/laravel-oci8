@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v6.0.1] - 2019-10-11
+
+- Fix whereInRaw and whereNotInRaw Grammar. [#532], credits to [@dantesCode]
+- Fix [#464], [#405], [#73].
+
 ## [v6.0.0] - 2019-09-05
 
 - Laravel 6 support. [#505]
@@ -57,7 +62,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.0...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.1...5.8
+[v6.0.1]: https://github.com/yajra/laravel-oci8/compare/v6.0.0...v6.0.1
 [v6.0.0]: https://github.com/yajra/laravel-oci8/compare/v5.8.2...v6.0.0
 [v5.8.2]: https://github.com/yajra/laravel-oci8/compare/v5.8.1...v5.8.2
 [v5.8.1]: https://github.com/yajra/laravel-oci8/compare/v5.8.0...v5.8.1
@@ -87,6 +93,7 @@
 [#508]: https://github.com/yajra/laravel-oci8/pull/508
 [#505]: https://github.com/yajra/laravel-oci8/pull/505
 [#511]: https://github.com/yajra/laravel-oci8/pull/511
+[#532]: https://github.com/yajra/laravel-oci8/pull/532
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
@@ -95,6 +102,9 @@
 [#435]: https://github.com/yajra/laravel-oci8/issue/435
 [#458]: https://github.com/yajra/laravel-oci8/issue/458
 [#485]: https://github.com/yajra/laravel-oci8/issue/485
+[#464]: https://github.com/yajra/laravel-oci8/issue/464
+[#405]: https://github.com/yajra/laravel-oci8/issue/405
+[#73]: https://github.com/yajra/laravel-oci8/issue/73
 
 [@FabioSmeriglio]: https://github.com/FabioSmeriglio
 [@nikklass]: https://github.com/nikklass
@@ -103,3 +113,4 @@
 [@Adam2Marsh]: https://github.com/Adam2Marsh
 [@renanwilliam]: https://github.com/renanwilliam
 [@tumainimosha]: https://github.com/tumainimosha
+[@dantesCode]: https://github.com/dantesCode
