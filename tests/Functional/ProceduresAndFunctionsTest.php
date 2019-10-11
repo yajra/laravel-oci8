@@ -2,6 +2,7 @@
 
 use Yajra\Oci8\Oci8Connection;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -13,17 +14,18 @@ class ProceduresAndFunctionsTest extends TestCase
     }
 
     /**
-     * @return Oci8Connection
+     * @param string $prefix
+     * @return \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
      */
-    private function createConnection()
+    private function createConnection($prefix = '')
     {
         $capsule = new Capsule;
 
         $manager = $capsule->getDatabaseManager();
         $manager->extend('oracle', function ($config) {
-            $connector = new OracleConnector();
+            $connector  = new OracleConnector();
             $connection = $connector->connect($config);
-            $db = new Oci8Connection($connection, $config['database'], $config['prefix']);
+            $db         = new Oci8Connection($connection, $config['database'], $config['prefix']);
 
             // set oracle session variables
             $sessionVars = [
@@ -51,7 +53,7 @@ class ProceduresAndFunctionsTest extends TestCase
             'service_name' => 'xe',
             'username'     => 'system',
             'password'     => 'oracle',
-            'prefix'       => '',
+            'prefix'       => $prefix,
             'port'         => 49161,
         ]);
 
@@ -131,26 +133,9 @@ class ProceduresAndFunctionsTest extends TestCase
     {
         $connection = $this->createConnection();
 
+        $this->setupDemoTable($connection);
+
         $procedureName = 'demo';
-
-        try {
-            $command = 'DROP TABLE demotable';
-            $connection->getPdo()->exec($command);
-        } catch (\Exception $e) {
-            // table does not exists.
-        }
-        $command = 'CREATE TABLE demotable(name varchar2(100))';
-        $connection->getPdo()->exec($command);
-
-        $rows = [
-            [
-                'name' => 'Max',
-            ],
-            [
-                'name' => 'John',
-            ],
-        ];
-        $connection->table('demotable')->insert($rows);
 
         $command = '
             CREATE OR REPLACE PROCEDURE demo(p1 OUT SYS_REFCURSOR) AS
@@ -165,9 +150,37 @@ class ProceduresAndFunctionsTest extends TestCase
         $connection->getPdo()->exec($command);
 
         $result = $connection->executeProcedureWithCursor($procedureName);
+        $rows   = $this->getTestData();
 
         $this->assertSame($rows[0]['name'], $result[0]->name);
         $this->assertSame($rows[1]['name'], $result[1]->name);
+    }
+
+    protected function getTestData()
+    {
+        return [
+            [
+                'name' => 'Max',
+            ],
+            [
+                'name' => 'John',
+            ],
+        ];
+    }
+
+    public function testConnectionWithPrefix()
+    {
+        $prefix     = 'test_';
+        $connection = $this->createConnection($prefix);
+
+        $this->setupDemoTable($connection);
+
+        $this->assertSame($prefix, $connection->getTablePrefix());
+
+        $first      = $connection->table('demotable')->first();
+        $rows       = $this->getTestData();
+
+        $this->assertSame($rows[0]['name'], $first->name);
     }
 
     public function testFunctionWithNumbers()
@@ -193,5 +206,18 @@ class ProceduresAndFunctionsTest extends TestCase
         $result = $connection->executeFunction($procedureName, $bindings);
 
         $this->assertSame($first + 2, (int) $result);
+    }
+
+    /**
+     * @param Oci8Connection $connection
+     */
+    private function setupDemoTable($connection): void
+    {
+        $connection->getSchemaBuilder()->dropIfExists('demotable');
+        $connection->getSchemaBuilder()->create('demotable', function (Blueprint $table) {
+            $table->string('name');
+        });
+
+        $connection->table('demotable')->insert($this->getTestData());
     }
 }
