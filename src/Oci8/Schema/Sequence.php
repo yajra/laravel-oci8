@@ -25,6 +25,9 @@ class Sequence
      * @param  string $name
      * @param  int $start
      * @param  bool $nocache
+     * @param  int $min
+     * @param  bool $max
+     * @param  int $increment
      * @return bool
      */
     public function create($name, $start = 1, $nocache = false, $min = 1, $max = false, $increment = 1)
