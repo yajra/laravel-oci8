@@ -151,6 +151,50 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 1, 2 => 2, 3 => 3], $builder->getBindings());
     }
 
+    public function testBasicWhereInThousands()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereIn('id', range(1, 1001));
+        $bindings = str_repeat('?, ', 1000);
+        $expected = sprintf(
+            'select * from "USERS" where ("ID" in (%s) or "ID" in (?))',
+            substr($bindings, 0, 2998)
+        );
+        $this->assertEquals($expected, $builder->toSql());
+        $this->assertEquals(range(1, 1001), $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereIn('id', range(1, 1001))->where('id', 1);
+        $bindings = str_repeat('?, ', 1000);
+        $expected = sprintf(
+            'select * from "USERS" where ("ID" in (%s) or "ID" in (?)) and "ID" = ?',
+            substr($bindings, 0, 2998)
+        );
+        $this->assertEquals($expected, $builder->toSql());
+    }
+
+    public function testBasicWhereNotInThousands()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereNotIn('id', range(1, 1001));
+        $bindings = str_repeat('?, ', 1000);
+        $expected = sprintf(
+            'select * from "USERS" where ("ID" not in (%s) and "ID" not in (?))',
+            substr($bindings, 0, 2998)
+        );
+        $this->assertEquals($expected, $builder->toSql());
+        $this->assertEquals(range(1, 1001), $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereNotIn('id', range(1, 1001))->where('id', 1);
+        $bindings = str_repeat('?, ', 1000);
+        $expected = sprintf(
+            'select * from "USERS" where ("ID" not in (%s) and "ID" not in (?)) and "ID" = ?',
+            substr($bindings, 0, 2998)
+        );
+        $this->assertEquals($expected, $builder->toSql());
+    }
+
     public function testBasicWhereNotIns()
     {
         $builder = $this->getBuilder();
