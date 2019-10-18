@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v6.0.2] - 2019-10-18
+
+- Fix bug from pull request [#532] [#538], credits to [@dantesCode]
+
 ## [v6.0.1] - 2019-10-11
 
 - Fix whereInRaw and whereNotInRaw Grammar. [#532], credits to [@dantesCode]
@@ -62,7 +66,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.1...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.2...5.8
+[v6.0.2]: https://github.com/yajra/laravel-oci8/compare/v6.0.1...v6.0.2
 [v6.0.1]: https://github.com/yajra/laravel-oci8/compare/v6.0.0...v6.0.1
 [v6.0.0]: https://github.com/yajra/laravel-oci8/compare/v5.8.2...v6.0.0
 [v5.8.2]: https://github.com/yajra/laravel-oci8/compare/v5.8.1...v5.8.2
@@ -94,6 +99,7 @@
 [#505]: https://github.com/yajra/laravel-oci8/pull/505
 [#511]: https://github.com/yajra/laravel-oci8/pull/511
 [#532]: https://github.com/yajra/laravel-oci8/pull/532
+[#538]: https://github.com/yajra/laravel-oci8/pull/538
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
