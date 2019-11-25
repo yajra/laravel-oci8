@@ -137,7 +137,7 @@ class OracleProcessor extends Processor
     public function saveLob(Builder $query, $sql, array $values, array $binaries)
     {
         $id        = 0;
-        $parameter = 0;
+        $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
 
         $parameter = $this->bindValues($values, $statement, $parameter);
