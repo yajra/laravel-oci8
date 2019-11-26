@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
+## [v6.0.3] - 2019-11-26
+
+- `saveLob` - Parameter should start at 1. [#543], credits to [@jeidison].
+
 ## [v6.0.2] - 2019-10-18
 
-- Fix bug from pull request [#532] [#538], credits to [@dantesCode]
+- Fix bug from pull request [#532] [#538], credits to [@dantesCode].
 
 ## [v6.0.1] - 2019-10-11
 
-- Fix whereInRaw and whereNotInRaw Grammar. [#532], credits to [@dantesCode]
+- Fix whereInRaw and whereNotInRaw Grammar. [#532], credits to [@dantesCode].
 - Fix [#464], [#405], [#73].
 
 ## [v6.0.0] - 2019-09-05
@@ -66,7 +70,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.2...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.3...5.8
+[v6.0.3]: https://github.com/yajra/laravel-oci8/compare/v6.0.2...v6.0.3
 [v6.0.2]: https://github.com/yajra/laravel-oci8/compare/v6.0.1...v6.0.2
 [v6.0.1]: https://github.com/yajra/laravel-oci8/compare/v6.0.0...v6.0.1
 [v6.0.0]: https://github.com/yajra/laravel-oci8/compare/v5.8.2...v6.0.0
@@ -100,6 +105,7 @@
 [#511]: https://github.com/yajra/laravel-oci8/pull/511
 [#532]: https://github.com/yajra/laravel-oci8/pull/532
 [#538]: https://github.com/yajra/laravel-oci8/pull/538
+[#543]: https://github.com/yajra/laravel-oci8/pull/543
 
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
@@ -120,3 +126,4 @@
 [@renanwilliam]: https://github.com/renanwilliam
 [@tumainimosha]: https://github.com/tumainimosha
 [@dantesCode]: https://github.com/dantesCode
+[@jeidison]: https://github.com/jeidison
