@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v6.0.4] - 2019-11-26
+
+- Wrap sequence name with schema prefix if set. [#535]
+- Fix [#523].
+
 ## [v6.0.3] - 2019-11-26
 
 - `saveLob` - Parameter should start at 1. [#543], credits to [@jeidison].
@@ -70,7 +75,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.3...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...5.8
+[v6.0.4]: https://github.com/yajra/laravel-oci8/compare/v6.0.3...v6.0.4
 [v6.0.3]: https://github.com/yajra/laravel-oci8/compare/v6.0.2...v6.0.3
 [v6.0.2]: https://github.com/yajra/laravel-oci8/compare/v6.0.1...v6.0.2
 [v6.0.1]: https://github.com/yajra/laravel-oci8/compare/v6.0.0...v6.0.1
@@ -106,7 +112,9 @@
 [#532]: https://github.com/yajra/laravel-oci8/pull/532
 [#538]: https://github.com/yajra/laravel-oci8/pull/538
 [#543]: https://github.com/yajra/laravel-oci8/pull/543
+[#535]: https://github.com/yajra/laravel-oci8/pull/535
 
+[#523]: https://github.com/yajra/laravel-oci8/issue/523
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
 [#406]: https://github.com/yajra/laravel-oci8/issue/406
 [#404]: https://github.com/yajra/laravel-oci8/issue/404
