@@ -36,9 +36,7 @@ class Sequence
             return false;
         }
 
-        if ($this->connection->getConfig('prefix_schema')) {
-            $name = $this->connection->getConfig('prefix_schema') . '.' . $name;
-        }
+        $name = $this->wrap($name);
 
         $nocache = $nocache ? 'nocache' : '';
 
@@ -47,6 +45,21 @@ class Sequence
         $sequence_stmt = "create sequence {$name} minvalue {$min} {$max} start with {$start} increment by {$increment} {$nocache}";
 
         return $this->connection->statement($sequence_stmt);
+    }
+
+    /**
+     * Wrap sequence name with schema prefix.
+     *
+     * @param string $name
+     * @return string
+     */
+    public function wrap($name)
+    {
+        if ($this->connection->getConfig('prefix_schema')) {
+            return $this->connection->getConfig('prefix_schema') . '.' . $name;
+        }
+
+        return $name;
     }
 
     /**
@@ -61,6 +74,8 @@ class Sequence
         if (! $name || ! $this->exists($name)) {
             return false;
         }
+
+        $name = $this->wrap($name);
 
         return $this->connection->statement("
             declare
@@ -86,6 +101,8 @@ class Sequence
             return false;
         }
 
+        $name = $this->wrap($name);
+
         return $this->connection->selectOne(
             "select * from all_sequences where sequence_name=upper('{$name}') and sequence_owner=upper(user)"
         );
@@ -102,6 +119,8 @@ class Sequence
         if (! $name) {
             return 0;
         }
+
+        $name = $this->wrap($name);
 
         return $this->connection->selectOne("SELECT $name.NEXTVAL as id FROM DUAL")->id;
     }
@@ -129,6 +148,8 @@ class Sequence
         if (! $name || ! $this->exists($name)) {
             return 0;
         }
+
+        $name = $this->wrap($name);
 
         return $this->connection->selectOne("select {$name}.currval as id from dual")->id;
     }
