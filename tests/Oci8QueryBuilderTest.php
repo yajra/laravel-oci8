@@ -1,11 +1,11 @@
 <?php
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
-use Illuminate\Database\Query\Expression as Raw;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
 {
@@ -526,14 +526,14 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
-        $builder = $this->getBuilder();
+        $builder         = $this->getBuilder();
         $eloquentBuilder = new EloquentBuilder($this->getBuilder()->from('contacts'));
         $builder->from('users')->joinSub($eloquentBuilder, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
         $builder = $this->getBuilder();
-        $sub1 = $this->getBuilder()->from('contacts')->where('name', 'foo');
-        $sub2 = $this->getBuilder()->from('contacts')->where('name', 'bar');
+        $sub1    = $this->getBuilder()->from('contacts')->where('name', 'foo');
+        $sub2    = $this->getBuilder()->from('contacts')->where('name', 'bar');
         $builder->from('users')
                 ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
                 ->joinSub($sub2, 'sub2', 'users.id', '=', 'sub2.user_id');

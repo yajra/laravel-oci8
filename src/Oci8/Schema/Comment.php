@@ -3,8 +3,8 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Connection;
-use Yajra\Oci8\OracleReservedWords;
 use Illuminate\Database\Schema\Grammars\Grammar;
+use Yajra\Oci8\OracleReservedWords;
 
 class Comment extends Grammar
 {

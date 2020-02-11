@@ -2,11 +2,11 @@
 
 namespace Yajra\Oci8\Connectors;
 
-use PDO;
-use Yajra\Pdo\Oci8;
-use Illuminate\Support\Arr;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
+use Illuminate\Support\Arr;
+use PDO;
+use Yajra\Pdo\Oci8;
 
 class OracleConnector extends Connector implements ConnectorInterface
 {

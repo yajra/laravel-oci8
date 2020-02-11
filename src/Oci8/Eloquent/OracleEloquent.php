@@ -2,12 +2,12 @@
 
 namespace Yajra\Oci8\Eloquent;
 
-use Yajra\Oci8\Oci8Connection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
-use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 
 class OracleEloquent extends Model
 {

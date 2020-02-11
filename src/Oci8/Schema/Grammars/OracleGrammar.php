@@ -2,12 +2,12 @@
 
 namespace Yajra\Oci8\Schema\Grammars;
 
-use Illuminate\Support\Str;
-use Illuminate\Support\Fluent;
 use Illuminate\Database\Connection;
-use Yajra\Oci8\OracleReservedWords;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
+use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
+use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
 {

@@ -2,11 +2,11 @@
 
 namespace Yajra\Oci8\Query\Grammars;
 
-use Illuminate\Support\Str;
-use Yajra\Oci8\OracleReservedWords;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Support\Str;
+use Yajra\Oci8\OracleReservedWords;
 
 class OracleGrammar extends Grammar
 {
