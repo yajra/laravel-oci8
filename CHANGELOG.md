@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [v6.1.0] - 2020-02-11
+
+- Add support for joinSub. [#551], credits to [@mozgovoyandrey].
+- Add jobSub tests [#560].
+- Apply StyleCI laravel preset changes.
+
 ## [v6.0.4] - 2019-11-26
 
 - Wrap sequence name with schema prefix if set. [#535]
@@ -75,7 +81,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...5.8
+[v6.1.0]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...v6.1.0
 [v6.0.4]: https://github.com/yajra/laravel-oci8/compare/v6.0.3...v6.0.4
 [v6.0.3]: https://github.com/yajra/laravel-oci8/compare/v6.0.2...v6.0.3
 [v6.0.2]: https://github.com/yajra/laravel-oci8/compare/v6.0.1...v6.0.2
@@ -113,6 +120,8 @@
 [#538]: https://github.com/yajra/laravel-oci8/pull/538
 [#543]: https://github.com/yajra/laravel-oci8/pull/543
 [#535]: https://github.com/yajra/laravel-oci8/pull/535
+[#551]: https://github.com/yajra/laravel-oci8/pull/551
+[#560]: https://github.com/yajra/laravel-oci8/pull/560
 
 [#523]: https://github.com/yajra/laravel-oci8/issue/523
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
@@ -135,3 +144,4 @@
 [@tumainimosha]: https://github.com/tumainimosha
 [@dantesCode]: https://github.com/dantesCode
 [@jeidison]: https://github.com/jeidison
+[@mozgovoyandrey]: https://github.com/mozgovoyandrey
