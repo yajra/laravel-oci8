@@ -150,13 +150,26 @@ class ProceduresAndFunctionsTest extends TestCase
         $connection->getPdo()->exec($command);
 
         $result = $connection->executeProcedureWithCursor($procedureName);
-        $rows   = $this->getTestData();
+        $rows   = $this->getDemoData();
 
         $this->assertSame($rows[0]['name'], $result[0]->name);
         $this->assertSame($rows[1]['name'], $result[1]->name);
     }
 
-    protected function getTestData()
+    /**
+     * @param Oci8Connection $connection
+     */
+    private function setupDemoTable($connection): void
+    {
+        $connection->getSchemaBuilder()->dropIfExists('demotable');
+        $connection->getSchemaBuilder()->create('demotable', function (Blueprint $table) {
+            $table->string('name');
+        });
+
+        $connection->table('demotable')->insert($this->getDemoData());
+    }
+
+    protected function getDemoData()
     {
         return [
             [
@@ -177,8 +190,8 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $this->assertSame($prefix, $connection->getTablePrefix());
 
-        $first      = $connection->table('demotable')->first();
-        $rows       = $this->getTestData();
+        $first = $connection->table('demotable')->first();
+        $rows  = $this->getDemoData();
 
         $this->assertSame($rows[0]['name'], $first->name);
     }
@@ -208,16 +221,34 @@ class ProceduresAndFunctionsTest extends TestCase
         $this->assertSame($first + 2, (int) $result);
     }
 
-    /**
-     * @param Oci8Connection $connection
-     */
-    private function setupDemoTable($connection): void
+    public function testNullPeopleTable()
     {
-        $connection->getSchemaBuilder()->dropIfExists('demotable');
-        $connection->getSchemaBuilder()->create('demotable', function (Blueprint $table) {
+        $connection = $this->createConnection();
+        $connection->getSchemaBuilder()->dropIfExists('people');
+        $connection->getSchemaBuilder()->create('people', function (Blueprint $table) {
+            $table->increments('id');
             $table->string('name');
+            $table->integer('job_id')->nullable();
         });
 
-        $connection->table('demotable')->insert($this->getTestData());
+        $connection->table('people')->insert($this->getPeopleData());
+    }
+
+    protected function getPeopleData()
+    {
+        return [
+            [
+                'name'   => 'Foo',
+                'job_id' => null,
+            ],
+            [
+                'name'   => 'Bar',
+                'job_id' => 1,
+            ],
+            [
+                'name'   => 'Test',
+                'job_id' => 2,
+            ],
+        ];
     }
 }
