@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Schema;
 
-use Illuminate\Support\Str;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
 
 class Trigger

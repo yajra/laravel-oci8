@@ -1,10 +1,11 @@
 <?php
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Expression as Raw;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
-use Illuminate\Database\Query\Expression as Raw;
+use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
 {
@@ -511,6 +512,70 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select * from "USERS" inner join "CONTACTS" on "USERS"."ID" = ? or "USERS"."NAME" = ?',
             $builder->toSql());
         $this->assertEquals(['foo', 'bar'], $builder->getBindings());
+    }
+
+    public function testJoinSub()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('users')->joinSub('select * from "contacts"', 'sub', 'users.id', '=', 'sub.id');
+        $this->assertSame('select * from "USERS" inner join (select * from "contacts") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+
+        $builder = $this->getBuilder();
+        $builder->from('users')->joinSub(function ($q) {
+            $q->from('contacts');
+        }, 'sub', 'users.id', '=', 'sub.id');
+        $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+
+        $builder         = $this->getBuilder();
+        $eloquentBuilder = new EloquentBuilder($this->getBuilder()->from('contacts'));
+        $builder->from('users')->joinSub($eloquentBuilder, 'sub', 'users.id', '=', 'sub.id');
+        $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+
+        $builder = $this->getBuilder();
+        $sub1    = $this->getBuilder()->from('contacts')->where('name', 'foo');
+        $sub2    = $this->getBuilder()->from('contacts')->where('name', 'bar');
+        $builder->from('users')
+                ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
+                ->joinSub($sub2, 'sub2', 'users.id', '=', 'sub2.user_id');
+        $expected = 'select * from "USERS" ';
+        $expected .= 'inner join (select * from "CONTACTS" where "NAME" = ?) "SUB1" on "USERS"."ID" = ? ';
+        $expected .= 'inner join (select * from "CONTACTS" where "NAME" = ?) "SUB2" on "USERS"."ID" = "SUB2"."USER_ID"';
+        $this->assertEquals($expected, $builder->toSql());
+        $this->assertEquals(['foo', 1, 'bar'], $builder->getRawBindings()['join']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder = $this->getBuilder();
+        $builder->from('users')->joinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
+    }
+
+    public function testJoinSubWithPrefix()
+    {
+        $builder = $this->getBuilder();
+        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder->from('users')->joinSub('select * from "CONTACTS"', 'sub', 'users.id', '=', 'sub.id');
+        $this->assertSame('select * from "PREFIX_USERS" inner join (select * from "CONTACTS") "PREFIX_SUB" on "PREFIX_USERS"."ID" = "PREFIX_SUB"."ID"', $builder->toSql());
+    }
+
+    public function testLeftJoinSub()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('users')->leftJoinSub($this->getBuilder()->from('contacts'), 'sub', 'users.id', '=', 'sub.id');
+        $this->assertSame('select * from "USERS" left join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder = $this->getBuilder();
+        $builder->from('users')->leftJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
+    }
+
+    public function testRightJoinSub()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('users')->rightJoinSub($this->getBuilder()->from('contacts'), 'sub', 'users.id', '=', 'sub.id');
+        $this->assertSame('select * from "USERS" right join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder = $this->getBuilder();
+        $builder->from('users')->rightJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
     public function testRawExpressionsInSelect()
