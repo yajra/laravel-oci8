@@ -227,7 +227,7 @@ class ProceduresAndFunctionsTest extends TestCase
         $connection->getSchemaBuilder()->dropIfExists('people');
         $connection->getSchemaBuilder()->create('people', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->integer('job_id')->nullable();
         });
 
@@ -248,6 +248,10 @@ class ProceduresAndFunctionsTest extends TestCase
             [
                 'name'   => 'Test',
                 'job_id' => 2,
+            ],
+            [
+                'name'   => null,
+                'job_id' => null,
             ],
         ];
     }
