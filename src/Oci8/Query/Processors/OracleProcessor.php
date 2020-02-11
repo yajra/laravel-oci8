@@ -2,11 +2,11 @@
 
 namespace Yajra\Oci8\Query\Processors;
 
-use PDO;
 use DateTime;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use PDO;
 
 class OracleProcessor extends Processor
 {
