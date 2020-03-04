@@ -2,7 +2,7 @@
 
 # install deps
 sudo apt-get update -qq
-sudo apt-get -y install -qq build-essential unzip wget libaio1
+sudo apt-get -y install -qq build-essential unzip wget libaio1 alien dpkg-dev debhelper
 
 # install oci8 libs & extension
 sudo mkdir -p /opt/oracle
@@ -10,8 +10,11 @@ sudo mkdir -p /opt/oracle
 wget https://github.com/bumpx/oracle-instantclient/raw/master/oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.rpm
 wget https://github.com/bumpx/oracle-instantclient/raw/master/oracle-instantclient18.3-devel-18.3.0.0.0-1.x86_64.rpm
 
-sudo rpm -ivh ./oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.rpm
-sudo rpm -ivh ./oracle-instantclient18.3-devel-18.3.0.0.0-1.x86_64.rpm
+sudo alien ./oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.rpm
+sudo alien ./oracle-instantclient18.3-devel-18.3.0.0.0-1.x86_64.rpm
+
+sudo dpkg -i ./oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.deb
+sudo dpkg -i ./oracle-instantclient18.3-devel-18.3.0.0.0-1.x86_64.deb
 
 # wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-12.1.0.2.0.zip
 # wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip
