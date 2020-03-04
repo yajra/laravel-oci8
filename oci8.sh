@@ -20,15 +20,6 @@ sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/l
 
 sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8"
 
+# setup ld library path
 sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
 sudo ldconfig
-
-# sudo echo "export LD_LIBRARY_PATH=/opt/oracle/instantclient_12_2" >> /etc/apache2/envvars
-# sudo echo "export ORACLE_HOME=/opt/oracle/instantclient_12_2" >> /etc/apache2/envvars
-# sudo echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_12_2:$LD_LIBRARY_PATH" >> /etc/environment
-
-# run oracle db via docker
-# docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g
-
-# wait for start
-# sleep 40

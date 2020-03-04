@@ -2,7 +2,7 @@ name: tests
 
 on:
   push:
-  # pull_request:
+  pull_request:
   schedule:
     - cron: '0 0 * * *'
 
@@ -16,11 +16,6 @@ jobs:
         ports:
           - 49160:22
           - 49161:1521
-      # redis:
-      #   image: redis:5.0
-      #   ports:
-      #     - 6379:6379
-      #   options: --entrypoint redis-server
     strategy:
       fail-fast: true
       matrix:
