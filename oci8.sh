@@ -18,12 +18,8 @@ sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
 sudo ln -s /opt/oracle/instantclient/libclntsh.so.12.1 /opt/oracle/instantclient/libclntsh.so
 sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/libocci.so
 
-sudo pecl channel-update pecl.php.net
+sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8"
 
-echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
-
-# run oracle db via docker
-docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g
-
-# wait for start
-sleep 40
+# setup ld library path
+sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
+sudo ldconfig

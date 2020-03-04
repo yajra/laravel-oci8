@@ -1,0 +1,55 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  tests:
+
+    runs-on: ubuntu-latest
+    services:
+      oracle:
+        image: deepdiver/docker-oracle-xe-11g:2.0
+        ports:
+          - 49160:22
+          - 49161:1521
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [7.2, 7.3, 7.4]
+        stability: [prefer-lowest, prefer-stable]
+
+    name: PHP ${{ matrix.php }} - STABILITY ${{ matrix.stability }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache/files
+          key: dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd
+          coverage: none
+          tools: pecl
+
+      - name: Setup OCI8
+        run: ./oci8.sh
+
+      - name: Register OCI8
+        run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
+
+      - name: Install dependencies
+        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-suggest
+
+      - name: Execute tests
+        run: vendor/bin/phpunit --verbose
