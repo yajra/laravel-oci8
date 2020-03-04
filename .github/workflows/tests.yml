@@ -50,9 +50,6 @@ jobs:
       - name: Download OCI8
         run: ./oci8.sh
 
-      - name: Install OCI8
-        run: echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
-
       - name: Register OCI8
         run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
 
