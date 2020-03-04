@@ -11,15 +11,20 @@ jobs:
 
     runs-on: ubuntu-latest
     services:
-      redis:
-        image: redis:5.0
+      oracle:
+        image: deepdiver/docker-oracle-xe-11g:2.0
         ports:
-          - 6379:6379
-        options: --entrypoint redis-server
+          - 49160:22
+          - 49161:1521
+      # redis:
+      #   image: redis:5.0
+      #   ports:
+      #     - 6379:6379
+      #   options: --entrypoint redis-server
     strategy:
       fail-fast: true
       matrix:
-        php: [7.2, 7.3, 7.4]
+        php: [7.2]
         stability: [prefer-lowest, prefer-stable]
 
     name: P${{ matrix.php }} - S${{ matrix.stability }}
@@ -40,9 +45,16 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd
           coverage: none
+          tools: pecl
 
-      - name: Setup OCI8
+      - name: Download OCI8
         run: ./oci8.sh
+
+      - name: Install OCI8
+        run: echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8
+
+      - name: Register OCI8
+        run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
 
       - name: Install dependencies
         run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-suggest

@@ -9,3 +9,4 @@
 CHANGELOG.md export-ignore
 CONDUCT.md export-ignore
 phpunit.xml.dist export-ignore
+oci8.sh export-ignore
