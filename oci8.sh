@@ -13,8 +13,8 @@ wget https://github.com/bumpx/oracle-instantclient/raw/master/oracle-instantclie
 sudo alien ./oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.rpm
 sudo alien ./oracle-instantclient18.3-devel-18.3.0.0.0-1.x86_64.rpm
 
-sudo dpkg -i ./oracle-instantclient18.3-basic-18.3.0.0.0-1.x86_64.deb
-sudo dpkg -i ./oracle-instantclient18.3-devel-18.3.0.0.0-1.x86_64.deb
+sudo dpkg -i ./oracle-instantclient18.3-basic_18.3.0.0.0-2_amd64.deb
+sudo dpkg -i ./oracle-instantclient18.3-devel_18.3.0.0.0-2_amd64.deb
 
 # wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-12.1.0.2.0.zip
 # wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip
