@@ -10,12 +10,12 @@
         }
     ],
     "require": {
-        "php": "^7.2",
+        "php": "^7.2.5",
         "ext-oci8": ">=2.0.0",
         "ext-pdo": "*",
-        "illuminate/support": "^6.0",
-        "illuminate/database": "^6.0",
-        "yajra/laravel-pdo-via-oci8": "^2.0"
+        "illuminate/support": "^7",
+        "illuminate/database": "^7",
+        "yajra/laravel-pdo-via-oci8": "^2"
     },
     "require-dev": {
         "mockery/mockery": "^1.2.3",
