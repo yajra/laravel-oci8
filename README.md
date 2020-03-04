@@ -1,4 +1,4 @@
-# Oracle DB driver for Laravel 4|5|6 via OCI8
+# Oracle DB driver for Laravel 4|5|6|7 via OCI8
 
 ## Laravel-OCI8
 
@@ -14,7 +14,6 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 ## Documentations
 
 - You will find user friendly and updated documentation here: [Laravel-OCI8 Docs](https://yajrabox.com/docs/laravel-oci8)
-- You will find updated API documentation here: [Laravel-OCI8 API](http://yajra.github.io/laravel-oci8/api/)
 - All about oracle and php:[The Underground PHPand Oracle Manual](http://www.oracle.com/technetwork/database/database-technologies/php/201212-ug-php-oracle-1884760.pdf)
 
 ## Laravel Version Compatibility
@@ -30,11 +29,12 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
  5.7.x    | 5.7.x
  5.8.x    | 5.8.x
  6.x.x    | 6.x.x
+ 7.x.x    | 7.x.x
 
 ## Quick Installation
 
 ```bash
-composer require yajra/laravel-oci8:"^6.0"
+composer require yajra/laravel-oci8:^7
 ```
 
 ## Service Provider (Optional on Laravel 5.5+)
