@@ -1,13 +1,11 @@
 # Oracle DB driver for Laravel 4|5|6|7 via OCI8
 
-## Laravel-OCI8
+<a href="https://github.com/yajra/laravel-oci8/actions"><img src="https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/d/total.svg" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/stable.svg" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/license.svg" alt="License"></a>
 
-[![Latest Version on Packagist][ico-version]][link-packagist]
-[![Software License][ico-license]](LICENSE.md)
-[![Build Status][ico-travis]][link-travis]
-[![Coverage Status][ico-scrutinizer]][link-scrutinizer]
-[![Quality Score][ico-code-quality]][link-code-quality]
-[![Total Downloads][ico-downloads]][link-downloads]
+## Laravel-OCI8
 
 Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.com/). Laravel-OCI8 is an extension of [Illuminate/Database](https://github.com/illuminate/database) that uses [OCI8](http://php.net/oci8) extension to communicate with Oracle. Thanks to @taylorotwell.
 
@@ -118,17 +116,5 @@ To use, just update `auth.php` config and set the driver to `oracle`
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/yajra/laravel-oci8.svg?style=flat-square
-[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/yajra/laravel-oci8/master.svg?style=flat-square
-[ico-scrutinizer]: https://img.shields.io/scrutinizer/coverage/g/yajra/laravel-oci8.svg?style=flat-square
-[ico-code-quality]: https://img.shields.io/scrutinizer/g/yajra/laravel-oci8.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/yajra/laravel-oci8.svg?style=flat-square
-
-[link-packagist]: https://packagist.org/packages/yajra/laravel-oci8
-[link-travis]: https://travis-ci.org/yajra/laravel-oci8
-[link-scrutinizer]: https://scrutinizer-ci.com/g/yajra/laravel-oci8/code-structure
-[link-code-quality]: https://scrutinizer-ci.com/g/yajra/laravel-oci8
-[link-downloads]: https://packagist.org/packages/yajra/laravel-oci8
 [link-author]: https://github.com/yajra
 [link-contributors]: ../../contributors
