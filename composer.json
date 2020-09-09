@@ -10,11 +10,11 @@
         }
     ],
     "require": {
-        "php": "^7.2.5",
+        "php": "^7.3",
         "ext-oci8": ">=2.0.0",
         "ext-pdo": "*",
-        "illuminate/support": "^7",
-        "illuminate/database": "^7",
+        "illuminate/support": "^8",
+        "illuminate/database": "^8",
         "yajra/laravel-pdo-via-oci8": "^2"
     },
     "require-dev": {
