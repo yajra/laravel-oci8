@@ -253,28 +253,28 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testSubSelectWhereIns()
     {
-         $builder    = $this->getBuilder();
-         $connection = $builder->getConnection();
-         $connection->shouldReceive('getConfig')->andReturn('');
-         $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
-         $builder->select('*')->from('users')->whereIn('id', function ($q) {
-             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
-         });
-         $this->assertEquals('select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
+        $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
+        $builder->select('*')->from('users')->whereIn('id', function ($q) {
+            $q->select('id')->from('users')->where('age', '>', 25)->take(3);
+        });
+        $this->assertEquals('select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
              $builder->toSql());
-         $this->assertEquals([25], $builder->getBindings());
+        $this->assertEquals([25], $builder->getBindings());
 
-         $builder    = $this->getBuilder();
-         $connection = $builder->getConnection();
-         $connection->shouldReceive('getConfig')->andReturn('');
-         $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
+        $builder    = $this->getBuilder();
+        $connection = $builder->getConnection();
+        $connection->shouldReceive('getConfig')->andReturn('');
+        $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
 
-         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
-             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
-         });
-         $this->assertEquals('select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+        $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
+            $q->select('id')->from('users')->where('age', '>', 25)->take(3);
+        });
+        $this->assertEquals('select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
              $builder->toSql());
-         $this->assertEquals([25], $builder->getBindings());
+        $this->assertEquals([25], $builder->getBindings());
     }
 
     public function testBasicWhereNulls()
