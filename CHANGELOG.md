@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.0.0] - 2020-09-09
+
+- Add support for Laravel 8.
+
 ## [v7.0.1] - 2020-06-18
 
 - Fix pagination aggregate count. [#570]
@@ -90,7 +94,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...7.x
+[v8.0.0]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v8.0.0
 [v7.0.1]: https://github.com/yajra/laravel-oci8/compare/v7.0.0...v7.0.1
 [v7.0.0]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...v7.0.0
 [v6.1.0]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...v6.1.0
