@@ -256,22 +256,24 @@ class Oci8QueryBuilderTest extends TestCase
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
+        $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals('select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-            $builder->toSql());
+             $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
 
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
+        $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
 
         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals('select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-            $builder->toSql());
+             $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
     }
 
@@ -517,23 +519,30 @@ class Oci8QueryBuilderTest extends TestCase
     public function testJoinSub()
     {
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub('select * from "contacts"', 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" inner join (select * from "contacts") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub(function ($q) {
             $q->from('contacts');
         }, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
         $builder         = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $eloquentBuilder = new EloquentBuilder($this->getBuilder()->from('contacts'));
+        $eloquentBuilder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub($eloquentBuilder, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $sub1    = $this->getBuilder()->from('contacts')->where('name', 'foo');
+        $sub1->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $sub2    = $this->getBuilder()->from('contacts')->where('name', 'bar');
+        $sub2->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')
                 ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
                 ->joinSub($sub2, 'sub2', 'users.id', '=', 'sub2.user_id');
@@ -545,6 +554,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
@@ -559,22 +569,30 @@ class Oci8QueryBuilderTest extends TestCase
     public function testLeftJoinSub()
     {
         $builder = $this->getBuilder();
-        $builder->from('users')->leftJoinSub($this->getBuilder()->from('contacts'), 'sub', 'users.id', '=', 'sub.id');
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
+        $sub = $this->getBuilder()->from('contacts');
+        $sub->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
+        $builder->from('users')->leftJoinSub($sub, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" left join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
         $this->expectException(InvalidArgumentException::class);
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->leftJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
     public function testRightJoinSub()
     {
         $builder = $this->getBuilder();
-        $builder->from('users')->rightJoinSub($this->getBuilder()->from('contacts'), 'sub', 'users.id', '=', 'sub.id');
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
+        $sub = $this->getBuilder()->from('contacts');
+        $sub->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
+        $builder->from('users')->rightJoinSub($sub, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" right join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
         $this->expectException(InvalidArgumentException::class);
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->rightJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
@@ -997,6 +1015,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->shouldReceive('where')->with('ios_version', '=', '6.1', 'and')->once()->andReturn($builder);
         $builder->shouldReceive('where')->with('android_version', '=', '4.2', 'and')->once()->andReturn($builder);
         $builder->shouldReceive('where')->with('orientation', '=', 'Vertical', 'or')->once()->andReturn($builder);
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
 
         $builder->dynamicWhere($method, $parameters);
     }
@@ -1148,6 +1167,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function testAggregateWithSubSelect()
     {
         $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
