@@ -542,17 +542,13 @@ class OracleGrammar extends Grammar
     private function resolveClause($column, $values, $type)
     {
         $chunks      = array_chunk($values, 1000);
-        $whereClause = '';
+        $whereClause = [];
         $i           = 0;
         $type        = $this->wrap($column) . ' '.$type.' ';
         foreach ($chunks as $ch) {
-            if ($i > 0) {
-                $type = ' or ' . $type . ' ';
-            }
-            $whereClause .= $type . '('.implode(', ', $ch).')';
+            $whereClause[] = $type . '('.implode(', ', $ch).')';
             $i++;
         }
-
-        return '(' . $whereClause . ')';
+        return '(' . implode(' OR ',$whereClause) . ')';
     }
 }
