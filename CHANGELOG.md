@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.0.1] - 2020-09-23
+
+- Fix [#590] WhereIn query with more than 2k++ records. [#591], credits to [@bioleyl].
+
 ## [v8.0.0] - 2020-09-09
 
 - Add support for Laravel 8.
@@ -94,7 +98,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.0.1...7.x
+[v8.0.1]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.0.1
 [v8.0.0]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v8.0.0
 [v7.0.1]: https://github.com/yajra/laravel-oci8/compare/v7.0.0...v7.0.1
 [v7.0.0]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...v7.0.0
@@ -140,7 +145,9 @@
 [#560]: https://github.com/yajra/laravel-oci8/pull/560
 [#565]: https://github.com/yajra/laravel-oci8/pull/565
 [#570]: https://github.com/yajra/laravel-oci8/pull/570
+[#591]: https://github.com/yajra/laravel-oci8/pull/591
 
+[#590]: https://github.com/yajra/laravel-oci8/issue/590
 [#564]: https://github.com/yajra/laravel-oci8/issue/564
 [#523]: https://github.com/yajra/laravel-oci8/issue/523
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
@@ -164,3 +171,4 @@
 [@dantesCode]: https://github.com/dantesCode
 [@jeidison]: https://github.com/jeidison
 [@mozgovoyandrey]: https://github.com/mozgovoyandrey
+[@bioleyl]: https://github.com/bioleyl
