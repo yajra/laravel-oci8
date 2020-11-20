@@ -60,6 +60,8 @@ class Oci8ServiceProvider extends ServiceProvider
                 'NLS_TIMESTAMP_FORMAT'    => 'YYYY-MM-DD HH24:MI:SS',
                 'NLS_TIMESTAMP_TZ_FORMAT' => 'YYYY-MM-DD HH24:MI:SS TZH:TZM',
                 'NLS_NUMERIC_CHARACTERS'  => '.,',
+                'NLS_COMP'                => 'LINGUISTIC',
+                'NLS_SORT'                => 'BINARY_CI',
             ];
 
             // Like Postgres, Oracle allows the concept of "schema"
