@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [v8.1.0] - 2020-11-20
+
+- Enable oracle case insensitive searches. [#598]
+- Fix database presence validation issue (unique, exists, etc).
+- Removes the dependency on OracleUserProvider.
+
 ## [v8.0.1] - 2020-09-23
 
 - Fix [#590] WhereIn query with more than 2k++ records. [#591], credits to [@bioleyl].
@@ -98,7 +104,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.0.1...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.0...7.x
+[v8.1.0]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.1.0
 [v8.0.1]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.0.1
 [v8.0.0]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v8.0.0
 [v7.0.1]: https://github.com/yajra/laravel-oci8/compare/v7.0.0...v7.0.1
@@ -146,6 +153,7 @@
 [#565]: https://github.com/yajra/laravel-oci8/pull/565
 [#570]: https://github.com/yajra/laravel-oci8/pull/570
 [#591]: https://github.com/yajra/laravel-oci8/pull/591
+[#598]: https://github.com/yajra/laravel-oci8/pull/598
 
 [#590]: https://github.com/yajra/laravel-oci8/issue/590
 [#564]: https://github.com/yajra/laravel-oci8/issue/564
