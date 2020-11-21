@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.1.1] - 2020-11-21
+
+- Implement case insensitive function-based unique index. [#599]
+
 ## [v8.1.0] - 2020-11-20
 
 - Enable oracle case insensitive searches. [#598]
@@ -104,7 +108,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.0...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.1...7.x
+[v8.1.1]: https://github.com/yajra/laravel-oci8/compare/v8.1.0...v8.1.1
 [v8.1.0]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.1.0
 [v8.0.1]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.0.1
 [v8.0.0]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v8.0.0
@@ -154,6 +159,7 @@
 [#570]: https://github.com/yajra/laravel-oci8/pull/570
 [#591]: https://github.com/yajra/laravel-oci8/pull/591
 [#598]: https://github.com/yajra/laravel-oci8/pull/598
+[#599]: https://github.com/yajra/laravel-oci8/pull/599
 
 [#590]: https://github.com/yajra/laravel-oci8/issue/590
 [#564]: https://github.com/yajra/laravel-oci8/issue/564
