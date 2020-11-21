@@ -438,7 +438,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table users add constraint bar unique ( foo )', $statements[0]);
+        $this->assertEquals('create unique index bar on users (lower(foo))', $statements[0]);
     }
 
     public function testAddingDefinedUniqueKeyWithPrefix()
@@ -453,7 +453,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table prefix_users add constraint bar unique ( foo )', $statements[0]);
+        $this->assertEquals('create unique index bar on prefix_users (lower(foo))', $statements[0]);
     }
 
     public function testAddingGeneratedUniqueKeyWithPrefix()
@@ -468,7 +468,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table prefix_users add constraint prefix_users_foo_uk unique ( foo )',
+        $this->assertEquals('create unique index prefix_users_foo_uk on prefix_users (lower(foo))',
             $statements[0]);
     }
 
