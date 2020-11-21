@@ -266,7 +266,7 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command)
     {
-        $columns =  array_map(function($column) {
+        $columns =  array_map(function ($column) {
             $column = $this->wrap($column);
 
             return "lower({$column})";
