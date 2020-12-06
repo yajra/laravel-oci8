@@ -15,9 +15,11 @@
         "ext-pdo": "*",
         "illuminate/database": "^8",
         "illuminate/support": "^8",
+        "illuminate/validation": "^8",
         "yajra/laravel-pdo-via-oci8": "^2"
     },
     "require-dev": {
+        "orchestra/testbench": "^6.5",
         "mockery/mockery": "^1.3.1",
         "phpunit/phpunit": "^8.4|^9.0"
     },
@@ -40,7 +42,8 @@
         },
         "laravel": {
             "providers": [
-                "Yajra\\Oci8\\Oci8ServiceProvider"
+                "Yajra\\Oci8\\Oci8ServiceProvider",
+                "Yajra\\Oci8\\Oci8ValidationServiceProvider"
             ]
         }
     },
