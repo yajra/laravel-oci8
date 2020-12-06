@@ -13,22 +13,26 @@ class ModelTest extends TestCase
     /** @test */
     public function it_can_insert_by_setting_the_property()
     {
+        $count = UserWithGuardedProperty::count();
+
         $user        = new UserWithGuardedProperty;
         $user->name  = 'Test';
         $user->email = 'test@example.com';
         $user->save();
 
-        $this->assertDatabaseCount('users', 21);
+        $this->assertDatabaseCount('users', $count + 1);
     }
 
     /** @test */
     public function it_can_insert_using_create_method()
     {
-        $user = UserWithGuardedProperty::create([
+        $count = UserWithGuardedProperty::count();
+
+        UserWithGuardedProperty::create([
             'name'  => 'Test',
             'email' => 'test@example.com',
         ]);
 
-        $this->assertDatabaseCount('users', 21);
+        $this->assertDatabaseCount('users', $count + 1);
     }
 }
