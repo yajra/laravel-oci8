@@ -2,9 +2,9 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PDO;
 use Yajra\Oci8\Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class StoredProcedureTest extends TestCase
 {
@@ -15,13 +15,13 @@ class StoredProcedureTest extends TestCase
     {
         $connection = $this->getConnection();
 
-        $command = "CREATE OR REPLACE PROCEDURE sp_demo(p1 OUT SYS_REFCURSOR) AS
+        $command = 'CREATE OR REPLACE PROCEDURE sp_demo(p1 OUT SYS_REFCURSOR) AS
             BEGIN
                 OPEN p1
                 FOR
                 SELECT name
                 FROM users;
-            END;";
+            END;';
 
         $connection->getPdo()->exec($command);
 

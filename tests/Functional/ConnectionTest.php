@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Yajra\Oci8\Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Yajra\Oci8\Tests\TestCase;
 
 class ConnectionTest extends TestCase
 {

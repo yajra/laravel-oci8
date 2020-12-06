@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8;
 
-use Yajra\Oci8\Validation\Oci8DatabasePresenceVerifier;
 use Illuminate\Validation\ValidationServiceProvider;
+use Yajra\Oci8\Validation\Oci8DatabasePresenceVerifier;
 
 class Oci8ValidationServiceProvider extends ValidationServiceProvider
 {

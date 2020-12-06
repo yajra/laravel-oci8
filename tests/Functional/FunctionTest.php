@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Yajra\Oci8\Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Yajra\Oci8\Tests\TestCase;
 
 class FunctionTest extends TestCase
 {
@@ -16,10 +16,10 @@ class FunctionTest extends TestCase
 
         $procedureName = 'add_two';
 
-        $command = "CREATE OR REPLACE FUNCTION  add_two (p1 IN NUMBER) RETURN NUMBER IS
+        $command = 'CREATE OR REPLACE FUNCTION  add_two (p1 IN NUMBER) RETURN NUMBER IS
             BEGIN
                  RETURN p1 + 2;
-            END;";
+            END;';
 
         $connection->getPdo()->exec($command);
 
