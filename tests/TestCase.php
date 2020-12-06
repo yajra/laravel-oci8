@@ -22,20 +22,30 @@ abstract class TestCase extends BaseTestCase
     {
         /** @var \Illuminate\Database\Schema\Builder $schemaBuilder */
         $schemaBuilder = $this->app['db']->connection()->getSchemaBuilder();
-        if (! $schemaBuilder->hasTable('users')) {
-            $schemaBuilder->create('users', function (Blueprint $table) {
-                $table->increments('id');
-                $table->string('name');
-                $table->string('email');
-                $table->timestamps();
-            });
+        if ($schemaBuilder->hasTable('users')) {
+            $schemaBuilder->drop('users');
         }
+
+        $schemaBuilder->create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
+        });
+
+        if ($schemaBuilder->hasTable('jobs')) {
+            $schemaBuilder->drop('jobs');
+        }
+
+        $schemaBuilder->create('jobs', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->nullable();
+            $table->integer('job_id')->nullable();
+        });
     }
 
     protected function seedDatabase()
     {
-        User::query()->truncate();
-
         collect(range(1, 20))->each(function ($i) {
             /** @var User $user */
             User::query()->create([
