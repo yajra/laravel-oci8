@@ -5,7 +5,7 @@
 ## [v8.1.3] - 2020-12-06
 
 - Fix Model::create() with guarded property. [#609]
-  Fix [#596]
+- Fix [#596]
 
 ## [v8.1.2] - 2020-12-06
 
