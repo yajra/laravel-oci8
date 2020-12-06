@@ -10,7 +10,7 @@ class ConnectionTest extends TestCase
     use DatabaseTransactions;
 
     /** @test */
-    public function it_works_connection_with_prefix()
+    public function it_works_on_connection_with_prefix()
     {
         $connection = $this->getConnection();
 
