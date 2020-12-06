@@ -1,5 +1,8 @@
 <?php
 
+namespace Yajra\Oci8\Tests\Database;
+
+use Illuminate\Database\Connection;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Schema\Sequence;
@@ -36,7 +39,7 @@ class SequenceTest extends TestCase
 
     protected function getConnection()
     {
-        return m::mock(Illuminate\Database\Connection::class);
+        return m::mock(Connection::class);
     }
 
     /** @test */

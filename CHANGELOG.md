@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [v8.1.2] - 2020-12-06
+
+- Fix database presence verifier. [#607]
+- Revert [#598] 
+- Fixes [#601], [#602] 
+- Use orchestra testbench for tests
+
 ## [v8.1.1] - 2020-11-21
 
 - Implement case insensitive function-based unique index. [#599]
@@ -108,7 +115,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.1...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.2...8.x
+[v8.1.2]: https://github.com/yajra/laravel-oci8/compare/v8.1.1...v8.1.2
 [v8.1.1]: https://github.com/yajra/laravel-oci8/compare/v8.1.0...v8.1.1
 [v8.1.0]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.1.0
 [v8.0.1]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.0.1
@@ -160,7 +168,10 @@
 [#591]: https://github.com/yajra/laravel-oci8/pull/591
 [#598]: https://github.com/yajra/laravel-oci8/pull/598
 [#599]: https://github.com/yajra/laravel-oci8/pull/599
+[#607]: https://github.com/yajra/laravel-oci8/pull/607
 
+[#602]: https://github.com/yajra/laravel-oci8/issue/602
+[#601]: https://github.com/yajra/laravel-oci8/issue/601
 [#590]: https://github.com/yajra/laravel-oci8/issue/590
 [#564]: https://github.com/yajra/laravel-oci8/issue/564
 [#523]: https://github.com/yajra/laravel-oci8/issue/523

@@ -1,10 +1,17 @@
 <?php
 
+namespace Yajra\Oci8\Tests\Database;
+
+use BadMethodCallException;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Expression as Raw;
+use InvalidArgumentException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
+use Yajra\Oci8\Query\Processors\OracleProcessor;
 use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
@@ -23,10 +30,10 @@ class Oci8QueryBuilderTest extends TestCase
 
     protected function getBuilder()
     {
-        $grammar   = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor = m::mock(Yajra\Oci8\Query\Processors\OracleProcessor::class);
+        $grammar   = new OracleGrammar;
+        $processor = m::mock(OracleProcessor::class);
 
-        return new Builder(m::mock(Illuminate\Database\ConnectionInterface::class), $grammar, $processor);
+        return new Builder(m::mock(ConnectionInterface::class), $grammar, $processor);
     }
 
     public function testBasicSelectWithReservedWords()
@@ -261,7 +268,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals('select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-             $builder->toSql());
+            $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
 
         $builder    = $this->getBuilder();
@@ -273,7 +280,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals('select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-             $builder->toSql());
+            $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
     }
 
@@ -521,27 +528,30 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub('select * from "contacts"', 'sub', 'users.id', '=', 'sub.id');
-        $this->assertSame('select * from "USERS" inner join (select * from "contacts") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+        $this->assertSame('select * from "USERS" inner join (select * from "contacts") "SUB" on "USERS"."ID" = "SUB"."ID"',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub(function ($q) {
             $q->from('contacts');
         }, 'sub', 'users.id', '=', 'sub.id');
-        $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+        $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
+            $builder->toSql());
 
-        $builder         = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $eloquentBuilder = new EloquentBuilder($this->getBuilder()->from('contacts'));
         $eloquentBuilder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub($eloquentBuilder, 'sub', 'users.id', '=', 'sub.id');
-        $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+        $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
-        $sub1    = $this->getBuilder()->from('contacts')->where('name', 'foo');
+        $sub1 = $this->getBuilder()->from('contacts')->where('name', 'foo');
         $sub1->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
-        $sub2    = $this->getBuilder()->from('contacts')->where('name', 'bar');
+        $sub2 = $this->getBuilder()->from('contacts')->where('name', 'bar');
         $sub2->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')
                 ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
@@ -563,7 +573,8 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getGrammar()->setTablePrefix('prefix_');
         $builder->from('users')->joinSub('select * from "CONTACTS"', 'sub', 'users.id', '=', 'sub.id');
-        $this->assertSame('select * from "PREFIX_USERS" inner join (select * from "CONTACTS") "PREFIX_SUB" on "PREFIX_USERS"."ID" = "PREFIX_SUB"."ID"', $builder->toSql());
+        $this->assertSame('select * from "PREFIX_USERS" inner join (select * from "CONTACTS") "PREFIX_SUB" on "PREFIX_USERS"."ID" = "PREFIX_SUB"."ID"',
+            $builder->toSql());
     }
 
     public function testLeftJoinSub()
@@ -573,7 +584,8 @@ class Oci8QueryBuilderTest extends TestCase
         $sub = $this->getBuilder()->from('contacts');
         $sub->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->leftJoinSub($sub, 'sub', 'users.id', '=', 'sub.id');
-        $this->assertSame('select * from "USERS" left join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+        $this->assertSame('select * from "USERS" left join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
+            $builder->toSql());
 
         $this->expectException(InvalidArgumentException::class);
         $builder = $this->getBuilder();
@@ -588,7 +600,8 @@ class Oci8QueryBuilderTest extends TestCase
         $sub = $this->getBuilder()->from('contacts');
         $sub->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->rightJoinSub($sub, 'sub', 'users.id', '=', 'sub.id');
-        $this->assertSame('select * from "USERS" right join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
+        $this->assertSame('select * from "USERS" right join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
+            $builder->toSql());
 
         $this->expectException(InvalidArgumentException::class);
         $builder = $this->getBuilder();
@@ -886,7 +899,7 @@ class Oci8QueryBuilderTest extends TestCase
                     'id')
                 ->andReturn(1);
         $result = $builder->from('users')
-                          ->insertGetId(['email' => 'foo', 'bar' => new Illuminate\Database\Query\Expression('bar')],
+                          ->insertGetId(['email' => 'foo', 'bar' => new Raw('bar')],
                               'id');
         $this->assertEquals(1, $result);
     }
@@ -991,8 +1004,8 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $method     = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
-        $grammar    = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor  = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
+        $grammar    = new OracleGrammar;
+        $processor  = m::mock('\Yajra\Oci8\Query\Processors\OracleProcessor');
         $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
@@ -1007,8 +1020,8 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $method     = 'whereIosVersionAndAndroidVersionOrOrientation';
         $parameters = ['6.1', '4.2', 'Vertical'];
-        $grammar    = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor  = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
+        $grammar    = new OracleGrammar;
+        $processor  = m::mock('\Yajra\Oci8\Query\Processors\OracleProcessor');
         $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
