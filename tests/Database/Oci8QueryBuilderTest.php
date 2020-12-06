@@ -267,8 +267,10 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
-        $this->assertEquals('select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-            $builder->toSql());
+        $this->assertEquals(
+            'select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 where rownum <= 3) t2 where t2."rn" >= 1)',
+            $builder->toSql()
+        );
         $this->assertEquals([25], $builder->getBindings());
 
         $builder    = $this->getBuilder();
@@ -279,8 +281,10 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
-        $this->assertEquals('select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-            $builder->toSql());
+        $this->assertEquals(
+            'select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 where rownum <= 3) t2 where t2."rn" >= 1)',
+            $builder->toSql()
+        );
         $this->assertEquals([25], $builder->getBindings());
     }
 
@@ -361,8 +365,10 @@ class Oci8QueryBuilderTest extends TestCase
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(10);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" >= 11',
-            $builder->toSql());
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 10) t2 where t2."rn" >= 11',
+            $builder->toSql()
+        );
     }
 
     public function testLimitsAndOffsets()
@@ -371,36 +377,46 @@ class Oci8QueryBuilderTest extends TestCase
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(5)->limit(10);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
-            $builder->toSql());
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 6',
+            $builder->toSql()
+        );
 
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->skip(5)->take(10);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
-            $builder->toSql());
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 6',
+            $builder->toSql()
+        );
 
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->skip(-5)->take(10);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
-            $builder->toSql());
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 10) t2 where t2."rn" >= 1',
+            $builder->toSql()
+        );
 
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->forPage(2, 15);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
-            $builder->toSql());
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 30) t2 where t2."rn" >= 16',
+            $builder->toSql()
+        );
 
         $builder    = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->forPage(-2, 15);
-        $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
-            $builder->toSql());
+        $this->assertEquals(
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1',
+            $builder->toSql()
+        );
     }
 
     public function testLimitAndOffsetToPaginateOne()
@@ -410,7 +426,7 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(0)->limit(1);
         $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 1',
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 1) t2 where t2."rn" >= 1',
             $builder->toSql()
         );
 
@@ -419,7 +435,7 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(1)->limit(1);
         $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 2 and 2',
+            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 2) t2 where t2."rn" >= 2',
             $builder->toSql()
         );
     }
