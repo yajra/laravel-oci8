@@ -2,9 +2,9 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Yajra\Oci8\Tests\TestCase;
 use Yajra\Oci8\Tests\UserWithGuardedProperty;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ModelTest extends TestCase
 {
