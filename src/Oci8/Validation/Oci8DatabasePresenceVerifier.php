@@ -26,9 +26,9 @@ class Oci8DatabasePresenceVerifier extends DatabasePresenceVerifier
             return parent::getCount($collection, $column, $value, $excludeId, $idColumn, $extra);
         }
 
-        $connection->setSessionVars(['NLS_COMP' => 'LINGUISTIC', 'NLS_SORT' => 'BINARY_CI']);
+        $connection->useCaseInsensitiveSession();
         $count = parent::getCount($collection, $column, $value, $excludeId, $idColumn, $extra);
-        $connection->setSessionVars(['NLS_COMP' => 'BINARY', 'NLS_SORT' => 'BINARY']);
+        $connection->useCaseSensitiveSession();
 
         return $count;
     }
@@ -50,9 +50,9 @@ class Oci8DatabasePresenceVerifier extends DatabasePresenceVerifier
             return parent::getMultiCount($collection, $column, $values, $extra);
         }
 
-        $connection->setSessionVars(['NLS_COMP' => 'LINGUISTIC', 'NLS_SORT' => 'BINARY_CI']);
+        $connection->useCaseInsensitiveSession();
         $count = parent::getMultiCount($collection, $column, $values, $extra);
-        $connection->setSessionVars(['NLS_COMP' => 'BINARY', 'NLS_SORT' => 'BINARY']);
+        $connection->useCaseSensitiveSession();
 
         return $count;
     }
