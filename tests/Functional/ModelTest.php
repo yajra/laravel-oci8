@@ -6,7 +6,7 @@ use Yajra\Oci8\Tests\TestCase;
 use Yajra\Oci8\Tests\UserWithGuardedProperty;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class ModelTests extends TestCase
+class ModelTest extends TestCase
 {
     use DatabaseTransactions;
 
