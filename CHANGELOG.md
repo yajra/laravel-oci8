@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v8.1.3] - 2020-12-06
+
+- Fix Model::create() with guarded property. [#609]
+  Fix [#596]
+
 ## [v8.1.2] - 2020-12-06
 
 - Fix database presence verifier. [#607]
@@ -115,7 +120,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.2...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.1.3...8.x
+[v8.1.3]: https://github.com/yajra/laravel-oci8/compare/v8.1.2...v8.1.3
 [v8.1.2]: https://github.com/yajra/laravel-oci8/compare/v8.1.1...v8.1.2
 [v8.1.1]: https://github.com/yajra/laravel-oci8/compare/v8.1.0...v8.1.1
 [v8.1.0]: https://github.com/yajra/laravel-oci8/compare/v8.0.0...v8.1.0
@@ -169,7 +175,9 @@
 [#598]: https://github.com/yajra/laravel-oci8/pull/598
 [#599]: https://github.com/yajra/laravel-oci8/pull/599
 [#607]: https://github.com/yajra/laravel-oci8/pull/607
+[#609]: https://github.com/yajra/laravel-oci8/pull/609
 
+[#596]: https://github.com/yajra/laravel-oci8/issue/596
 [#602]: https://github.com/yajra/laravel-oci8/issue/602
 [#601]: https://github.com/yajra/laravel-oci8/issue/601
 [#590]: https://github.com/yajra/laravel-oci8/issue/590
