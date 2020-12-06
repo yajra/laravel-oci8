@@ -2,10 +2,10 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Yajra\Oci8\Tests\User;
-use Yajra\Oci8\Tests\TestCase;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Validator;
+use Yajra\Oci8\Tests\TestCase;
+use Yajra\Oci8\Tests\User;
 
 class ValidationTest extends TestCase
 {

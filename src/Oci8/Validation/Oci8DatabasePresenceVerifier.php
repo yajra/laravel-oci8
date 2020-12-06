@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Validation;
 
-use Yajra\Oci8\Oci8Connection;
 use Illuminate\Validation\DatabasePresenceVerifier;
+use Yajra\Oci8\Oci8Connection;
 
 class Oci8DatabasePresenceVerifier extends DatabasePresenceVerifier
 {
