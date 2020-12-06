@@ -10,6 +10,16 @@ class QueryBuilderTest extends TestCase
     use DatabaseTransactions;
 
     /** @test */
+    public function it_can_perform_insert()
+    {
+        $data = ['name' => 'Foo', 'job_id' => null];
+
+        $this->getConnection()->table('jobs')->insert($data);
+
+        $this->assertDatabaseCount('jobs', 1);
+    }
+
+    /** @test */
     public function it_can_perform_bulk_inserts()
     {
         $data = [
