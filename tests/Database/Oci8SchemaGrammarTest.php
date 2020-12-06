@@ -1,7 +1,11 @@
 <?php
 
+namespace Yajra\Oci8\Tests\Database;
+
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Database\Query\Expression;
+use Yajra\Oci8\Schema\Grammars\OracleGrammar;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 
 class Oci8SchemaGrammarTest extends TestCase
@@ -34,7 +38,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function getGrammar()
     {
-        return new Yajra\Oci8\Schema\Grammars\OracleGrammar;
+        return new OracleGrammar;
     }
 
     public function testBasicCreateTableWithReservedWords()
@@ -542,7 +546,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint = new Blueprint('users');
         $blueprint->string('foo', 100)
                   ->nullable()
-                  ->default(new Illuminate\Database\Query\Expression('CURRENT TIMESTAMP'));
+                  ->default(new Expression('CURRENT TIMESTAMP'));
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
