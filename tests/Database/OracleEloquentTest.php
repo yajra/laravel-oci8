@@ -1,5 +1,7 @@
 <?php
 
+namespace Yajra\Oci8\Tests\Database;
+
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;

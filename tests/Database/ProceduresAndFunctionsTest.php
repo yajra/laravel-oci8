@@ -1,7 +1,10 @@
 <?php
 
+namespace Yajra\Oci8\Tests\Database;
+
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Schema\Blueprint;
+use PDO;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Yajra\Oci8\Oci8Connection;

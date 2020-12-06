@@ -13,8 +13,8 @@
         "php": "^7.3",
         "ext-oci8": ">=2.0.0",
         "ext-pdo": "*",
-        "illuminate/support": "^8",
         "illuminate/database": "^8",
+        "illuminate/support": "^8",
         "yajra/laravel-pdo-via-oci8": "^2"
     },
     "require-dev": {
@@ -27,6 +27,11 @@
         ],
         "psr-4": {
             "Yajra\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Yajra\\Oci8\\Tests\\": "tests/"
         }
     },
     "extra": {
