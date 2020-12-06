@@ -24,12 +24,10 @@ class ModelTest extends TestCase
     /** @test */
     public function it_can_insert_using_create_method()
     {
-        $params = [
+        $user = UserWithGuardedProperty::create([
             'name'  => 'Test',
             'email' => 'test@example.com',
-        ];
-
-        UserWithGuardedProperty::create($params);
+        ]);
 
         $this->assertDatabaseCount('users', 21);
     }
