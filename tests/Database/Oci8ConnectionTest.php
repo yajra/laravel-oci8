@@ -2,10 +2,10 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
-use PDO;
 use Mockery as m;
-use Yajra\Oci8\Oci8Connection;
+use PDO;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
 
 class Oci8ConnectionTest extends TestCase
 {

@@ -2,9 +2,9 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
+use Illuminate\Database\Query\Expression;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
-use Illuminate\Database\Query\Expression;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 

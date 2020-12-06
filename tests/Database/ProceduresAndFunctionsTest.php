@@ -2,12 +2,12 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
-use PDO;
-use Yajra\Oci8\Oci8Connection;
-use PHPUnit\Framework\TestCase;
-use Illuminate\Database\Schema\Blueprint;
-use Yajra\Oci8\Connectors\OracleConnector;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\Schema\Blueprint;
+use PDO;
+use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Connectors\OracleConnector;
+use Yajra\Oci8\Oci8Connection;
 
 class ProceduresAndFunctionsTest extends TestCase
 {

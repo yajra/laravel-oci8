@@ -2,11 +2,11 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
+use Illuminate\Database\Connectors\Connector;
 use Mockery as m;
-use Yajra\Pdo\Oci8;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Connectors\OracleConnector;
-use Illuminate\Database\Connectors\Connector;
+use Yajra\Pdo\Oci8;
 
 class Oci8ConnectorTest extends TestCase
 {
