@@ -467,4 +467,24 @@ class Oci8Connection extends Connection
 
         return Str::contains($e->getMessage(), $lostConnectionErrors);
     }
+
+    /**
+     * Set oracle NLS session to case insensitive search & sort.
+     *
+     * @return $this
+     */
+    public function useCaseInsensitiveSession()
+    {
+        return $this->setSessionVars(['NLS_COMP' => 'LINGUISTIC', 'NLS_SORT' => 'BINARY_CI']);
+    }
+
+    /**
+     * Set oracle NLS session to case sensitive search & sort.
+     *
+     * @return $this
+     */
+    public function useCaseSensitiveSession()
+    {
+        return $this->setSessionVars(['NLS_COMP' => 'BINARY', 'NLS_SORT' => 'BINARY']);
+    }
 }
