@@ -2,17 +2,17 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
-use Mockery as m;
 use BadMethodCallException;
-use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Expression as Raw;
+use InvalidArgumentException;
+use Mockery as m;
+use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
-use Illuminate\Database\Query\Expression as Raw;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
 {
