@@ -342,6 +342,37 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select "EMAIL" as "FOO_EMAIL" from "USERS" having "FOO_EMAIL" > ?', $builder->toSql());
     }
 
+    public function testHavingShortcut()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->having('email', 1)->orHaving('email', 2);
+        $this->assertSame('select * from "USERS" having "EMAIL" = ? or "EMAIL" = ?', $builder->toSql());
+    }
+
+    public function testHavingFollowedBySelectGet()
+    {
+        $builder = $this->getBuilder();
+        $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > ?';
+        $builder->getConnection()->shouldReceive('select')->once()->with($query, ['popular', 3], true)->andReturn([['category' => 'rock', 'total' => 5]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
+            return $results;
+        });
+        $builder->from('item');
+        $result = $builder->select(['category', new Raw('count(*) as "TOTAL"')])->where('department', '=', 'popular')->groupBy('category')->having('total', '>', 3)->get();
+        $this->assertEquals([['category' => 'rock', 'total' => 5]], $result->all());
+
+        // Using \Raw value
+        $builder = $this->getBuilder();
+        $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > 3';
+        $builder->getConnection()->shouldReceive('select')->once()->with($query, ['popular'], true)->andReturn([['category' => 'rock', 'total' => 5]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
+            return $results;
+        });
+        $builder->from('item');
+        $result = $builder->select(['category', new Raw('count(*) as "TOTAL"')])->where('department', '=', 'popular')->groupBy('category')->having('total', '>', new Raw('3'))->get();
+        $this->assertEquals([['category' => 'rock', 'total' => 5]], $result->all());
+    }
+
     public function testRawHavings()
     {
         $builder = $this->getBuilder();
