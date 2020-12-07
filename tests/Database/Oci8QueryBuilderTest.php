@@ -1431,6 +1431,59 @@ class Oci8QueryBuilderTest extends TestCase
         ]), $result);
     }
 
+    public function testFromSub()
+    {
+        $builder = $this->getBuilder();
+        $builder->fromSub(function ($query) {
+            $query->select(new Raw('max(last_seen_at) as last_seen_at'))->from('user_sessions')->where('foo', '=', '1');
+        }, 'sessions')->where('bar', '<', '10');
+        $this->assertSame('select * from (select max(last_seen_at) as last_seen_at from "USER_SESSIONS" where "FOO" = ?) "SESSIONS" where "BAR" < ?', $builder->toSql());
+        $this->assertEquals(['1', '10'], $builder->getBindings());
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder = $this->getBuilder();
+        $builder->fromSub(['invalid'], 'sessions')->where('bar', '<', '10');
+    }
+
+    public function testFromSubWithPrefix()
+    {
+        $builder = $this->getBuilder();
+        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder->fromSub(function ($query) {
+            $query->select(new Raw('max(last_seen_at) as last_seen_at'))->from('user_sessions')->where('foo', '=', '1');
+        }, 'sessions')->where('bar', '<', '10');
+        $this->assertSame('select * from (select max(last_seen_at) as last_seen_at from "PREFIX_USER_SESSIONS" where "FOO" = ?) "PREFIX_SESSIONS" where "BAR" < ?', $builder->toSql());
+        $this->assertEquals(['1', '10'], $builder->getBindings());
+    }
+
+    public function testFromSubWithoutBindings()
+    {
+        $builder = $this->getBuilder();
+        $builder->fromSub(function ($query) {
+            $query->select(new Raw('max(last_seen_at) as last_seen_at'))->from('user_sessions');
+        }, 'sessions');
+        $this->assertSame('select * from (select max(last_seen_at) as last_seen_at from "USER_SESSIONS") "SESSIONS"', $builder->toSql());
+
+        $this->expectException(InvalidArgumentException::class);
+        $builder = $this->getBuilder();
+        $builder->fromSub(['invalid'], 'sessions');
+    }
+
+    public function testFromRaw()
+    {
+        $builder = $this->getBuilder();
+        $builder->fromRaw(new Raw('(select max(last_seen_at) as last_seen_at from "user_sessions") as "sessions"'));
+        $this->assertSame('select * from (select max(last_seen_at) as last_seen_at from "user_sessions") as "sessions"', $builder->toSql());
+    }
+
+    public function testFromRawWithWhereOnTheMainQuery()
+    {
+        $builder = $this->getBuilder();
+        $builder->fromRaw(new Raw('(select max(last_seen_at) as last_seen_at from "sessions") as "last_seen_at"'))->where('last_seen_at', '>', '1520652582');
+        $this->assertSame('select * from (select max(last_seen_at) as last_seen_at from "sessions") as "last_seen_at" where "LAST_SEEN_AT" > ?', $builder->toSql());
+        $this->assertEquals(['1520652582'], $builder->getBindings());
+    }
+
     protected function getConnection()
     {
         $connection = m::mock(ConnectionInterface::class);

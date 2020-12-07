@@ -172,7 +172,7 @@ class OracleBuilder extends Builder
     {
         [$query, $bindings] = $this->createSub($query);
 
-        return $this->fromRaw('('.$query.') '.$this->grammar->wrap($as), $bindings);
+        return $this->fromRaw('('.$query.') '.$this->grammar->wrapTable($as), $bindings);
     }
 
     /**
