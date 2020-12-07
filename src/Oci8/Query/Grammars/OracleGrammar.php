@@ -120,9 +120,7 @@ class OracleGrammar extends Grammar
         // We are now ready to build the final SQL query so we'll create a common table
         // expression from the query and get the records with row numbers within our
         // given limit and offset value that we just put on as a query constraint.
-        $temp = $this->compileTableExpression($sql, $constraint, $query);
-
-        return $temp;
+        return $this->compileTableExpression($sql, $constraint, $query);
     }
 
     /**
