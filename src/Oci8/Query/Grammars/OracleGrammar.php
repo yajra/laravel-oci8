@@ -561,4 +561,19 @@ class OracleGrammar extends Grammar
 
         return '(' . $whereClause . ')';
     }
+
+    /**
+     * Compile a union aggregate query into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return string
+     */
+    protected function compileUnionAggregate(Builder $query)
+    {
+        $sql = $this->compileAggregate($query, $query->aggregate);
+
+        $query->aggregate = null;
+
+        return $sql.' from ('.$this->compileSelect($query).') '.$this->wrapTable('temp_table');
+    }
 }

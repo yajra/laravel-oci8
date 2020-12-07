@@ -311,20 +311,58 @@ class Oci8QueryBuilderTest extends TestCase
     public function testGroupBys()
     {
         $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->groupBy('email');
+        $this->assertSame('select * from "USERS" group by "EMAIL"', $builder->toSql());
+
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->groupBy('id', 'email');
-        $this->assertEquals('select * from "USERS" group by "ID", "EMAIL"', $builder->toSql());
+        $this->assertSame('select * from "USERS" group by "ID", "EMAIL"', $builder->toSql());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->groupBy(['id', 'email']);
+        $this->assertSame('select * from "USERS" group by "ID", "EMAIL"', $builder->toSql());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->groupBy(new Raw('DATE(created_at)'));
+        $this->assertSame('select * from "USERS" group by DATE(created_at)', $builder->toSql());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->groupByRaw('DATE(created_at), ? DESC', ['foo']);
+        $this->assertSame('select * from "USERS" group by DATE(created_at), ? DESC', $builder->toSql());
+        $this->assertEquals(['foo'], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->havingRaw('?', ['havingRawBinding'])->groupByRaw('?', ['groupByRawBinding'])->whereRaw('?', ['whereRawBinding']);
+        $this->assertEquals(['whereRawBinding', 'groupByRawBinding', 'havingRawBinding'], $builder->getBindings());
     }
 
     public function testOrderBys()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orderBy('email')->orderBy('age', 'desc');
-        $this->assertEquals('select * from "USERS" order by "EMAIL" asc, "AGE" desc', $builder->toSql());
+        $this->assertSame('select * from "USERS" order by "EMAIL" asc, "AGE" desc', $builder->toSql());
+
+        $builder->orders = null;
+        $this->assertSame('select * from "USERS"', $builder->toSql());
+
+        $builder->orders = [];
+        $this->assertSame('select * from "USERS"', $builder->toSql());
 
         $builder = $this->getBuilder();
-        $builder->select('*')->from('users')->orderBy('email')->orderByRaw('age ? desc', ['bar']);
-        $this->assertEquals('select * from "USERS" order by "EMAIL" asc, age ? desc', $builder->toSql());
-        $this->assertEquals(['bar'], $builder->getBindings());
+        $builder->select('*')->from('users')->orderBy('email')->orderByRaw('"age" ? desc', ['foo']);
+        $this->assertSame('select * from "USERS" order by "EMAIL" asc, "age" ? desc', $builder->toSql());
+        $this->assertEquals(['foo'], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orderByDesc('name');
+        $this->assertSame('select * from "USERS" order by "NAME" desc', $builder->toSql());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('posts')->where('public', 1)
+            ->unionAll($this->getBuilder()->select('*')->from('videos')->where('public', 1))
+            ->orderByRaw('field(category, ?, ?) asc', ['news', 'opinion']);
+        $this->assertSame('(select * from "POSTS" where "PUBLIC" = ?) union all (select * from "VIDEOS" where "PUBLIC" = ?) order by field(category, ?, ?) asc', $builder->toSql());
+        $this->assertEquals([1, 1, 'news', 'opinion'], $builder->getBindings());
     }
 
     public function testHavings()
@@ -1148,17 +1186,17 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select count(*) as aggregate from "users"', [], true)
+                ->with('select count(*) as aggregate from "USERS"', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select sum("id") as aggregate from "users"', [], true)
+                ->with('select sum("ID") as aggregate from "USERS"', [], true)
                 ->andReturn([['aggregate' => 2]]);
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select "column1", "column2" from "users"', [], true)
+                ->with('select "column1", "column2" from "USERS"', [], true)
                 ->andReturn([['column1' => 'foo', 'column2' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1178,12 +1216,12 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select count("column1") as aggregate from "users"', [], true)
+                ->with('select count("column1") as aggregate from "USERS"', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select "column2", "column3" from "users"', [], true)
+                ->with('select "column2", "column3" from "USERS"', [], true)
                 ->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1201,12 +1239,12 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select count("column1") as aggregate from "users"', [], true)
+                ->with('select count("column1") as aggregate from "USERS"', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select "column2", "column3" from "users"', [], true)
+                ->with('select "column2", "column3" from "USERS"', [], true)
                 ->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1308,7 +1346,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->from('posts')->select('id')->union($this->getBuilder()->from('videos')->select('id'));
 
-        $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from ((select "ID" from "POSTS") union (select "ID" from "VIDEOS")) as "TEMP_TABLE"', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from ((select "ID" from "POSTS") union (select "ID" from "VIDEOS")) "TEMP_TABLE"', [], true)->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
