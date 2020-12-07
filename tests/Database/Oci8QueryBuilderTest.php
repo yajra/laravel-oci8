@@ -6,6 +6,8 @@ use BadMethodCallException;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Expression as Raw;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use InvalidArgumentException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -26,14 +28,6 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users');
         $this->assertEquals('select * from "USERS"', $builder->toSql());
-    }
-
-    protected function getBuilder()
-    {
-        $grammar   = new OracleGrammar;
-        $processor = m::mock(OracleProcessor::class);
-
-        return new Builder(m::mock(ConnectionInterface::class), $grammar, $processor);
     }
 
     public function testBasicSelectWithReservedWords()
@@ -1244,5 +1238,193 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('(select * from "USERS" where "ID" = ?) union (select * from "USERS" where "ID" = ?) order by "ID" desc',
             $builder->toSql());
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
+    }
+
+    public function testGetCountForPaginationWithBindings()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('users')->selectSub(function ($q) {
+            $q->select('body')->from('posts')->where('id', 4);
+        }, 'post');
+
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
+            return $results;
+        });
+
+        $count = $builder->getCountForPagination();
+        $this->assertEquals(1, $count);
+        $this->assertEquals([4], $builder->getBindings());
+    }
+
+    public function testGetCountForPaginationWithColumnAliases()
+    {
+        $builder = $this->getBuilder();
+        $columns = ['body as post_body', 'teaser', 'posts.created as published'];
+        $builder->from('posts')->select($columns);
+
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count("BODY", "TEASER", "POSTS"."CREATED") as aggregate from "POSTS"', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
+            return $results;
+        });
+
+        $count = $builder->getCountForPagination($columns);
+        $this->assertEquals(1, $count);
+    }
+
+    public function testGetCountForPaginationWithUnion()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('posts')->select('id')->union($this->getBuilder()->from('videos')->select('id'));
+
+        $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from ((select "ID" from "POSTS") union (select "ID" from "VIDEOS")) as "TEMP_TABLE"', [], true)->andReturn([['aggregate' => 1]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
+            return $results;
+        });
+
+        $count = $builder->getCountForPagination();
+        $this->assertEquals(1, $count);
+    }
+
+    public function testPaginate()
+    {
+        $perPage = 16;
+        $columns = ['test'];
+        $pageName = 'page-name';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
+
+        $results = collect([['test' => 'foo'], ['test' => 'bar']]);
+
+        $builder->shouldReceive('getCountForPagination')->once()->andReturn(2);
+        $builder->shouldReceive('forPage')->once()->with($page, $perPage)->andReturnSelf();
+        $builder->shouldReceive('get')->once()->andReturn($results);
+
+        Paginator::currentPathResolver(function () use ($path) {
+            return $path;
+        });
+
+        $result = $builder->paginate($perPage, $columns, $pageName, $page);
+
+        $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
+            'path' => $path,
+            'pageName' => $pageName,
+        ]), $result);
+    }
+
+    public function testPaginateWithDefaultArguments()
+    {
+        $perPage = 15;
+        $pageName = 'page';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
+
+        $results = collect([['test' => 'foo'], ['test' => 'bar']]);
+
+        $builder->shouldReceive('getCountForPagination')->once()->andReturn(2);
+        $builder->shouldReceive('forPage')->once()->with($page, $perPage)->andReturnSelf();
+        $builder->shouldReceive('get')->once()->andReturn($results);
+
+        Paginator::currentPageResolver(function () {
+            return 1;
+        });
+
+        Paginator::currentPathResolver(function () use ($path) {
+            return $path;
+        });
+
+        $result = $builder->paginate();
+
+        $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
+            'path' => $path,
+            'pageName' => $pageName,
+        ]), $result);
+    }
+
+    public function testPaginateWhenNoResults()
+    {
+        $perPage = 15;
+        $pageName = 'page';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
+
+        $results = [];
+
+        $builder->shouldReceive('getCountForPagination')->once()->andReturn(0);
+        $builder->shouldNotReceive('forPage');
+        $builder->shouldNotReceive('get');
+
+        Paginator::currentPageResolver(function () {
+            return 1;
+        });
+
+        Paginator::currentPathResolver(function () use ($path) {
+            return $path;
+        });
+
+        $result = $builder->paginate();
+
+        $this->assertEquals(new LengthAwarePaginator($results, 0, $perPage, $page, [
+            'path' => $path,
+            'pageName' => $pageName,
+        ]), $result);
+    }
+
+    public function testPaginateWithSpecificColumns()
+    {
+        $perPage = 16;
+        $columns = ['id', 'name'];
+        $pageName = 'page-name';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
+
+        $results = collect([['id' => 3, 'name' => 'Taylor'], ['id' => 5, 'name' => 'Mohamed']]);
+
+        $builder->shouldReceive('getCountForPagination')->once()->andReturn(2);
+        $builder->shouldReceive('forPage')->once()->with($page, $perPage)->andReturnSelf();
+        $builder->shouldReceive('get')->once()->andReturn($results);
+
+        Paginator::currentPathResolver(function () use ($path) {
+            return $path;
+        });
+
+        $result = $builder->paginate($perPage, $columns, $pageName, $page);
+
+        $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
+            'path' => $path,
+            'pageName' => $pageName,
+        ]), $result);
+    }
+
+    protected function getConnection()
+    {
+        $connection = m::mock(ConnectionInterface::class);
+        $connection->shouldReceive('getDatabaseName')->andReturn('database');
+
+        return $connection;
+    }
+
+    protected function getBuilder()
+    {
+        $grammar   = new OracleGrammar;
+        $processor = m::mock(OracleProcessor::class);
+
+        return new Builder($this->getConnection(), $grammar, $processor);
+    }
+
+    /**
+     * @return m\MockInterface
+     */
+    protected function getMockQueryBuilder()
+    {
+        return m::mock(Builder::class, [
+            m::mock(ConnectionInterface::class),
+            new OracleGrammar,
+            m::mock(OracleProcessor::class),
+        ])->makePartial();
     }
 }

@@ -14,6 +14,7 @@
         "ext-oci8": ">=2.0.0",
         "ext-pdo": "*",
         "illuminate/database": "^8",
+        "illuminate/pagination": "^8",
         "illuminate/support": "^8",
         "illuminate/validation": "^8",
         "yajra/laravel-pdo-via-oci8": "^2"
