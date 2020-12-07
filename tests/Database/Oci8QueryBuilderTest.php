@@ -1431,6 +1431,14 @@ class Oci8QueryBuilderTest extends TestCase
         ]), $result);
     }
 
+    public function testFromAs()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('sessions', 'as_session')->where('bar', '<', '10');
+        $this->assertSame('select * from "SESSIONS" as_session where "BAR" < ?', $builder->toSql());
+        $this->assertEquals(['10'], $builder->getBindings());
+    }
+
     public function testFromSub()
     {
         $builder = $this->getBuilder();

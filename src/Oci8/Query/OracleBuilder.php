@@ -160,6 +160,24 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Set the table which the query is targeting.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $table
+     * @param  string|null  $as
+     * @return $this
+     */
+    public function from($table, $as = null)
+    {
+        if ($this->isQueryable($table)) {
+            return $this->fromSub($table, $as);
+        }
+
+        $this->from = $as ? "{$table} {$as}" : $table;
+
+        return $this;
+    }
+
+    /**
      * Makes "from" fetch from a subquery.
      *
      * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
