@@ -7,16 +7,11 @@ sudo apt-get -y install -qq build-essential unzip wget libaio1
 # install oci8 libs & extension
 sudo mkdir -p /opt/oracle
 
-wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip
-wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-19.6.0.0.0dbru.zip
+wget https://download.oracle.com/otn_software/mac/instantclient/198000/instantclient-basic-macos.x64-19.8.0.0.0dbru.zip
+wget https://download.oracle.com/otn_software/mac/instantclient/198000/instantclient-sdk-macos.x64-19.8.0.0.0dbru.zip
 
-sudo unzip -o ./instantclient-basic-linux.x64-19.6.0.0.0dbru.zip -d /opt/oracle
-sudo unzip -o ./instantclient-sdk-linux.x64-19.6.0.0.0dbru.zip -d /opt/oracle
-
-sudo ln -s /opt/oracle/instantclient/sqlplus /usr/bin/sqlplus
-sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
-sudo ln -s /opt/oracle/instantclient/libclntsh.so.12.1 /opt/oracle/instantclient/libclntsh.so
-sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/libocci.so
+sudo unzip -o ./instantclient-basic-macos.x64-19.8.0.0.0dbru.zip -d /opt/oracle
+sudo unzip -o ./instantclient-sdk-macos.x64-19.8.0.0.0dbru.zip -d /opt/oracle
 
 PHPVersion=$(php --version | tail -r | tail -n 1 | cut -d " " -f 2 | cut -c 1,3)
 if [ $(echo " $PHPVersion <= 80" | bc) -eq 1 ]; then
