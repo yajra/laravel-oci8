@@ -237,4 +237,14 @@ class OracleBuilder extends Builder
 
         return $this;
     }
+
+    /**
+     * Clone the query.
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        return clone $this;
+    }
 }
