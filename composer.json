@@ -17,7 +17,7 @@
         "illuminate/pagination": "^8",
         "illuminate/support": "^8",
         "illuminate/validation": "^8",
-        "yajra/laravel-pdo-via-oci8": "^2.0|php8-dev"
+        "yajra/laravel-pdo-via-oci8": "^2.0|^3.0"
     },
     "require-dev": {
         "orchestra/testbench": "^6.5",
