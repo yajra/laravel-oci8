@@ -15,7 +15,6 @@ sudo unzip -o ./instantclient-sdk-linux.x64-19.9.0.0.0dbru.zip -d /opt/oracle
 
 sudo ln -s /opt/oracle/instantclient/sqlplus /usr/bin/sqlplus
 sudo ln -s /opt/oracle/instantclient_19_9 /opt/oracle/instantclient
-sudo ln -s /opt/oracle/instantclient/libclntsh.so.19.9 /opt/oracle/instantclient/libclntsh.so
 
 PHPVersion=$(php --version | tail -r | tail -n 1 | cut -d " " -f 2 | cut -c 1,3)
 if [ $(echo " $PHPVersion <= 80" | bc) -eq 1 ]; then
