@@ -2232,25 +2232,23 @@ class Oci8QueryBuilderTest extends TestCase
     /**
      * @TODO: Add support for upsert.
      */
-    public function testUpsertMethod()
+    protected function testUpsertMethod()
     {
-        $this->expectException(RuntimeException::class);
         $builder = $this->getBuilder();
-        // $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "USERS" ("EMAIL", "NAME") values (?, ?), (?, ?) on conflict ("EMAIL") do update set "EMAIL" = "excluded"."EMAIL", "NAME" = "excluded"."NAME"', ['foo', 'bar', 'foo2', 'bar2'])->andReturn(2);
+        $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "USERS" ("EMAIL", "NAME") values (?, ?), (?, ?) on conflict ("EMAIL") do update set "EMAIL" = "excluded"."EMAIL", "NAME" = "excluded"."NAME"', ['foo', 'bar', 'foo2', 'bar2'])->andReturn(2);
         $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email');
-        // $this->assertEquals(2, $result);
+        $this->assertEquals(2, $result);
     }
 
     /**
      * @TODO: Add support for upsert.
      */
-    public function testUpsertMethodWithUpdateColumns()
+    protected function testUpsertMethodWithUpdateColumns()
     {
-        $this->expectException(RuntimeException::class);
-        $builder = $this->getBuilder();
-        // $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "USERS" ("EMAIL", "NAME") values (?, ?), (?, ?) on conflict ("EMAIL") do update set "NAME" = "excluded"."NAME"', ['foo', 'bar', 'foo2', 'bar2'])->andReturn(2);
-        $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email', ['name']);
-        // $this->assertEquals(2, $result);
+         $builder = $this->getBuilder();
+         $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "USERS" ("EMAIL", "NAME") values (?, ?), (?, ?) on conflict ("EMAIL") do update set "NAME" = "excluded"."NAME"', ['foo', 'bar', 'foo2', 'bar2'])->andReturn(2);
+         $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email', ['name']);
+         $this->assertEquals(2, $result);
     }
 
     public function testUpdateLobMethod()
