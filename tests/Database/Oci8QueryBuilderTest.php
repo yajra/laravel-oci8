@@ -1180,7 +1180,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 2015], $builder->getBindings());
     }
 
-    public function xtestAggregateResetFollowedByGet()
+    public function testAggregateResetFollowedByGet()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -1196,7 +1196,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select "column1", "column2" from "USERS"', [], true)
+                ->with('select "COLUMN1", "COLUMN2" from "USERS"', [], true)
                 ->andReturn([['column1' => 'foo', 'column2' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1210,18 +1210,18 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([['column1' => 'foo', 'column2' => 'bar']], $result->all());
     }
 
-    public function xtestAggregateResetFollowedBySelectGet()
+    public function testAggregateResetFollowedBySelectGet()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select count("column1") as aggregate from "USERS"', [], true)
+                ->with('select count("COLUMN1") as aggregate from "USERS"', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select "column2", "column3" from "USERS"', [], true)
+                ->with('select "COLUMN2", "COLUMN3" from "USERS"', [], true)
                 ->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1233,18 +1233,18 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([['column2' => 'foo', 'column3' => 'bar']], $result->all());
     }
 
-    public function xtestAggregateResetFollowedByGetWithColumns()
+    public function testAggregateResetFollowedByGetWithColumns()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select count("column1") as aggregate from "USERS"', [], true)
+                ->with('select count("COLUMN1") as aggregate from "USERS"', [], true)
                 ->andReturn([['aggregate' => 1]]);
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
-                ->with('select "column2", "column3" from "USERS"', [], true)
+                ->with('select "COLUMN2", "COLUMN3" from "USERS"', [], true)
                 ->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
