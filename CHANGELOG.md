@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.2.2] - 2020-12-08
+
+- Query builder fixes and tests. [#615]
+
 ## [v8.2.1] - 2020-12-07
 
 - Fix query builder bulk insert. [#612]
@@ -130,7 +134,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.2.1...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.2.2...8.x
+[v8.2.2]: https://github.com/yajra/laravel-oci8/compare/v8.2.1...v8.2.2
 [v8.2.1]: https://github.com/yajra/laravel-oci8/compare/v8.2.0...v8.2.1
 [v8.2.0]: https://github.com/yajra/laravel-oci8/compare/v8.1.3...v8.2.0
 [v8.1.3]: https://github.com/yajra/laravel-oci8/compare/v8.1.2...v8.1.3
@@ -190,6 +195,7 @@
 [#609]: https://github.com/yajra/laravel-oci8/pull/609
 [#611]: https://github.com/yajra/laravel-oci8/pull/611
 [#612]: https://github.com/yajra/laravel-oci8/pull/612
+[#615]: https://github.com/yajra/laravel-oci8/pull/615
 
 [#558]: https://github.com/yajra/laravel-oci8/issue/558
 [#563]: https://github.com/yajra/laravel-oci8/issue/563
