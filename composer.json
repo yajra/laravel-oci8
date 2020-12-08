@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^7.3",
+        "php": "^7.3|^8.0",
         "ext-oci8": ">=2.0.0",
         "ext-pdo": "*",
         "illuminate/database": "^8",
