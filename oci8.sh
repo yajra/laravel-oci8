@@ -18,7 +18,12 @@ sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
 sudo ln -s /opt/oracle/instantclient/libclntsh.so.12.1 /opt/oracle/instantclient/libclntsh.so
 sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/libocci.so
 
-sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-2.2.0"
+PHPVersion=$(php --version | tail -r | tail -n 1 | cut -d " " -f 2 | cut -c 1,3)
+if [ $(echo " $PHPVersion <= 80" | bc) -eq 1 ]; then
+    sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-2.2.0"
+else
+    sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8"
+fi
 
 # setup ld library path
 sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
