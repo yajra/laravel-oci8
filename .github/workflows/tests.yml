@@ -54,6 +54,14 @@ jobs:
         run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
         if: matrix.php < 8
 
+      - name: Set Minimum PDO-VIA-OCI8 Version
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer require yajra/laravel-pdo-via-oci8:php8-dev --no-interaction --no-update
+        if: matrix.php >= 8
+
       - name: Install dependencies
         uses: nick-invision/retry@v1
         with:
