@@ -7,11 +7,11 @@ sudo apt-get -y install -qq build-essential unzip wget libaio1
 # install oci8 libs & extension
 sudo mkdir -p /opt/oracle
 
-wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-12.1.0.2.0.zip
-wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip
+wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip
+wget https://github.com/bumpx/oracle-instantclient/raw/master/instantclient-sdk-linux.x64-19.6.0.0.0dbru.zip
 
-sudo unzip -o ./instantclient-basic-linux.x64-12.1.0.2.0.zip -d /opt/oracle
-sudo unzip -o ./instantclient-sdk-linux.x64-12.1.0.2.0.zip -d /opt/oracle
+sudo unzip -o ./instantclient-basic-linux.x64-19.6.0.0.0dbru.zip -d /opt/oracle
+sudo unzip -o ./instantclient-sdk-linux.x64-19.6.0.0.0dbru.zip -d /opt/oracle
 
 sudo ln -s /opt/oracle/instantclient/sqlplus /usr/bin/sqlplus
 sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
