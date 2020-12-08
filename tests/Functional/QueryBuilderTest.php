@@ -2,12 +2,11 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Illuminate\Database\ConnectionInterface;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 use Yajra\Oci8\Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class QueryBuilderTest extends TestCase
 {
@@ -64,9 +63,10 @@ class QueryBuilderTest extends TestCase
      */
     protected function getBuilder(): Builder
     {
-        $grammar = new OracleGrammar;
+        $grammar   = new OracleGrammar;
         $processor = new OracleProcessor;
-        $builder = new Builder($this->getConnection(), $grammar, $processor);
+        $builder   = new Builder($this->getConnection(), $grammar, $processor);
+
         return $builder;
     }
 }
