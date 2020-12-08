@@ -18,7 +18,7 @@ sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
 sudo ln -s /opt/oracle/instantclient/libclntsh.so.12.1 /opt/oracle/instantclient/libclntsh.so
 sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/libocci.so
 
-sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8"
+sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-2.2.0"
 
 # setup ld library path
 sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
