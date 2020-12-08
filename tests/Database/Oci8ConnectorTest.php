@@ -1,9 +1,14 @@
 <?php
 
+namespace Yajra\Oci8\Tests\Database;
+
+use Illuminate\Database\Connectors\Connector;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Connectors\OracleConnector;
+use Yajra\Pdo\Oci8;
 
-class DatabaseConnectorTest extends TestCase
+class Oci8ConnectorTest extends TestCase
 {
     public function tearDown(): void
     {
@@ -24,13 +29,13 @@ class DatabaseConnectorTest extends TestCase
             'charset'  => 'charset',
             'options'  => [],
         ];
-        $oci8 = $connector->createConnection($tns, $config, []);
-        $this->assertInstanceOf(Yajra\Pdo\Oci8::class, $oci8);
+        $oci8      = $connector->createConnection($tns, $config, []);
+        $this->assertInstanceOf(Oci8::class, $oci8);
     }
 
     public function testOptionResolution()
     {
-        $connector = new Illuminate\Database\Connectors\Connector;
+        $connector = new Connector;
         $connector->setDefaultOptions([0 => 'foo', 1 => 'bar']);
         $this->assertEquals([0 => 'baz', 1 => 'bar', 2 => 'boom'],
             $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']]));
@@ -43,7 +48,7 @@ class DatabaseConnectorTest extends TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector = $this->getMockBuilder(Yajra\Oci8\Connectors\OracleConnector::class)
+        $connector  = $this->getMockBuilder(OracleConnector::class)
                            ->setMethods(['createConnection', 'getOptions'])
                            ->getMock();
         $connection = m::mock('PDO');
@@ -183,7 +188,7 @@ class DatabaseConnectorTest extends TestCase
     }
 }
 
-class OracleConnectorStub extends \Yajra\Oci8\Connectors\OracleConnector
+class OracleConnectorStub extends OracleConnector
 {
     public function createConnection($tns, array $config, array $options)
     {
@@ -191,7 +196,7 @@ class OracleConnectorStub extends \Yajra\Oci8\Connectors\OracleConnector
     }
 }
 
-class Oci8Stub extends \Yajra\Pdo\Oci8
+class Oci8Stub extends Oci8
 {
     public function __construct($dsn, $username, $password, array $options = [])
     {

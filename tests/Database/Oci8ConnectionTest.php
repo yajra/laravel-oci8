@@ -1,9 +1,13 @@
 <?php
 
-use Mockery as m;
-use PHPUnit\Framework\TestCase;
+namespace Yajra\Oci8\Tests\Database;
 
-class DatabaseConnectionTest extends TestCase
+use Mockery as m;
+use PDO;
+use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
+
+class Oci8ConnectionTest extends TestCase
 {
     public function tearDown(): void
     {
@@ -12,21 +16,21 @@ class DatabaseConnectionTest extends TestCase
 
     public function testCreateSequence()
     {
-        $connection = m::mock(Yajra\Oci8\Oci8Connection::class);
+        $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('createSequence')->with('posts_id_seq')->once()->andReturn(true);
         $this->assertEquals(true, $connection->createSequence('posts_id_seq'));
     }
 
     public function testCreateSequenceInvalidName()
     {
-        $connection = m::mock(Yajra\Oci8\Oci8Connection::class);
+        $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('createSequence')->with(null)->once()->andReturn(false);
         $this->assertEquals(false, $connection->createSequence(null));
     }
 
     public function testDropSequence()
     {
-        $connection = m::mock(Yajra\Oci8\Oci8Connection::class);
+        $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('dropSequence')->with('posts_id_seq')->once()->andReturn(true);
         $connection->shouldReceive('checkSequence')->with('posts_id_seq')->once()->andReturn(true);
         $connection->checkSequence('posts_id_seq');
@@ -35,7 +39,7 @@ class DatabaseConnectionTest extends TestCase
 
     public function testDropSequenceInvalidName()
     {
-        $connection = m::mock(Yajra\Oci8\Oci8Connection::class);
+        $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('dropSequence')->with(null)->once()->andReturn(false);
         $connection->shouldReceive('checkSequence')->with(null)->once()->andReturn(true);
         $connection->checkSequence(null);

@@ -160,6 +160,24 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Set the table which the query is targeting.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $table
+     * @param  string|null  $as
+     * @return $this
+     */
+    public function from($table, $as = null)
+    {
+        if ($this->isQueryable($table)) {
+            return $this->fromSub($table, $as);
+        }
+
+        $this->from = $as ? "{$table} {$as}" : $table;
+
+        return $this;
+    }
+
+    /**
      * Makes "from" fetch from a subquery.
      *
      * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
@@ -172,7 +190,7 @@ class OracleBuilder extends Builder
     {
         [$query, $bindings] = $this->createSub($query);
 
-        return $this->fromRaw('('.$query.') '.$this->grammar->wrap($as), $bindings);
+        return $this->fromRaw('('.$query.') '.$this->grammar->wrapTable($as), $bindings);
     }
 
     /**
@@ -198,5 +216,35 @@ class OracleBuilder extends Builder
         $this->addBinding($bindings, 'join');
 
         return $this->join(new Expression($expression), $first, $operator, $second, $type, $where);
+    }
+
+    /**
+     * Add a subquery cross join to the query.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
+     * @param  string  $as
+     * @return $this
+     */
+    public function crossJoinSub($query, $as)
+    {
+        [$query, $bindings] = $this->createSub($query);
+
+        $expression = '('.$query.') '.$this->grammar->wrapTable($as);
+
+        $this->addBinding($bindings, 'join');
+
+        $this->joins[] = $this->newJoinClause($this, 'cross', new Expression($expression));
+
+        return $this;
+    }
+
+    /**
+     * Clone the query.
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        return clone $this;
     }
 }

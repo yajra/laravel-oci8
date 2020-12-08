@@ -13,11 +13,14 @@
         "php": "^7.2.5",
         "ext-oci8": ">=2.0.0",
         "ext-pdo": "*",
-        "illuminate/support": "^7",
         "illuminate/database": "^7",
+        "illuminate/pagination": "^7",
+        "illuminate/support": "^7",
+        "illuminate/validation": "^7",
         "yajra/laravel-pdo-via-oci8": "^2"
     },
     "require-dev": {
+        "orchestra/testbench": "^5",
         "mockery/mockery": "^1.3.1",
         "phpunit/phpunit": "^8.4|^9.0"
     },
@@ -29,13 +32,19 @@
             "Yajra\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Yajra\\Oci8\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "branch-alias": {
           "dev-master": "7.x-dev"
         },
         "laravel": {
             "providers": [
-                "Yajra\\Oci8\\Oci8ServiceProvider"
+                "Yajra\\Oci8\\Oci8ServiceProvider",
+                "Yajra\\Oci8\\Oci8ValidationServiceProvider"
             ]
         }
     },

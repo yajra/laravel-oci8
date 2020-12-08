@@ -120,9 +120,7 @@ class OracleGrammar extends Grammar
         // We are now ready to build the final SQL query so we'll create a common table
         // expression from the query and get the records with row numbers within our
         // given limit and offset value that we just put on as a query constraint.
-        $temp = $this->compileTableExpression($sql, $constraint, $query);
-
-        return $temp;
+        return $this->compileTableExpression($sql, $constraint, $query);
     }
 
     /**
@@ -159,6 +157,13 @@ class OracleGrammar extends Grammar
     {
         if ($query->limit == 1 && is_null($query->offset)) {
             return "select * from ({$sql}) where rownum {$constraint}";
+        }
+
+        if (! is_null($query->limit && ! is_null($query->offset))) {
+            $start  = $query->offset + 1;
+            $finish = $query->offset + $query->limit;
+
+            return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 where rownum <= {$finish}) t2 where t2.\"rn\" >= {$start}";
         }
 
         return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
@@ -546,7 +551,8 @@ class OracleGrammar extends Grammar
         $i           = 0;
         $type        = $this->wrap($column) . ' '.$type.' ';
         foreach ($chunks as $ch) {
-            if ($i > 0) {
+            // Add or only at the second loop
+            if ($i === 1) {
                 $type = ' or ' . $type . ' ';
             }
             $whereClause .= $type . '('.implode(', ', $ch).')';
@@ -554,5 +560,20 @@ class OracleGrammar extends Grammar
         }
 
         return '(' . $whereClause . ')';
+    }
+
+    /**
+     * Compile a union aggregate query into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return string
+     */
+    protected function compileUnionAggregate(Builder $query)
+    {
+        $sql = $this->compileAggregate($query, $query->aggregate);
+
+        $query->aggregate = null;
+
+        return $sql.' from ('.$this->compileSelect($query).') '.$this->wrapTable('temp_table');
     }
 }

@@ -20,7 +20,7 @@ jobs:
       fail-fast: true
       matrix:
         php: [7.2, 7.3, 7.4]
-        stability: [prefer-lowest, prefer-stable]
+        stability: [prefer-stable]
 
     name: PHP ${{ matrix.php }} - STABILITY ${{ matrix.stability }}
 
@@ -38,9 +38,15 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd, memcached
+          tools: composer:v2, pecl
           coverage: none
-          tools: pecl
+
+      - name: Setup Memcached
+        uses: niden/actions-memcached@v7
+
+      - name: Setup problem matchers
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Setup OCI8
         run: ./oci8.sh
@@ -49,7 +55,11 @@ jobs:
         run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
 
       - name: Install dependencies
-        run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-suggest
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Execute tests
         run: vendor/bin/phpunit --verbose
