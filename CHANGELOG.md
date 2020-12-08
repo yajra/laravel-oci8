@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v7.0.2] - 2020-12-08
+
+- Remove table alias in run pagination count query with group. [#614]
+
 ## [v7.0.1] - 2020-06-18
 
 - Fix pagination aggregate count. [#570]
@@ -90,7 +94,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.0.2...7.x
+[v7.0.2]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v7.0.2
 [v7.0.1]: https://github.com/yajra/laravel-oci8/compare/v7.0.0...v7.0.1
 [v7.0.0]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...v7.0.0
 [v6.1.0]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...v6.1.0
@@ -135,6 +140,7 @@
 [#560]: https://github.com/yajra/laravel-oci8/pull/560
 [#565]: https://github.com/yajra/laravel-oci8/pull/565
 [#570]: https://github.com/yajra/laravel-oci8/pull/570
+[#614]: https://github.com/yajra/laravel-oci8/pull/614
 
 [#564]: https://github.com/yajra/laravel-oci8/issue/564
 [#523]: https://github.com/yajra/laravel-oci8/issue/523
