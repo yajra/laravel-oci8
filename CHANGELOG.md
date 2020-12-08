@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [v7.1.0] - 2020-12-08
+
+- Query builder fixes and tests. [#615]
+- Fix query builder bulk insert. [#612]
+- Fix [#558].
+- Improve pagination performance. [#611]
+- Fixes [#563]
+- Fix Model::create() with guarded property. [#609]
+- Fix [#596]
+- Fix database presence verifier. [#607]
+- Revert [#598]
+- Fixes [#601], [#602]
+- Use orchestra testbench for tests
+- Implement case insensitive function-based unique index. [#599]
+- Enable oracle case insensitive searches. [#598]
+- Fix database presence validation issue (unique, exists, etc).
+- Removes the dependency on OracleUserProvider.
+- Fix [#590] WhereIn query with more than 2k++ records. [#591], credits to [@bioleyl].
+
 ## [v7.0.2] - 2020-12-08
 
 - Remove table alias in run pagination count query with group. [#614]
@@ -94,7 +113,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.0.2...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.1.0...7.x
+[v7.1.0]: https://github.com/yajra/laravel-oci8/compare/v7.0.2...v7.1.0
 [v7.0.2]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v7.0.2
 [v7.0.1]: https://github.com/yajra/laravel-oci8/compare/v7.0.0...v7.0.1
 [v7.0.0]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...v7.0.0
