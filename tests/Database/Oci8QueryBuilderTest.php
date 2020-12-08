@@ -1359,15 +1359,11 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['bar', 'foo'], $builder->getBindings());
     }
 
-    /**
-     * @TODO: Fix cross join, remove "as":
-     *      select (sale / overall.sales) * 100 AS percent_of_total from "SALES" cross join (select SUM(sale) AS sales from "SALES") "OVERALL"
-     */
     public function testCrossJoinSubs()
     {
         $builder = $this->getBuilder();
         $builder->selectRaw('(sale / overall.sales) * 100 AS percent_of_total')->from('sales')->crossJoinSub($this->getBuilder()->selectRaw('SUM(sale) AS sales')->from('sales'), 'overall');
-        $this->assertSame('select (sale / overall.sales) * 100 AS percent_of_total from "SALES" cross join (select SUM(sale) AS sales from "SALES") as "OVERALL"', $builder->toSql());
+        $this->assertSame('select (sale / overall.sales) * 100 AS percent_of_total from "SALES" cross join (select SUM(sale) AS sales from "SALES") "OVERALL"', $builder->toSql());
     }
 
     public function testComplexJoin()
