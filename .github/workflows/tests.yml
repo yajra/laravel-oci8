@@ -47,7 +47,7 @@ jobs:
         if: matrix.php < 8
 
       - name: Setup OCI8 for PHP 8
-        run: ./oci8-php8.sh
+        run: ./oci8.sh
         if: matrix.php >= 8
 
       - name: Register OCI8 for PHP 7
