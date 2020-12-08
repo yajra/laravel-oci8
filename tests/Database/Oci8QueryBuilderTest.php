@@ -2157,6 +2157,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     /**
      * @TODO: Fix sql for empty values.
+     * @link https://github.com/yajra/laravel-oci8/issues/586
      */
     public function testInsertGetIdWithEmptyValues()
     {
