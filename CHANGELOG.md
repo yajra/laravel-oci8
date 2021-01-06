@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.2.3] - 2021-01-06
+
+- Quote column name "id" so as to not affected by PDO::ATTR_CASE [#623]
+
 ## [v8.2.2] - 2020-12-08
 
 - Query builder fixes and tests. [#615]
@@ -24,8 +28,8 @@
 ## [v8.1.2] - 2020-12-06
 
 - Fix database presence verifier. [#607]
-- Revert [#598] 
-- Fixes [#601], [#602] 
+- Revert [#598]
+- Fixes [#601], [#602]
 - Use orchestra testbench for tests
 
 ## [v8.1.1] - 2020-11-21
@@ -134,7 +138,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.2.2...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.2.3...8.x
+[v8.2.3]: https://github.com/yajra/laravel-oci8/compare/v8.2.2...v8.2.3
 [v8.2.2]: https://github.com/yajra/laravel-oci8/compare/v8.2.1...v8.2.2
 [v8.2.1]: https://github.com/yajra/laravel-oci8/compare/v8.2.0...v8.2.1
 [v8.2.0]: https://github.com/yajra/laravel-oci8/compare/v8.1.3...v8.2.0
@@ -196,6 +201,7 @@
 [#611]: https://github.com/yajra/laravel-oci8/pull/611
 [#612]: https://github.com/yajra/laravel-oci8/pull/612
 [#615]: https://github.com/yajra/laravel-oci8/pull/615
+[#623]: https://github.com/yajra/laravel-oci8/pull/623
 
 [#558]: https://github.com/yajra/laravel-oci8/issue/558
 [#563]: https://github.com/yajra/laravel-oci8/issue/563
