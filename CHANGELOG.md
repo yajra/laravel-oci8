@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v7.1.1] - 2021-01-20
+
+- bugfix: Quote column name "id" so as to not affected by PDO::ATTR_CASE [#628]
+
 ## [v7.1.0] - 2020-12-08
 
 - Query builder fixes and tests. [#615]
@@ -113,7 +117,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.1.0...7.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v7.1.1...7.x
+[v7.1.1]: https://github.com/yajra/laravel-oci8/compare/v7.1.0...v7.1.1
 [v7.1.0]: https://github.com/yajra/laravel-oci8/compare/v7.0.2...v7.1.0
 [v7.0.2]: https://github.com/yajra/laravel-oci8/compare/v7.0.1...v7.0.2
 [v7.0.1]: https://github.com/yajra/laravel-oci8/compare/v7.0.0...v7.0.1
@@ -161,6 +166,7 @@
 [#565]: https://github.com/yajra/laravel-oci8/pull/565
 [#570]: https://github.com/yajra/laravel-oci8/pull/570
 [#614]: https://github.com/yajra/laravel-oci8/pull/614
+[#628]: https://github.com/yajra/laravel-oci8/pull/628
 
 [#564]: https://github.com/yajra/laravel-oci8/issue/564
 [#523]: https://github.com/yajra/laravel-oci8/issue/523
