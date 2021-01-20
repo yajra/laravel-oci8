@@ -100,7 +100,7 @@ class Sequence
             return 0;
         }
 
-        return $this->connection->selectOne("SELECT $name.NEXTVAL as id FROM DUAL")->id;
+        return $this->connection->selectOne("SELECT $name.NEXTVAL as \"id\" FROM DUAL")->id;
     }
 
     /**
@@ -127,6 +127,6 @@ class Sequence
             return 0;
         }
 
-        return $this->connection->selectOne("select {$name}.currval as id from dual")->id;
+        return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
     }
 }
