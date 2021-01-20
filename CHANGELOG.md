@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v6.1.2] - 2021-01-20
+
+- bugfix: Quote column name "id" so as to not affected by PDO::ATTR_CASE [#626]
+
 ## [v6.1.1] - 2020-06-18
 
 - Fix pagination aggregate count. [#570]
@@ -85,7 +89,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.1.1...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.1.2...5.8
+[v6.1.2]: https://github.com/yajra/laravel-oci8/compare/v6.1.1...v6.1.2
 [v6.1.1]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...v6.1.1
 [v6.1.0]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...v6.1.0
 [v6.0.4]: https://github.com/yajra/laravel-oci8/compare/v6.0.3...v6.0.4
@@ -128,6 +133,7 @@
 [#551]: https://github.com/yajra/laravel-oci8/pull/551
 [#560]: https://github.com/yajra/laravel-oci8/pull/560
 [#570]: https://github.com/yajra/laravel-oci8/pull/570
+[#626]: https://github.com/yajra/laravel-oci8/pull/626
 
 [#523]: https://github.com/yajra/laravel-oci8/issue/523
 [#413]: https://github.com/yajra/laravel-oci8/issue/413
