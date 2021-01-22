@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v8.3.0] - 2021-01-22
+
+- Add PHP8 support. [#619]
+- Fix [#624]
+
 ## [v8.2.3] - 2021-01-06
 
 - Quote column name "id" so as to not affected by PDO::ATTR_CASE [#623]
@@ -138,7 +143,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.2.3...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.3.0...8.x
+[v8.3.0]: https://github.com/yajra/laravel-oci8/compare/v8.2.3...v8.3.0
 [v8.2.3]: https://github.com/yajra/laravel-oci8/compare/v8.2.2...v8.2.3
 [v8.2.2]: https://github.com/yajra/laravel-oci8/compare/v8.2.1...v8.2.2
 [v8.2.1]: https://github.com/yajra/laravel-oci8/compare/v8.2.0...v8.2.1
@@ -202,7 +208,9 @@
 [#612]: https://github.com/yajra/laravel-oci8/pull/612
 [#615]: https://github.com/yajra/laravel-oci8/pull/615
 [#623]: https://github.com/yajra/laravel-oci8/pull/623
+[#619]: https://github.com/yajra/laravel-oci8/pull/619
 
+[#624]: https://github.com/yajra/laravel-oci8/issue/624
 [#558]: https://github.com/yajra/laravel-oci8/issue/558
 [#563]: https://github.com/yajra/laravel-oci8/issue/563
 [#596]: https://github.com/yajra/laravel-oci8/issue/596
