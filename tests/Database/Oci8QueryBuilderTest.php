@@ -341,22 +341,22 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', [12, 30]);
         $this->assertSame('select * from "USERS" where "ID" = ?', $builder->toSql());
-        $this->assertEquals([0 => 12, 1 => 30], $builder->getBindings());
+        $this->assertEquals([0 => 12], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', [12, 30]);
         $this->assertSame('select * from "USERS" where "ID" = ?', $builder->toSql());
-        $this->assertEquals([0 => 12, 1 => 30], $builder->getBindings());
+        $this->assertEquals([0 => 12], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '!=', [12, 30]);
         $this->assertSame('select * from "USERS" where "ID" != ?', $builder->toSql());
-        $this->assertEquals([0 => 12, 1 => 30], $builder->getBindings());
+        $this->assertEquals([0 => 12], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '<>', [12, 30]);
         $this->assertSame('select * from "USERS" where "ID" <> ?', $builder->toSql());
-        $this->assertEquals([0 => 12, 1 => 30], $builder->getBindings());
+        $this->assertEquals([0 => 12], $builder->getBindings());
     }
 
     public function testDateBasedWheresAcceptsTwoArguments()
