@@ -547,7 +547,9 @@ class OracleGrammar extends Grammar
         $type        = $this->wrap($column) . ' '.$type.' ';
         foreach ($chunks as $ch) {
             if ($i > 0) {
-                $type = ' or ' . $type . ' ';
+                if ($i === 1) {
+                    $type = ' or ' . $type . ' ';
+                }
             }
             $whereClause .= $type . '('.implode(', ', $ch).')';
             $i++;
