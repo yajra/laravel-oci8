@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v6.1.3] - 2021-04-21
+
+- Fix WhereIn query with more than 2k++ records #647
+
 ## [v6.1.2] - 2021-01-20
 
 - bugfix: Quote column name "id" so as to not affected by PDO::ATTR_CASE [#626]
@@ -89,7 +93,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.1.2...5.8
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v6.1.3...5.8
+[v6.1.3]: https://github.com/yajra/laravel-oci8/compare/v6.1.2...v6.1.3
 [v6.1.2]: https://github.com/yajra/laravel-oci8/compare/v6.1.1...v6.1.2
 [v6.1.1]: https://github.com/yajra/laravel-oci8/compare/v6.1.0...v6.1.1
 [v6.1.0]: https://github.com/yajra/laravel-oci8/compare/v6.0.4...v6.1.0
