@@ -2,7 +2,6 @@
 
 namespace Yajra\Oci8;
 
-use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use Doctrine\DBAL\Version;
 use Exception;
