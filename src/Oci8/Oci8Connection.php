@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8;
 
-use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
+use Doctrine\DBAL\Version;
 use Exception;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use PDO;
 use PDOStatement;
 use Throwable;
+use Yajra\Oci8\PDO\Oci8Driver;
 use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
@@ -188,31 +189,13 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Get doctrine connection.
-     *
-     * @return \Doctrine\DBAL\Connection
-     */
-    public function getDoctrineConnection()
-    {
-        if (is_null($this->doctrineConnection)) {
-            $data                     = ['pdo' => $this->getPdo(), 'user' => $this->getConfig('username')];
-            $this->doctrineConnection = new DoctrineConnection(
-                $data,
-                $this->getDoctrineDriver()
-            );
-        }
-
-        return $this->doctrineConnection;
-    }
-
-    /**
      * Get doctrine driver.
      *
-     * @return \Doctrine\DBAL\Driver\OCI8\Driver
+     * @return \Doctrine\DBAL\Driver\OCI8\Driver|\Yajra\Oci8\PDO\Oci8Driver
      */
     protected function getDoctrineDriver()
     {
-        return new DoctrineDriver();
+        return class_exists(Version::class) ? new DoctrineDriver : new Oci8Driver();
     }
 
     /**
