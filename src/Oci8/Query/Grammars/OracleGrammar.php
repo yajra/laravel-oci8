@@ -133,7 +133,7 @@ class OracleGrammar extends Grammar
     {
         $startValueDefault = $query->offset * $query->limit;
         $start  = $startValueDefault + 1;
-        $finish = ($startValueDefault - 1) + $query->limit;
+        $finish = $startValueDefault + $query->limit;
 
         if ($query->limit == 1 && is_null($query->offset)) {
             return '= 1';
