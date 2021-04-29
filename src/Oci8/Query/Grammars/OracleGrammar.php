@@ -132,7 +132,7 @@ class OracleGrammar extends Grammar
     protected function compileRowConstraint($query)
     {
         $startValueDefault = $query->offset * $query->limit;
-        $start  = $startValueDefault + 1;
+        $start = $startValueDefault + 1;
         $finish = $startValueDefault + $query->limit;
 
         if ($query->limit == 1 && is_null($query->offset)) {
