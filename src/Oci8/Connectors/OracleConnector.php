@@ -80,6 +80,7 @@ class OracleConnector extends Connector implements ConnectorInterface
         $config = $this->setServiceId($config);
         $config = $this->setTNS($config);
         $config = $this->setCharset($config);
+        $config = $this->setTimeout($config);
 
         return $config;
     }
@@ -162,6 +163,19 @@ class OracleConnector extends Connector implements ConnectorInterface
         if (! isset($config['charset'])) {
             $config['charset'] = 'AL32UTF8';
         }
+
+        return $config;
+    }
+
+    /**
+     * Set timeout from config.
+     *
+     * @param array $config
+     * @return array
+     */
+    private function setTimeout(array $config)
+    {
+        $config['timeout'] = isset($config['timeout']) ? $config['timeout'] : '5';
 
         return $config;
     }
