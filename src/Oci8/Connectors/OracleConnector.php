@@ -78,9 +78,9 @@ class OracleConnector extends Connector implements ConnectorInterface
         $config = $this->setPort($config);
         $config = $this->setProtocol($config);
         $config = $this->setServiceId($config);
+        $config = $this->setTimeout($config);
         $config = $this->setTNS($config);
         $config = $this->setCharset($config);
-        $config = $this->setTimeout($config);
 
         return $config;
     }
