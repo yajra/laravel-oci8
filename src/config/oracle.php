@@ -14,5 +14,6 @@ return [
         'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
         'edition'        => env('DB_EDITION', 'ora$base'),
         'server_version' => env('DB_SERVER_VERSION', '11g'),
+        'timeout'        => env('DB_CONNECT_TIMEOUT', 60),
     ],
 ];

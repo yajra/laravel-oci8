@@ -70,6 +70,7 @@ This will copy the configuration file to `config/oracle.php`.
     'prefix'        => env('DB_PREFIX', ''),
     'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
     'edition'       => env('DB_EDITION', 'ora$base'),
+    'timeout'        => env('DB_CONNECT_TIMEOUT', 60),
 ],
 ```
 

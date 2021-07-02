@@ -175,7 +175,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setTimeout(array $config)
     {
-        $config['timeout'] = isset($config['timeout']) ? $config['timeout'] : '5';
+        $config['timeout'] = isset($config['timeout']) ? $config['timeout'] : '60';
 
         return $config;
     }
