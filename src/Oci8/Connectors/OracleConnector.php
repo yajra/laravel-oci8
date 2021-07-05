@@ -33,7 +33,7 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         $options = $this->getOptions($config);
 
-        if (Arr::get($options, 'session_mode') === OCI_CRED_EXT) {
+        if (Arr::get($options, 'session_mode') === 'OCI_CRED_EXT') {
             // External connections can only be used with user / and an empty password
             $config['username'] = '/';
             $config['password'] = null;
