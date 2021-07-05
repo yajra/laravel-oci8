@@ -146,7 +146,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function setTNS(array $config)
     {
-        $config['tns'] = "(DESCRIPTION = (CONNECT_TIMEOUT={$config['timeout']}) (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
+        $config['tns'] = "(DESCRIPTION = (TRANSPORT_CONNECT_TIMEOUT={$config['timeout']}) (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
 
         return $config;
     }
