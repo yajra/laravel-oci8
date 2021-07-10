@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.4.1] - 2021-07-10
+
+- Fix non-existent global constants. #661
+
 ## [v8.4.0] - 2021-04-23
 
 - Add Oci8Driver for the new DBAL implementation. #648
@@ -148,7 +152,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.4.0...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.4.1...8.x
+[v8.4.1]: https://github.com/yajra/laravel-oci8/compare/v8.4.0...v8.4.1
 [v8.4.0]: https://github.com/yajra/laravel-oci8/compare/v8.3.0...v8.4.0
 [v8.3.0]: https://github.com/yajra/laravel-oci8/compare/v8.2.3...v8.3.0
 [v8.2.3]: https://github.com/yajra/laravel-oci8/compare/v8.2.2...v8.2.3
