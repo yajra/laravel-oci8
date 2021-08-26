@@ -45,6 +45,11 @@ class Oci8ServiceProvider extends ServiceProvider
         }
 
         Connection::resolverFor('oracle', function ($connection, $database, $prefix, $config) {
+
+            if (isset ($config['dynamic']) && !empty($config['dynamic'])) {
+                call_user_func_array ($config['dynamic'], [&$config]);
+            }
+
             $connector = new Connector();
             $connection = $connector->connect($config);
             $db = new Oci8Connection($connection, $database, $prefix, $config);

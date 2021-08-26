@@ -1,6 +1,8 @@
 # Laravel-OCI8 CHANGELOG
 
-## [Unreleased]
+## [Unreleased] - 2021-08-25
+
+- Allow top-level application to dynamically set its own database `$config[]` parameters [#667]
 
 ## [v8.3.0] - 2021-01-22
 
