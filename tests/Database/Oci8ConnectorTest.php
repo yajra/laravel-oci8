@@ -43,6 +43,7 @@ class Oci8ConnectorTest extends TestCase
 
     /**
      * @dataProvider OracleConnectProvider
+     *
      * @param $dsn
      * @param $config
      */
