@@ -43,6 +43,7 @@ class Oci8ConnectorTest extends TestCase
 
     /**
      * @dataProvider OracleConnectProvider
+     *
      * @param $dsn
      * @param $config
      */
@@ -73,27 +74,50 @@ class Oci8ConnectorTest extends TestCase
     public function OracleConnectProvider()
     {
         return [
-            // multiple hosts
+            // multiple hosts SID
             [
-                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCL)))',
+                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
-                    'driver'   => 'oracle',
-                    'host'     => 'localhost, oracle.host',
-                    'port'     => '1234',
-                    'database' => 'ORCL',
-                    'tns'      => '',
+                    'driver'       => 'oracle',
+                    'host'         => 'localhost, oracle.host',
+                    'port'         => '1234',
+                    'database'     => 'ORCL',
+                    'tns'          => '',
                 ],
             ],
-            // multiple hosts with schema
+            // multiple hosts SID with schema
+            [
+                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
+                [
+                    'driver'       => 'oracle',
+                    'host'         => 'localhost, oracle.host',
+                    'port'         => '1234',
+                    'database'     => 'ORCL',
+                    'tns'          => '',
+                    'schema'       => 'users',
+                ],
+            ],
+            // multiple hosts SERVICE_NAME
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCL)))',
                 [
-                    'driver'   => 'oracle',
-                    'host'     => 'localhost, oracle.host',
-                    'port'     => '1234',
-                    'database' => 'ORCL',
-                    'tns'      => '',
-                    'schema'   => 'users',
+                    'driver'       => 'oracle',
+                    'host'         => 'localhost, oracle.host',
+                    'port'         => '1234',
+                    'service_name' => 'ORCL',
+                    'tns'          => '',
+                ],
+            ],
+            // multiple hosts SERVICE_NAME with schema
+            [
+                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCL)))',
+                [
+                    'driver'       => 'oracle',
+                    'host'         => 'localhost, oracle.host',
+                    'port'         => '1234',
+                    'service_name' => 'ORCL',
+                    'tns'          => '',
+                    'schema'       => 'users',
                 ],
             ],
             // using config
