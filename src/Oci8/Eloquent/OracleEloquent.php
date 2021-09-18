@@ -35,7 +35,7 @@ class OracleEloquent extends Model
     /**
      * Get next value of the model sequence.
      *
-     * @param  null|string $sequence
+     * @param  null|string  $sequence
      * @return int
      */
     public static function nextValue($sequence = null)
@@ -66,7 +66,7 @@ class OracleEloquent extends Model
     /**
      * Set sequence name.
      *
-     * @param string $name
+     * @param  string  $name
      * @return $this
      */
     public function setSequenceName($name)
@@ -79,8 +79,8 @@ class OracleEloquent extends Model
     /**
      * Update the model in the database.
      *
-     * @param  array $attributes
-     * @param  array $options
+     * @param  array  $attributes
+     * @param  array  $options
      * @return bool|int
      */
     public function update(array $attributes = [], array $options = [])
@@ -101,7 +101,7 @@ class OracleEloquent extends Model
     /**
      * Extract binary fields from given attributes.
      *
-     * @param  array $attributes
+     * @param  array  $attributes
      * @return array
      */
     protected function extractBinaries(&$attributes)
@@ -124,7 +124,7 @@ class OracleEloquent extends Model
     /**
      * Check if attributes contains binary field.
      *
-     * @param  array $attributes
+     * @param  array  $attributes
      * @return bool
      */
     protected function checkBinary(array $attributes)
@@ -178,7 +178,7 @@ class OracleEloquent extends Model
     /**
      * Perform a model update operation.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return bool
      */
     protected function performUpdate(Builder $query)
@@ -216,8 +216,8 @@ class OracleEloquent extends Model
     /**
      * Update model with binary (blob) fields.
      *
-     * @param Builder $query
-     * @param array $dirty
+     * @param  Builder  $query
+     * @param  array  $dirty
      */
     protected function updateBinary(Builder $query, $dirty)
     {
@@ -233,7 +233,7 @@ class OracleEloquent extends Model
     /**
      * Perform a model insert operation.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return bool
      */
     protected function performInsert(Builder $query)
@@ -290,8 +290,8 @@ class OracleEloquent extends Model
     /**
      * Insert the given attributes and set the ID on the model.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  array $attributes
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  array  $attributes
      * @return int|void
      */
     protected function insertAndSetId(Builder $query, $attributes)

@@ -16,7 +16,7 @@ class Comment extends Grammar
     protected $connection;
 
     /**
-     * @param Connection $connection
+     * @param  Connection  $connection
      */
     public function __construct(Connection $connection)
     {
@@ -26,7 +26,7 @@ class Comment extends Grammar
     /**
      * Set table and column comments.
      *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint $blueprint
+     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     public function setComments(OracleBlueprint $blueprint)
     {
@@ -41,7 +41,7 @@ class Comment extends Grammar
      * Run the comment on table statement.
      * Comment set by $table->comment = 'comment';.
      *
-     * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
+     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     private function commentTable(OracleBlueprint $blueprint)
     {
@@ -55,7 +55,7 @@ class Comment extends Grammar
     /**
      * Wrap reserved words.
      *
-     * @param string $value
+     * @param  string  $value
      * @return string
      */
     protected function wrapValue($value)
@@ -67,7 +67,7 @@ class Comment extends Grammar
      * Add comments set via fluent setter.
      * Comments set by $table->string('column')->comment('comment');.
      *
-     * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
+     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     private function fluentComments(OracleBlueprint $blueprint)
     {
@@ -81,9 +81,9 @@ class Comment extends Grammar
     /**
      * Run the comment on column statement.
      *
-     * @param  string $table
-     * @param  string $column
-     * @param  string $comment
+     * @param  string  $table
+     * @param  string  $column
+     * @param  string  $comment
      */
     private function commentColumn($table, $column, $comment)
     {
@@ -98,7 +98,7 @@ class Comment extends Grammar
      * Add comments on columns.
      * Comments set by $table->commentColumns = ['column' => 'comment'];.
      *
-     * @param \Yajra\Oci8\Schema\OracleBlueprint $blueprint
+     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     private function commentColumns(OracleBlueprint $blueprint)
     {

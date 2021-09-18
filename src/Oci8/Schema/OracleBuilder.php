@@ -19,7 +19,7 @@ class OracleBuilder extends Builder
     public $comment;
 
     /**
-     * @param Connection $connection
+     * @param  Connection  $connection
      */
     public function __construct(Connection $connection)
     {
@@ -31,8 +31,8 @@ class OracleBuilder extends Builder
     /**
      * Create a new table on the schema.
      *
-     * @param  string $table
-     * @param  Closure $callback
+     * @param  string  $table
+     * @param  Closure  $callback
      * @return \Illuminate\Database\Schema\Blueprint
      */
     public function create($table, Closure $callback)
@@ -53,8 +53,8 @@ class OracleBuilder extends Builder
     /**
      * Create a new command set with a Closure.
      *
-     * @param  string $table
-     * @param  Closure $callback
+     * @param  string  $table
+     * @param  Closure  $callback
      * @return \Illuminate\Database\Schema\Blueprint
      */
     protected function createBlueprint($table, Closure $callback = null)
@@ -68,8 +68,8 @@ class OracleBuilder extends Builder
     /**
      * Changes an existing table on the schema.
      *
-     * @param  string $table
-     * @param  Closure $callback
+     * @param  string  $table
+     * @param  Closure  $callback
      * @return \Illuminate\Database\Schema\Blueprint
      */
     public function table($table, Closure $callback)
@@ -92,7 +92,7 @@ class OracleBuilder extends Builder
     /**
      * Drop a table from the schema.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return \Illuminate\Database\Schema\Blueprint
      */
     public function drop($table)
@@ -114,7 +114,7 @@ class OracleBuilder extends Builder
     /**
      * Indicate that the table should be dropped if it exists.
      *
-     * @param string $table
+     * @param  string  $table
      * @return \Illuminate\Support\Fluent
      */
     public function dropIfExists($table)
@@ -126,7 +126,7 @@ class OracleBuilder extends Builder
     /**
      * Determine if the given table exists.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return bool
      */
     public function hasTable($table)
@@ -147,7 +147,7 @@ class OracleBuilder extends Builder
     /**
      * Get the column listing for a given table.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return array
      */
     public function getColumnListing($table)
