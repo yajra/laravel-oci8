@@ -200,7 +200,7 @@ class Oci8Connection extends Connection
 
     /**
      * Execute a PL/SQL Function and return its value.
-     * Usage: DB::executeFunction('function_name(:binding_1,:binding_n)', [':binding_1' => 'hi', ':binding_n' =>
+     * Usage: DB::executeFunction('function_name', ['binding_1' => 'hi', 'binding_n' =>
      * 'bye'], PDO::PARAM_LOB).
      *
      * @param  string  $functionName
