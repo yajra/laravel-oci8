@@ -184,7 +184,7 @@ class OracleConnector extends Connector implements ConnectorInterface
             }
 
             // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$config['load_balence']}) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$config['load_balance']}) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
         }
 
         return $config;

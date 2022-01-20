@@ -15,7 +15,7 @@ return [
         'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
         'edition'        => env('DB_EDITION', 'ora$base'),
         'server_version' => env('DB_SERVER_VERSION', '11g'),
-        'load_balence'   => env('DB_LOAD_BALENCE', 'on'),
+        'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
         'dynamic'        => [],
     ],
 ];

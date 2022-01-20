@@ -97,21 +97,21 @@ class Oci8ConnectorTest extends TestCase
                     'schema'       => 'users',
                 ],
             ],
-            // multiple hosts load_balence off SID
+            // multiple hosts load_balance off SID
             [
-                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = off) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
+                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = no) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
                     'driver'       => 'oracle',
                     'host'         => 'localhost, oracle.host',
                     'port'         => '1234',
                     'database'     => 'ORCL',
                     'tns'          => '',
-                    'load_balence' => 'off',
+                    'load_balance' => 'no',
                 ],
             ],
-            // multiple hosts load_balence off SID with schema
+            // multiple hosts load_balance off SID with schema
             [
-                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = off) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
+                '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = no) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
                     'driver'       => 'oracle',
                     'host'         => 'localhost, oracle.host',
@@ -119,7 +119,7 @@ class Oci8ConnectorTest extends TestCase
                     'database'     => 'ORCL',
                     'tns'          => '',
                     'schema'       => 'users',
-                    'load_balence' => 'off',
+                    'load_balance' => 'no',
                 ],
             ],
             // multiple hosts SERVICE_NAME

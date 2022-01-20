@@ -72,7 +72,7 @@ This will copy the configuration file to `config/oracle.php`.
     'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
     'edition'        => env('DB_EDITION', 'ora$base'),
     'server_version' => env('DB_SERVER_VERSION', '11g'),
-    'load_balence'   => env('DB_LOAD_BALENCE', 'off'),
+    'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
     'dynamic'        => [],
 ],
 ```
@@ -96,7 +96,7 @@ DB_CONNECTION=oracle
 DB_HOST=oracle1.host, oracle2.host
 DB_PORT=1521
 DB_SERVICE_NAME=orcl
-DB_LOAD_BALENCE=off
+DB_LOAD_BALANCE=off
 DB_DATABASE=xe
 DB_USERNAME=hr
 DB_PASSWORD=hr
