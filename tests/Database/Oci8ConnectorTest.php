@@ -97,7 +97,7 @@ class Oci8ConnectorTest extends TestCase
                     'schema'       => 'users',
                 ],
             ],
-            // multiple hosts load_balance off SID
+            // multiple hosts load_balance no SID
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = no) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
@@ -109,7 +109,7 @@ class Oci8ConnectorTest extends TestCase
                     'load_balance' => 'no',
                 ],
             ],
-            // multiple hosts load_balance off SID with schema
+            // multiple hosts load_balance no SID with schema
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = no) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
