@@ -59,18 +59,47 @@ This will copy the configuration file to `config/oracle.php`.
 
 ```php
 'oracle' => [
-    'driver'        => 'oracle',
-    'tns'           => env('DB_TNS', ''),
-    'host'          => env('DB_HOST', ''),
-    'port'          => env('DB_PORT', '1521'),
-    'database'      => env('DB_DATABASE', ''),
-    'username'      => env('DB_USERNAME', ''),
-    'password'      => env('DB_PASSWORD', ''),
-    'charset'       => env('DB_CHARSET', 'AL32UTF8'),
-    'prefix'        => env('DB_PREFIX', ''),
-    'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
-    'edition'       => env('DB_EDITION', 'ora$base'),
+    'driver'         => 'oracle',
+    'tns'            => env('DB_TNS', ''),
+    'host'           => env('DB_HOST', ''),
+    'port'           => env('DB_PORT', '1521'),
+    'database'       => env('DB_DATABASE', ''),
+    'service_name'   => env('DB_SERVICENAME', ''),
+    'username'       => env('DB_USERNAME', ''),
+    'password'       => env('DB_PASSWORD', ''),
+    'charset'        => env('DB_CHARSET', 'AL32UTF8'),
+    'prefix'         => env('DB_PREFIX', ''),
+    'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
+    'edition'        => env('DB_EDITION', 'ora$base'),
+    'server_version' => env('DB_SERVER_VERSION', '11g'),
+    'load_balence'   => env('DB_LOAD_BALENCE', 'off'),
+    'dynamic'        => [],
 ],
+```
+
+> Then, you can set connection data in your `.env` files:
+
+```ini
+DB_CONNECTION=oracle
+DB_HOST=oracle.host
+DB_PORT=1521
+DB_SERVICE_NAME=orcl
+DB_DATABASE=xe
+DB_USERNAME=hr
+DB_PASSWORD=hr
+```
+
+> If you want to connect to a cluster containing multiple hosts, you can either set `tns` manually or set host as a comma-separated array and configure other fields as you wish:
+
+```ini
+DB_CONNECTION=oracle
+DB_HOST=oracle1.host, oracle2.host
+DB_PORT=1521
+DB_SERVICE_NAME=orcl
+DB_LOAD_BALENCE=off
+DB_DATABASE=xe
+DB_USERNAME=hr
+DB_PASSWORD=hr
 ```
 
 > If you need to connect with the service name instead of tns, you can use the configuration below:
