@@ -75,7 +75,7 @@ This will copy the configuration file to `config/oracle.php`.
 
 > If you need to connect with the service name instead of tns, you can use the configuration below:
 
-```
+```php
 'oracle' => [
     'driver' => 'oracle',
     'host' => 'oracle.host',
@@ -91,7 +91,7 @@ This will copy the configuration file to `config/oracle.php`.
 
 In some cases you may wish to set the connection parameters dynamically in your app.  For instance, you may access more than one database, or your users may already have their own accounts on the Oracle database:
 
-```
+```php
 'oracle' => [
     'driver' => 'oracle',
     'host' => 'oracle.host',
@@ -104,7 +104,7 @@ In some cases you may wish to set the connection parameters dynamically in your 
 
 The callback function in your app must be static and accept a reference to the `$config[]` array (which will already be populated with values set in the config file):
 
-```
+```php
 namespace App\Models\Oracle;
 
 class Config {
