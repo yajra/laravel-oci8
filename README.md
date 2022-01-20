@@ -1,9 +1,9 @@
 # Oracle DB driver for Laravel 4|5|6|7|8 via OCI8
 
-<a href="https://github.com/yajra/laravel-oci8/actions"><img src="https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/license.svg" alt="License"></a>
+[![Build Status](https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg)](https://github.com/yajra/laravel-oci8/actions)
+[![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/d/total.svg)](https://packagist.org/packages/yajra/laravel-oci8)
+[![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.svg)](https://packagist.org/packages/yajra/laravel-oci8)
+[![License](https://poser.pugx.org/yajra/laravel-oci8/license.svg)](https://packagist.org/packages/yajra/laravel-oci8)
 
 ## Laravel-OCI8
 
