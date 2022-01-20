@@ -23,7 +23,7 @@ class OracleAutoIncrementHelper
     protected $sequence;
 
     /**
-     * @param \Illuminate\Database\Connection $connection
+     * @param  \Illuminate\Database\Connection  $connection
      */
     public function __construct(Connection $connection)
     {
@@ -35,8 +35,8 @@ class OracleAutoIncrementHelper
     /**
      * create sequence and trigger for autoIncrement support.
      *
-     * @param  Blueprint $blueprint
-     * @param  string $table
+     * @param  Blueprint  $blueprint
+     * @param  string  $table
      * @return null
      */
     public function createAutoIncrementObjects(Blueprint $blueprint, $table)
@@ -66,7 +66,7 @@ class OracleAutoIncrementHelper
     /**
      * Get qualified autoincrement column.
      *
-     * @param  Blueprint $blueprint
+     * @param  Blueprint  $blueprint
      * @return \Illuminate\Support\Fluent|null
      */
     public function getQualifiedAutoIncrementColumn(Blueprint $blueprint)
@@ -85,10 +85,10 @@ class OracleAutoIncrementHelper
     /**
      * Create an object name that limits to 30 chars.
      *
-     * @param  string $prefix
-     * @param  string $table
-     * @param  string $col
-     * @param  string $type
+     * @param  string  $prefix
+     * @param  string  $table
+     * @param  string  $col
+     * @param  string  $type
      * @return string
      */
     private function createObjectName($prefix, $table, $col, $type)
@@ -100,7 +100,7 @@ class OracleAutoIncrementHelper
     /**
      * Drop sequence and triggers if exists, autoincrement objects.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return null
      */
     public function dropAutoIncrementObjects($table)
@@ -124,7 +124,7 @@ class OracleAutoIncrementHelper
     /**
      * Get table's primary key.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return string
      */
     public function getPrimaryKey($table)
@@ -164,7 +164,7 @@ class OracleAutoIncrementHelper
     /**
      * Set sequence instance.
      *
-     * @param Sequence $sequence
+     * @param  Sequence  $sequence
      */
     public function setSequence($sequence)
     {
@@ -184,7 +184,7 @@ class OracleAutoIncrementHelper
     /**
      * Set the trigger instance.
      *
-     * @param Trigger $trigger
+     * @param  Trigger  $trigger
      */
     public function setTrigger($trigger)
     {

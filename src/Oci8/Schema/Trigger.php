@@ -16,7 +16,7 @@ class Trigger
     protected $connection;
 
     /**
-     * @param Connection $connection
+     * @param  Connection  $connection
      */
     public function __construct(Connection $connection)
     {
@@ -26,10 +26,10 @@ class Trigger
     /**
      * Function to create auto increment trigger for a table.
      *
-     * @param  string $table
-     * @param  string $column
-     * @param  string $triggerName
-     * @param  string $sequenceName
+     * @param  string  $table
+     * @param  string  $column
+     * @param  string  $triggerName
+     * @param  string  $sequenceName
      * @return bool
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
@@ -61,7 +61,7 @@ class Trigger
     /**
      * Wrap value if reserved word.
      *
-     * @param string $value
+     * @param  string  $value
      * @return string
      */
     protected function wrapValue($value)
@@ -74,7 +74,7 @@ class Trigger
     /**
      * Function to safely drop trigger db object.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return bool
      */
     public function drop($name)

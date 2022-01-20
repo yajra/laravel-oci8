@@ -63,9 +63,9 @@ class OracleBuilder extends Builder
     /**
      * Insert a new record and get the value of the primary key.
      *
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return int
      */
     public function insertLob(array $values, array $binaries, $sequence = 'id')
@@ -86,9 +86,9 @@ class OracleBuilder extends Builder
     /**
      * Update a new record with blob field.
      *
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return bool
      */
     public function updateLob(array $values, array $binaries, $sequence = 'id')
@@ -113,10 +113,10 @@ class OracleBuilder extends Builder
      * Split one WHERE IN clause into multiple clauses each
      * with up to 1000 expressions to avoid ORA-01795.
      *
-     * @param  string $column
-     * @param  mixed $values
-     * @param  string $boolean
-     * @param  bool $not
+     * @param  string  $column
+     * @param  mixed  $values
+     * @param  string  $boolean
+     * @param  bool  $not
      * @return \Illuminate\Database\Query\Builder|\Yajra\Oci8\Query\OracleBuilder
      */
     public function whereIn($column, $values, $boolean = 'and', $not = false)
@@ -180,7 +180,7 @@ class OracleBuilder extends Builder
     /**
      * Makes "from" fetch from a subquery.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
      * @param  string  $as
      * @return \Illuminate\Database\Query\Builder|static
      *
@@ -196,13 +196,13 @@ class OracleBuilder extends Builder
     /**
      * Add a subquery join clause to the query.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
      * @param  string  $as
      * @param  \Closure|string  $first
      * @param  string|null  $operator
      * @param  string|null  $second
      * @param  string  $type
-     * @param  bool    $where
+     * @param  bool  $where
      * @return \Illuminate\Database\Query\Builder|static
      *
      * @throws \InvalidArgumentException

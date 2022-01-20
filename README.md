@@ -89,7 +89,38 @@ This will copy the configuration file to `config/oracle.php`.
 ]
 ```
 
-And run your laravel installation...
+In some cases you may wish to set the connection parameters dynamically in your app.  For instance, you may access more than one database, or your users may already have their own accounts on the Oracle database:
+
+```
+'oracle' => [
+    'driver' => 'oracle',
+    'host' => 'oracle.host',
+    'port' => '1521',
+    'service_name' => 'sid_alias',
+    'prefix' => 'schemaowner',
+    'dynamic' => [App\Models\Oracle\Config::class, 'dynamicConfig'],
+]
+```
+
+The callback function in your app must be static and accept a reference to the `$config[]` array (which will already be populated with values set in the config file):
+
+```
+namespace App\Models\Oracle;
+
+class Config {
+
+    public static function dynamicConfig(&$config) {
+
+        if (Illuminate\Support\Facades\Auth::check()) {
+            $config['username'] = App\Oracle\Config::getOraUser();
+            $config['password'] = App\Oracle\Config::getOraPass();
+        }
+
+    }
+}
+```
+
+Then run your laravel installation...
 
 ## [Laravel 5.2++] Oracle User Provider
 

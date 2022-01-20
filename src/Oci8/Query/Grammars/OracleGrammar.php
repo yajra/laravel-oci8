@@ -27,7 +27,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile an exists statement into SQL.
      *
-     * @param \Illuminate\Database\Query\Builder $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @return string
      */
     public function compileExists(Builder $query)
@@ -85,8 +85,8 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * @param Builder $query
-     * @param array $components
+     * @param  Builder  $query
+     * @param  array  $components
      * @return bool
      */
     protected function isPaginationable(Builder $query, array $components)
@@ -97,8 +97,8 @@ class OracleGrammar extends Grammar
     /**
      * Create a full ANSI offset clause for the query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $components
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $components
      * @return string
      */
     protected function compileAnsiOffset(Builder $query, $components)
@@ -126,7 +126,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile the limit / offset row constraint for a query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @return string
      */
     protected function compileRowConstraint($query)
@@ -148,9 +148,9 @@ class OracleGrammar extends Grammar
     /**
      * Compile a common table expression for a query.
      *
-     * @param  string $sql
-     * @param  string $constraint
-     * @param Builder $query
+     * @param  string  $sql
+     * @param  string  $constraint
+     * @param  Builder  $query
      * @return string
      */
     protected function compileTableExpression($sql, $constraint, $query)
@@ -172,7 +172,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile a truncate table statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @return array
      */
     public function compileTruncate(Builder $query)
@@ -186,7 +186,7 @@ class OracleGrammar extends Grammar
      * Override due to laravel's stringify integers.
      *
      * @param  \Illuminate\Database\Query\Expression|string  $value
-     * @param  bool    $prefixAlias
+     * @param  bool  $prefixAlias
      * @return string
      */
     public function wrap($value, $prefixAlias = false)
@@ -201,7 +201,7 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a table in keyword identifiers.
      *
-     * @param  \Illuminate\Database\Query\Expression|string $table
+     * @param  \Illuminate\Database\Query\Expression|string  $table
      * @return string
      */
     public function wrapTable($table)
@@ -236,7 +236,7 @@ class OracleGrammar extends Grammar
     /**
      * Set the schema prefix.
      *
-     * @param string $prefix
+     * @param  string  $prefix
      */
     public function setSchemaPrefix($prefix)
     {
@@ -246,7 +246,7 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a single string in keyword identifiers.
      *
-     * @param  string $value
+     * @param  string  $value
      * @return string
      */
     protected function wrapValue($value)
@@ -263,9 +263,9 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert and get ID statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
-     * @param  string $sequence
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  string  $sequence
      * @return string
      */
     public function compileInsertGetId(Builder $query, $values, $sequence = 'id')
@@ -289,8 +289,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
      * @return string
      */
     public function compileInsert(Builder $query, array $values)
@@ -331,10 +331,10 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert with blob field statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return string
      */
     public function compileInsertLob(Builder $query, $values, $binaries, $sequence = 'id')
@@ -372,10 +372,10 @@ class OracleGrammar extends Grammar
     /**
      * Compile an update statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return string
      */
     public function compileUpdateLob(Builder $query, array $values, array $binaries, $sequence = 'id')
@@ -430,8 +430,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile the lock into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  bool|string $value
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  bool|string  $value
      * @return string
      */
     protected function compileLock(Builder $query, $value)
@@ -450,8 +450,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile the "limit" portions of the query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  int $limit
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  int  $limit
      * @return string
      */
     protected function compileLimit(Builder $query, $limit)
@@ -462,8 +462,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile the "offset" portions of the query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  int $offset
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  int  $offset
      * @return string
      */
     protected function compileOffset(Builder $query, $offset)
@@ -474,8 +474,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where date" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $where
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
      * @return string
      */
     protected function whereDate(Builder $query, $where)
@@ -488,9 +488,9 @@ class OracleGrammar extends Grammar
     /**
      * Compile a date based where clause.
      *
-     * @param  string $type
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $where
+     * @param  string  $type
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
      * @return string
      */
     protected function dateBasedWhere($type, Builder $query, $where)

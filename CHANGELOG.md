@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v8.5.0] - 2021-09-18
+
+- Allow top-level application to dynamically set its own database `$config[]` parameters [#667]
+- Fixed checkMultipleHostDsn SERVICE_NAME using inconsistent database config bugs. #670
+
 ## [v8.4.1] - 2021-07-10
 
 - Fix non-existent global constants. #661
@@ -152,7 +157,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.4.1...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.5.0...8.x
+[v8.5.0]: https://github.com/yajra/laravel-oci8/compare/v8.4.1...v8.5.0
 [v8.4.1]: https://github.com/yajra/laravel-oci8/compare/v8.4.0...v8.4.1
 [v8.4.0]: https://github.com/yajra/laravel-oci8/compare/v8.3.0...v8.4.0
 [v8.3.0]: https://github.com/yajra/laravel-oci8/compare/v8.2.3...v8.3.0

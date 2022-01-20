@@ -47,7 +47,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Create a DSN string from a configuration.
      *
-     * @param  array $config
+     * @param  array  $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -184,7 +184,7 @@ class OracleConnector extends Connector implements ConnectorInterface
             }
 
             // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
         }
 
         return $config;
