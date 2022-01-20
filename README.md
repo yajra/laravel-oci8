@@ -1,9 +1,9 @@
 # Oracle DB driver for Laravel 4|5|6|7|8 via OCI8
 
-<a href="https://github.com/yajra/laravel-oci8/actions"><img src="https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/yajra/laravel-oci8"><img src="https://poser.pugx.org/yajra/laravel-oci8/license.svg" alt="License"></a>
+[![Build Status](https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg)](https://github.com/yajra/laravel-oci8/actions)
+[![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/d/total.svg)](https://packagist.org/packages/yajra/laravel-oci8)
+[![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.svg)](https://packagist.org/packages/yajra/laravel-oci8)
+[![License](https://poser.pugx.org/yajra/laravel-oci8/license.svg)](https://packagist.org/packages/yajra/laravel-oci8)
 
 ## Laravel-OCI8
 
@@ -12,7 +12,7 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 ## Documentations
 
 - You will find user friendly and updated documentation here: [Laravel-OCI8 Docs](https://yajrabox.com/docs/laravel-oci8)
-- All about oracle and php:[The Underground PHPand Oracle Manual](http://www.oracle.com/technetwork/database/database-technologies/php/201212-ug-php-oracle-1884760.pdf)
+- All about oracle and php:[The Underground PHP and Oracle Manual](http://www.oracle.com/technetwork/database/database-technologies/php/201212-ug-php-oracle-1884760.pdf)
 
 ## Laravel Version Compatibility
 
@@ -59,23 +59,52 @@ This will copy the configuration file to `config/oracle.php`.
 
 ```php
 'oracle' => [
-    'driver'        => 'oracle',
-    'tns'           => env('DB_TNS', ''),
-    'host'          => env('DB_HOST', ''),
-    'port'          => env('DB_PORT', '1521'),
-    'database'      => env('DB_DATABASE', ''),
-    'username'      => env('DB_USERNAME', ''),
-    'password'      => env('DB_PASSWORD', ''),
-    'charset'       => env('DB_CHARSET', 'AL32UTF8'),
-    'prefix'        => env('DB_PREFIX', ''),
-    'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
-    'edition'       => env('DB_EDITION', 'ora$base'),
+    'driver'         => 'oracle',
+    'tns'            => env('DB_TNS', ''),
+    'host'           => env('DB_HOST', ''),
+    'port'           => env('DB_PORT', '1521'),
+    'database'       => env('DB_DATABASE', ''),
+    'service_name'   => env('DB_SERVICENAME', ''),
+    'username'       => env('DB_USERNAME', ''),
+    'password'       => env('DB_PASSWORD', ''),
+    'charset'        => env('DB_CHARSET', 'AL32UTF8'),
+    'prefix'         => env('DB_PREFIX', ''),
+    'prefix_schema'  => env('DB_SCHEMA_PREFIX', ''),
+    'edition'        => env('DB_EDITION', 'ora$base'),
+    'server_version' => env('DB_SERVER_VERSION', '11g'),
+    'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
+    'dynamic'        => [],
 ],
+```
+
+> Then, you can set connection data in your `.env` files:
+
+```ini
+DB_CONNECTION=oracle
+DB_HOST=oracle.host
+DB_PORT=1521
+DB_SERVICE_NAME=orcl
+DB_DATABASE=xe
+DB_USERNAME=hr
+DB_PASSWORD=hr
+```
+
+> If you want to connect to a cluster containing multiple hosts, you can either set `tns` manually or set host as a comma-separated array and configure other fields as you wish:
+
+```ini
+DB_CONNECTION=oracle
+DB_HOST=oracle1.host, oracle2.host
+DB_PORT=1521
+DB_SERVICE_NAME=orcl
+DB_LOAD_BALANCE=no
+DB_DATABASE=xe
+DB_USERNAME=hr
+DB_PASSWORD=hr
 ```
 
 > If you need to connect with the service name instead of tns, you can use the configuration below:
 
-```
+```php
 'oracle' => [
     'driver' => 'oracle',
     'host' => 'oracle.host',
@@ -91,7 +120,7 @@ This will copy the configuration file to `config/oracle.php`.
 
 In some cases you may wish to set the connection parameters dynamically in your app.  For instance, you may access more than one database, or your users may already have their own accounts on the Oracle database:
 
-```
+```php
 'oracle' => [
     'driver' => 'oracle',
     'host' => 'oracle.host',
@@ -104,7 +133,7 @@ In some cases you may wish to set the connection parameters dynamically in your 
 
 The callback function in your app must be static and accept a reference to the `$config[]` array (which will already be populated with values set in the config file):
 
-```
+```php
 namespace App\Models\Oracle;
 
 class Config {
