@@ -183,8 +183,11 @@ class OracleConnector extends Connector implements ConnectorInterface
                 $address .= '(ADDRESS = (PROTOCOL = ' . $config['protocol'] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
             }
 
+            // backwards compatibility for users dont have this field in their php config
+            $loadBalance = $config['load_balance'] ?? 'yes';
+
             // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$config['load_balance']}) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$loadBalance}) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
         }
 
         return $config;
