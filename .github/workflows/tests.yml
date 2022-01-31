@@ -50,10 +50,6 @@ jobs:
         run: ./oci8-php8.sh
         if: matrix.php == 8
 
-      - name: Register OCI8 for PHP 7
-        run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
-        if: matrix.php < 8
-
       - name: Set Minimum PDO-VIA-OCI8 Version
         uses: nick-invision/retry@v1
         with:
