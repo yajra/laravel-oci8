@@ -75,7 +75,7 @@ abstract class TestCase extends BaseTestCase
         ]);
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             Oci8ServiceProvider::class,
