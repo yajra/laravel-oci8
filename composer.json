@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^8.0",
+        "php": "^8.0.2",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
         "illuminate/database": "^9",
@@ -20,9 +20,9 @@
         "yajra/laravel-pdo-via-oci8": "^3.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.5",
-        "mockery/mockery": "^1.4.2",
-        "phpunit/phpunit": "^9.0"
+        "orchestra/testbench": "^7.0",
+        "mockery/mockery": "^1.4.4",
+        "phpunit/phpunit": "^9.5.8"
     },
     "autoload": {
         "files": [
