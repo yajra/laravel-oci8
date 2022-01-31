@@ -75,20 +75,11 @@ abstract class TestCase extends BaseTestCase
         ]);
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             Oci8ServiceProvider::class,
             Oci8ValidationServiceProvider::class,
         ];
-    }
-
-    /**
-     * @param  string|null  $connection
-     * @return \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
-     */
-    protected function getConnection($connection = null)
-    {
-        return parent::getConnection($connection);
     }
 }
