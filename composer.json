@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": "^8.0",
-        "ext-oci8": ">=2.0.0",
+        "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
         "illuminate/database": "^9",
         "illuminate/pagination": "^9",
