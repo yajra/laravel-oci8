@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [7.3, 7.4, 8.0]
+        php: [7.3, 7.4, 8.0, 8.1]
         stability: [prefer-stable]
 
     name: PHP ${{ matrix.php }} - STABILITY ${{ matrix.stability }}
@@ -43,12 +43,16 @@ jobs:
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Setup OCI8 for PHP 7
-        run: ./oci8.sh
+        run: ./oci8-php7.sh
         if: matrix.php < 8
+
+      - name: Setup OCI8 for PHP 8.1
+        run: ./oci8-php81.sh
+        if: matrix.php > 8
 
       - name: Setup OCI8 for PHP 8
         run: ./oci8-php8.sh
-        if: matrix.php >= 8
+        if: matrix.php == 8
 
       - name: Register OCI8 for PHP 7
         run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
