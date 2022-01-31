@@ -83,7 +83,7 @@ This will copy the configuration file to `config/oracle.php`.
 DB_CONNECTION=oracle
 DB_HOST=oracle.host
 DB_PORT=1521
-DB_SERVICE_NAME=orcl
+DB_SERVICENAME=orcl
 DB_DATABASE=xe
 DB_USERNAME=hr
 DB_PASSWORD=hr
@@ -95,7 +95,7 @@ DB_PASSWORD=hr
 DB_CONNECTION=oracle
 DB_HOST=oracle1.host, oracle2.host
 DB_PORT=1521
-DB_SERVICE_NAME=orcl
+DB_SERVICENAME=orcl
 DB_LOAD_BALANCE=no
 DB_DATABASE=xe
 DB_USERNAME=hr
