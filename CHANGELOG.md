@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Add support for Laravel 9 #698
+- Breaking Change: Fix #696 rename DB_SERVICENAME to DB_SERVICE_NAME #2ba06fd
+
 ## [v8.6.0] - 2022-01-20
 
 - Make field load_balance configurable and some other typo fixes. #694
