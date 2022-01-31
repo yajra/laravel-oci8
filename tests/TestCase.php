@@ -82,13 +82,4 @@ abstract class TestCase extends BaseTestCase
             Oci8ValidationServiceProvider::class,
         ];
     }
-
-    /**
-     * @param  string|null  $connection
-     * @return \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
-     */
-    protected function getConnection($connection = null)
-    {
-        return parent::getConnection($connection);
-    }
 }
