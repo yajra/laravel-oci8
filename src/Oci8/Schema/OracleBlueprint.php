@@ -32,8 +32,9 @@ class OracleBlueprint extends Blueprint
      * Set table prefix settings.
      *
      * @param  string  $prefix
+     * @return void
      */
-    public function setTablePrefix(string $prefix = '')
+    public function setTablePrefix(string $prefix = ''): void
     {
         $this->prefix = $prefix;
     }

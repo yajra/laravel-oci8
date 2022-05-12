@@ -12,7 +12,7 @@ class Oci8Driver extends AbstractOracleDriver
     /**
      * {@inheritdoc}
      */
-    public function getName()
+    public function getName(): string
     {
         return 'oci8';
     }
