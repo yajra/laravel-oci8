@@ -3,22 +3,23 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ColumnDefinition;
 
 class OracleBlueprint extends Blueprint
 {
     /**
      * Table comment.
      *
-     * @var string
+     * @var string|null
      */
-    public $comment = null;
+    public ?string $comment = null;
 
     /**
      * Column comments.
      *
      * @var array
      */
-    public $commentColumns = [];
+    public array $commentColumns = [];
 
     /**
      * Database prefix variable.
@@ -32,7 +33,7 @@ class OracleBlueprint extends Blueprint
      *
      * @param  string  $prefix
      */
-    public function setTablePrefix($prefix = '')
+    public function setTablePrefix(string $prefix = '')
     {
         $this->prefix = $prefix;
     }
@@ -44,7 +45,7 @@ class OracleBlueprint extends Blueprint
      * @param  array  $columns
      * @return string
      */
-    protected function createIndexName($type, array $columns)
+    protected function createIndexName($type, array $columns): string
     {
         $short_type = [
             'primary' => 'pk',
@@ -52,7 +53,7 @@ class OracleBlueprint extends Blueprint
             'unique'  => 'uk',
         ];
 
-        $type = isset($short_type[$type]) ? $short_type[$type] : $type;
+        $type = $short_type[$type] ?? $type;
 
         $index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
 
@@ -81,9 +82,9 @@ class OracleBlueprint extends Blueprint
      *
      * @param  string  $column
      * @param  int  $length
-     * @return \Illuminate\Support\Fluent
+     * @return \Illuminate\Database\Schema\ColumnDefinition
      */
-    public function nvarchar2($column, $length = 255)
+    public function nvarchar2(string $column, int $length = 255): ColumnDefinition
     {
         return $this->addColumn('nvarchar2', $column, compact('length'));
     }

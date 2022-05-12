@@ -4,7 +4,6 @@ namespace Yajra\Oci8;
 
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use Doctrine\DBAL\Version;
-use Exception;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Str;
@@ -12,11 +11,11 @@ use PDO;
 use PDOStatement;
 use Throwable;
 use Yajra\Oci8\PDO\Oci8Driver;
-use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
-use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
-use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
-use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
-use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use Yajra\Oci8\Query\Grammars\OracleGrammar as OracleQueryGrammar;
+use Yajra\Oci8\Query\OracleBuilder as OracleQueryBuilder;
+use Yajra\Oci8\Query\Processors\OracleProcessor;
+use Yajra\Oci8\Schema\Grammars\OracleGrammar as OracleSchemaGrammar;
+use Yajra\Oci8\Schema\OracleBuilder as OracleSchemaBuilder;
 use Yajra\Oci8\Schema\Sequence;
 use Yajra\Oci8\Schema\Trigger;
 use Yajra\Pdo\Oci8\Statement;
@@ -26,19 +25,19 @@ class Oci8Connection extends Connection
     const RECONNECT_ERRORS = 'reconnect_errors';
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $schema;
+    protected ?string $schema;
 
     /**
      * @var \Yajra\Oci8\Schema\Sequence
      */
-    protected $sequence;
+    protected Sequence $sequence;
 
     /**
      * @var \Yajra\Oci8\Schema\Trigger
      */
-    protected $trigger;
+    protected Trigger $trigger;
 
     /**
      * @param  PDO|\Closure  $pdo
@@ -50,7 +49,7 @@ class Oci8Connection extends Connection
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
         $this->sequence = new Sequence($this);
-        $this->trigger  = new Trigger($this);
+        $this->trigger = new Trigger($this);
     }
 
     /**
@@ -69,10 +68,10 @@ class Oci8Connection extends Connection
      * @param  string  $schema
      * @return $this
      */
-    public function setSchema($schema)
+    public function setSchema(string $schema): static
     {
         $this->schema = $schema;
-        $sessionVars  = [
+        $sessionVars = [
             'CURRENT_SCHEMA' => $schema,
         ];
 
@@ -85,7 +84,7 @@ class Oci8Connection extends Connection
      * @param  array  $sessionVars
      * @return $this
      */
-    public function setSessionVars(array $sessionVars)
+    public function setSessionVars(array $sessionVars): static
     {
         $vars = [];
         foreach ($sessionVars as $option => $value) {
@@ -97,7 +96,7 @@ class Oci8Connection extends Connection
         }
 
         if ($vars) {
-            $sql = 'ALTER SESSION SET ' . implode(' ', $vars);
+            $sql = 'ALTER SESSION SET '.implode(' ', $vars);
             $this->statement($sql);
         }
 
@@ -109,7 +108,7 @@ class Oci8Connection extends Connection
      *
      * @return \Yajra\Oci8\Schema\Sequence
      */
-    public function getSequence()
+    public function getSequence(): Sequence
     {
         return $this->sequence;
     }
@@ -120,7 +119,7 @@ class Oci8Connection extends Connection
      * @param  \Yajra\Oci8\Schema\Sequence  $sequence
      * @return \Yajra\Oci8\Schema\Sequence
      */
-    public function setSequence(Sequence $sequence)
+    public function setSequence(Sequence $sequence): Sequence
     {
         return $this->sequence = $sequence;
     }
@@ -130,7 +129,7 @@ class Oci8Connection extends Connection
      *
      * @return \Yajra\Oci8\Schema\Trigger
      */
-    public function getTrigger()
+    public function getTrigger(): Trigger
     {
         return $this->trigger;
     }
@@ -141,7 +140,7 @@ class Oci8Connection extends Connection
      * @param  \Yajra\Oci8\Schema\Trigger  $trigger
      * @return \Yajra\Oci8\Schema\Trigger
      */
-    public function setTrigger(Trigger $trigger)
+    public function setTrigger(Trigger $trigger): Trigger
     {
         return $this->trigger = $trigger;
     }
@@ -151,23 +150,23 @@ class Oci8Connection extends Connection
      *
      * @return \Yajra\Oci8\Schema\OracleBuilder
      */
-    public function getSchemaBuilder()
+    public function getSchemaBuilder(): OracleSchemaBuilder
     {
         if (is_null($this->schemaGrammar)) {
             $this->useDefaultSchemaGrammar();
         }
 
-        return new SchemaBuilder($this);
+        return new OracleSchemaBuilder($this);
     }
 
     /**
      * Get a new query builder instance.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Yajra\Oci8\Query\OracleBuilder
      */
-    public function query()
+    public function query(): OracleQueryBuilder
     {
-        return new QueryBuilder(
+        return new OracleQueryBuilder(
             $this, $this->getQueryGrammar(), $this->getPostProcessor()
         );
     }
@@ -178,10 +177,10 @@ class Oci8Connection extends Connection
      * @param  string  $format
      * @return $this
      */
-    public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
+    public function setDateFormat(string $format = 'YYYY-MM-DD HH24:MI:SS'): static
     {
         $sessionVars = [
-            'NLS_DATE_FORMAT'      => $format,
+            'NLS_DATE_FORMAT' => $format,
             'NLS_TIMESTAMP_FORMAT' => $format,
         ];
 
@@ -193,7 +192,7 @@ class Oci8Connection extends Connection
      *
      * @return \Doctrine\DBAL\Driver\OCI8\Driver|\Yajra\Oci8\PDO\Oci8Driver
      */
-    protected function getDoctrineDriver()
+    protected function getDoctrineDriver(): DoctrineDriver|Oci8Driver
     {
         return class_exists(Version::class) ? new DoctrineDriver : new Oci8Driver();
     }
@@ -206,11 +205,15 @@ class Oci8Connection extends Connection
      * @param  string  $functionName
      * @param  array  $bindings  (kvp array)
      * @param  int  $returnType  (PDO::PARAM_*)
-     * @param  int  $length
+     * @param  int|null  $length
      * @return mixed $returnType
      */
-    public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
-    {
+    public function executeFunction(
+        string $functionName,
+        array $bindings = [],
+        int $returnType = PDO::PARAM_STR,
+        int $length = null
+    ): mixed {
         $stmt = $this->createStatementFromFunction($functionName, $bindings);
 
         $stmt = $this->addBindingsToStatement($stmt, $bindings);
@@ -234,7 +237,7 @@ class Oci8Connection extends Connection
      * @param  array  $bindings
      * @return bool
      */
-    public function executeProcedure($procedureName, array $bindings = [])
+    public function executeProcedure(string $procedureName, array $bindings = []): bool
     {
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings);
 
@@ -253,9 +256,13 @@ class Oci8Connection extends Connection
      * @param  array  $bindings
      * @param  string  $cursorName
      * @return array
+     * @throws \ReflectionException
      */
-    public function executeProcedureWithCursor($procedureName, array $bindings = [], $cursorName = ':cursor')
-    {
+    public function executeProcedureWithCursor(
+        string $procedureName,
+        array $bindings = [],
+        string $cursorName = ':cursor'
+    ): array {
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings, $cursorName);
 
         $stmt = $this->addBindingsToStatement($stmt, $bindings);
@@ -283,11 +290,11 @@ class Oci8Connection extends Connection
     public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
     {
         $paramsString = implode(',', array_map(function ($param) {
-            return ':' . $param;
+            return ':'.$param;
         }, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
-        $cursor = $cursor ? $prefix . $cursor : null;
+        $cursor = $cursor ? $prefix.$cursor : null;
 
         return sprintf('begin %s(%s%s); end;', $procedureName, $paramsString, $cursor);
     }
@@ -316,7 +323,7 @@ class Oci8Connection extends Connection
      */
     public function createStatementFromFunction($functionName, array $bindings)
     {
-        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+        $bindings = $bindings ? ':'.implode(', :', array_keys($bindings)) : '';
 
         $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
 
@@ -330,7 +337,7 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        return $this->withTablePrefix(new QueryGrammar());
+        return $this->withTablePrefix(new OracleQueryGrammar());
     }
 
     /**
@@ -370,11 +377,11 @@ class Oci8Connection extends Connection
     /**
      * Get the default schema grammar instance.
      *
-     * @return \Illuminate\Database\Grammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar
+     * @return \Yajra\Oci8\Schema\Grammars\OracleGrammar
      */
     protected function getDefaultSchemaGrammar()
     {
-        return $this->withTablePrefix(new SchemaGrammar());
+        return $this->withTablePrefix(new OracleSchemaGrammar());
     }
 
     /**
@@ -382,9 +389,9 @@ class Oci8Connection extends Connection
      *
      * @return \Yajra\Oci8\Query\Processors\OracleProcessor
      */
-    protected function getDefaultPostProcessor()
+    protected function getDefaultPostProcessor(): OracleProcessor
     {
-        return new Processor();
+        return new OracleProcessor();
     }
 
     /**
@@ -397,17 +404,17 @@ class Oci8Connection extends Connection
     public function addBindingsToStatement(PDOStatement $stmt, array $bindings)
     {
         foreach ($bindings as $key => &$binding) {
-            $value  = &$binding;
-            $type   = PDO::PARAM_STR;
+            $value = &$binding;
+            $type = PDO::PARAM_STR;
             $length = -1;
 
             if (is_array($binding)) {
-                $value  = &$binding['value'];
-                $type   = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
+                $value = &$binding['value'];
+                $type = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
                 $length = array_key_exists('length', $binding) ? $binding['length'] : -1;
             }
 
-            $stmt->bindParam(':' . $key, $value, $type, $length);
+            $stmt->bindParam(':'.$key, $value, $type, $length);
         }
 
         return $stmt;
