@@ -5,23 +5,27 @@ namespace Yajra\Oci8\Schema;
 use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Builder;
+use Yajra\Oci8\Oci8Connection;
 
+/**
+ * @property-read Oci8Connection $connection
+ */
 class OracleBuilder extends Builder
 {
     /**
      * @var \Yajra\Oci8\Schema\OracleAutoIncrementHelper
      */
-    public $helper;
+    public OracleAutoIncrementHelper $helper;
 
     /**
      * @var \Yajra\Oci8\Schema\Comment
      */
-    public $comment;
+    public Comment $comment;
 
     /**
-     * @param  Connection  $connection
+     * @param  \Yajra\Oci8\Oci8Connection  $connection
      */
-    public function __construct(Connection $connection)
+    public function __construct(Oci8Connection $connection)
     {
         parent::__construct($connection);
         $this->helper  = new OracleAutoIncrementHelper($connection);
@@ -33,9 +37,9 @@ class OracleBuilder extends Builder
      *
      * @param  string  $table
      * @param  Closure  $callback
-     * @return \Illuminate\Database\Schema\Blueprint
+     * @return void
      */
-    public function create($table, Closure $callback)
+    public function create($table, Closure $callback): void
     {
         $blueprint = $this->createBlueprint($table);
 
@@ -54,10 +58,10 @@ class OracleBuilder extends Builder
      * Create a new command set with a Closure.
      *
      * @param  string  $table
-     * @param  Closure  $callback
-     * @return \Illuminate\Database\Schema\Blueprint
+     * @param  \Closure|null  $callback
+     * @return \Yajra\Oci8\Schema\OracleBlueprint
      */
-    protected function createBlueprint($table, Closure $callback = null)
+    protected function createBlueprint($table, Closure $callback = null): OracleBlueprint
     {
         $blueprint = new OracleBlueprint($table, $callback);
         $blueprint->setTablePrefix($this->connection->getTablePrefix());
@@ -70,9 +74,9 @@ class OracleBuilder extends Builder
      *
      * @param  string  $table
      * @param  Closure  $callback
-     * @return \Illuminate\Database\Schema\Blueprint
+     * @return void
      */
-    public function table($table, Closure $callback)
+    public function table($table, Closure $callback): void
     {
         $blueprint = $this->createBlueprint($table);
 
@@ -93,9 +97,9 @@ class OracleBuilder extends Builder
      * Drop a table from the schema.
      *
      * @param  string  $table
-     * @return \Illuminate\Database\Schema\Blueprint
+     * @return void
      */
-    public function drop($table)
+    public function drop($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
         parent::drop($table);
@@ -106,9 +110,9 @@ class OracleBuilder extends Builder
      *
      * @return void
      */
-    public function dropAllTables()
+    public function dropAllTables(): void
     {
-        $this->connection->statement($this->grammar->compileDropAllTables());
+        $this->connection->statement($this->connection->getSchemaGrammar()->compileDropAllTables());
     }
 
     /**

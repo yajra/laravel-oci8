@@ -22,6 +22,7 @@
     "require-dev": {
         "doctrine/dbal": "^3.3",
         "mockery/mockery": "^1.4.4",
+        "nunomaduro/larastan": "^2.1",
         "orchestra/testbench": "^7.0",
         "phpunit/phpunit": "^9.5.8"
     },

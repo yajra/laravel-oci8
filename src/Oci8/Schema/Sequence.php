@@ -2,19 +2,19 @@
 
 namespace Yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
+use Yajra\Oci8\Oci8Connection;
 
 class Sequence
 {
     /**
-     * @var \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
+     * @var \Yajra\Oci8\Oci8Connection
      */
-    protected $connection;
+    protected Oci8Connection $connection;
 
     /**
-     * @param  Connection  $connection
+     * @param  \Yajra\Oci8\Oci8Connection  $connection
      */
-    public function __construct(Connection $connection)
+    public function __construct(Oci8Connection $connection)
     {
         $this->connection = $connection;
     }
@@ -30,12 +30,14 @@ class Sequence
      * @param  int  $increment
      * @return bool
      */
-    public function create($name, $start = 1, $nocache = false, $min = 1, $max = false, $increment = 1)
-    {
-        if (! $name) {
-            return false;
-        }
-
+    public function create(
+        string $name,
+        int $start = 1,
+        bool $nocache = false,
+        int $min = 1,
+        bool $max = false,
+        int $increment = 1
+    ): bool {
         $name = $this->wrap($name);
 
         $nocache = $nocache ? 'nocache' : '';
@@ -53,10 +55,10 @@ class Sequence
      * @param  string  $name
      * @return string
      */
-    public function wrap($name)
+    public function wrap(string $name): string
     {
         if ($this->connection->getConfig('prefix_schema')) {
-            return $this->connection->getConfig('prefix_schema') . '.' . $name;
+            return $this->connection->getConfig('prefix_schema').'.'.$name;
         }
 
         return $name;
@@ -68,7 +70,7 @@ class Sequence
      * @param  string  $name
      * @return bool
      */
-    public function drop($name)
+    public function drop(string $name): bool
     {
         // check if a valid name and sequence exists
         if (! $name || ! $this->exists($name)) {
@@ -95,26 +97,25 @@ class Sequence
      * @param  string  $name
      * @return bool
      */
-    public function exists($name)
+    public function exists(string $name): bool
     {
-        if (! $name) {
-            return false;
-        }
-
         $name = $this->wrap($name);
 
-        return $this->connection->selectOne(
+        /** @var \stdClass $sequence */
+        $sequence = $this->connection->selectOne(
             "select * from all_sequences where sequence_name=upper('{$name}') and sequence_owner=upper(user)"
         );
+
+        return is_object($sequence);
     }
 
     /**
      * get sequence next value.
      *
-     * @param  string  $name
+     * @param  string|null  $name
      * @return int
      */
-    public function nextValue($name)
+    public function nextValue(string $name = null): int
     {
         if (! $name) {
             return 0;
@@ -122,7 +123,10 @@ class Sequence
 
         $name = $this->wrap($name);
 
-        return $this->connection->selectOne("SELECT $name.NEXTVAL as \"id\" FROM DUAL")->id;
+        /** @var \stdClass $sequence */
+        $sequence = $this->connection->selectOne("SELECT $name.NEXTVAL as \"id\" FROM DUAL");
+
+        return $sequence->id;
     }
 
     /**
@@ -131,7 +135,7 @@ class Sequence
      * @param  string  $name
      * @return int
      */
-    public function currentValue($name)
+    public function currentValue(string $name): int
     {
         return $this->lastInsertId($name);
     }
@@ -142,7 +146,7 @@ class Sequence
      * @param  string  $name
      * @return int
      */
-    public function lastInsertId($name)
+    public function lastInsertId(string $name): int
     {
         // check if a valid name and sequence exists
         if (! $name || ! $this->exists($name)) {
@@ -151,6 +155,9 @@ class Sequence
 
         $name = $this->wrap($name);
 
-        return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
+        /** @var \stdClass $sequence */
+        $sequence = $this->connection->selectOne("select $name.currval as \"id\" from dual");
+
+        return $sequence->id;
     }
 }
