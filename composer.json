@@ -20,8 +20,9 @@
         "yajra/laravel-pdo-via-oci8": "^3.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^7.0",
+        "doctrine/dbal": "^3.3",
         "mockery/mockery": "^1.4.4",
+        "orchestra/testbench": "^7.0",
         "phpunit/phpunit": "^9.5.8"
     },
     "autoload": {
@@ -49,7 +50,7 @@
         }
     },
     "scripts": {
-        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g"
+        "docker": "docker run -d -p 49160:22 -p 1521:1521 deepdiver/docker-oracle-xe-11g"
     },
     "config": {
         "sort-packages": true
