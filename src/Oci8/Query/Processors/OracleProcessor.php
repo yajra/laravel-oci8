@@ -26,10 +26,10 @@ class OracleProcessor extends Processor
         $connection->recordsHaveBeenModified();
         $start = microtime(true);
 
-        $id        = 0;
+        $id = 0;
         $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
-        $values    = $this->incrementBySequence($values, $sequence);
+        $values = $this->incrementBySequence($values, $sequence);
         $parameter = $this->bindValues($values, $statement, $parameter);
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
         $statement->execute();
@@ -50,7 +50,7 @@ class OracleProcessor extends Processor
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
         $connection = $query->getConnection();
-        $pdo        = $connection->getPdo();
+        $pdo = $connection->getPdo();
 
         return $pdo->prepare($sql);
     }
@@ -64,7 +64,7 @@ class OracleProcessor extends Processor
      */
     protected function incrementBySequence(array $values, $sequence)
     {
-        $builder     = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['object'];
+        $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['object'];
         $builderArgs = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[2]['args'];
 
         if (! isset($builderArgs[1][0][$sequence])) {
@@ -148,7 +148,7 @@ class OracleProcessor extends Processor
         $connection->recordsHaveBeenModified();
         $start = microtime(true);
 
-        $id        = 0;
+        $id = 0;
         $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
 

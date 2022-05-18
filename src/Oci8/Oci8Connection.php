@@ -50,7 +50,7 @@ class Oci8Connection extends Connection
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
         $this->sequence = new Sequence($this);
-        $this->trigger  = new Trigger($this);
+        $this->trigger = new Trigger($this);
     }
 
     /**
@@ -72,7 +72,7 @@ class Oci8Connection extends Connection
     public function setSchema($schema)
     {
         $this->schema = $schema;
-        $sessionVars  = [
+        $sessionVars = [
             'CURRENT_SCHEMA' => $schema,
         ];
 
@@ -97,7 +97,7 @@ class Oci8Connection extends Connection
         }
 
         if ($vars) {
-            $sql = 'ALTER SESSION SET ' . implode(' ', $vars);
+            $sql = 'ALTER SESSION SET '.implode(' ', $vars);
             $this->statement($sql);
         }
 
@@ -283,11 +283,11 @@ class Oci8Connection extends Connection
     public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
     {
         $paramsString = implode(',', array_map(function ($param) {
-            return ':' . $param;
+            return ':'.$param;
         }, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
-        $cursor = $cursor ? $prefix . $cursor : null;
+        $cursor = $cursor ? $prefix.$cursor : null;
 
         return sprintf('begin %s(%s%s); end;', $procedureName, $paramsString, $cursor);
     }
@@ -316,7 +316,7 @@ class Oci8Connection extends Connection
      */
     public function createStatementFromFunction($functionName, array $bindings)
     {
-        $bindings = $bindings ? ':' . implode(', :', array_keys($bindings)) : '';
+        $bindings = $bindings ? ':'.implode(', :', array_keys($bindings)) : '';
 
         $sql = sprintf('begin :result := %s(%s); end;', $functionName, $bindings);
 
@@ -397,17 +397,17 @@ class Oci8Connection extends Connection
     public function addBindingsToStatement(PDOStatement $stmt, array $bindings)
     {
         foreach ($bindings as $key => &$binding) {
-            $value  = &$binding;
-            $type   = PDO::PARAM_STR;
+            $value = &$binding;
+            $type = PDO::PARAM_STR;
             $length = -1;
 
             if (is_array($binding)) {
-                $value  = &$binding['value'];
-                $type   = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
+                $value = &$binding['value'];
+                $type = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
                 $length = array_key_exists('length', $binding) ? $binding['length'] : -1;
             }
 
-            $stmt->bindParam(':' . $key, $value, $type, $length);
+            $stmt->bindParam(':'.$key, $value, $type, $length);
         }
 
         return $stmt;

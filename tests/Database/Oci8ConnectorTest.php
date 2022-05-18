@@ -18,8 +18,8 @@ class Oci8ConnectorTest extends TestCase
     public function testCreateConnection()
     {
         $connector = new OracleConnectorStub;
-        $tns       = 'Connection String';
-        $config    = [
+        $tns = 'Connection String';
+        $config = [
             'driver'   => 'oracle',
             'host'     => 'host',
             'database' => 'database',
@@ -29,7 +29,7 @@ class Oci8ConnectorTest extends TestCase
             'charset'  => 'charset',
             'options'  => [],
         ];
-        $oci8      = $connector->createConnection($tns, $config, []);
+        $oci8 = $connector->createConnection($tns, $config, []);
         $this->assertInstanceOf(Oci8::class, $oci8);
     }
 
@@ -49,7 +49,7 @@ class Oci8ConnectorTest extends TestCase
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
-        $connector  = $this->getMockBuilder(OracleConnector::class)
+        $connector = $this->getMockBuilder(OracleConnector::class)
                            ->setMethods(['createConnection', 'getOptions'])
                            ->getMock();
         $connection = m::mock('PDO');

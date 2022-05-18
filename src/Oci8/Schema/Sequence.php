@@ -56,7 +56,7 @@ class Sequence
     public function wrap($name)
     {
         if ($this->connection->getConfig('prefix_schema')) {
-            return $this->connection->getConfig('prefix_schema') . '.' . $name;
+            return $this->connection->getConfig('prefix_schema').'.'.$name;
         }
 
         return $name;

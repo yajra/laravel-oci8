@@ -42,8 +42,8 @@ class ModelTest extends TestCase
     {
         $count = UserWithGuardedProperty::count();
 
-        $user        = new UserWithGuardedProperty;
-        $user->name  = 'Test';
+        $user = new UserWithGuardedProperty;
+        $user->name = 'Test';
         $user->email = 'test@example.com';
         $user->save();
 

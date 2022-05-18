@@ -60,7 +60,7 @@ class OracleEloquent extends Model
             return $this->sequence;
         }
 
-        return $this->getTable() . '_' . $this->getKeyName() . '_seq';
+        return $this->getTable().'_'.$this->getKeyName().'_seq';
     }
 
     /**
@@ -149,13 +149,13 @@ class OracleEloquent extends Model
         $pos = strpos($this->getTable(), '@');
 
         if ($pos === false) {
-            return $this->getTable() . '.' . $this->getKeyName();
+            return $this->getTable().'.'.$this->getKeyName();
         }
 
-        $table  = substr($this->getTable(), 0, $pos);
+        $table = substr($this->getTable(), 0, $pos);
         $dbLink = substr($this->getTable(), $pos);
 
-        return $table . '.' . $this->getKeyName() . $dbLink;
+        return $table.'.'.$this->getKeyName().$dbLink;
     }
 
     /**
@@ -165,7 +165,7 @@ class OracleEloquent extends Model
      */
     protected function newBaseQueryBuilder()
     {
-        $conn    = $this->getConnection();
+        $conn = $this->getConnection();
         $grammar = $conn->getQueryGrammar();
 
         if ($grammar instanceof OracleGrammar) {
