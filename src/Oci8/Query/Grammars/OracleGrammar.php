@@ -25,6 +25,23 @@ class OracleGrammar extends Grammar
     protected $schema_prefix = '';
 
     /**
+     * Compile a delete statement with joins into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  string  $table
+     * @param  string  $where
+     * @return string
+     */
+    protected function compileDeleteWithJoins(Builder $query, $table, $where)
+    {
+        $alias = last(explode(' as ', $table));
+
+        $joins = $this->compileJoins($query, $query->joins);
+
+        return "delete (select * from {$alias} {$joins} {$where})";
+    }
+
+    /**
      * Compile an exists statement into SQL.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
