@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.6.2] - 2022-05-18
+
+- Update delete query #715
+
 ## [v8.6.1] - 2022-01-31
 
 - Fix DB::listen, does not trigger QueryExecuted event on insert. #699
@@ -167,7 +171,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.6.1...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.6.2...8.x
+[v8.6.2]: https://github.com/yajra/laravel-oci8/compare/v8.6.1...v8.6.2
 [v8.6.1]: https://github.com/yajra/laravel-oci8/compare/v8.6.0...v8.6.1
 [v8.6.0]: https://github.com/yajra/laravel-oci8/compare/v8.5.0...v8.6.0
 [v8.5.0]: https://github.com/yajra/laravel-oci8/compare/v8.4.1...v8.5.0
