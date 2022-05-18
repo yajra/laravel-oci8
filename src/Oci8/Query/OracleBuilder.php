@@ -72,9 +72,9 @@ class OracleBuilder extends Builder
     {
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
+        $sql = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
-        $values   = $this->cleanBindings($values);
+        $values = $this->cleanBindings($values);
         $binaries = $this->cleanBindings($binaries);
 
         /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
@@ -97,9 +97,9 @@ class OracleBuilder extends Builder
 
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
+        $sql = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
-        $values   = $this->cleanBindings($bindings);
+        $values = $this->cleanBindings($bindings);
         $binaries = $this->cleanBindings($binaries);
 
         /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
@@ -132,7 +132,7 @@ class OracleBuilder extends Builder
 
             return $this->where(function ($query) use ($column, $chunks, $type, $not) {
                 foreach ($chunks as $ch) {
-                    $sqlClause = $not ? 'where' . $type : 'orWhere' . $type;
+                    $sqlClause = $not ? 'where'.$type : 'orWhere'.$type;
                     $query->{$sqlClause}($column, $ch);
                 }
             }, null, null, $boolean);

@@ -87,8 +87,8 @@ class Comment extends Grammar
      */
     private function commentColumn($table, $column, $comment)
     {
-        $table  = $this->wrapValue($table);
-        $table  = $this->connection->getTablePrefix() . $table;
+        $table = $this->wrapValue($table);
+        $table = $this->connection->getTablePrefix().$table;
         $column = $this->wrapValue($column);
 
         $this->connection->statement("comment on column {$table}.{$column} is '{$comment}'");

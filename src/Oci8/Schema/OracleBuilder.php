@@ -24,7 +24,7 @@ class OracleBuilder extends Builder
     public function __construct(Connection $connection)
     {
         parent::__construct($connection);
-        $this->helper  = new OracleAutoIncrementHelper($connection);
+        $this->helper = new OracleAutoIncrementHelper($connection);
         $this->comment = new Comment($connection);
     }
 
@@ -133,13 +133,13 @@ class OracleBuilder extends Builder
     {
         /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileTableExists();
+        $sql = $grammar->compileTableExists();
 
         $database = $this->connection->getConfig('username');
         if ($this->connection->getConfig('prefix_schema')) {
             $database = $this->connection->getConfig('prefix_schema');
         }
-        $table = $this->connection->getTablePrefix() . $table;
+        $table = $this->connection->getTablePrefix().$table;
 
         return count($this->connection->select($sql, [$database, $table])) > 0;
     }
@@ -153,7 +153,7 @@ class OracleBuilder extends Builder
     public function getColumnListing($table)
     {
         $database = $this->connection->getConfig('username');
-        $table    = $this->connection->getTablePrefix() . $table;
+        $table = $this->connection->getTablePrefix().$table;
         /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
         $results = $this->connection->select($grammar->compileColumnExists($database, $table));

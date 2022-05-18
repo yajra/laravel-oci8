@@ -48,7 +48,7 @@ class StoredProcedureTest extends TestCase
 
         $connection->getPdo()->exec($command);
 
-        $input  = 20;
+        $input = 20;
         $output = 0;
 
         $bindings = [
@@ -81,7 +81,7 @@ class StoredProcedureTest extends TestCase
         $connection->getPdo()->exec($command);
 
         $first = 'hello';
-        $last  = 'world';
+        $last = 'world';
 
         //this needs to be large enough to hold the plsql return value
         $output = str_repeat(' ', 1000);
@@ -97,6 +97,6 @@ class StoredProcedureTest extends TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        $this->assertSame($first . $last, $output);
+        $this->assertSame($first.$last, $output);
     }
 }
