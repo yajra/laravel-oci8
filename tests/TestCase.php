@@ -49,8 +49,8 @@ abstract class TestCase extends BaseTestCase
         collect(range(1, 20))->each(function ($i) {
             /** @var User $user */
             User::query()->create([
-                'name'  => 'Record-' . $i,
-                'email' => 'Email-' . $i . '@example.com',
+                'name'  => 'Record-'.$i,
+                'email' => 'Email-'.$i.'@example.com',
             ]);
         });
     }

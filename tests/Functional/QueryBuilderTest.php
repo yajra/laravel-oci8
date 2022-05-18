@@ -63,9 +63,9 @@ class QueryBuilderTest extends TestCase
      */
     protected function getBuilder(): Builder
     {
-        $grammar   = new OracleGrammar;
+        $grammar = new OracleGrammar;
         $processor = new OracleProcessor;
-        $builder   = new Builder($this->getConnection(), $grammar, $processor);
+        $builder = new Builder($this->getConnection(), $grammar, $processor);
 
         return $builder;
     }
