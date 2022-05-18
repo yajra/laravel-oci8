@@ -786,7 +786,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         // $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc limit 10';
         $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc ';
-        $union       = $this->getBuilder()->select('a')->from('t2')->where('a', 11)->where('b', 2);
+        $union = $this->getBuilder()->select('a')->from('t2')->where('a', 11)->where('b', 2);
         $builder->select('a')->from('t1')->where('a', 10)->where('b', 1)->union($union)->orderBy('a')->limit(10);
         $this->assertEquals($expectedSql, $builder->toSql());
         $this->assertEquals([0 => 10, 1 => 1, 2 => 11, 3 => 2], $builder->getBindings());
@@ -807,7 +807,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function testUnionAggregate()
     {
         $expected = 'select count(*) as aggregate from ((select * from "POSTS") union (select * from "VIDEOS")) "TEMP_TABLE"';
-        $builder  = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with($expected, [], true);
         $builder->getProcessor()->shouldReceive('processSelect')->once();
         $builder->from('posts')->union($this->getBuilder()->from('videos'))->count();
@@ -859,7 +859,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testSubSelectWhereIns()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
@@ -869,7 +869,7 @@ class Oci8QueryBuilderTest extends TestCase
         );
         $this->assertEquals([25], $builder->getBindings());
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
@@ -1075,7 +1075,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function testHavingFollowedBySelectGet()
     {
         $builder = $this->getBuilder();
-        $query   = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > ?';
+        $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > ?';
         $builder->getConnection()->shouldReceive('select')->once()->with($query, ['popular', 3], true)->andReturn([['category' => 'rock', 'total' => 5]]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1086,7 +1086,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         // Using \Raw value
         $builder = $this->getBuilder();
-        $query   = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > 3';
+        $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > 3';
         $builder->getConnection()->shouldReceive('select')->once()->with($query, ['popular'], true)->andReturn([['category' => 'rock', 'total' => 5]]);
         $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
             return $results;
@@ -1109,7 +1109,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testOffset()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(10);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 10) t2 where t2."rn" >= 11',
@@ -1119,35 +1119,35 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testLimitsAndOffsets()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(5)->limit(10);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 6',
             $builder->toSql()
         );
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(5)->take(10);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 6',
             $builder->toSql()
         );
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(-5)->take(10);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 10) t2 where t2."rn" >= 1',
             $builder->toSql()
         );
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 30) t2 where t2."rn" >= 16',
             $builder->toSql()
         );
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1',
@@ -1157,14 +1157,14 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testLimitAndOffsetToPaginateOne()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(0)->limit(1);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 1) t2 where t2."rn" >= 1',
             $builder->toSql()
         );
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(1)->limit(1);
         $this->assertEquals(
             'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 2) t2 where t2."rn" >= 2',
@@ -1615,7 +1615,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
             $builder->toSql());
 
-        $builder         = $this->getBuilder();
+        $builder = $this->getBuilder();
         $eloquentBuilder = new EloquentBuilder($this->getBuilder()->from('contacts'));
         $eloquentBuilder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->joinSub($eloquentBuilder, 'sub', 'users.id', '=', 'sub.id');
@@ -1623,7 +1623,7 @@ class Oci8QueryBuilderTest extends TestCase
             $builder->toSql());
 
         $builder = $this->getBuilder();
-        $sub1    = $this->getBuilder()->from('contacts')->where('name', 'foo');
+        $sub1 = $this->getBuilder()->from('contacts')->where('name', 'foo');
         $sub1->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $sub2 = $this->getBuilder()->from('contacts')->where('name', 'bar');
         $sub2->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
@@ -1652,7 +1652,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function testLeftJoinSub()
     {
         $builder = $this->getBuilder();
-        $sub     = $this->getBuilder()->from('contacts');
+        $sub = $this->getBuilder()->from('contacts');
         $sub->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->leftJoinSub($sub, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" left join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
@@ -1666,7 +1666,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function testRightJoinSub()
     {
         $builder = $this->getBuilder();
-        $sub     = $this->getBuilder()->from('contacts');
+        $sub = $this->getBuilder()->from('contacts');
         $sub->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')->rightJoinSub($sub, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" right join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"',
@@ -1686,7 +1686,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFindReturnsFirstResultByID()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->getConnection()
                 ->shouldReceive('select')
                 ->once()
@@ -1706,7 +1706,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFirstMethodReturnsFirstResult()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
                    ->once()
                    ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
@@ -1977,8 +1977,8 @@ class Oci8QueryBuilderTest extends TestCase
     public function testSubQueriesBindings()
     {
         $builder = $this->getBuilder();
-        $second  = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
-        $third   = $this->getBuilder()
+        $second = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
+        $third = $this->getBuilder()
             ->select('*')
             ->from('users')
             ->where('id', 3)
@@ -2419,7 +2419,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testMergeWheresCanMergeWheresAndBindings()
     {
-        $builder         = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->wheres = ['foo'];
         $builder->mergeWheres(['wheres'], [12 => 'foo', 13 => 'bar']);
         $this->assertEquals(['foo', 'wheres'], $builder->wheres);
@@ -2454,11 +2454,11 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testDynamicWhere()
     {
-        $method     = 'whereFooBarAndBazOrQux';
+        $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
-        $grammar    = new OracleGrammar;
-        $processor  = m::mock('\Yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar = new OracleGrammar;
+        $processor = m::mock('\Yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('foo_bar', '=', $parameters[0], 'and')->once()->andReturn($builder);
@@ -2470,9 +2470,9 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testDynamicWhereIsNotGreedy()
     {
-        $method     = 'whereIosVersionAndAndroidVersionOrOrientation';
+        $method = 'whereIosVersionAndAndroidVersionOrOrientation';
         $parameters = ['6.1', '4.2', 'Vertical'];
-        $builder    = m::mock(Builder::class)->makePartial();
+        $builder = m::mock(Builder::class)->makePartial();
 
         $builder->shouldReceive('where')->with('ios_version', '=', '6.1', 'and')->once()->andReturnSelf();
         $builder->shouldReceive('where')->with('android_version', '=', '4.2', 'and')->once()->andReturnSelf();
@@ -2535,7 +2535,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testBindingOrder()
     {
-        $expectedSql      = 'select * from "USERS" inner join "OTHERTABLE" on "BAR" = ? where "REGISTERED" = ? group by "CITY" having "POPULATION" > ? order by match ("FOO") against(?)';
+        $expectedSql = 'select * from "USERS" inner join "OTHERTABLE" on "BAR" = ? where "REGISTERED" = ? group by "CITY" having "POPULATION" > ? order by match ("FOO") against(?)';
         $expectedBindings = ['foo', 1, 3, 'bar'];
 
         $builder = $this->getBuilder();
@@ -2593,7 +2593,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testSubSelect()
     {
-        $expectedSql      = 'select "FOO", "BAR", (select "BAZ" from "TWO" where "SUBKEY" = ?) as "SUB" from "ONE" where "KEY" = ?';
+        $expectedSql = 'select "FOO", "BAR", (select "BAZ" from "TWO" where "SUBKEY" = ?) as "SUB" from "ONE" where "KEY" = ?';
         $expectedBindings = ['subval', 'val'];
 
         $builder = $this->getBuilder();
@@ -2656,7 +2656,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkWithLastChunkComplete()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk1 = collect(['foo1', 'foo2']);
@@ -2679,7 +2679,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkWithLastChunkPartial()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk1 = collect(['foo1', 'foo2']);
@@ -2699,7 +2699,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkCanBeStoppedByReturningFalse()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk1 = collect(['foo1', 'foo2']);
@@ -2721,7 +2721,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkWithCountZero()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk = collect([]);
@@ -2738,7 +2738,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkPaginatesUsingIdWithLastChunkComplete()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk1 = collect([(object) ['someIdField' => 1], (object) ['someIdField' => 2]]);
@@ -2761,7 +2761,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkPaginatesUsingIdWithLastChunkPartial()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk1 = collect([(object) ['someIdField' => 1], (object) ['someIdField' => 2]]);
@@ -2781,7 +2781,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkPaginatesUsingIdWithCountZero()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk = collect([]);
@@ -2798,7 +2798,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testChunkPaginatesUsingIdWithAlias()
     {
-        $builder           = $this->getMockQueryBuilder();
+        $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
         $chunk1 = collect([(object) ['table_id' => 1], (object) ['table_id' => 10]]);
@@ -2818,12 +2818,12 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testPaginate()
     {
-        $perPage  = 16;
-        $columns  = ['test'];
+        $perPage = 16;
+        $columns = ['test'];
         $pageName = 'page-name';
-        $page     = 1;
-        $builder  = $this->getMockQueryBuilder();
-        $path     = 'http://foo.bar?page=3';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
 
         $results = collect([['test' => 'foo'], ['test' => 'bar']]);
 
@@ -2845,11 +2845,11 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testPaginateWithDefaultArguments()
     {
-        $perPage  = 15;
+        $perPage = 15;
         $pageName = 'page';
-        $page     = 1;
-        $builder  = $this->getMockQueryBuilder();
-        $path     = 'http://foo.bar?page=3';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
 
         $results = collect([['test' => 'foo'], ['test' => 'bar']]);
 
@@ -2875,11 +2875,11 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testPaginateWhenNoResults()
     {
-        $perPage  = 15;
+        $perPage = 15;
         $pageName = 'page';
-        $page     = 1;
-        $builder  = $this->getMockQueryBuilder();
-        $path     = 'http://foo.bar?page=3';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
 
         $results = [];
 
@@ -2905,12 +2905,12 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testPaginateWithSpecificColumns()
     {
-        $perPage  = 16;
-        $columns  = ['id', 'name'];
+        $perPage = 16;
+        $columns = ['id', 'name'];
         $pageName = 'page-name';
-        $page     = 1;
-        $builder  = $this->getMockQueryBuilder();
-        $path     = 'http://foo.bar?page=3';
+        $page = 1;
+        $builder = $this->getMockQueryBuilder();
+        $path = 'http://foo.bar?page=3';
 
         $results = collect([['id' => 3, 'name' => 'Taylor'], ['id' => 5, 'name' => 'Mohamed']]);
 
@@ -3084,7 +3084,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     protected function getBuilder()
     {
-        $grammar   = new OracleGrammar;
+        $grammar = new OracleGrammar;
         $processor = m::mock(OracleProcessor::class);
 
         return new Builder($this->getConnection(), $grammar, $processor);
@@ -3104,7 +3104,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     protected function getBuilderWithProcessor()
     {
-        $grammar   = new OracleGrammar;
+        $grammar = new OracleGrammar;
         $processor = new OracleProcessor;
 
         return new Builder(m::mock(ConnectionInterface::class), $grammar, $processor);

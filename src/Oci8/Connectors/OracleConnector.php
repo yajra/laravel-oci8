@@ -131,9 +131,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function setServiceId(array $config)
     {
-        $config['service']   = empty($config['service_name'])
-            ? $service_param = 'SID = ' . $config['database']
-            : $service_param = 'SERVICE_NAME = ' . $config['service_name'];
+        $config['service'] = empty($config['service_name'])
+            ? $service_param = 'SID = '.$config['database']
+            : $service_param = 'SERVICE_NAME = '.$config['service_name'];
 
         return $config;
     }
@@ -180,7 +180,7 @@ class OracleConnector extends Connector implements ConnectorInterface
         if ($count > 1) {
             $address = '';
             for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = ' . $config['protocol'] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
+                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
             }
 
             // backwards compatibility for users dont have this field in their php config
@@ -208,7 +208,7 @@ class OracleConnector extends Connector implements ConnectorInterface
             return parent::createConnection($tns, $config, $options);
         }
 
-        $config             = $this->setCharset($config);
+        $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
         return new Oci8($tns, $config['username'], $config['password'], $options);
