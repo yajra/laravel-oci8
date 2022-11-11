@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v9.0.0...9.x)
 
+## [v9.0.4] - 2022-11-11
+
+- Allow for a large number of column names in compound indicies #735
+
 ## [v9.0.3] - 2022-06-15
 
 - Add default fetch mode #721
@@ -22,7 +26,8 @@
 - Add support for Laravel 9 #698
 - Breaking Change: Fix #696 rename DB_SERVICENAME to DB_SERVICE_NAME [db5037e](https://github.com/yajra/laravel-oci8/commit/db5037eb83bfadf3c1400d8c5780d3270e7c315f)
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/9.x...v9.0.3
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/9.x...v9.0.4
+[v9.0.4]: https://github.com/yajra/laravel-oci8/compare/v9.0.3...v9.0.4
 [v9.0.3]: https://github.com/yajra/laravel-oci8/compare/v9.0.2...v9.0.3
 [v9.0.2]: https://github.com/yajra/laravel-oci8/compare/v9.0.1...v9.0.2
 [v9.0.1]: https://github.com/yajra/laravel-oci8/compare/v9.0.0...v9.0.1
