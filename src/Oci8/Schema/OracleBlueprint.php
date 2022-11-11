@@ -46,31 +46,37 @@ class OracleBlueprint extends Blueprint
      */
     protected function createIndexName($type, array $columns)
     {
-        $short_type = [
-            'primary' => 'pk',
-            'foreign' => 'fk',
-            'unique'  => 'uk',
-        ];
+        //if we are creating a compound/composite index with more than 2 columns, do not use the standard naming scheme
 
-        $type = isset($short_type[$type]) ? $short_type[$type] : $type;
+        if (count($columns) <= 2) {
+            $short_type = [
+                'primary' => 'pk',
+                'foreign' => 'fk',
+                'unique'  => 'uk',
+            ];
 
-        $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
+            $type = isset($short_type[$type]) ? $short_type[$type] : $type;
 
-        $index = str_replace(['-', '.'], '_', $index);
+            $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
 
-        //shorten the name if it is longer than 30 chars
-        while (strlen($index) > 30) {
-            $parts = explode('_', $index);
+            $index = str_replace(['-', '.'], '_', $index);
 
-            for ($i = 0; $i < count($parts); $i++) {
-                //if any part is longer than 2 chars, take one off
-                $len = strlen($parts[$i]);
-                if ($len > 2) {
-                    $parts[$i] = substr($parts[$i], 0, $len - 1);
+            //shorten the name if it is longer than 30 chars
+            while (strlen($index) > 30) {
+                $parts = explode('_', $index);
+
+                for ($i = 0; $i < count($parts); $i++) {
+                    //if any part is longer than 2 chars, take one off
+                    $len = strlen($parts[$i]);
+                    if ($len > 2) {
+                        $parts[$i] = substr($parts[$i], 0, $len - 1);
+                    }
                 }
-            }
 
-            $index = implode('_', $parts);
+                $index = implode('_', $parts);
+            }
+        } else {
+            $index = substr($this->table, 0, 10).'_comp_'.microtime(true);
         }
 
         return $index;
