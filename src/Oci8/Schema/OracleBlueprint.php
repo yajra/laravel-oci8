@@ -46,8 +46,7 @@ class OracleBlueprint extends Blueprint
      */
     protected function createIndexName($type, array $columns)
     {
-        //if we are creating a compound/composite index with more than 2 columns, do not use the standard naming scheme
-
+        // if we are creating a compound/composite index with more than 2 columns, do not use the standard naming scheme
         if (count($columns) <= 2) {
             $short_type = [
                 'primary' => 'pk',
@@ -61,12 +60,12 @@ class OracleBlueprint extends Blueprint
 
             $index = str_replace(['-', '.'], '_', $index);
 
-            //shorten the name if it is longer than 30 chars
+            // shorten the name if it is longer than 30 chars
             while (strlen($index) > 30) {
                 $parts = explode('_', $index);
 
                 for ($i = 0; $i < count($parts); $i++) {
-                    //if any part is longer than 2 chars, take one off
+                    // if any part is longer than 2 chars, take one off
                     $len = strlen($parts[$i]);
                     if ($len > 2) {
                         $parts[$i] = substr($parts[$i], 0, $len - 1);
