@@ -58,7 +58,7 @@ class Oci8ServiceProvider extends ServiceProvider
             }
 
             // set oracle session variables
-            $sessionVars = config('oracle.sessionVars');
+            $sessionVars = config('database.connections.sessionVars');
 
             // Like Postgres, Oracle allows the concept of "schema"
             if (isset($config['schema'])) {
