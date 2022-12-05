@@ -18,7 +18,6 @@ return [
         'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
         'dynamic'        => [],
     ],
-    
     'sessionVars' => [
         'NLS_TIME_FORMAT'         => 'HH24:MI:SS',
         'NLS_DATE_FORMAT'         => 'YYYY-MM-DD HH24:MI:SS',
