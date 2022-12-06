@@ -24,5 +24,5 @@ return [
         'NLS_TIMESTAMP_FORMAT'    => 'YYYY-MM-DD HH24:MI:SS',
         'NLS_TIMESTAMP_TZ_FORMAT' => 'YYYY-MM-DD HH24:MI:SS TZH:TZM',
         'NLS_NUMERIC_CHARACTERS'  => '.,',
-    ]
+    ],
 ];
