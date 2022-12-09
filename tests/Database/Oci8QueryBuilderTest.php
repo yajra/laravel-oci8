@@ -3073,6 +3073,15 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $clone->getBindings());
     }
 
+    public function testRandomOrder()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('email', 'foo')->inRandomOrder();
+
+        $this->assertSame('select * from "USERS" where "EMAIL" = ? order by DBMS_RANDOM.RANDOM', $builder->toSql());
+        $this->assertEquals([0 => 'foo'], $builder->getBindings());
+    }
+
     protected function getConnection()
     {
         $connection = m::mock(ConnectionInterface::class);
