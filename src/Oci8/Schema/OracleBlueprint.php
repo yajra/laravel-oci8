@@ -75,7 +75,7 @@ class OracleBlueprint extends Blueprint
                 $index = implode('_', $parts);
             }
         } else {
-            $index = substr($this->table, 0, 10).'_comp_'.microtime(true);
+            $index = substr($this->table, 0, 10) . '_comp_' . str_replace('.', '_', microtime(true));
         }
 
         return $index;
