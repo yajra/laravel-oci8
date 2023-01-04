@@ -266,15 +266,7 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command)
     {
-        $columns =  array_map(function($column) {
-            $column = $this->wrap($column);
-
-            return "lower({$column})";
-        }, $command->columns);
-
-        $columns = implode(', ', $columns);
-
-        return sprintf('create unique index %s on %s (%s)', $command->index, $this->wrapTable($blueprint), $columns);
+        return 'alter table ' . $this->wrapTable($blueprint) . " add constraint {$command->index} unique ( " . $this->columnize($command->columns) . ' )';
     }
 
     /**
