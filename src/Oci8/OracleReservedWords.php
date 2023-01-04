@@ -10,6 +10,7 @@ trait OracleReservedWords
      * Lists of reserved words.
      *
      * @see https://docs.oracle.com/cd/B19306_01/em.102/b40103/app_oracle_reserved_words.htm
+     *
      * @var array
      */
     protected $reserves = [
@@ -498,7 +499,7 @@ trait OracleReservedWords
     /**
      * Check if value is an Oracle reserved word.
      *
-     * @param string $value
+     * @param  string  $value
      * @return bool
      */
     public function isReserved($value)

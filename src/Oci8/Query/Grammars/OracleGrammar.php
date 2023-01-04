@@ -27,12 +27,12 @@ class OracleGrammar extends Grammar
     /**
      * Compile an exists statement into SQL.
      *
-     * @param \Illuminate\Database\Query\Builder $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @return string
      */
     public function compileExists(Builder $query)
     {
-        $q          = clone $query;
+        $q = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
           ->whereRaw('rownum = 1');
@@ -85,8 +85,8 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * @param Builder $query
-     * @param array $components
+     * @param  Builder  $query
+     * @param  array  $components
      * @return bool
      */
     protected function isPaginationable(Builder $query, array $components)
@@ -97,8 +97,8 @@ class OracleGrammar extends Grammar
     /**
      * Create a full ANSI offset clause for the query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $components
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $components
      * @return string
      */
     protected function compileAnsiOffset(Builder $query, $components)
@@ -106,9 +106,9 @@ class OracleGrammar extends Grammar
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries
         if ($query->getConnection()->getConfig('server_version') == '12c') {
             $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns']);
-            $offset                = $query->offset ?: 0;
-            $limit                 = $query->limit;
-            $components['limit']   = "offset $offset rows fetch next $limit rows only";
+            $offset = $query->offset ?: 0;
+            $limit = $query->limit;
+            $components['limit'] = "offset $offset rows fetch next $limit rows only";
 
             return $this->concatenate($components);
         }
@@ -128,12 +128,12 @@ class OracleGrammar extends Grammar
     /**
      * Compile the limit / offset row constraint for a query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @return string
      */
     protected function compileRowConstraint($query)
     {
-        $start  = $query->offset + 1;
+        $start = $query->offset + 1;
         $finish = $query->offset + $query->limit;
 
         if ($query->limit == 1 && is_null($query->offset)) {
@@ -150,9 +150,9 @@ class OracleGrammar extends Grammar
     /**
      * Compile a common table expression for a query.
      *
-     * @param  string $sql
-     * @param  string $constraint
-     * @param Builder $query
+     * @param  string  $sql
+     * @param  string  $constraint
+     * @param  Builder  $query
      * @return string
      */
     protected function compileTableExpression($sql, $constraint, $query)
@@ -167,12 +167,12 @@ class OracleGrammar extends Grammar
     /**
      * Compile a truncate table statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @return array
      */
     public function compileTruncate(Builder $query)
     {
-        return ['truncate table ' . $this->wrapTable($query->from) => []];
+        return ['truncate table '.$this->wrapTable($query->from) => []];
     }
 
     /**
@@ -181,7 +181,7 @@ class OracleGrammar extends Grammar
      * Override due to laravel's stringify integers.
      *
      * @param  \Illuminate\Database\Query\Expression|string  $value
-     * @param  bool    $prefixAlias
+     * @param  bool  $prefixAlias
      * @return string
      */
     public function wrap($value, $prefixAlias = false)
@@ -196,7 +196,7 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a table in keyword identifiers.
      *
-     * @param  \Illuminate\Database\Query\Expression|string $table
+     * @param  \Illuminate\Database\Query\Expression|string  $table
      * @return string
      */
     public function wrapTable($table)
@@ -209,13 +209,13 @@ class OracleGrammar extends Grammar
             $table = str_replace(' as ', ' ', strtolower($table));
         }
 
-        $tableName = $this->wrap($this->tablePrefix . $table, true);
-        $segments  = explode(' ', $table);
+        $tableName = $this->wrap($this->tablePrefix.$table, true);
+        $segments = explode(' ', $table);
         if (count($segments) > 1) {
-            $tableName = $this->wrap($this->tablePrefix . $segments[0]) . ' ' . $segments[1];
+            $tableName = $this->wrap($this->tablePrefix.$segments[0]).' '.$segments[1];
         }
 
-        return $this->getSchemaPrefix() . $tableName;
+        return $this->getSchemaPrefix().$tableName;
     }
 
     /**
@@ -225,13 +225,13 @@ class OracleGrammar extends Grammar
      */
     public function getSchemaPrefix()
     {
-        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix) . '.' : '';
+        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix).'.' : '';
     }
 
     /**
      * Set the schema prefix.
      *
-     * @param string $prefix
+     * @param  string  $prefix
      */
     public function setSchemaPrefix($prefix)
     {
@@ -241,7 +241,7 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a single string in keyword identifiers.
      *
-     * @param  string $value
+     * @param  string  $value
      * @return string
      */
     protected function wrapValue($value)
@@ -252,15 +252,15 @@ class OracleGrammar extends Grammar
 
         $value = Str::upper($value);
 
-        return '"' . str_replace('"', '""', $value) . '"';
+        return '"'.str_replace('"', '""', $value).'"';
     }
 
     /**
      * Compile an insert and get ID statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
-     * @param  string $sequence
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  string  $sequence
      * @return string
      */
     public function compileInsertGetId(Builder $query, $values, $sequence = 'id')
@@ -278,14 +278,14 @@ class OracleGrammar extends Grammar
             }
         }
 
-        return $this->compileInsert($query, $values) . ' returning ' . $this->wrap($sequence) . ' into ?';
+        return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence).' into ?';
     }
 
     /**
      * Compile an insert statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
      * @return string
      */
     public function compileInsert(Builder $query, array $values)
@@ -311,8 +311,8 @@ class OracleGrammar extends Grammar
         if (count($value) > 1) {
             $insertQueries = [];
             foreach ($value as $parameter) {
-                $parameter       = (str_replace(['(', ')'], '', $parameter));
-                $insertQueries[] = 'select ' . $parameter . ' from dual ';
+                $parameter = (str_replace(['(', ')'], '', $parameter));
+                $insertQueries[] = 'select '.$parameter.' from dual ';
             }
             $parameters = implode('union all ', $insertQueries);
 
@@ -326,10 +326,10 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert with blob field statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return string
      */
     public function compileInsertLob(Builder $query, $values, $binaries, $sequence = 'id')
@@ -348,29 +348,29 @@ class OracleGrammar extends Grammar
             $binaries = [$binaries];
         }
 
-        $columns       = $this->columnize(array_keys(reset($values)));
+        $columns = $this->columnize(array_keys(reset($values)));
         $binaryColumns = $this->columnize(array_keys(reset($binaries)));
-        $columns .= (empty($columns) ? '' : ', ') . $binaryColumns;
+        $columns .= (empty($columns) ? '' : ', ').$binaryColumns;
 
-        $parameters       = $this->parameterize(reset($values));
+        $parameters = $this->parameterize(reset($values));
         $binaryParameters = $this->parameterize(reset($binaries));
 
-        $value       = array_fill(0, count($values), "$parameters");
+        $value = array_fill(0, count($values), "$parameters");
         $binaryValue = array_fill(0, count($binaries), str_replace('?', 'EMPTY_BLOB()', $binaryParameters));
 
-        $value      = array_merge($value, $binaryValue);
+        $value = array_merge($value, $binaryValue);
         $parameters = implode(', ', array_filter($value));
 
-        return "insert into $table ($columns) values ($parameters) returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
+        return "insert into $table ($columns) values ($parameters) returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
     }
 
     /**
      * Compile an update statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return string
      */
     public function compileUpdateLob(Builder $query, array $values, array $binaries, $sequence = 'id')
@@ -383,7 +383,7 @@ class OracleGrammar extends Grammar
         $columns = [];
 
         foreach ($values as $key => $value) {
-            $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
+            $columns[] = $this->wrap($key).' = '.$this->parameter($value);
         }
 
         $columns = implode(', ', $columns);
@@ -392,7 +392,7 @@ class OracleGrammar extends Grammar
         if (! is_array(reset($binaries))) {
             $binaries = [$binaries];
         }
-        $binaryColumns    = $this->columnize(array_keys(reset($binaries)));
+        $binaryColumns = $this->columnize(array_keys(reset($binaries)));
         $binaryParameters = $this->parameterize(reset($binaries));
 
         // create EMPTY_BLOB sql for each binary
@@ -403,7 +403,7 @@ class OracleGrammar extends Grammar
 
         // prepare binary SQLs
         if (count($binarySql)) {
-            $binarySql = (empty($columns) ? '' : ', ') . implode(',', $binarySql);
+            $binarySql = (empty($columns) ? '' : ', ').implode(',', $binarySql);
         }
 
         // If the query has any "join" clauses, we will setup the joins on the builder
@@ -411,7 +411,7 @@ class OracleGrammar extends Grammar
         // can get join statements to attach to other tables when they're needed.
         $joins = '';
         if (isset($query->joins)) {
-            $joins = ' ' . $this->compileJoins($query, $query->joins);
+            $joins = ' '.$this->compileJoins($query, $query->joins);
         }
 
         // Of course, update queries may also be constrained by where clauses so we'll
@@ -419,14 +419,14 @@ class OracleGrammar extends Grammar
         // intended records are updated by the SQL statements we generate to run.
         $where = $this->compileWheres($query);
 
-        return "update {$table}{$joins} set $columns$binarySql $where returning " . $binaryColumns . ', ' . $this->wrap($sequence) . ' into ' . $binaryParameters . ', ?';
+        return "update {$table}{$joins} set $columns$binarySql $where returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
     }
 
     /**
      * Compile the lock into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  bool|string $value
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  bool|string  $value
      * @return string
      */
     protected function compileLock(Builder $query, $value)
@@ -445,8 +445,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile the "limit" portions of the query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  int $limit
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  int  $limit
      * @return string
      */
     protected function compileLimit(Builder $query, $limit)
@@ -457,8 +457,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile the "offset" portions of the query.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  int $offset
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  int  $offset
      * @return string
      */
     protected function compileOffset(Builder $query, $offset)
@@ -469,8 +469,8 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where date" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $where
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
      * @return string
      */
     protected function whereDate(Builder $query, $where)
@@ -483,9 +483,9 @@ class OracleGrammar extends Grammar
     /**
      * Compile a date based where clause.
      *
-     * @param  string $type
-     * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array $where
+     * @param  string  $type
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
      * @return string
      */
     protected function dateBasedWhere($type, Builder $query, $where)
@@ -541,19 +541,19 @@ class OracleGrammar extends Grammar
 
     private function resolveClause($column, $values, $type)
     {
-        $chunks      = array_chunk($values, 1000);
+        $chunks = array_chunk($values, 1000);
         $whereClause = '';
-        $i           = 0;
-        $type        = $this->wrap($column) . ' '.$type.' ';
+        $i = 0;
+        $type = $this->wrap($column).' '.$type.' ';
         foreach ($chunks as $ch) {
             // Add or only at the second loop
             if ($i === 1) {
-                $type = ' or ' . $type . ' ';
+                $type = ' or '.$type.' ';
             }
-            $whereClause .= $type . '('.implode(', ', $ch).')';
+            $whereClause .= $type.'('.implode(', ', $ch).')';
             $i++;
         }
 
-        return '(' . $whereClause . ')';
+        return '('.$whereClause.')';
     }
 }

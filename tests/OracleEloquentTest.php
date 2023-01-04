@@ -52,11 +52,11 @@ class OracleEloquentTest extends TestCase
     protected function mockConnectionForModel($model, $database)
     {
         if ($database == 'Oracle') {
-            $grammarClass   = OracleGrammar::class;
+            $grammarClass = OracleGrammar::class;
             $processorClass = OracleProcessor::class;
-            $grammar        = new $grammarClass;
-            $processor      = new $processorClass;
-            $connection     = m::mock('Illuminate\Database\ConnectionInterface', [
+            $grammar = new $grammarClass;
+            $processor = new $processorClass;
+            $connection = m::mock('Illuminate\Database\ConnectionInterface', [
                 'getQueryGrammar'  => $grammar,
                 'getPostProcessor' => $processor,
             ]);
@@ -68,11 +68,11 @@ class OracleEloquentTest extends TestCase
             return;
         }
 
-        $grammarClass   = 'Illuminate\Database\Query\Grammars\\' . $database . 'Grammar';
-        $processorClass = 'Illuminate\Database\Query\Processors\\' . $database . 'Processor';
-        $grammar        = new $grammarClass;
-        $processor      = new $processorClass;
-        $connection     = m::mock('Illuminate\Database\ConnectionInterface', [
+        $grammarClass = 'Illuminate\Database\Query\Grammars\\'.$database.'Grammar';
+        $processorClass = 'Illuminate\Database\Query\Processors\\'.$database.'Processor';
+        $grammar = new $grammarClass;
+        $processor = new $processorClass;
+        $connection = m::mock('Illuminate\Database\ConnectionInterface', [
             'getQueryGrammar'  => $grammar,
             'getPostProcessor' => $processor,
         ]);

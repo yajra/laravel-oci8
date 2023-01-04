@@ -30,7 +30,7 @@ class OracleBlueprint extends Blueprint
     /**
      * Set table prefix settings.
      *
-     * @param string $prefix
+     * @param  string  $prefix
      */
     public function setTablePrefix($prefix = '')
     {
@@ -40,8 +40,8 @@ class OracleBlueprint extends Blueprint
     /**
      * Create a default index name for the table.
      *
-     * @param  string $type
-     * @param  array $columns
+     * @param  string  $type
+     * @param  array  $columns
      * @return string
      */
     protected function createIndexName($type, array $columns)
@@ -54,7 +54,7 @@ class OracleBlueprint extends Blueprint
 
         $type = isset($short_type[$type]) ? $short_type[$type] : $type;
 
-        $index = strtolower($this->prefix . $this->table . '_' . implode('_', $columns) . '_' . $type);
+        $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
 
         $index = str_replace(['-', '.'], '_', $index);
 
@@ -79,8 +79,8 @@ class OracleBlueprint extends Blueprint
     /**
      * Create a new nvarchar2 column on the table.
      *
-     * @param string $column
-     * @param int $length
+     * @param  string  $column
+     * @param  int  $length
      * @return \Illuminate\Support\Fluent
      */
     public function nvarchar2($column, $length = 255)

@@ -23,7 +23,7 @@ class Oci8ServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/oracle.php' => config_path('oracle.php'),
+            __DIR__.'/../config/oracle.php' => config_path('oracle.php'),
         ], 'oracle');
 
         Auth::provider('oracle', function ($app, array $config) {
@@ -41,7 +41,7 @@ class Oci8ServiceProvider extends ServiceProvider
         if (file_exists(config_path('oracle.php'))) {
             $this->mergeConfigFrom(config_path('oracle.php'), 'database.connections');
         } else {
-            $this->mergeConfigFrom(__DIR__ . '/../config/oracle.php', 'database.connections');
+            $this->mergeConfigFrom(__DIR__.'/../config/oracle.php', 'database.connections');
         }
 
         Connection::resolverFor('oracle', function ($connection, $database, $prefix, $config) {

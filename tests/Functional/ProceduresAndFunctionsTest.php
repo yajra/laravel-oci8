@@ -14,7 +14,7 @@ class ProceduresAndFunctionsTest extends TestCase
     }
 
     /**
-     * @param string $prefix
+     * @param  string  $prefix
      * @return \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
      */
     private function createConnection($prefix = '')
@@ -23,9 +23,9 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $manager = $capsule->getDatabaseManager();
         $manager->extend('oracle', function ($config) {
-            $connector  = new OracleConnector();
+            $connector = new OracleConnector();
             $connection = $connector->connect($config);
-            $db         = new Oci8Connection($connection, $config['database'], $config['prefix']);
+            $db = new Oci8Connection($connection, $config['database'], $config['prefix']);
 
             // set oracle session variables
             $sessionVars = [
@@ -78,7 +78,7 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $connection->getPdo()->exec($command);
 
-        $input  = 20;
+        $input = 20;
         $output = 0;
 
         $bindings = [
@@ -110,7 +110,7 @@ class ProceduresAndFunctionsTest extends TestCase
         $connection->getPdo()->exec($command);
 
         $first = 'hello';
-        $last  = 'world';
+        $last = 'world';
 
         //this needs to be large enough to hold the plsql return value
         $output = str_repeat(' ', 1000);
@@ -126,7 +126,7 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $connection->executeProcedure($procedureName, $bindings);
 
-        $this->assertSame($first . $last, $output);
+        $this->assertSame($first.$last, $output);
     }
 
     public function testRefCursorFromTable()
@@ -150,7 +150,7 @@ class ProceduresAndFunctionsTest extends TestCase
         $connection->getPdo()->exec($command);
 
         $result = $connection->executeProcedureWithCursor($procedureName);
-        $rows   = $this->getTestData();
+        $rows = $this->getTestData();
 
         $this->assertSame($rows[0]['name'], $result[0]->name);
         $this->assertSame($rows[1]['name'], $result[1]->name);
@@ -170,15 +170,15 @@ class ProceduresAndFunctionsTest extends TestCase
 
     public function testConnectionWithPrefix()
     {
-        $prefix     = 'test_';
+        $prefix = 'test_';
         $connection = $this->createConnection($prefix);
 
         $this->setupDemoTable($connection);
 
         $this->assertSame($prefix, $connection->getTablePrefix());
 
-        $first      = $connection->table('demotable')->first();
-        $rows       = $this->getTestData();
+        $first = $connection->table('demotable')->first();
+        $rows = $this->getTestData();
 
         $this->assertSame($rows[0]['name'], $first->name);
     }
@@ -198,7 +198,7 @@ class ProceduresAndFunctionsTest extends TestCase
 
         $connection->getPdo()->exec($command);
 
-        $first    = 5;
+        $first = 5;
         $bindings = [
             'p1' => $first,
         ];
@@ -209,7 +209,7 @@ class ProceduresAndFunctionsTest extends TestCase
     }
 
     /**
-     * @param Oci8Connection $connection
+     * @param  Oci8Connection  $connection
      */
     private function setupDemoTable($connection): void
     {

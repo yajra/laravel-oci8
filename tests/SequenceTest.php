@@ -15,7 +15,7 @@ class SequenceTest extends TestCase
     public function it_will_create_sequence()
     {
         $connection = $this->getConnection();
-        $sequence   = new Sequence($connection);
+        $sequence = new Sequence($connection);
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('statement')->andReturn(true);
 
@@ -30,7 +30,7 @@ class SequenceTest extends TestCase
         $connection->shouldReceive('getConfig')->andReturn('schema_prefix');
 
         $sequence = new Sequence($connection);
-        $name     = $sequence->wrap('users_id_seq');
+        $name = $sequence->wrap('users_id_seq');
         $this->assertEquals($name, 'schema_prefix.users_id_seq');
     }
 

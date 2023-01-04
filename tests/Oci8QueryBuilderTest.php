@@ -23,7 +23,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     protected function getBuilder()
     {
-        $grammar   = new Yajra\Oci8\Query\Grammars\OracleGrammar;
+        $grammar = new Yajra\Oci8\Query\Grammars\OracleGrammar;
         $processor = m::mock(Yajra\Oci8\Query\Processors\OracleProcessor::class);
 
         return new Builder(m::mock(Illuminate\Database\ConnectionInterface::class), $grammar, $processor);
@@ -253,7 +253,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testSubSelectWhereIns()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
@@ -264,7 +264,7 @@ class Oci8QueryBuilderTest extends TestCase
              $builder->toSql());
         $this->assertEquals([25], $builder->getBindings());
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('getDatabaseName')->andReturn('oracle');
@@ -350,7 +350,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testOffset()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(10);
@@ -360,35 +360,35 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testLimitsAndOffsets()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(5)->limit(10);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
             $builder->toSql());
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->skip(5)->take(10);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
             $builder->toSql());
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->skip(-5)->take(10);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
             $builder->toSql());
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->forPage(2, 15);
         $this->assertEquals('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
             $builder->toSql());
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->forPage(-2, 15);
@@ -398,7 +398,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testLimitAndOffsetToPaginateOne()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(0)->limit(1);
@@ -407,7 +407,7 @@ class Oci8QueryBuilderTest extends TestCase
             $builder->toSql()
         );
 
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->select('*')->from('users')->offset(1)->limit(1);
@@ -530,7 +530,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "USERS" inner join (select * from "CONTACTS") "SUB" on "USERS"."ID" = "SUB"."ID"', $builder->toSql());
 
-        $builder         = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $eloquentBuilder = new EloquentBuilder($this->getBuilder()->from('contacts'));
         $eloquentBuilder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
@@ -539,9 +539,9 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
-        $sub1    = $this->getBuilder()->from('contacts')->where('name', 'foo');
+        $sub1 = $this->getBuilder()->from('contacts')->where('name', 'foo');
         $sub1->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
-        $sub2    = $this->getBuilder()->from('contacts')->where('name', 'bar');
+        $sub2 = $this->getBuilder()->from('contacts')->where('name', 'bar');
         $sub2->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')
                 ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
@@ -605,7 +605,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFindReturnsFirstResultByID()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $builder->getConnection()
@@ -627,7 +627,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFirstMethodReturnsFirstResult()
     {
-        $builder    = $this->getBuilder();
+        $builder = $this->getBuilder();
         $connection = $builder->getConnection();
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('select')
@@ -973,7 +973,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testMergeWheresCanMergeWheresAndBindings()
     {
-        $builder         = $this->getBuilder();
+        $builder = $this->getBuilder();
         $builder->wheres = ['foo'];
         $builder->mergeWheres(['wheres'], [12 => 'foo', 13 => 'bar']);
         $this->assertEquals(['foo', 'wheres'], $builder->wheres);
@@ -989,11 +989,11 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testDynamicWhere()
     {
-        $method     = 'whereFooBarAndBazOrQux';
+        $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
-        $grammar    = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor  = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar = new Yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('foo_bar', '=', $parameters[0], 'and')->once()->andReturn($builder);
@@ -1005,11 +1005,11 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testDynamicWhereIsNotGreedy()
     {
-        $method     = 'whereIosVersionAndAndroidVersionOrOrientation';
+        $method = 'whereIosVersionAndAndroidVersionOrOrientation';
         $parameters = ['6.1', '4.2', 'Vertical'];
-        $grammar    = new Yajra\Oci8\Query\Grammars\OracleGrammar;
-        $processor  = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
-        $builder    = m::mock('Illuminate\Database\Query\Builder[where]',
+        $grammar = new Yajra\Oci8\Query\Grammars\OracleGrammar;
+        $processor = m::mock('Yajra\Oci8\Query\Processors\OracleProcessor');
+        $builder = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('ios_version', '=', '6.1', 'and')->once()->andReturn($builder);
@@ -1187,8 +1187,8 @@ class Oci8QueryBuilderTest extends TestCase
     public function testSubQueriesBindings()
     {
         $builder = $this->getBuilder();
-        $second  = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
-        $third   = $this->getBuilder()
+        $second = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
+        $third = $this->getBuilder()
                         ->select('*')
                         ->from('users')
                         ->where('id', 3)
