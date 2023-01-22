@@ -289,7 +289,7 @@ class OracleBuilder extends Builder
     /**
      * Get column and json keys.
      *
-     * @param string $column
+     * @param  string  $column
      * @return array
      */
     private function getJsonColumnAndKeys(string $column): array
@@ -303,7 +303,7 @@ class OracleBuilder extends Builder
     /**
      * Check column is json.
      *
-     * @param string $column
+     * @param  string  $column
      * @return bool
      */
     private function isJsonColumn(string $column): bool
