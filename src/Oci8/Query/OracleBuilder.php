@@ -5,6 +5,7 @@ namespace Yajra\Oci8\Query;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Str;
 
 class OracleBuilder extends Builder
 {
@@ -246,5 +247,46 @@ class OracleBuilder extends Builder
     public function clone()
     {
         return clone $this;
+    }
+
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        if ($this->isJsonColumn($column)) {
+            [$column, $jsonKeys] = $this->getJsonColumnAndKeys($column);
+            return parent::where(parent::raw("json_value($column, '$.$jsonKeys')"), $operator, $value, $boolean);
+        }
+
+        return parent::where($column, $operator, $value, $boolean);
+    }
+
+    public function whereNotIn($column, $values, $boolean = 'and')
+    {
+        if ($this->isJsonColumn($column)) {
+            [$column, $jsonKeys] = $this->getJsonColumnAndKeys($column);
+            return parent::whereNotIn(parent::raw("json_value($column, '$.$jsonKeys')"), $values, $boolean);
+        }
+
+        return parent::whereNotIn($column, $values, $boolean);
+    }
+
+    /**
+     * @param string $column
+     * @return array
+     */
+    private function getJsonColumnAndKeys(string $column): array
+    {
+        $keys = explode('->', $column);
+        $jsonKeys = implode('.', array_slice($keys, 1));
+
+        return [$keys[0], $jsonKeys];
+    }
+
+    /**
+     * @param string $column
+     * @return bool
+     */
+    private function isJsonColumn(string $column): bool
+    {
+        return is_string($column) && Str::contains($column, '->');
     }
 }
