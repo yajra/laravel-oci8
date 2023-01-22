@@ -262,6 +262,7 @@ class OracleBuilder extends Builder
     {
         if ($this->isJsonColumn($column)) {
             [$column, $jsonKeys] = $this->getJsonColumnAndKeys($column);
+
             return parent::where(parent::raw("json_value($column, '$.$jsonKeys')"), $operator, $value, $boolean);
         }
 
@@ -280,6 +281,7 @@ class OracleBuilder extends Builder
     {
         if ($this->isJsonColumn($column)) {
             [$column, $jsonKeys] = $this->getJsonColumnAndKeys($column);
+
             return parent::whereNotIn(parent::raw("json_value($column, '$.$jsonKeys')"), $values, $boolean);
         }
 
