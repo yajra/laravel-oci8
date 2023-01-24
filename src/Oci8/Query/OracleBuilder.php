@@ -305,10 +305,10 @@ class OracleBuilder extends Builder
     /**
      * Check column is json.
      *
-     * @param  string  $column
+     * @param  mixed  $column
      * @return bool
      */
-    private function isJsonColumn(string $column): bool
+    private function isJsonColumn($column): bool
     {
         return is_string($column) && Str::contains($column, '->');
     }
