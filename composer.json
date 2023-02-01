@@ -1,7 +1,12 @@
 {
     "name": "yajra/laravel-oci8",
     "description": "Oracle DB driver for Laravel 4|5|6|7 via OCI8",
-    "keywords" : ["laravel","oracle","oci8","pdo_oci"],
+    "keywords": [
+        "laravel",
+        "oracle",
+        "oci8",
+        "pdo_oci"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -10,24 +15,24 @@
         }
     ],
     "require": {
-        "php": "^8.0.2",
+        "php": "^8.1",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
-        "illuminate/database": "^9",
-        "illuminate/pagination": "^9",
-        "illuminate/support": "^9",
-        "illuminate/validation": "^9",
+        "illuminate/database": "^10.0",
+        "illuminate/pagination": "^10.0",
+        "illuminate/support": "^10.0",
+        "illuminate/validation": "^10.0",
         "yajra/laravel-pdo-via-oci8": "^3.0"
     },
     "require-dev": {
-        "doctrine/dbal": "^3.3",
+        "doctrine/dbal": "^3.5",
         "mockery/mockery": "^1.4.4",
-        "orchestra/testbench": "^7.0",
-        "phpunit/phpunit": "^9.5.8"
+        "orchestra/testbench": "^8.0",
+        "phpunit/phpunit": "^9.5.10"
     },
     "autoload": {
         "files": [
-          "src/helper.php"
+            "src/helper.php"
         ],
         "psr-4": {
             "Yajra\\": "src/"
@@ -40,7 +45,7 @@
     },
     "extra": {
         "branch-alias": {
-          "dev-master": "9.x-dev"
+            "dev-master": "9.x-dev"
         },
         "laravel": {
             "providers": [
