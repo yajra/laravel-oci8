@@ -5,7 +5,6 @@ namespace Yajra\Oci8\Query;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
-use Illuminate\Support\Str;
 
 class OracleBuilder extends Builder
 {
