@@ -42,9 +42,8 @@ jobs:
       - name: Setup problem matchers
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-      - name: Setup OCI8 for PHP 8.1
-        run: ./oci8-php81.sh
-        if: matrix.php > 8
+      - name: Setup OCI8 for PHP 8.1+
+        run: ./oci8.sh
 
       - name: Set Minimum PDO-VIA-OCI8 Version
         uses: nick-invision/retry@v1
