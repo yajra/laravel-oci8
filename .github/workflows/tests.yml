@@ -46,10 +46,6 @@ jobs:
         run: ./oci8-php81.sh
         if: matrix.php > 8
 
-      - name: Setup OCI8 for PHP 8
-        run: ./oci8-php8.sh
-        if: matrix.php == 8
-
       - name: Set Minimum PDO-VIA-OCI8 Version
         uses: nick-invision/retry@v1
         with:
