@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v9.0.0...9.x)
 
+## [v9.3.0](https://github.com/yajra/laravel-oci8/compare/v9.2.1...v9.3.0) - 2023-01-04
+
+- feat: add support for json query #755
+
 ## [v9.2.1](https://github.com/yajra/laravel-oci8/compare/v9.2.0...v9.2.1) - 2023-01-04
 
 - fix: ORA-00969 when creating indexes
