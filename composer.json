@@ -45,7 +45,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "9.x-dev"
+            "dev-master": "10.x-dev"
         },
         "laravel": {
             "providers": [
@@ -55,7 +55,7 @@
         }
     },
     "scripts": {
-        "docker": "docker run -d -p 49160:22 -p 1521:1521 deepdiver/docker-oracle-xe-11g"
+        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g"
     },
     "config": {
         "sort-packages": true
