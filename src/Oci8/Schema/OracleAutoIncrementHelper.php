@@ -93,8 +93,8 @@ class OracleAutoIncrementHelper
      */
     private function createObjectName($prefix, $table, $col, $type)
     {
-        $max_length = env('ORA_MAX_NAME_LEN', 30);
-
+        // max object name length is 30 chars
+        $max_length = $this->connection->getConfig('max_name_len');
         return substr($prefix.$table.'_'.$col.'_'.$type, 0, $max_length);
     }
 
