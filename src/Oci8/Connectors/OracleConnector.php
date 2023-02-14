@@ -24,7 +24,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Establish a database connection.
      *
-     * @param array $config
+     * @param  array  $config
      * @return PDO
      */
     public function connect(array $config)
@@ -33,7 +33,7 @@ class OracleConnector extends Connector implements ConnectorInterface
 
         $options = $this->getOptions($config);
 
-        if (Arr::get($options, 'session_mode') === OCI_CRED_EXT) {
+        if (defined('OCI_CRED_EXT') && Arr::get($options, 'session_mode') === OCI_CRED_EXT) {
             // External connections can only be used with user / and an empty password
             $config['username'] = '/';
             $config['password'] = null;
@@ -47,7 +47,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Create a DSN string from a configuration.
      *
-     * @param  array $config
+     * @param  array  $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -69,7 +69,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Parse configurations.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     protected function parseConfig(array $config)
@@ -87,7 +87,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set host from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     protected function setHost(array $config)
@@ -100,7 +100,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set port from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     private function setPort(array $config)
@@ -113,7 +113,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set protocol from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     private function setProtocol(array $config)
@@ -126,14 +126,14 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set service id from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     protected function setServiceId(array $config)
     {
-        $config['service']   = empty($config['service_name'])
-            ? $service_param = 'SID = ' . $config['database']
-            : $service_param = 'SERVICE_NAME = ' . $config['service_name'];
+        $config['service'] = empty($config['service_name'])
+            ? $service_param = 'SID = '.$config['database']
+            : $service_param = 'SERVICE_NAME = '.$config['service_name'];
 
         return $config;
     }
@@ -141,7 +141,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set tns from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     protected function setTNS(array $config)
@@ -154,7 +154,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set charset from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     protected function setCharset(array $config)
@@ -169,7 +169,7 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Set DSN host from config.
      *
-     * @param array $config
+     * @param  array  $config
      * @return array
      */
     protected function checkMultipleHostDsn(array $config)
@@ -180,11 +180,14 @@ class OracleConnector extends Connector implements ConnectorInterface
         if ($count > 1) {
             $address = '';
             for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = ' . $config['protocol'] . ')(HOST = ' . trim($host[$i]) . ')(PORT = ' . $config['port'] . '))';
+                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
             }
 
+            // backwards compatibility for users dont have this field in their php config
+            $loadBalance = $config['load_balance'] ?? 'yes';
+
             // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = {$config['database']})))";
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$loadBalance}) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
         }
 
         return $config;
@@ -193,9 +196,9 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Create a new PDO connection.
      *
-     * @param  string $tns
-     * @param  array $config
-     * @param  array $options
+     * @param  string  $tns
+     * @param  array  $config
+     * @param  array  $options
      * @return PDO
      */
     public function createConnection($tns, array $config, array $options)
@@ -205,7 +208,7 @@ class OracleConnector extends Connector implements ConnectorInterface
             return parent::createConnection($tns, $config, $options);
         }
 
-        $config             = $this->setCharset($config);
+        $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
         return new Oci8($tns, $config['username'], $config['password'], $options);

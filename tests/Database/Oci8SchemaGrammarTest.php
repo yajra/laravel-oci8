@@ -285,17 +285,17 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function testCompileTableExistsMethod()
     {
-        $grammar  = $this->getGrammar();
+        $grammar = $this->getGrammar();
         $expected = 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
-        $sql      = $grammar->compileTableExists();
+        $sql = $grammar->compileTableExists();
         $this->assertEquals($expected, $sql);
     }
 
     public function testCompileColumnExistsMethod()
     {
-        $grammar  = $this->getGrammar();
+        $grammar = $this->getGrammar();
         $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\')';
-        $sql      = $grammar->compileColumnExists('schema', 'test_table');
+        $sql = $grammar->compileColumnExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
     }
 
@@ -442,7 +442,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('create unique index bar on users (lower(foo))', $statements[0]);
+        $this->assertEquals('alter table users add constraint bar unique ( foo )', $statements[0]);
     }
 
     public function testAddingDefinedUniqueKeyWithPrefix()
@@ -457,7 +457,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('create unique index bar on prefix_users (lower(foo))', $statements[0]);
+        $this->assertEquals('alter table prefix_users add constraint bar unique ( foo )', $statements[0]);
     }
 
     public function testAddingGeneratedUniqueKeyWithPrefix()
@@ -472,7 +472,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('create unique index prefix_users_foo_uk on prefix_users (lower(foo))',
+        $this->assertEquals('alter table prefix_users add constraint prefix_users_foo_uk unique ( foo )',
             $statements[0]);
     }
 

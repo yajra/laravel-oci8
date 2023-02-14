@@ -23,20 +23,20 @@ class OracleAutoIncrementHelper
     protected $sequence;
 
     /**
-     * @param \Illuminate\Database\Connection $connection
+     * @param  \Illuminate\Database\Connection  $connection
      */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->sequence   = new Sequence($connection);
-        $this->trigger    = new Trigger($connection);
+        $this->sequence = new Sequence($connection);
+        $this->trigger = new Trigger($connection);
     }
 
     /**
      * create sequence and trigger for autoIncrement support.
      *
-     * @param  Blueprint $blueprint
-     * @param  string $table
+     * @param  Blueprint  $blueprint
+     * @param  string  $table
      * @return null
      */
     public function createAutoIncrementObjects(Blueprint $blueprint, $table)
@@ -48,7 +48,7 @@ class OracleAutoIncrementHelper
             return;
         }
 
-        $col   = $column->name;
+        $col = $column->name;
         $start = isset($column->start) ? $column->start : 1;
 
         // get table prefix
@@ -60,13 +60,13 @@ class OracleAutoIncrementHelper
 
         // create trigger for auto increment work around
         $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-        $this->trigger->autoIncrement($prefix . $table, $col, $triggerName, $sequenceName);
+        $this->trigger->autoIncrement($prefix.$table, $col, $triggerName, $sequenceName);
     }
 
     /**
      * Get qualified autoincrement column.
      *
-     * @param  Blueprint $blueprint
+     * @param  Blueprint  $blueprint
      * @return \Illuminate\Support\Fluent|null
      */
     public function getQualifiedAutoIncrementColumn(Blueprint $blueprint)
@@ -85,23 +85,23 @@ class OracleAutoIncrementHelper
     /**
      * Create an object name that limits to 30 chars.
      *
-     * @param  string $prefix
-     * @param  string $table
-     * @param  string $col
-     * @param  string $type
+     * @param  string  $prefix
+     * @param  string  $table
+     * @param  string  $col
+     * @param  string  $type
      * @return string
      */
     private function createObjectName($prefix, $table, $col, $type)
     {
         $max_length = env('ORA_MAX_NAME_LEN', 30);
 
-        return substr($prefix . $table . '_' . $col . '_' . $type, 0, $max_length);
+        return substr($prefix.$table.'_'.$col.'_'.$type, 0, $max_length);
     }
 
     /**
      * Drop sequence and triggers if exists, autoincrement objects.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return null
      */
     public function dropAutoIncrementObjects($table)
@@ -109,7 +109,7 @@ class OracleAutoIncrementHelper
         // drop sequence and trigger object
         $prefix = $this->connection->getTablePrefix();
         // get the actual primary column name from table
-        $col = $this->getPrimaryKey($prefix . $table);
+        $col = $this->getPrimaryKey($prefix.$table);
         // if primary key col is set, drop auto increment objects
         if (isset($col) && ! empty($col)) {
             // drop sequence for auto increment
@@ -125,7 +125,7 @@ class OracleAutoIncrementHelper
     /**
      * Get table's primary key.
      *
-     * @param  string $table
+     * @param  string  $table
      * @return string
      */
     public function getPrimaryKey($table)
@@ -165,7 +165,7 @@ class OracleAutoIncrementHelper
     /**
      * Set sequence instance.
      *
-     * @param Sequence $sequence
+     * @param  Sequence  $sequence
      */
     public function setSequence($sequence)
     {
@@ -185,7 +185,7 @@ class OracleAutoIncrementHelper
     /**
      * Set the trigger instance.
      *
-     * @param Trigger $trigger
+     * @param  Trigger  $trigger
      */
     public function setTrigger($trigger)
     {

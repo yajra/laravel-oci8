@@ -12,7 +12,7 @@ class Sequence
     protected $connection;
 
     /**
-     * @param Connection $connection
+     * @param  Connection  $connection
      */
     public function __construct(Connection $connection)
     {
@@ -22,12 +22,12 @@ class Sequence
     /**
      * function to create oracle sequence.
      *
-     * @param  string $name
-     * @param  int $start
-     * @param  bool $nocache
-     * @param  int $min
-     * @param  bool $max
-     * @param  int $increment
+     * @param  string  $name
+     * @param  int  $start
+     * @param  bool  $nocache
+     * @param  int  $min
+     * @param  bool  $max
+     * @param  int  $increment
      * @return bool
      */
     public function create($name, $start = 1, $nocache = false, $min = 1, $max = false, $increment = 1)
@@ -50,13 +50,13 @@ class Sequence
     /**
      * Wrap sequence name with schema prefix.
      *
-     * @param string $name
+     * @param  string  $name
      * @return string
      */
     public function wrap($name)
     {
         if ($this->connection->getConfig('prefix_schema')) {
-            return $this->connection->getConfig('prefix_schema') . '.' . $name;
+            return $this->connection->getConfig('prefix_schema').'.'.$name;
         }
 
         return $name;
@@ -65,7 +65,7 @@ class Sequence
     /**
      * function to safely drop sequence db object.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return bool
      */
     public function drop($name)
@@ -92,7 +92,7 @@ class Sequence
     /**
      * function to check if sequence exists.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return bool
      */
     public function exists($name)
@@ -111,7 +111,7 @@ class Sequence
     /**
      * get sequence next value.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return int
      */
     public function nextValue($name)
@@ -122,13 +122,13 @@ class Sequence
 
         $name = $this->wrap($name);
 
-        return $this->connection->selectOne("SELECT $name.NEXTVAL as id FROM DUAL")->id;
+        return $this->connection->selectOne("SELECT $name.NEXTVAL as \"id\" FROM DUAL")->id;
     }
 
     /**
      * same function as lastInsertId. added for clarity with oracle sql statement.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return int
      */
     public function currentValue($name)
@@ -139,7 +139,7 @@ class Sequence
     /**
      * function to get oracle sequence last inserted id.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return int
      */
     public function lastInsertId($name)
@@ -151,6 +151,6 @@ class Sequence
 
         $name = $this->wrap($name);
 
-        return $this->connection->selectOne("select {$name}.currval as id from dual")->id;
+        return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
     }
 }

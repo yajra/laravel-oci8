@@ -19,8 +19,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [7.3, 7.4]
-        stability: [prefer-lowest, prefer-stable]
+        php: [7.3, 7.4, 8.0, 8.1]
+        stability: [prefer-stable]
 
     name: PHP ${{ matrix.php }} - STABILITY ${{ matrix.stability }}
 
@@ -28,25 +28,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Cache dependencies
-        uses: actions/cache@v1
-        with:
-          path: ~/.composer/cache/files
-          key: dependencies-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd, memcached
           tools: composer:v2, pecl
           coverage: none
 
-      - name: Setup OCI8
-        run: ./oci8.sh
+      - name: Setup Memcached
+        uses: niden/actions-memcached@v7
 
-      - name: Register OCI8
+      - name: Setup problem matchers
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Setup OCI8 for PHP 7
+        run: ./oci8-php7.sh
+        if: matrix.php < 8
+
+      - name: Setup OCI8 for PHP 8.1
+        run: ./oci8-php81.sh
+        if: matrix.php > 8
+
+      - name: Setup OCI8 for PHP 8
+        run: ./oci8-php8.sh
+        if: matrix.php == 8
+
+      - name: Register OCI8 for PHP 7
         run:  sudo echo "extension=oci8.so" >> /etc/php/${{ matrix.php }}/cli/php.ini
+        if: matrix.php < 8
+
+      - name: Set Minimum PDO-VIA-OCI8 Version
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer require yajra/laravel-pdo-via-oci8:^3.0 --no-interaction --no-update
+        if: matrix.php >= 8
 
       - name: Install dependencies
         uses: nick-invision/retry@v1

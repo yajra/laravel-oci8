@@ -2,6 +2,52 @@
 
 ## [Unreleased]
 
+## [v8.6.3] - 2023-01-04
+
+- revert: 599, unique function index #749
+- fix #737
+
+## [v8.6.2] - 2022-05-18
+
+- Update delete query #715
+
+## [v8.6.1] - 2022-01-31
+
+- Fix DB::listen, does not trigger QueryExecuted event on insert. #699
+- Fix #642
+
+## [v8.6.0] - 2022-01-20
+
+- Make field load_balance configurable and some other typo fixes. #694
+- Rectified the DB::executeFunction Documentation example. #693
+
+## [v8.5.0] - 2021-09-18
+
+- Allow top-level application to dynamically set its own database `$config[]` parameters [#667]
+- Fixed checkMultipleHostDsn SERVICE_NAME using inconsistent database config bugs. #670
+
+## [v8.4.1] - 2021-07-10
+
+- Fix non-existent global constants. #661
+
+## [v8.4.0] - 2021-04-23
+
+- Add Oci8Driver for the new DBAL implementation. #648
+- Fix #641
+
+## [v8.3.0] - 2021-01-22
+
+- Add PHP8 support. [#619]
+- Fix [#624]
+
+## [v8.2.3] - 2021-01-06
+
+- Quote column name "id" so as to not affected by PDO::ATTR_CASE [#623]
+
+## [v8.2.2] - 2020-12-08
+
+- Query builder fixes and tests. [#615]
+
 ## [v8.2.1] - 2020-12-07
 
 - Fix query builder bulk insert. [#612]
@@ -20,8 +66,8 @@
 ## [v8.1.2] - 2020-12-06
 
 - Fix database presence verifier. [#607]
-- Revert [#598] 
-- Fixes [#601], [#602] 
+- Revert [#598]
+- Fixes [#601], [#602]
 - Use orchestra testbench for tests
 
 ## [v8.1.1] - 2020-11-21
@@ -125,12 +171,22 @@
 ## [v5.6.0] - 2018-02-16
 
 - Add support for Laravel 5.6.
-- Fix compatbility with PHP 7.2.
+- Fix compatibility with PHP 7.2.
 - Fix Declaration of causedByLostConnection [#407], credits to [@FabioSmeriglio].
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.2.1...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.6.3...8.x
+[v8.6.3]: https://github.com/yajra/laravel-oci8/compare/v8.6.2...v8.6.3
+[v8.6.2]: https://github.com/yajra/laravel-oci8/compare/v8.6.1...v8.6.2
+[v8.6.1]: https://github.com/yajra/laravel-oci8/compare/v8.6.0...v8.6.1
+[v8.6.0]: https://github.com/yajra/laravel-oci8/compare/v8.5.0...v8.6.0
+[v8.5.0]: https://github.com/yajra/laravel-oci8/compare/v8.4.1...v8.5.0
+[v8.4.1]: https://github.com/yajra/laravel-oci8/compare/v8.4.0...v8.4.1
+[v8.4.0]: https://github.com/yajra/laravel-oci8/compare/v8.3.0...v8.4.0
+[v8.3.0]: https://github.com/yajra/laravel-oci8/compare/v8.2.3...v8.3.0
+[v8.2.3]: https://github.com/yajra/laravel-oci8/compare/v8.2.2...v8.2.3
+[v8.2.2]: https://github.com/yajra/laravel-oci8/compare/v8.2.1...v8.2.2
 [v8.2.1]: https://github.com/yajra/laravel-oci8/compare/v8.2.0...v8.2.1
 [v8.2.0]: https://github.com/yajra/laravel-oci8/compare/v8.1.3...v8.2.0
 [v8.1.3]: https://github.com/yajra/laravel-oci8/compare/v8.1.2...v8.1.3
@@ -190,7 +246,11 @@
 [#609]: https://github.com/yajra/laravel-oci8/pull/609
 [#611]: https://github.com/yajra/laravel-oci8/pull/611
 [#612]: https://github.com/yajra/laravel-oci8/pull/612
+[#615]: https://github.com/yajra/laravel-oci8/pull/615
+[#623]: https://github.com/yajra/laravel-oci8/pull/623
+[#619]: https://github.com/yajra/laravel-oci8/pull/619
 
+[#624]: https://github.com/yajra/laravel-oci8/issue/624
 [#558]: https://github.com/yajra/laravel-oci8/issue/558
 [#563]: https://github.com/yajra/laravel-oci8/issue/563
 [#596]: https://github.com/yajra/laravel-oci8/issue/596

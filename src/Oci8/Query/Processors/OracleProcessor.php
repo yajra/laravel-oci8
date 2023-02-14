@@ -13,21 +13,28 @@ class OracleProcessor extends Processor
     /**
      * Process an "insert get ID" query.
      *
-     * @param  Builder $query
-     * @param  string $sql
-     * @param  array $values
-     * @param  string $sequence
+     * @param  Builder  $query
+     * @param  string  $sql
+     * @param  array  $values
+     * @param  string  $sequence
      * @return int
      */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
-        $id        = 0;
+        $connection = $query->getConnection();
+
+        $connection->recordsHaveBeenModified();
+        $start = microtime(true);
+
+        $id = 0;
         $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
-        $values    = $this->incrementBySequence($values, $sequence);
+        $values = $this->incrementBySequence($values, $sequence);
         $parameter = $this->bindValues($values, $statement, $parameter);
-        $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
+        $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
         $statement->execute();
+
+        $connection->logQuery($sql, $values, $start);
 
         return (int) $id;
     }
@@ -35,15 +42,15 @@ class OracleProcessor extends Processor
     /**
      * Get prepared statement.
      *
-     * @param Builder $query
-     * @param string $sql
+     * @param  Builder  $query
+     * @param  string  $sql
      * @return \PDOStatement|\Yajra\Pdo\Oci8
      */
     private function prepareStatement(Builder $query, $sql)
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
         $connection = $query->getConnection();
-        $pdo        = $connection->getPdo();
+        $pdo = $connection->getPdo();
 
         return $pdo->prepare($sql);
     }
@@ -51,13 +58,13 @@ class OracleProcessor extends Processor
     /**
      * Insert a new record and get the value of the primary key.
      *
-     * @param array $values
-     * @param string $sequence
+     * @param  array  $values
+     * @param  string  $sequence
      * @return array
      */
     protected function incrementBySequence(array $values, $sequence)
     {
-        $builder     = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['object'];
+        $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['object'];
         $builderArgs = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[2]['args'];
 
         if (! isset($builderArgs[1][0][$sequence])) {
@@ -78,9 +85,9 @@ class OracleProcessor extends Processor
     /**
      * Bind values to PDO statement.
      *
-     * @param array $values
-     * @param \PDOStatement $statement
-     * @param int $parameter
+     * @param  array  $values
+     * @param  \PDOStatement  $statement
+     * @param  int  $parameter
      * @return int
      */
     private function bindValues(&$values, $statement, $parameter)
@@ -105,7 +112,7 @@ class OracleProcessor extends Processor
     /**
      * Get PDO Type depending on value.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return int
      */
     private function getPdoType($value)
@@ -128,15 +135,20 @@ class OracleProcessor extends Processor
     /**
      * Save Query with Blob returning primary key value.
      *
-     * @param  Builder $query
-     * @param  string $sql
-     * @param  array $values
-     * @param  array $binaries
+     * @param  Builder  $query
+     * @param  string  $sql
+     * @param  array  $values
+     * @param  array  $binaries
      * @return int
      */
     public function saveLob(Builder $query, $sql, array $values, array $binaries)
     {
-        $id        = 0;
+        $connection = $query->getConnection();
+
+        $connection->recordsHaveBeenModified();
+        $start = microtime(true);
+
+        $id = 0;
         $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
 
@@ -149,11 +161,13 @@ class OracleProcessor extends Processor
         }
 
         // bind output param for the returning clause.
-        $statement->bindParam($parameter, $id, PDO::PARAM_INT, 10);
+        $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
 
         if (! $statement->execute()) {
             return false;
         }
+
+        $connection->logQuery($sql, $values, $start);
 
         return (int) $id;
     }
@@ -161,7 +175,7 @@ class OracleProcessor extends Processor
     /**
      * Process the results of a column listing query.
      *
-     * @param  array $results
+     * @param  array  $results
      * @return array
      */
     public function processColumnListing($results)

@@ -16,7 +16,7 @@ class Trigger
     protected $connection;
 
     /**
-     * @param Connection $connection
+     * @param  Connection  $connection
      */
     public function __construct(Connection $connection)
     {
@@ -26,10 +26,10 @@ class Trigger
     /**
      * Function to create auto increment trigger for a table.
      *
-     * @param  string $table
-     * @param  string $column
-     * @param  string $triggerName
-     * @param  string $sequenceName
+     * @param  string  $table
+     * @param  string  $column
+     * @param  string  $triggerName
+     * @param  string  $sequenceName
      * @return bool
      */
     public function autoIncrement($table, $column, $triggerName, $sequenceName)
@@ -39,12 +39,12 @@ class Trigger
         }
 
         if ($this->connection->getConfig('prefix_schema')) {
-            $table        = $this->connection->getConfig('prefix_schema') . '.' . $table;
-            $triggerName  = $this->connection->getConfig('prefix_schema') . '.' . $triggerName;
-            $sequenceName = $this->connection->getConfig('prefix_schema') . '.' . $sequenceName;
+            $table = $this->connection->getConfig('prefix_schema').'.'.$table;
+            $triggerName = $this->connection->getConfig('prefix_schema').'.'.$triggerName;
+            $sequenceName = $this->connection->getConfig('prefix_schema').'.'.$sequenceName;
         }
 
-        $table  = $this->wrapValue($table);
+        $table = $this->wrapValue($table);
         $column = $this->wrapValue($column);
 
         return $this->connection->statement("
@@ -61,20 +61,20 @@ class Trigger
     /**
      * Wrap value if reserved word.
      *
-     * @param string $value
+     * @param  string  $value
      * @return string
      */
     protected function wrapValue($value)
     {
         $value = Str::upper($value);
 
-        return $this->isReserved($value) ? '"' . $value . '"' : $value;
+        return $this->isReserved($value) ? '"'.$value.'"' : $value;
     }
 
     /**
      * Function to safely drop trigger db object.
      *
-     * @param  string $name
+     * @param  string  $name
      * @return bool
      */
     public function drop($name)

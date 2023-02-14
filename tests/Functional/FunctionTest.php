@@ -23,7 +23,7 @@ class FunctionTest extends TestCase
 
         $connection->getPdo()->exec($command);
 
-        $first    = 5;
+        $first = 5;
         $bindings = [
             'p1' => $first,
         ];

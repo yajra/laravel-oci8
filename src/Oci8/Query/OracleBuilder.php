@@ -9,6 +9,36 @@ use Illuminate\Database\Query\Expression;
 class OracleBuilder extends Builder
 {
     /**
+     * Run a pagination count query.
+     *
+     * @param  array  $columns
+     * @return array
+     */
+    protected function runPaginationCountQuery($columns = ['*'])
+    {
+        if ($this->groups || $this->havings) {
+            $clone = $this->cloneForPaginationCount();
+
+            if (is_null($clone->columns) && ! empty($this->joins)) {
+                $clone->select($this->from.'.*');
+            }
+
+            return $this->newQuery()
+                ->from(new Expression('('.$clone->toSql().')'))
+                ->mergeBindings($clone)
+                ->setAggregate('count', $this->withoutSelectAliases($columns))
+                ->get()->all();
+        }
+
+        $without = $this->unions ? ['orders', 'limit', 'offset'] : ['columns', 'orders', 'limit', 'offset'];
+
+        return $this->cloneWithout($without)
+            ->cloneWithoutBindings($this->unions ? ['order'] : ['select', 'order'])
+            ->setAggregate('count', $this->withoutSelectAliases($columns))
+            ->get()->all();
+    }
+
+    /**
      * Get the count of the total records for the paginator.
      *
      * @param  array  $columns
@@ -21,9 +51,7 @@ class OracleBuilder extends Builder
         // Once we have run the pagination count query, we will get the resulting count and
         // take into account what type of query it was. When there is a group by we will
         // just return the count of the entire results set since that will be correct.
-        if (isset($this->groups)) {
-            return count($results);
-        } elseif (! isset($results[0])) {
+        if (! isset($results[0])) {
             return 0;
         } elseif (is_object($results[0])) {
             return (int) (property_exists($results[0], 'AGGREGATE') ? $results[0]->AGGREGATE : $results[0]->aggregate);   // to solve the Oracle issue: auto-convert field to uppercase
@@ -35,18 +63,18 @@ class OracleBuilder extends Builder
     /**
      * Insert a new record and get the value of the primary key.
      *
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return int
      */
     public function insertLob(array $values, array $binaries, $sequence = 'id')
     {
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
+        $sql = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
-        $values   = $this->cleanBindings($values);
+        $values = $this->cleanBindings($values);
         $binaries = $this->cleanBindings($binaries);
 
         /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
@@ -58,9 +86,9 @@ class OracleBuilder extends Builder
     /**
      * Update a new record with blob field.
      *
-     * @param  array $values
-     * @param  array $binaries
-     * @param  string $sequence
+     * @param  array  $values
+     * @param  array  $binaries
+     * @param  string  $sequence
      * @return bool
      */
     public function updateLob(array $values, array $binaries, $sequence = 'id')
@@ -69,9 +97,9 @@ class OracleBuilder extends Builder
 
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $sql     = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
+        $sql = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
-        $values   = $this->cleanBindings($bindings);
+        $values = $this->cleanBindings($bindings);
         $binaries = $this->cleanBindings($binaries);
 
         /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
@@ -85,10 +113,10 @@ class OracleBuilder extends Builder
      * Split one WHERE IN clause into multiple clauses each
      * with up to 1000 expressions to avoid ORA-01795.
      *
-     * @param  string $column
-     * @param  mixed $values
-     * @param  string $boolean
-     * @param  bool $not
+     * @param  string  $column
+     * @param  mixed  $values
+     * @param  string  $boolean
+     * @param  bool  $not
      * @return \Illuminate\Database\Query\Builder|\Yajra\Oci8\Query\OracleBuilder
      */
     public function whereIn($column, $values, $boolean = 'and', $not = false)
@@ -104,7 +132,7 @@ class OracleBuilder extends Builder
 
             return $this->where(function ($query) use ($column, $chunks, $type, $not) {
                 foreach ($chunks as $ch) {
-                    $sqlClause = $not ? 'where' . $type : 'orWhere' . $type;
+                    $sqlClause = $not ? 'where'.$type : 'orWhere'.$type;
                     $query->{$sqlClause}($column, $ch);
                 }
             }, null, null, $boolean);
@@ -132,9 +160,27 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Set the table which the query is targeting.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $table
+     * @param  string|null  $as
+     * @return $this
+     */
+    public function from($table, $as = null)
+    {
+        if ($this->isQueryable($table)) {
+            return $this->fromSub($table, $as);
+        }
+
+        $this->from = $as ? "{$table} {$as}" : $table;
+
+        return $this;
+    }
+
+    /**
      * Makes "from" fetch from a subquery.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
      * @param  string  $as
      * @return \Illuminate\Database\Query\Builder|static
      *
@@ -144,19 +190,19 @@ class OracleBuilder extends Builder
     {
         [$query, $bindings] = $this->createSub($query);
 
-        return $this->fromRaw('('.$query.') '.$this->grammar->wrap($as), $bindings);
+        return $this->fromRaw('('.$query.') '.$this->grammar->wrapTable($as), $bindings);
     }
 
     /**
      * Add a subquery join clause to the query.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string $query
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
      * @param  string  $as
      * @param  \Closure|string  $first
      * @param  string|null  $operator
      * @param  string|null  $second
      * @param  string  $type
-     * @param  bool    $where
+     * @param  bool  $where
      * @return \Illuminate\Database\Query\Builder|static
      *
      * @throws \InvalidArgumentException
@@ -170,5 +216,35 @@ class OracleBuilder extends Builder
         $this->addBinding($bindings, 'join');
 
         return $this->join(new Expression($expression), $first, $operator, $second, $type, $where);
+    }
+
+    /**
+     * Add a subquery cross join to the query.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
+     * @param  string  $as
+     * @return $this
+     */
+    public function crossJoinSub($query, $as)
+    {
+        [$query, $bindings] = $this->createSub($query);
+
+        $expression = '('.$query.') '.$this->grammar->wrapTable($as);
+
+        $this->addBinding($bindings, 'join');
+
+        $this->joins[] = $this->newJoinClause($this, 'cross', new Expression($expression));
+
+        return $this;
+    }
+
+    /**
+     * Clone the query.
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        return clone $this;
     }
 }
