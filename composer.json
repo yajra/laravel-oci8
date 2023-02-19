@@ -28,7 +28,7 @@
         "doctrine/dbal": "^3.5",
         "mockery/mockery": "^1.4.4",
         "orchestra/testbench": "^8.0",
-        "phpunit/phpunit": "^9.5.10"
+        "phpunit/phpunit": "^10.0.9"
     },
     "autoload": {
         "files": [
