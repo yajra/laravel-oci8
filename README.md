@@ -1,4 +1,4 @@
-# Oracle DB driver for Laravel 4|5|6|7|8|9 via OCI8
+# Oracle DB driver for Laravel 4|5|6|7|8|9|10 via OCI8
 
 [![Build Status](https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg)](https://github.com/yajra/laravel-oci8/actions)
 [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/d/total.svg)](https://packagist.org/packages/yajra/laravel-oci8)
@@ -34,7 +34,7 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 ## Quick Installation
 
 ```bash
-composer require yajra/laravel-oci8:^9
+composer require yajra/laravel-oci8:^10
 ```
 
 ## Service Provider (Optional on Laravel 5.5+)
