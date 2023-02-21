@@ -265,7 +265,6 @@ class OracleGrammar extends Grammar
         return ! empty($this->max_length) ? $this->max_length : 30;
     }
 
-
     /**
      * Set the schema prefix.
      *

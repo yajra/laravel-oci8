@@ -47,7 +47,7 @@ class OracleBlueprint extends Blueprint
     /**
      * Set index/table max length name settings.
      *
-     * @param int $maxLength
+     * @param  int  $maxLength
      */
     public function setMaxLength($maxLength = 30)
     {
