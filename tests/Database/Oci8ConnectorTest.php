@@ -50,7 +50,7 @@ class Oci8ConnectorTest extends TestCase
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
         $connector = $this->getMockBuilder(OracleConnector::class)
-                           ->setMethods(['createConnection', 'getOptions'])
+                           ->onlyMethods(['createConnection', 'getOptions'])
                            ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
