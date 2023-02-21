@@ -42,7 +42,7 @@ class Oci8ConnectorTest extends TestCase
     }
 
     /**
-     * @dataProvider OracleConnectProvider
+     * @dataProvider tnsDataProvider
      *
      * @param $dsn
      * @param $config
@@ -50,7 +50,7 @@ class Oci8ConnectorTest extends TestCase
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
         $connector = $this->getMockBuilder(OracleConnector::class)
-                           ->setMethods(['createConnection', 'getOptions'])
+                           ->onlyMethods(['createConnection', 'getOptions'])
                            ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
@@ -71,7 +71,7 @@ class Oci8ConnectorTest extends TestCase
         $this->assertTrue($result === $connection);
     }
 
-    public function OracleConnectProvider()
+    public static function tnsDataProvider(): array
     {
         return [
             // multiple hosts SID

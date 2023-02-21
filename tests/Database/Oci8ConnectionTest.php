@@ -50,8 +50,10 @@ class Oci8ConnectionTest extends TestCase
     {
         $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;
         $defaults = ['getDefaultQueryGrammar', 'getDefaultPostProcessor', 'getDefaultSchemaGrammar'];
-        $connection = $this->getMockBuilder('Illuminate\Database\Connection')->setMethods(array_merge($defaults,
-            $methods))->setConstructorArgs([$pdo])->getMock();
+        $connection = $this->getMockBuilder('Illuminate\Database\Connection')
+                           ->onlyMethods(array_merge($defaults, $methods))
+                           ->setConstructorArgs([$pdo])
+                           ->getMock();
         $connection->enableQueryLog();
 
         return $connection;
