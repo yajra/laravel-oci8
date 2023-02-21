@@ -42,7 +42,7 @@ class OracleGrammar extends Grammar
     /**
      * @var int
      */
-    protected $max_length;
+    protected $max_length = 30;
 
     /**
      * If this Grammar supports schema changes wrapped in a transaction.
@@ -393,9 +393,9 @@ class OracleGrammar extends Grammar
      */
     private function dropConstraint(Blueprint $blueprint, Fluent $command, $type)
     {
-        $table  = $this->wrapTable($blueprint);
+        $table = $this->wrapTable($blueprint);
 
-        $index  = substr($command->index, 0, $this->getMaxLength());
+        $index = substr($command->index, 0, $this->getMaxLength());
 
         if ($type === 'index') {
             return "drop index {$index}";

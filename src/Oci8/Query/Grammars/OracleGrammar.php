@@ -25,6 +25,11 @@ class OracleGrammar extends Grammar
     protected $schema_prefix = '';
 
     /**
+     * @var int
+     */
+    protected $max_length;
+
+    /**
      * Compile a delete statement with joins into SQL.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
@@ -251,6 +256,17 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Get max length.
+     *
+     * @return int
+     */
+    public function getMaxLength()
+    {
+        return ! empty($this->max_length) ? $this->max_length : 30;
+    }
+
+
+    /**
      * Set the schema prefix.
      *
      * @param  string  $prefix
@@ -258,6 +274,16 @@ class OracleGrammar extends Grammar
     public function setSchemaPrefix($prefix)
     {
         $this->schema_prefix = $prefix;
+    }
+
+    /**
+     * Set max length.
+     *
+     * @param  int  $length
+     */
+    public function setMaxLength($length)
+    {
+        $this->max_length = $length;
     }
 
     /**

@@ -848,7 +848,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals(1, count($statements));
         $this->assertEquals('alter table users add ( foo blob not null )', $statements[0]);
     }
-    
+
     public function testBasicCreateTableWithPrimaryAndLongForeignKeys()
     {
         $blueprint = new Blueprint('users');
