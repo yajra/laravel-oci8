@@ -93,7 +93,7 @@ class OracleAutoIncrementHelper
      */
     private function createObjectName($prefix, $table, $col, $type)
     {
-        $version = (int)filter_var($this->connection->getConfig('server_version'), FILTER_SANITIZE_NUMBER_INT);
+        $version = (int) filter_var($this->connection->getConfig('server_version'), FILTER_SANITIZE_NUMBER_INT);
 
         $maxLength = 30;
         if ($version >= 12) {
