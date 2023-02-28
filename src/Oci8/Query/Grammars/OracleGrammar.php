@@ -22,7 +22,7 @@ class OracleGrammar extends Grammar
     /**
      * @var string
      */
-    protected $schema_prefix = '';
+    protected $schemaPrefix = '';
 
     /**
      * @var int
@@ -263,7 +263,7 @@ class OracleGrammar extends Grammar
      */
     public function getSchemaPrefix()
     {
-        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix).'.' : '';
+        return ! empty($this->schemaPrefix) ? $this->wrapValue($this->schemaPrefix).'.' : '';
     }
 
     /**
@@ -283,7 +283,7 @@ class OracleGrammar extends Grammar
      */
     public function setSchemaPrefix($prefix)
     {
-        $this->schema_prefix = $prefix;
+        $this->schemaPrefix = $prefix;
     }
 
     /**
