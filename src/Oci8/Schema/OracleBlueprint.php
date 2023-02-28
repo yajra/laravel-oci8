@@ -75,9 +75,9 @@ class OracleBlueprint extends Blueprint
 
             $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
 
-        $index = str_replace(['-', '.'], '_', $index);
-        while (strlen($index) > $this->maxLength) {
-            $parts = explode('_', $index);
+            $index = str_replace(['-', '.'], '_', $index);
+            while (strlen($index) > $this->maxLength) {
+                $parts = explode('_', $index);
 
                 for ($i = 0; $i < count($parts); $i++) {
                     // if any part is longer than 2 chars, take one off
