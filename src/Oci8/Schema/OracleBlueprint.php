@@ -28,6 +28,13 @@ class OracleBlueprint extends Blueprint
     protected $prefix;
 
     /**
+     * Database table max_length variable.
+     *
+     * @var int
+     */
+    protected $max_length = 30;
+
+    /**
      * Set table prefix settings.
      *
      * @param  string  $prefix
@@ -35,6 +42,16 @@ class OracleBlueprint extends Blueprint
     public function setTablePrefix($prefix = '')
     {
         $this->prefix = $prefix;
+    }
+
+    /**
+     * Set index/table max length name settings.
+     *
+     * @param  int  $maxLength
+     */
+    public function setMaxLength($maxLength = 30)
+    {
+        $this->max_length = $maxLength;
     }
 
     /**
@@ -57,9 +74,7 @@ class OracleBlueprint extends Blueprint
         $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
 
         $index = str_replace(['-', '.'], '_', $index);
-
-        //shorten the name if it is longer than 30 chars
-        while (strlen($index) > 30) {
+        while (strlen($index) > $this->max_length) {
             $parts = explode('_', $index);
 
             for ($i = 0; $i < count($parts); $i++) {
