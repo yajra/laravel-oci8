@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [v8.7.0] - 2023-02-28
+
+- feat: change limit character for 12c02 #762
+- fix: https://github.com/yajra/laravel-oci8/issues/770
+
 ## [v8.6.3] - 2023-01-04
 
 - revert: 599, unique function index #749
@@ -176,7 +181,8 @@
 - Fix [#406], [#404].
 - Added more options to Sequence Create Method [#355], credits to [@nikklass].
 
-[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.6.3...8.x
+[Unreleased]: https://github.com/yajra/laravel-oci8/compare/v8.7.0...8.x
+[v8.7.0]: https://github.com/yajra/laravel-oci8/compare/v8.6.3...v8.7.0
 [v8.6.3]: https://github.com/yajra/laravel-oci8/compare/v8.6.2...v8.6.3
 [v8.6.2]: https://github.com/yajra/laravel-oci8/compare/v8.6.1...v8.6.2
 [v8.6.1]: https://github.com/yajra/laravel-oci8/compare/v8.6.0...v8.6.1
