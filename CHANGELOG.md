@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.1.0](https://github.com/yajra/laravel-oci8/compare/v10.1.0...10.0.0) - 2023-02-28
+
+- feat: determine max object length based on DB version #768
+
 ## [v10.0.0](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x) - 2023-02-19
 
 - Laravel 10 support.
