@@ -42,7 +42,7 @@ class OracleGrammar extends Grammar
     /**
      * @var int
      */
-    protected $max_length = 30;
+    protected $maxLength = 30;
 
     /**
      * If this Grammar supports schema changes wrapped in a transaction.
@@ -107,7 +107,7 @@ class OracleGrammar extends Grammar
      */
     public function getMaxLength()
     {
-        return ! empty($this->max_length) ? $this->max_length : 30;
+        return ! empty($this->maxLength) ? $this->maxLength : 30;
     }
 
     /**
@@ -127,7 +127,7 @@ class OracleGrammar extends Grammar
      */
     public function setMaxLength($length)
     {
-        $this->max_length = $length;
+        $this->maxLength = $length;
     }
 
     /**

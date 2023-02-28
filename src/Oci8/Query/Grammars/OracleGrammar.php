@@ -27,7 +27,7 @@ class OracleGrammar extends Grammar
     /**
      * @var int
      */
-    protected $max_length;
+    protected $maxLength;
 
     /**
      * Compile a delete statement with joins into SQL.
@@ -273,7 +273,7 @@ class OracleGrammar extends Grammar
      */
     public function getMaxLength()
     {
-        return ! empty($this->max_length) ? $this->max_length : 30;
+        return ! empty($this->maxLength) ? $this->maxLength : 30;
     }
 
     /**
@@ -293,7 +293,7 @@ class OracleGrammar extends Grammar
      */
     public function setMaxLength($length)
     {
-        $this->max_length = $length;
+        $this->maxLength = $length;
     }
 
     /**
