@@ -28,7 +28,7 @@ class OracleBlueprint extends Blueprint
     protected $prefix;
 
     /**
-     * Database table max length variable.
+     * Database object max length variable.
      *
      * @var int
      */
@@ -45,7 +45,7 @@ class OracleBlueprint extends Blueprint
     }
 
     /**
-     * Set index/table max length name settings.
+     * Set database object max length name settings.
      *
      * @param  int  $maxLength
      */
