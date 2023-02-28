@@ -61,6 +61,7 @@ class OracleBuilder extends Builder
     {
         $blueprint = new OracleBlueprint($table, $callback);
         $blueprint->setTablePrefix($this->connection->getTablePrefix());
+        $blueprint->setMaxLength($this->grammar->getMaxLength());
 
         return $blueprint;
     }
