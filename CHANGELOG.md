@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v9.0.0...9.x)
 
+## [v9.5.0](https://github.com/yajra/laravel-oci8/compare/v9.4.0...v9.5.0) - 2023-03-01
+
+- feat: change limit character for 12c02 #762 (#774)
+- fix: #770
+
 ## [v9.4.0](https://github.com/yajra/laravel-oci8/compare/v9.3.1...v9.4.0) - 2023-02-28
 
 - feat: determine max object length based on DB version #767
