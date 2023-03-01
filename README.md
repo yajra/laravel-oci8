@@ -152,6 +152,12 @@ class Config {
 
 Then run your laravel installation...
 
+## Oracle Max Name Length
+
+By default, DB object name are limited to 30 characters. To increase the limit, you can set the `ORA_MAX_NAME_LEN=128` in your `.env` file.
+
+Note: this config requires **Oracle 12c02 or higher**.
+
 ## [Laravel 5.2++] Oracle User Provider
 
 When using oracle, we may encounter a problem on authentication because oracle queries are case sensitive by default.
