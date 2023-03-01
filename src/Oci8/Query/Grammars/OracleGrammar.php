@@ -22,7 +22,12 @@ class OracleGrammar extends Grammar
     /**
      * @var string
      */
-    protected $schema_prefix = '';
+    protected $schemaPrefix = '';
+
+    /**
+     * @var int
+     */
+    protected $maxLength;
 
     /**
      * Compile a delete statement with joins into SQL.
@@ -258,7 +263,17 @@ class OracleGrammar extends Grammar
      */
     public function getSchemaPrefix()
     {
-        return ! empty($this->schema_prefix) ? $this->wrapValue($this->schema_prefix).'.' : '';
+        return ! empty($this->schemaPrefix) ? $this->wrapValue($this->schemaPrefix).'.' : '';
+    }
+
+    /**
+     * Get max length.
+     *
+     * @return int
+     */
+    public function getMaxLength()
+    {
+        return ! empty($this->maxLength) ? $this->maxLength : 30;
     }
 
     /**
@@ -268,7 +283,17 @@ class OracleGrammar extends Grammar
      */
     public function setSchemaPrefix($prefix)
     {
-        $this->schema_prefix = $prefix;
+        $this->schemaPrefix = $prefix;
+    }
+
+    /**
+     * Set max length.
+     *
+     * @param  int  $length
+     */
+    public function setMaxLength($length)
+    {
+        $this->maxLength = $length;
     }
 
     /**
