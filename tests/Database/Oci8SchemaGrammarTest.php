@@ -849,6 +849,29 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table users add ( foo blob not null )', $statements[0]);
     }
 
+    public function testBasicCreateTableWithPrimaryAndLongForeignKeys()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->setMaxLength(120);
+        $blueprint->setTablePrefix('prefix_');
+        $blueprint->create();
+        $blueprint->integer('id')->primary();
+        $blueprint->string('email');
+        $blueprint->integer('very_long_foo_bar_id');
+        $blueprint->foreign('very_long_foo_bar_id')->references('id')->on('orders');
+        $grammar = $this->getGrammar();
+        $grammar->setTablePrefix('prefix_');
+        $grammar->setMaxLength(120);
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $grammar);
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals('create table prefix_users ( id number(10,0) not null, email varchar2(255) not null, very_long_foo_bar_id number(10,0) not null, constraint prefix_users_very_long_foo_bar_id_fk foreign key ( very_long_foo_bar_id ) references prefix_orders ( id ), constraint prefix_users_id_pk primary key ( id ) )',
+            $statements[0]);
+    }
+
     public function testDropAllTables()
     {
         $statement = $this->getGrammar()->compileDropAllTables();

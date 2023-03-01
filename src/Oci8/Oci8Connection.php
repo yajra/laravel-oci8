@@ -353,6 +353,7 @@ class Oci8Connection extends Connection
     public function withSchemaPrefix(Grammar $grammar)
     {
         $grammar->setSchemaPrefix($this->getConfigSchemaPrefix());
+        $grammar->setMaxLength($this->getConfigMaxLength());
 
         return $grammar;
     }
@@ -365,6 +366,16 @@ class Oci8Connection extends Connection
     protected function getConfigSchemaPrefix()
     {
         return isset($this->config['prefix_schema']) ? $this->config['prefix_schema'] : '';
+    }
+
+    /**
+     * Get config max length.
+     *
+     * @return string
+     */
+    protected function getConfigMaxLength()
+    {
+        return isset($this->config['max_name_len']) ? $this->config['max_name_len'] : 30;
     }
 
     /**
