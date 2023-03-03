@@ -20,6 +20,7 @@ class SchemaTest extends TestCase
         $this->assertEquals('string', $type);
     }
 
+    /** @test */
     public function it_can_set_auto_increment_starting_value()
     {
         if (Schema::hasTable('auto_increment_starting_value')) {
@@ -40,6 +41,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1000, $increment->id);
     }
 
+    /** @test */
     public function it_can_set_auto_increment_start_value()
     {
         if (Schema::hasTable('auto_increment_start')) {
