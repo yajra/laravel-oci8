@@ -32,7 +32,7 @@ class SchemaTest extends TestCase
         });
 
         DB::table('auto_increment_starting_value')->insert([
-            'email' => 'test@email.com'
+            'email' => 'test@email.com',
         ]);
 
         $this->assertDatabaseCount('auto_increment_starting_value', 1);
@@ -52,7 +52,7 @@ class SchemaTest extends TestCase
         });
 
         DB::table('auto_increment_start')->insert([
-            'email' => 'test@email.com'
+            'email' => 'test@email.com',
         ]);
 
         $this->assertDatabaseCount('auto_increment_start', 1);
