@@ -49,7 +49,7 @@ class OracleAutoIncrementHelper
         }
 
         $col = $column->name;
-        $start = isset($column->start) ? $column->start : 1;
+        $start = $column->start ?? $column->startingValue ?? 1;
 
         // get table prefix
         $prefix = $this->connection->getTablePrefix();
