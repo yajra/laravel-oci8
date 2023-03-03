@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.3.0](https://github.com/yajra/laravel-oci8/compare/v10.2.0...v10.3.0) - 2023-03-03
+
+- feat: Add compatibility with startingValue #778
+
 ## [v10.2.0](https://github.com/yajra/laravel-oci8/compare/v10.1.0...v10.2.0) - 2023-03-01
 
 - feat: change limit character for 12c02 #777
