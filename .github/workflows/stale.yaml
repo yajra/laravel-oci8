@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/stale@v5
         with:
-          exempt-issue-labels: "bug,enhancement,security"
+          exempt-issue-labels: "bug,enhancement,security,pinned"
           days-before-issue-stale: 30
           days-before-issue-close: 7
           stale-issue-label: "stale"
