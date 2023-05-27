@@ -25,4 +25,4 @@ sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
 sudo ldconfig
 
 # enable oci8 extension
-sudo php -d extension=oci8.so
+sudo sh -c "php -d extension=oci8.so"
