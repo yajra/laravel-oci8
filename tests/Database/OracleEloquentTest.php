@@ -63,7 +63,7 @@ class OracleEloquentTest extends TestCase
                 'getPostProcessor' => $processor,
             ]);
             $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
-                    ['connection' => $connection]);
+                ['connection' => $connection]);
             $class = get_class($model);
             $class::setConnectionResolver($resolver);
 
@@ -79,7 +79,7 @@ class OracleEloquentTest extends TestCase
             'getPostProcessor' => $processor,
         ]);
         $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
-                ['connection' => $connection]);
+            ['connection' => $connection]);
         $class = get_class($model);
         $class::setConnectionResolver($resolver);
     }
