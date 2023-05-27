@@ -23,3 +23,6 @@ sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-3
 # setup ld library path
 sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
 sudo ldconfig
+
+# enable oci8 extension
+sudo php -d extension=oci8.so
