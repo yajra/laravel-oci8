@@ -618,4 +618,15 @@ class OracleGrammar extends Grammar
 
         return $sql.' from ('.$this->compileSelect($query).') '.$this->wrapTable('temp_table');
     }
+
+    /**
+     * Compile the random statement into SQL.
+     *
+     * @param  string  $seed
+     * @return string
+     */
+    public function compileRandom($seed)
+    {
+        return 'DBMS_RANDOM.RANDOM';
+    }
 }
