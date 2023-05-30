@@ -358,7 +358,7 @@ class OracleGrammar extends Grammar
         if (count($value) > 1) {
             $insertQueries = [];
             foreach ($value as $parameter) {
-                $parameter = (str_replace(['(', ')'], '', $parameter));
+                $parameter = str_replace(['(', ')'], '', $parameter);
                 $insertQueries[] = 'select '.$parameter.' from dual ';
             }
             $parameters = implode('union all ', $insertQueries);
