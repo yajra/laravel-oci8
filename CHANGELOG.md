@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [v8.8.0] - 2023-05-30
+
+- feat: add random order on grammar 8.x #788
+
 ## [v8.7.0] - 2023-02-28
 
 - feat: change limit character for 12c02 #762
