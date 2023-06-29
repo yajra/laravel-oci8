@@ -48,8 +48,8 @@ class OracleEloquentTest extends TestCase
     }
 
     /**
-     * @param $model
-     * @param $database
+     * @param  $model
+     * @param  $database
      */
     protected function mockConnectionForModel($model, $database)
     {
