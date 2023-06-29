@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.3.1](https://github.com/yajra/laravel-oci8/compare/v10.3.0...v10.3.1) - 2023-06-29
+
+- fix: config structure #793
+- fix: #792
+- fix: ci/cd - tests workflow #786
+
 ## [v10.3.0](https://github.com/yajra/laravel-oci8/compare/v10.2.0...v10.3.0) - 2023-03-03
 
 - feat: Add compatibility with startingValue #778
