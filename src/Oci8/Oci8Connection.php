@@ -4,7 +4,6 @@ namespace Yajra\Oci8;
 
 use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
 use Doctrine\DBAL\Version;
-use Exception;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Str;
