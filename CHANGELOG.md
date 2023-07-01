@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v9.0.0...9.x)
 
+## [v9.5.1](https://github.com/yajra/laravel-oci8/compare/v9.5.0...v9.5.1) - 2023-07-01
+
+- fix: config structure #795
+- fix: #792 
+- fix: ci/cd
+
 ## [v9.5.0](https://github.com/yajra/laravel-oci8/compare/v9.4.0...v9.5.0) - 2023-03-01
 
 - feat: change limit character for 12c02 #762 (#774)
