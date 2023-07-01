@@ -18,8 +18,11 @@ sudo ln -s /opt/oracle/instantclient_12_1 /opt/oracle/instantclient
 sudo ln -s /opt/oracle/instantclient/libclntsh.so.12.1 /opt/oracle/instantclient/libclntsh.so
 sudo ln -s /opt/oracle/instantclient/libocci.so.12.1 /opt/oracle/instantclient/libocci.so
 
-sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8"
+sudo sh -c "echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-3.2.1"
 
 # setup ld library path
 sudo sh -c "echo '/opt/oracle/instantclient' >> /etc/ld.so.conf"
 sudo ldconfig
+
+# enable oci8 extension
+sudo sh -c "echo 'extension=oci8.so' >> /etc/php/8.1/cli/php.ini"

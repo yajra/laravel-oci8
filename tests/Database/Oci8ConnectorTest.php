@@ -44,8 +44,8 @@ class Oci8ConnectorTest extends TestCase
     /**
      * @dataProvider OracleConnectProvider
      *
-     * @param $dsn
-     * @param $config
+     * @param  $dsn
+     * @param  $config
      */
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
