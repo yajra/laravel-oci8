@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.3.2](https://github.com/yajra/laravel-oci8/compare/v10.3.1...v10.3.2) - 2023-07-14
+
+- fix: toRawSql #798
+
 ## [v10.3.1](https://github.com/yajra/laravel-oci8/compare/v10.3.0...v10.3.1) - 2023-06-29
 
 - fix: config structure #793
