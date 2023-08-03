@@ -307,6 +307,24 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a fulltext index key command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileFullText(Blueprint $blueprint, Fluent $command): string
+    {
+        $indexName = $command->index;
+        $tableName = $this->wrapTable($blueprint);
+        $columns = $this->columnize($command->columns);
+
+        $query = "create index $indexName on $tableName ($columns) indextype is ctxsys.context parameters ('sync(on commit)')";
+
+        return $query;
+    }
+
+    /**
      * Compile a drop table command.
      *
      * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
@@ -326,7 +344,7 @@ class OracleGrammar extends Grammar
     public function compileDropAllTables()
     {
         return 'BEGIN
-            FOR c IN (SELECT table_name FROM user_tables) LOOP
+            FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
             EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS\');
             END LOOP;
 
