@@ -718,6 +718,22 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
+    public function testWhereFullTextWithoutLabel()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereFullText('name', 'johnny');
+        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 0) > 0', $builder->toSql());
+        $this->assertEquals(["johnny"], $builder->getBindings());
+    }
+
+    public function testWhereFullTextWithLabel()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereFullText('name', 'johnny test', ['label' => 1]);
+        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 1) > 0', $builder->toSql());
+        $this->assertEquals(["johnny test"], $builder->getBindings());
+    }
+
     public function testUnions()
     {
         $builder = $this->getBuilder();
