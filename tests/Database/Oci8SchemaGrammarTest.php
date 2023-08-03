@@ -487,6 +487,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('create index baz on users ( foo, bar )', $statements[0]);
     }
 
+    public function testAddingFullTextIndex()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->fullText(['firstname', 'lastname'], 'name');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+        $this->assertEquals(1, count($statements));
+
+        $this->assertEquals("create index name on users (firstname, lastname) indextype is ctxsys.context parameters ('sync(on commit)')", $statements[0]);
+    }
+
     public function testAddingForeignKey()
     {
         $blueprint = new Blueprint('users');
@@ -877,7 +888,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statement = $this->getGrammar()->compileDropAllTables();
 
         $expected = 'BEGIN
-            FOR c IN (SELECT table_name FROM user_tables) LOOP
+            FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
             EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS\');
             END LOOP;
 
