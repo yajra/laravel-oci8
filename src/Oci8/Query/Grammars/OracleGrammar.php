@@ -597,6 +597,25 @@ class OracleGrammar extends Grammar
         return '0 = 1';
     }
 
+    /**
+     * Compile a "where fulltext" clause.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
+     * @return string
+     */
+    public function whereFullText(Builder $query, $where)
+    {
+        $columns = collect($where['columns'])
+            ->map(fn($column) => $this->wrap($column))
+            ->implode(' || ');
+
+        // Third parameter CONTAINS() function
+        $labelSearch = $where['options']['label'] ?? 0;
+
+        return "CONTAINS({$columns}, {$this->parameter($where['value'])}, {$labelSearch}) > 0";
+    }
+
     private function resolveClause($column, $values, $type)
     {
         $chunks = array_chunk($values, 1000);
