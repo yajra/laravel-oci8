@@ -607,7 +607,7 @@ class OracleGrammar extends Grammar
     public function whereFullText(Builder $query, $where)
     {
         $columns = collect($where['columns'])
-            ->map(fn($column) => $this->wrap($column))
+            ->map(fn ($column) => $this->wrap($column))
             ->implode(' || ');
 
         // Third parameter CONTAINS() function
