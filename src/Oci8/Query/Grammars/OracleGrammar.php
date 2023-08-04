@@ -607,8 +607,8 @@ class OracleGrammar extends Grammar
     public function whereFullText(Builder $query, $where)
     {
         $fullTextClause = collect($where['columns'])
-            ->map(function ($column, $labelSearch) use ($where) {
-                return "CONTAINS({$this->wrap($column)}, {$this->parameter($where['value'])}, ".($labelSearch + 1).') > 0';
+            ->map(function ($column) use ($where) {
+                return "CONTAINS({$this->wrap($column)}, {$this->parameter($where['value'])}) > 0";
             })
             ->implode(" {$where['boolean']} ");
 
