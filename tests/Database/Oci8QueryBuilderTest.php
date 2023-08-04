@@ -718,19 +718,29 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testWhereFullTextWithoutLabel()
+    public function testWhereFullTextWithSingleParameter()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText('name', 'johnny');
-        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 0) > 0', $builder->toSql());
+        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 1) > 0', $builder->toSql());
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
-    public function testWhereFullTextWithLabel()
+    public function testWhereFullTextWithMultipleParameters()
     {
         $builder = $this->getBuilder();
-        $builder->select('*')->from('users')->whereFullText('name', 'johnny', ['label' => 1]);
-        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 1) > 0', $builder->toSql());
+        $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny');
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 and CONTAINS("LASTNAME", ?, 2) > 0',
+            $builder->toSql());
+        $this->assertEquals(['johnny'], $builder->getBindings());
+    }
+
+    public function testWhereFullTextWithLogicalOrOperator()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny', [], 'or');
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 or CONTAINS("LASTNAME", ?, 2) > 0',
+            $builder->toSql());
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
