@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
