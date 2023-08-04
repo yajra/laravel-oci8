@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -722,7 +723,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText('name', 'johnny');
-        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?) > 0', $builder->toSql());
+        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 1) > 0', $builder->toSql());
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
@@ -730,7 +731,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny');
-        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?) > 0 and CONTAINS("LASTNAME", ?) > 0',
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 and CONTAINS("LASTNAME", ?, 2) > 0',
             $builder->toSql());
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
@@ -739,7 +740,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny', [], 'or');
-        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?) > 0 or CONTAINS("LASTNAME", ?) > 0',
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 or CONTAINS("LASTNAME", ?, 2) > 0',
             $builder->toSql());
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
@@ -748,7 +749,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orWhereFullText('firstname', 'johnny');
-        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?) > 0', $builder->toSql());
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0', $builder->toSql());
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
@@ -756,7 +757,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orWhereFullText('firstname', 'johnny')->orWhereFullText('lastname', 'white');
-        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?) > 0 or CONTAINS("LASTNAME", ?) > 0',
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 or CONTAINS("LASTNAME", ?, 2) > 0',
             $builder->toSql());
         $this->assertEquals(['johnny', 'white'], $builder->getBindings());
     }
