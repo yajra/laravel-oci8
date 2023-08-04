@@ -608,7 +608,7 @@ class OracleGrammar extends Grammar
     {
         $fullTextClause = collect($where['columns'])
             ->map(function ($column, $labelSearch) use ($where) {
-                return "CONTAINS({$this->wrap($column)}, {$this->parameter($where['value'])}, " . ($labelSearch + 1) . ") > 0";
+                return "CONTAINS({$this->wrap($column)}, {$this->parameter($where['value'])}, ".($labelSearch + 1).') > 0';
             })
             ->implode(" {$where['boolean']} ");
 
