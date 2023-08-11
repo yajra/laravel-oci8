@@ -381,6 +381,30 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table users drop ( created_at, updated_at )', $statements[0]);
     }
 
+    public function testSingleDropFullTextByIndex()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->dropFullText('name_index');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals('drop index name_index', $statements[0]);
+    }
+
+    public function testMultipleDropFullTextByColumns()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->dropFullText(['firstname', 'lastname']);
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+        $expected = "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ('FIRSTNAME', 'LASTNAME')) loop
+            execute immediate 'drop index ' || idx_rec.idx_name;
+        end loop; end;";
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals($expected, $statements[0]);
+    }
+
     public function testRenameTable()
     {
         $blueprint = new Blueprint('users');
@@ -487,15 +511,33 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('create index baz on users ( foo, bar )', $statements[0]);
     }
 
-    public function testAddingFullTextIndex()
+    public function testAddingMSingleColumnFullTextIndex()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->fullText(['name'], 'name');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+
+        $expected = "begin execute immediate 'create index name on users (name) indextype is 
+                ctxsys.context parameters (''sync(on commit)'')'; end;";
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals($expected, $statements[0]);
+    }
+
+    public function testAddingMultipleColumnsFullTextIndex()
     {
         $blueprint = new Blueprint('users');
         $blueprint->fullText(['firstname', 'lastname'], 'name');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $expectedSql['firstnameIndex'] = "execute immediate 'create index name_0 on users (firstname) indextype is 
+                ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['lastnameIndex'] = "execute immediate 'create index name_1 on users (lastname) indextype is 
+                ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expected = 'begin ' . implode(' ', $expectedSql) . ' end;';
 
-        $this->assertEquals("create index name on users (firstname, lastname) indextype is ctxsys.context parameters ('sync(on commit)')", $statements[0]);
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals($expected, $statements[0]);
     }
 
     public function testAddingForeignKey()
