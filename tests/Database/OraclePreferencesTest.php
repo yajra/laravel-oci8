@@ -65,11 +65,11 @@ class OraclePreferencesTest extends TestCase
         $preferences['product_preference'] = "ctx_ddl.create_preference('product_preference', 'MULTI_COLUMN_DATASTORE');
                 ctx_ddl.set_attribute('product_preference', 'COLUMNS', 'category, price');";
 
-        $expected = 'BEGIN ' . implode(' ', $preferences) . ' END;';
+        $expected = 'BEGIN '.implode(' ', $preferences).' END;';
 
         $connection->shouldReceive('statement')
-        ->once()
-        ->andReturnUsing(function ($sql) use ($expected) {
+            ->once()
+            ->andReturnUsing(function ($sql) use ($expected) {
                 $this->assertEquals($expected, $sql);
             });
 

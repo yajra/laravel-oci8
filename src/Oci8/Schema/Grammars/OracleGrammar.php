@@ -318,7 +318,7 @@ class OracleGrammar extends Grammar
         $tableName = $this->wrapTable($blueprint);
         $columns = $command->columns;
         $indexBaseName = $command->index;
-        $preferenceName = $indexBaseName . '_preference';
+        $preferenceName = $indexBaseName.'_preference';
 
         $sqlStatements = [];
 
@@ -339,7 +339,7 @@ class OracleGrammar extends Grammar
             $sqlStatements[] = $sql;
         }
 
-        return 'begin ' . implode(' ', $sqlStatements) . ' end;';
+        return 'begin '.implode(' ', $sqlStatements).' end;';
     }
 
     /**
@@ -491,8 +491,8 @@ class OracleGrammar extends Grammar
             return $this->compileDropIndex($blueprint, $command);
         }
 
-        $columns = array_map(function($column) {
-            return "'" . strtoupper($column) . "'";
+        $columns = array_map(function ($column) {
+            return "'".strtoupper($column)."'";
         }, $columns);
         $columns = implode(', ', $columns);
 

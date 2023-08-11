@@ -16,17 +16,17 @@ class OraclePreferences
     protected $connection;
 
     /**
-     * @var array $columns
+     * @var array
      */
     protected array $columns = [];
 
     /**
-     * @var array $preferenceName
+     * @var array
      */
     protected array $preferenceName = [];
 
     /**
-     * Constructor method
+     * Constructor method.
      *
      * @return void
      */
@@ -36,7 +36,7 @@ class OraclePreferences
     }
 
     /**
-     * Create a preferences values to use in index fullText 
+     * Create a preferences values to use in index fullText.
      *
      * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
      * @return null
@@ -47,7 +47,7 @@ class OraclePreferences
 
         $sql = $this->generateSqlCreatePreferences();
 
-        if (!empty($sql)) {
+        if (! empty($sql)) {
             $this->connection->statement(
                 "BEGIN $sql END;"
             );
@@ -55,7 +55,7 @@ class OraclePreferences
     }
 
     /**
-     * Generate script sql to create preferences
+     * Generate script sql to create preferences.
      *
      * @param  ?string  $objectNameOracle
      * @param  ?string  $attributeNameOracle
@@ -79,7 +79,7 @@ class OraclePreferences
     }
 
     /**
-     * Set columns and preference name to class attributes
+     * Set columns and preference name to class attributes.
      *
      * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
      * @return void
@@ -90,15 +90,15 @@ class OraclePreferences
         $this->preferenceName = [];
 
         foreach ($blueprint->getCommands() as $value) {
-            if ($value['name'] === "fulltext" && count($value['columns']) > 1) {
+            if ($value['name'] === 'fulltext' && count($value['columns']) > 1) {
                 $this->columns[] = $value['columns'];
-                $this->preferenceName[] = $value['index'] . '_preference';
+                $this->preferenceName[] = $value['index'].'_preference';
             }
         }
     }
 
     /**
-     * Format with "implode" function columns to use in preferences
+     * Format with "implode" function columns to use in preferences.
      *
      * @param  array  $columns
      * @return string
@@ -109,7 +109,7 @@ class OraclePreferences
     }
 
     /**
-     * Drop preferences by specified table
+     * Drop preferences by specified table.
      *
      * @param  string  $table
      * @return void
@@ -128,12 +128,12 @@ class OraclePreferences
             END;";
 
         $this->connection->statement($sqlDropPreferencesByTable, [
-            strtoupper($table)
+            strtoupper($table),
         ]);
     }
 
     /**
-     * Drop all user preferences
+     * Drop all user preferences.
      *
      * @return void
      */

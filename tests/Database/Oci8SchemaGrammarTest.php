@@ -534,7 +534,7 @@ class Oci8SchemaGrammarTest extends TestCase
                 ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
         $expectedSql['lastnameIndex'] = "execute immediate 'create index name_1 on users (lastname) indextype is 
                 ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
-        $expected = 'begin ' . implode(' ', $expectedSql) . ' end;';
+        $expected = 'begin '.implode(' ', $expectedSql).' end;';
 
         $this->assertEquals(1, count($statements));
         $this->assertEquals($expected, $statements[0]);
