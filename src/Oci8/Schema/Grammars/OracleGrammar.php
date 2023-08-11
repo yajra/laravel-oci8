@@ -315,13 +315,31 @@ class OracleGrammar extends Grammar
      */
     public function compileFullText(Blueprint $blueprint, Fluent $command): string
     {
-        $indexName = $command->index;
         $tableName = $this->wrapTable($blueprint);
-        $columns = $this->columnize($command->columns);
+        $columns = $command->columns;
+        $indexBaseName = $command->index;
+        $preferenceName = $indexBaseName . '_preference';
 
-        $query = "create index $indexName on $tableName ($columns) indextype is ctxsys.context parameters ('sync(on commit)')";
+        $sqlStatements = [];
 
-        return $query;
+        foreach ($columns as $key => $column) {
+            $indexName = $indexBaseName;
+            $parametersIndex = '';
+
+            if (count($columns) > 1) {
+                $indexName .= "_{$key}";
+                $parametersIndex = "datastore {$preferenceName} ";
+            }
+
+            $parametersIndex .= 'sync(on commit)';
+
+            $sql = "execute immediate 'create index {$indexName} on $tableName ($column) indextype is 
+                ctxsys.context parameters (''$parametersIndex'')';";
+
+            $sqlStatements[] = $sql;
+        }
+
+        return 'begin ' . implode(' ', $sqlStatements) . ' end;';
     }
 
     /**
@@ -456,6 +474,33 @@ class OracleGrammar extends Grammar
     public function compileDropForeign(Blueprint $blueprint, Fluent $command)
     {
         return $this->dropConstraint($blueprint, $command, 'foreign');
+    }
+
+    /**
+     * Compile a drop fulltext index command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileDropFullText(Blueprint $blueprint, Fluent $command): string
+    {
+        $columns = $command->columns;
+
+        if (empty($columns)) {
+            return $this->compileDropIndex($blueprint, $command);
+        }
+
+        $columns = array_map(function($column) {
+            return "'" . strtoupper($column) . "'";
+        }, $columns);
+        $columns = implode(', ', $columns);
+
+        $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ($columns)) loop
+            execute immediate 'drop index ' || idx_rec.idx_name;
+        end loop;";
+
+        return "begin $dropFullTextSql end;";
     }
 
     /**
