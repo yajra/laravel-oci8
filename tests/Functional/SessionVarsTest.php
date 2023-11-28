@@ -3,9 +3,6 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Yajra\Oci8\Query\Grammars\OracleGrammar;
-use Yajra\Oci8\Query\OracleBuilder as Builder;
-use Yajra\Oci8\Query\Processors\OracleProcessor;
 use Yajra\Oci8\Tests\TestCase;
 
 class SessionVarsTest extends TestCase
@@ -13,7 +10,7 @@ class SessionVarsTest extends TestCase
     use DatabaseTransactions;
 
     /**
-     * Configure custom sessionVars
+     * Configure custom sessionVars.
      *
      * @param  \Illuminate\Foundation\Application  $app
      */
