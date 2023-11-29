@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.3.3](https://github.com/yajra/laravel-oci8/compare/v10.3.2...v10.3.3) - 2023-11-29
+
+- fix: read sessionVars config read from current database connection #812
+- fix #811 and improves handle of default values.
+
 ## [v10.3.2](https://github.com/yajra/laravel-oci8/compare/v10.3.1...v10.3.2) - 2023-07-14
 
 - fix: toRawSql #798
