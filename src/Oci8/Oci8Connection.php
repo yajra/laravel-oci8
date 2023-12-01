@@ -410,14 +410,16 @@ class Oci8Connection extends Connection
             $value = &$binding;
             $type = PDO::PARAM_STR;
             $length = -1;
+            $options = null;
 
             if (is_array($binding)) {
                 $value = &$binding['value'];
                 $type = array_key_exists('type', $binding) ? $binding['type'] : PDO::PARAM_STR;
                 $length = array_key_exists('length', $binding) ? $binding['length'] : -1;
+                $options = array_key_exists('options', $binding) ? $binding['options'] : $options;
             }
 
-            $stmt->bindParam(':'.$key, $value, $type, $length);
+            $stmt->bindParam(':'.$key, $value, $type, $length, $options);
         }
 
         return $stmt;
