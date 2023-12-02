@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.3.4](https://github.com/yajra/laravel-oci8/compare/v10.3.3...v10.3.4) - 2023-12-02
+
+- fix: Handle options being passed as part of a binding array #814
+- fix: Addresses issue #813
+
 ## [v10.3.3](https://github.com/yajra/laravel-oci8/compare/v10.3.2...v10.3.3) - 2023-11-29
 
 - fix: read sessionVars config read from current database connection #812
