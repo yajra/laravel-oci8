@@ -640,4 +640,56 @@ class OracleGrammar extends Grammar
     {
         return 'DBMS_RANDOM.RANDOM';
     }
+
+    /**
+     * Compile an "upsert" statement into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @param  array  $uniqueBy
+     * @param  array  $update
+     * @return string
+     */
+    public function compileUpsert(Builder $query, array $values, array $uniqueBy, array $update)
+    {
+        $columns = $this->columnize(array_keys(reset($values)));
+
+        $sql = 'merge into '.$this->wrapTable($query->from).' ';
+
+        $parameters = collect($values)->map(function ($record) {
+            $values = collect($record)->map(function ($value, $key) {
+                return '? as '.$this->wrap($key);
+            })->implode(', ');
+
+            return 'select '.$values.' from dual';
+        })->implode(' union all ');
+
+        $source = $this->wrapTable('laravel_source');
+
+        $sql .= 'using ('.$parameters.') '.$source;
+
+        $on = collect($uniqueBy)->map(function ($column) use ($query) {
+            return $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column);
+        })->implode(' and ');
+
+        $sql .= ' on ('.$on.') ';
+
+        if ($update) {
+            $update = collect($update)->map(function ($value, $key) {
+                return is_numeric($key)
+                    ? $this->wrap($value).' = '.$this->wrap('laravel_source.'.$value)
+                    : $this->wrap($key).' = '.$this->parameter($value);
+            })->implode(', ');
+
+            $sql .= 'when matched then update set '.$update.' ';
+        }
+
+        $columnValues = collect(explode(', ', $columns))->map(function ($column) use ($source) {
+            return $source.'.'.$column;
+        })->implode(', ');
+
+        $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
+
+        return $sql;
+    }
 }
