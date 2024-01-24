@@ -2236,7 +2236,6 @@ class Oci8QueryBuilderTest extends TestCase
             ->andReturn(2);
         $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email');
         $this->assertEquals(2, $result);
-
     }
 
     public function testUpsertMethodWithUpdateColumns()
@@ -2841,7 +2840,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate($perPage, $columns, $pageName, $page);
 
         $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
@@ -2871,7 +2870,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate();
 
         $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
@@ -2901,7 +2900,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate();
 
         $this->assertEquals(new LengthAwarePaginator($results, 0, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
@@ -2928,7 +2927,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate($perPage, $columns, $pageName, $page);
 
         $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }

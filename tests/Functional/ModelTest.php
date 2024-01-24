@@ -15,7 +15,7 @@ class ModelTest extends TestCase
     public function it_can_fill_a_model_to_create_a_record()
     {
         $attributes = [
-            'name'  => 'John',
+            'name' => 'John',
             'email' => 'john@example.com',
         ];
 
@@ -30,7 +30,7 @@ class ModelTest extends TestCase
     public function it_can_insert_record_using_a_model()
     {
         User::query()->insert($attributes = [
-            'name'  => 'John',
+            'name' => 'John',
             'email' => 'john@example.com',
         ]);
 
@@ -56,7 +56,7 @@ class ModelTest extends TestCase
         $count = UserWithGuardedProperty::count();
 
         UserWithGuardedProperty::create([
-            'name'  => 'Test',
+            'name' => 'Test',
             'email' => 'test@example.com',
         ]);
 

@@ -31,14 +31,14 @@ class ConnectionTest extends TestCase
         $app['config']->set('app.debug', true);
         $app['config']->set('database.default', 'oracle');
         $app['config']->set('database.connections.oracle', [
-            'driver'       => 'oracle',
-            'host'         => 'localhost',
-            'database'     => 'xe',
+            'driver' => 'oracle',
+            'host' => 'localhost',
+            'database' => 'xe',
             'service_name' => 'xe',
-            'username'     => 'system',
-            'password'     => 'oracle',
-            'prefix'       => 'test_',
-            'port'         => 49161,
+            'username' => 'system',
+            'password' => 'oracle',
+            'prefix' => 'test_',
+            'port' => 49161,
         ]);
     }
 }
