@@ -675,11 +675,16 @@ class OracleGrammar extends Grammar
         $sql .= ' on ('.$on.') ';
 
         if ($update) {
-            $update = collect($update)->map(function ($value, $key) {
-                return is_numeric($key)
-                    ? $this->wrap($value).' = '.$this->wrap('laravel_source.'.$value)
-                    : $this->wrap($key).' = '.$this->parameter($value);
-            })->implode(', ');
+            $update = collect($update)
+                ->reject(function ($value, $key) use ($uniqueBy) {
+                    return in_array($value, $uniqueBy);
+                })
+                ->map(function ($value, $key) {
+                    return is_numeric($key)
+                        ? $this->wrap($value).' = '.$this->wrap('laravel_source.'.$value)
+                        : $this->wrap($key).' = '.$this->parameter($value);
+                })
+                ->implode(', ');
 
             $sql .= 'when matched then update set '.$update.' ';
         }

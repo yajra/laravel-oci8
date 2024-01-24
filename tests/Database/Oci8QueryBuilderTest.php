@@ -2232,7 +2232,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('affectingStatement')
             ->once()
-            ->with('merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual union all select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when matched then update set "EMAIL" = "LARAVEL_SOURCE"."EMAIL", "NAME" = "LARAVEL_SOURCE"."NAME" when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")', ['foo', 'bar', 'foo2', 'bar2'])
+            ->with('merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual union all select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when matched then update set "NAME" = "LARAVEL_SOURCE"."NAME" when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")', ['foo', 'bar', 'foo2', 'bar2'])
             ->andReturn(2);
         $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email');
         $this->assertEquals(2, $result);
