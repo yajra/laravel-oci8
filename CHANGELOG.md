@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.4.1](https://github.com/yajra/laravel-oci8/compare/v10.4.0...v10.4.1) - 2024-01-24
+
+- fix: ORA-38104: Columns referenced in the ON Clause cannot be updated #818
+
 ## [v10.4.0](https://github.com/yajra/laravel-oci8/compare/v10.3.4...v10.4.0) - 2024-01-24
 
 - feat: add support for upsert sql #816
