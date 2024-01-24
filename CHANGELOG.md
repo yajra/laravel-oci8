@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.4.0](https://github.com/yajra/laravel-oci8/compare/v10.3.4...v10.4.0) - 2024-01-24
+
+- feat: add support for upsert sql #816
+- Apply fixes from StyleCI #817
+
 ## [v10.3.4](https://github.com/yajra/laravel-oci8/compare/v10.3.3...v10.3.4) - 2023-12-02
 
 - fix: Handle options being passed as part of a binding array #814
