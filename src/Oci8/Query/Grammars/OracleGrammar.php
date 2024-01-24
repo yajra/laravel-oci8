@@ -672,7 +672,7 @@ class OracleGrammar extends Grammar
             return $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column);
         })->implode(' and ');
 
-        $sql .= 'on ('.$on.') ';
+        $sql .= ' on ('.$on.') ';
 
         if ($update) {
             $update = collect($update)->map(function ($value, $key) {

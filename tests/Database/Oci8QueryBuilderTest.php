@@ -2226,24 +2226,27 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    /**
-     * @TODO: Add support for upsert.
-     */
-    protected function testUpsertMethod()
+    public function testUpsertMethod()
     {
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "USERS" ("EMAIL", "NAME") values (?, ?), (?, ?) on conflict ("EMAIL") do update set "EMAIL" = "excluded"."EMAIL", "NAME" = "excluded"."NAME"', ['foo', 'bar', 'foo2', 'bar2'])->andReturn(2);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with('merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual union all select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when matched then update set "EMAIL" = "LARAVEL_SOURCE"."EMAIL", "NAME" = "LARAVEL_SOURCE"."NAME" when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")', ['foo', 'bar', 'foo2', 'bar2'])
+            ->andReturn(2);
         $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email');
         $this->assertEquals(2, $result);
+
     }
 
-    /**
-     * @TODO: Add support for upsert.
-     */
-    protected function testUpsertMethodWithUpdateColumns()
+    public function testUpsertMethodWithUpdateColumns()
     {
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "USERS" ("EMAIL", "NAME") values (?, ?), (?, ?) on conflict ("EMAIL") do update set "NAME" = "excluded"."NAME"', ['foo', 'bar', 'foo2', 'bar2'])->andReturn(2);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with('merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual union all select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when matched then update set "NAME" = "LARAVEL_SOURCE"."NAME" when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")', ['foo', 'bar', 'foo2', 'bar2'])
+            ->andReturn(2);
         $result = $builder->from('users')->upsert([['email' => 'foo', 'name' => 'bar'], ['name' => 'bar2', 'email' => 'foo2']], 'email', ['name']);
         $this->assertEquals(2, $result);
     }
