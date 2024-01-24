@@ -59,11 +59,11 @@ class Oci8ServiceProvider extends ServiceProvider
 
             // set oracle session variables
             $sessionVars = [
-                'NLS_TIME_FORMAT'         => 'HH24:MI:SS',
-                'NLS_DATE_FORMAT'         => 'YYYY-MM-DD HH24:MI:SS',
-                'NLS_TIMESTAMP_FORMAT'    => 'YYYY-MM-DD HH24:MI:SS',
+                'NLS_TIME_FORMAT' => 'HH24:MI:SS',
+                'NLS_DATE_FORMAT' => 'YYYY-MM-DD HH24:MI:SS',
+                'NLS_TIMESTAMP_FORMAT' => 'YYYY-MM-DD HH24:MI:SS',
                 'NLS_TIMESTAMP_TZ_FORMAT' => 'YYYY-MM-DD HH24:MI:SS TZH:TZM',
-                'NLS_NUMERIC_CHARACTERS'  => '.,',
+                'NLS_NUMERIC_CHARACTERS' => '.,',
                 ...($config['sessionVars'] ?? []),
             ];
 

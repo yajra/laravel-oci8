@@ -59,7 +59,7 @@ class OracleEloquentTest extends TestCase
             $grammar = new $grammarClass;
             $processor = new $processorClass;
             $connection = m::mock('Illuminate\Database\ConnectionInterface', [
-                'getQueryGrammar'  => $grammar,
+                'getQueryGrammar' => $grammar,
                 'getPostProcessor' => $processor,
             ]);
             $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
@@ -75,7 +75,7 @@ class OracleEloquentTest extends TestCase
         $grammar = new $grammarClass;
         $processor = new $processorClass;
         $connection = m::mock('Illuminate\Database\ConnectionInterface', [
-            'getQueryGrammar'  => $grammar,
+            'getQueryGrammar' => $grammar,
             'getPostProcessor' => $processor,
         ]);
         $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',

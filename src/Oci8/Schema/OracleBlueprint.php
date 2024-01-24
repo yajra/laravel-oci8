@@ -68,7 +68,7 @@ class OracleBlueprint extends Blueprint
             $short_type = [
                 'primary' => 'pk',
                 'foreign' => 'fk',
-                'unique'  => 'uk',
+                'unique' => 'uk',
             ];
 
             $type = isset($short_type[$type]) ? $short_type[$type] : $type;
