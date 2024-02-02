@@ -455,7 +455,7 @@ class OracleGrammar extends Grammar
 
         // create EMPTY_BLOB sql for each binary
         $binarySql = [];
-        foreach ((array) $binaryColumns as $binary) {
+        foreach (explode(',', $binaryColumns) as $binary) {
             $binarySql[] = "$binary = EMPTY_BLOB()";
         }
 

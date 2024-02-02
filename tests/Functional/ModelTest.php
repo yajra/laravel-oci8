@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Yajra\Oci8\Tests\MultiBlob;
 use Yajra\Oci8\Tests\TestCase;
 use Yajra\Oci8\Tests\User;
 use Yajra\Oci8\Tests\UserWithGuardedProperty;
@@ -61,5 +62,17 @@ class ModelTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('users', $count + 1);
+    }
+
+    /** @test */
+    public function it_can_update_model_with_mutliple_blob_columns()
+    {
+        $multiBlob = MultiBlob::create();
+        $multiBlob->blob_1 = ['test'];
+        $multiBlob->blob_2 = ['test2'];
+        $multiBlob->status = 1;
+        $multiBlob->save();
+
+        $this->assertDatabaseHas('multi_blobs', ['status' => 1]);
     }
 }
