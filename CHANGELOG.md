@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.4.2](https://github.com/yajra/laravel-oci8/compare/v10.4.1...v10.4.2) - 2024-02-03
+
+- fix: multiple blob update and add test #821
+- fix: #820
+
 ## [v10.4.1](https://github.com/yajra/laravel-oci8/compare/v10.4.0...v10.4.1) - 2024-01-24
 
 - fix: ORA-38104: Columns referenced in the ON Clause cannot be updated #818
