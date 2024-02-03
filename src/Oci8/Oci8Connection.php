@@ -180,7 +180,7 @@ class Oci8Connection extends Connection
     public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
     {
         $sessionVars = [
-            'NLS_DATE_FORMAT'      => $format,
+            'NLS_DATE_FORMAT' => $format,
             'NLS_TIMESTAMP_FORMAT' => $format,
         ];
 
