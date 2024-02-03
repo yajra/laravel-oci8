@@ -2838,7 +2838,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate($perPage, $columns, $pageName, $page);
 
         $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
@@ -2868,7 +2868,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate();
 
         $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
@@ -2898,7 +2898,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate();
 
         $this->assertEquals(new LengthAwarePaginator($results, 0, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
@@ -2925,7 +2925,7 @@ class Oci8QueryBuilderTest extends TestCase
         $result = $builder->paginate($perPage, $columns, $pageName, $page);
 
         $this->assertEquals(new LengthAwarePaginator($results, 2, $perPage, $page, [
-            'path'     => $path,
+            'path' => $path,
             'pageName' => $pageName,
         ]), $result);
     }
