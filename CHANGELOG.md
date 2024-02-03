@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v9.0.0...9.x)
 
+## [v9.5.3](https://github.com/yajra/laravel-oci8/compare/v9.5.2...v9.5.3) - 2024-02-03
+
+- fix: multiple blob update and add test #821
+- fix: #820
+
 ## [v9.5.2](https://github.com/yajra/laravel-oci8/compare/v9.5.1...v9.5.2) - 2023-12-06
 
 - fix: Handle options being passed as part of a binding array #814
