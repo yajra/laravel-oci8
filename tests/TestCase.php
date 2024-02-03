@@ -33,6 +33,18 @@ abstract class TestCase extends BaseTestCase
             $table->timestamps();
         });
 
+        if ($schemaBuilder->hasTable('multi_blobs')) {
+            $schemaBuilder->drop('multi_blobs');
+        }
+
+        $schemaBuilder->create('multi_blobs', function (Blueprint $table) {
+            $table->increments('id');
+            $table->binary('blob_1')->nullable();
+            $table->binary('blob_2')->nullable();
+            $table->integer('status')->nullable();
+            $table->timestamps();
+        });
+
         if ($schemaBuilder->hasTable('jobs')) {
             $schemaBuilder->drop('jobs');
         }
