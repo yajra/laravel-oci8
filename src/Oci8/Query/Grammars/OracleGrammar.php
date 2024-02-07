@@ -177,7 +177,7 @@ class OracleGrammar extends Grammar
             $constraint .= ' '.$this->compileLock($query, $query->lock);
         }
 
-        if (($query->limit == 1 && is_null($query->offset))) {
+        if ($query->limit == 1 && is_null($query->offset)) {
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
@@ -187,7 +187,6 @@ class OracleGrammar extends Grammar
 
             return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 where rownum <= {$finish}) t2 where t2.\"rn\" >= {$start}";
         }
-
 
         return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
     }
