@@ -489,7 +489,7 @@ class OracleGrammar extends Grammar
      */
     protected function compileLock(Builder $query, $value)
     {
-        if (empty($query->wheres)) {
+        if ($query->limit > 0) {
             return '';
         }
 
