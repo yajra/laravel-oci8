@@ -93,7 +93,7 @@ class OracleGrammar extends Grammar
             $sql = $this->wrapUnion($sql).' '.$this->compileUnions($query);
         }
 
-        if ($this->isPaginationable($query, $components)) {
+        if (isset($query->limit) || isset($query->offset)) {
             $sql = $this->compileAnsiOffset($query, $components);
         }
 
@@ -491,6 +491,10 @@ class OracleGrammar extends Grammar
      */
     protected function compileLock(Builder $query, $value)
     {
+        if ($query->limit > 0) {
+            return '';
+        }
+
         if (is_string($value)) {
             return $value;
         }
