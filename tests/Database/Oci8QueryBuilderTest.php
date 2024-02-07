@@ -2508,15 +2508,12 @@ class Oci8QueryBuilderTest extends TestCase
             $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
         } catch (Oci8Exception $e) {
             // $this->assertEquals('select * from foo where bar = ? lock in share mode', $builder->toSql());
-            $this->assertContains('Lock in share mode not yet supported!', $e->getMessage());
+            $this->assertStringContainsString('Lock in share mode not yet supported!', $e->getMessage());
             $this->assertEquals(['baz'], $builder->getBindings());
         }
     }
 
-    /**
-     * @TODO: select with lock not yet supported.
-     */
-    protected function testSelectWithLockUsesWritePdo()
+    public function testSelectWithLockUsesWritePdo()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()
