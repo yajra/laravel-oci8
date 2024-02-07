@@ -70,7 +70,7 @@ class OracleGrammar extends Grammar
      */
     public function compileSelect(Builder $query)
     {
-        if ($query->unions && $query->aggregate) {
+        if (($query->unions || $query->havings) && $query->aggregate) {
             return $this->compileUnionAggregate($query);
         }
 
@@ -83,22 +83,18 @@ class OracleGrammar extends Grammar
             $query->columns = ['*'];
         }
 
-        $components = $this->compileComponents($query);
-
         // To compile the query, we'll spin through each component of the query and
         // see if that component exists. If it does we'll just call the compiler
         // function for the component which is responsible for making the SQL.
+        $components = $this->compileComponents($query);
         $sql = trim($this->concatenate($components));
-
-        // If an offset is present on the query, we will need to wrap the query in
-        // a big "ANSI" offset syntax block. This is very nasty compared to the
-        // other database systems but is necessary for implementing features.
-        if ($this->isPaginationable($query, $components)) {
-            return $this->compileAnsiOffset($query, $components);
-        }
 
         if ($query->unions) {
             $sql = $this->wrapUnion($sql).' '.$this->compileUnions($query);
+        }
+
+        if (isset($query->limit) || isset($query->offset)) {
+            $sql = $this->compileAnsiOffset($query, $components);
         }
 
         $query->columns = $original;
@@ -177,7 +173,11 @@ class OracleGrammar extends Grammar
      */
     protected function compileTableExpression($sql, $constraint, $query)
     {
-        if ($query->limit == 1 && is_null($query->offset)) {
+        if (isset($query->lock)) {
+            $constraint .= ' '.$this->compileLock($query, $query->lock);
+        }
+
+        if (($query->limit == 1 && is_null($query->offset))) {
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
@@ -187,6 +187,7 @@ class OracleGrammar extends Grammar
 
             return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 where rownum <= {$finish}) t2 where t2.\"rn\" >= {$start}";
         }
+
 
         return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
     }
@@ -455,7 +456,7 @@ class OracleGrammar extends Grammar
 
         // create EMPTY_BLOB sql for each binary
         $binarySql = [];
-        foreach (explode(',', $binaryColumns) as $binary) {
+        foreach ((array) $binaryColumns as $binary) {
             $binarySql[] = "$binary = EMPTY_BLOB()";
         }
 
@@ -489,15 +490,15 @@ class OracleGrammar extends Grammar
      */
     protected function compileLock(Builder $query, $value)
     {
+        if (empty($query->wheres)) {
+            return '';
+        }
+
         if (is_string($value)) {
             return $value;
         }
 
-        if ($value) {
-            return 'for update';
-        }
-
-        return '';
+        return $value ? 'for update' : 'lock in share mode';
     }
 
     /**

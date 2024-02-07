@@ -1172,9 +1172,6 @@ class Oci8QueryBuilderTest extends TestCase
         );
     }
 
-    /**
-     * @TODO: Review for page
-     */
     public function testForPage()
     {
         $builder = $this->getBuilder();
@@ -1191,18 +1188,15 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
-        // $this->assertSame('select * from "USERS" limit 0 offset 0', $builder->toSql());
-        $this->assertSame('select * from "USERS"', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 0) t2 where t2."rn" >= 1', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 0);
-        // $this->assertSame('select * from "USERS" limit 0 offset 0', $builder->toSql());
-        $this->assertSame('select * from "USERS"', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 0) t2 where t2."rn" >= 1', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 0);
-        // $this->assertSame('select * from "USERS" limit 0 offset 0', $builder->toSql());
-        $this->assertSame('select * from "USERS"', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 0) t2 where t2."rn" >= 1', $builder->toSql());
     }
 
     public function testGetCountForPaginationWithBindings()
