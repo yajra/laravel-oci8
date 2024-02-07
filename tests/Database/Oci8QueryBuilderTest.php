@@ -2660,7 +2660,6 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select * from "FOO" where "BAR" = ? for update', $builder->toSql());
         $this->assertEquals(['baz'], $builder->getBindings());
 
-
         $builder = $this->getBuilder();
         $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
         $this->assertEquals('select * from "FOO" where "BAR" = ? for update', $builder->toSql());
