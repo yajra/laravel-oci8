@@ -87,6 +87,7 @@ class OracleGrammar extends Grammar
         // see if that component exists. If it does we'll just call the compiler
         // function for the component which is responsible for making the SQL.
         $components = $this->compileComponents($query);
+        unset($components['lock']);
         $sql = trim($this->concatenate($components));
 
         if ($query->unions) {
@@ -95,6 +96,10 @@ class OracleGrammar extends Grammar
 
         if (isset($query->limit) || isset($query->offset)) {
             $sql = $this->compileAnsiOffset($query, $components);
+        }
+
+        if (isset($query->lock)) {
+            $sql .= ' '.$this->compileLock($query, $query->lock);
         }
 
         $query->columns = $original;
@@ -152,21 +157,15 @@ class OracleGrammar extends Grammar
         $start = $query->offset + 1;
         $finish = $query->offset + $query->limit;
 
-        $lock = '';
-
-        if (isset($query->lock)) {
-            $lock = ' '.$this->compileLock($query, $query->lock);
-        }
-
         if ($query->limit == 1 && is_null($query->offset)) {
-            return '= 1'.$lock;
+            return '= 1';
         }
 
         if ($query->offset && is_null($query->limit)) {
-            return ">= {$start}".$lock;;
+            return ">= {$start}";
         }
 
-        return "between {$start} and {$finish}".$lock;;
+        return "between {$start} and {$finish}";
     }
 
     /**
@@ -491,15 +490,11 @@ class OracleGrammar extends Grammar
      */
     protected function compileLock(Builder $query, $value)
     {
-        if ($query->limit > 0) {
-            return '';
-        }
-
         if (is_string($value)) {
             return $value;
         }
 
-        if ($value) {
+        if (is_bool($value)) {
             return 'for update';
         }
 
