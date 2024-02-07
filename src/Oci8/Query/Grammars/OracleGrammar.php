@@ -93,7 +93,7 @@ class OracleGrammar extends Grammar
             $sql = $this->wrapUnion($sql).' '.$this->compileUnions($query);
         }
 
-        if (isset($query->limit) || isset($query->offset)) {
+        if ($this->isPaginationable($query, $components)) {
             $sql = $this->compileAnsiOffset($query, $components);
         }
 
@@ -152,15 +152,21 @@ class OracleGrammar extends Grammar
         $start = $query->offset + 1;
         $finish = $query->offset + $query->limit;
 
+        $lock = '';
+
+        if (isset($query->lock)) {
+            $lock = ' '.$this->compileLock($query, $query->lock);
+        }
+
         if ($query->limit == 1 && is_null($query->offset)) {
-            return '= 1';
+            return '= 1'.$lock;
         }
 
         if ($query->offset && is_null($query->limit)) {
-            return ">= {$start}";
+            return ">= {$start}".$lock;;
         }
 
-        return "between {$start} and {$finish}";
+        return "between {$start} and {$finish}".$lock;;
     }
 
     /**
@@ -173,10 +179,6 @@ class OracleGrammar extends Grammar
      */
     protected function compileTableExpression($sql, $constraint, $query)
     {
-        if (isset($query->lock)) {
-            $constraint .= ' '.$this->compileLock($query, $query->lock);
-        }
-
         if ($query->limit == 1 && is_null($query->offset)) {
             return "select * from ({$sql}) where rownum {$constraint}";
         }
@@ -489,15 +491,15 @@ class OracleGrammar extends Grammar
      */
     protected function compileLock(Builder $query, $value)
     {
-        if ($query->limit > 0) {
-            return '';
-        }
-
         if (is_string($value)) {
             return $value;
         }
 
-        return $value ? 'for update' : 'lock in share mode';
+        if ($value) {
+            return 'for update';
+        }
+
+        return '';
     }
 
     /**
@@ -696,5 +698,16 @@ class OracleGrammar extends Grammar
         $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
 
         return $sql;
+    }
+
+    /**
+     * Compile the SQL statement to execute a savepoint rollback.
+     *
+     * @param  string  $name
+     * @return string
+     */
+    public function compileSavepointRollBack($name)
+    {
+        return 'ROLLBACK TO '.$name;
     }
 }
