@@ -108,16 +108,6 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * @param  Builder  $query
-     * @param  array  $components
-     * @return bool
-     */
-    protected function isPaginationable(Builder $query, array $components)
-    {
-        return ($query->limit > 0 || $query->offset > 0) && ! array_key_exists('lock', $components);
-    }
-
-    /**
      * Create a full ANSI offset clause for the query.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
