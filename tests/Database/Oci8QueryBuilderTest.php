@@ -15,7 +15,6 @@ use RuntimeException;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
 {
