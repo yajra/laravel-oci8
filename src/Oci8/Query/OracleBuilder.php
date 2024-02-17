@@ -148,7 +148,7 @@ class OracleBuilder extends Builder
      */
     protected function runSelect()
     {
-        if ($this->lock) {
+        if (isset($this->lock)) {
             $this->connection->beginTransaction();
             $result = $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
             $this->connection->commit();

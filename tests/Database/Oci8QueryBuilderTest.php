@@ -15,7 +15,6 @@ use RuntimeException;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
-use Yajra\Pdo\Oci8\Exceptions\Oci8Exception;
 
 class Oci8QueryBuilderTest extends TestCase
 {
@@ -1172,37 +1171,37 @@ class Oci8QueryBuilderTest extends TestCase
         );
     }
 
-    /**
-     * @TODO: Review for page
-     */
     public function testForPage()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
-        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 30) t2 where t2."rn" >= 16', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 30) t2 where t2."rn" >= 16',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 15);
-        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
-        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
-        // $this->assertSame('select * from "USERS" limit 0 offset 0', $builder->toSql());
-        $this->assertSame('select * from "USERS"', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 0) t2 where t2."rn" >= 1',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 0);
-        // $this->assertSame('select * from "USERS" limit 0 offset 0', $builder->toSql());
-        $this->assertSame('select * from "USERS"', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 0) t2 where t2."rn" >= 1',
+            $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 0);
-        // $this->assertSame('select * from "USERS" limit 0 offset 0', $builder->toSql());
-        $this->assertSame('select * from "USERS"', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 0) t2 where t2."rn" >= 1',
+            $builder->toSql());
     }
 
     public function testGetCountForPaginationWithBindings()
@@ -1343,17 +1342,17 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')
-                ->from('users')
-                ->join('contacts', 'users.id', '=', 'contacts.id')
-                ->leftJoin('photos', 'users.id', '=', 'photos.id');
+            ->from('users')
+            ->join('contacts', 'users.id', '=', 'contacts.id')
+            ->leftJoin('photos', 'users.id', '=', 'photos.id');
         $this->assertEquals('select * from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" left join "PHOTOS" on "USERS"."ID" = "PHOTOS"."ID"',
             $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')
-                ->from('users')
-                ->leftJoinWhere('photos', 'users.id', '=', 'bar')
-                ->joinWhere('photos', 'users.id', '=', 'foo');
+            ->from('users')
+            ->leftJoinWhere('photos', 'users.id', '=', 'bar')
+            ->joinWhere('photos', 'users.id', '=', 'foo');
         $this->assertEquals('select * from "USERS" left join "PHOTOS" on "USERS"."ID" = ? inner join "PHOTOS" on "USERS"."ID" = ?',
             $builder->toSql());
         $this->assertEquals(['bar', 'foo'], $builder->getBindings());
@@ -1628,8 +1627,8 @@ class Oci8QueryBuilderTest extends TestCase
         $sub2 = $this->getBuilder()->from('contacts')->where('name', 'bar');
         $sub2->getConnection()->shouldReceive('getDatabaseName')->andReturn('oracle');
         $builder->from('users')
-                ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
-                ->joinSub($sub2, 'sub2', 'users.id', '=', 'sub2.user_id');
+            ->joinSub($sub1, 'sub1', 'users.id', '=', 1, 'inner', true)
+            ->joinSub($sub2, 'sub2', 'users.id', '=', 'sub2.user_id');
         $expected = 'select * from "USERS" ';
         $expected .= 'inner join (select * from "CONTACTS" where "NAME" = ?) "SUB1" on "USERS"."ID" = ? ';
         $expected .= 'inner join (select * from "CONTACTS" where "NAME" = ?) "SUB2" on "USERS"."ID" = "SUB2"."USER_ID"';
@@ -1688,18 +1687,18 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
-                    [1], true)
-                ->andReturn([['foo' => 'bar']]);
+            ->shouldReceive('select')
+            ->once()
+            ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
+                [1], true)
+            ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['foo' => 'bar']])
-                ->andReturnUsing(function ($query, $results) {
-                    return $results;
-                });
+            ->shouldReceive('processSelect')
+            ->once()
+            ->with($builder, [['foo' => 'bar']])
+            ->andReturnUsing(function ($query, $results) {
+                return $results;
+            });
         $results = $builder->from('users')->find(1);
         $this->assertEquals(['foo' => 'bar'], $results);
     }
@@ -1708,17 +1707,17 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
-                   ->once()
-                   ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
-                       [1], true)
-                   ->andReturn([['foo' => 'bar']]);
+            ->once()
+            ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
+                [1], true)
+            ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['foo' => 'bar']])
-                ->andReturnUsing(function ($query, $results) {
-                    return $results;
-                });
+            ->shouldReceive('processSelect')
+            ->once()
+            ->with($builder, [['foo' => 'bar']])
+            ->andReturnUsing(function ($query, $results) {
+                return $results;
+            });
         $results = $builder->from('users')->where('id', '=', 1)->first();
         $this->assertEquals(['foo' => 'bar'], $results);
     }
@@ -1777,12 +1776,12 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
         $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
-                ->andReturnUsing(function ($query, $results) {
-                    return $results;
-                });
+            ->shouldReceive('processSelect')
+            ->once()
+            ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
+            ->andReturnUsing(function ($query, $results) {
+                return $results;
+            });
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
         $this->assertEquals(['bar', 'baz'], $results->all());
 
@@ -1792,12 +1791,12 @@ class Oci8QueryBuilderTest extends TestCase
             ['id' => 10, 'foo' => 'baz'],
         ]);
         $builder->getProcessor()
-                ->shouldReceive('processSelect')
-                ->once()
-                ->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])
-                ->andReturnUsing(function ($query, $results) {
-                    return $results;
-                });
+            ->shouldReceive('processSelect')
+            ->once()
+            ->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])
+            ->andReturnUsing(function ($query, $results) {
+                return $results;
+            });
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo', 'id');
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results->all());
     }
@@ -2000,10 +1999,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select count(*) as aggregate from "USERS"', [], true)
-                ->andReturn([['aggregate' => 1]]);
+            ->shouldReceive('select')
+            ->once()
+            ->with('select count(*) as aggregate from "USERS"', [], true)
+            ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -2015,9 +2014,9 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
-                ->once()
-                ->with('select 1 as "exists" from "USERS" where rownum = 1', [], true)
-                ->andReturn([['exists' => 1]]);
+            ->once()
+            ->with('select 1 as "exists" from "USERS" where rownum = 1', [], true)
+            ->andReturn([['exists' => 1]]);
         $results = $builder->from('users')->exists();
         $this->assertTrue($results);
     }
@@ -2026,10 +2025,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select max("ID") as aggregate from "USERS"', [], true)
-                ->andReturn([['aggregate' => 1]]);
+            ->shouldReceive('select')
+            ->once()
+            ->with('select max("ID") as aggregate from "USERS"', [], true)
+            ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -2041,10 +2040,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select min("ID") as aggregate from "USERS"', [], true)
-                ->andReturn([['aggregate' => 1]]);
+            ->shouldReceive('select')
+            ->once()
+            ->with('select min("ID") as aggregate from "USERS"', [], true)
+            ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -2056,10 +2055,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('select')
-                ->once()
-                ->with('select sum("ID") as aggregate from "USERS"', [], true)
-                ->andReturn([['aggregate' => 1]]);
+            ->shouldReceive('select')
+            ->once()
+            ->with('select sum("ID") as aggregate from "USERS"', [], true)
+            ->andReturn([['aggregate' => 1]]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
             return $results;
         });
@@ -2071,10 +2070,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('insert')
-                ->once()
-                ->with('insert into "USERS" ("EMAIL") values (?)', ['foo'])
-                ->andReturn(true);
+            ->shouldReceive('insert')
+            ->once()
+            ->with('insert into "USERS" ("EMAIL") values (?)', ['foo'])
+            ->andReturn(true);
         $result = $builder->from('users')->insert(['email' => 'foo']);
         $this->assertTrue($result);
     }
@@ -2113,10 +2112,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('insert')
-                ->once()
-                ->with('insert into "USERS" ("EMAIL") select ? from dual union all select ? from dual ', ['foo', 'foo'])
-                ->andReturn(true);
+            ->shouldReceive('insert')
+            ->once()
+            ->with('insert into "USERS" ("EMAIL") select ? from dual union all select ? from dual ', ['foo', 'foo'])
+            ->andReturn(true);
         $data[] = ['email' => 'foo'];
         $data[] = ['email' => 'foo'];
         $result = $builder->from('users')->insert($data);
@@ -2127,10 +2126,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-                ->shouldReceive('processInsertGetId')
-                ->once()
-                ->with($builder, 'insert into "USERS" ("EMAIL") values (?) returning "ID" into ?', ['foo'], 'id')
-                ->andReturn(1);
+            ->shouldReceive('processInsertGetId')
+            ->once()
+            ->with($builder, 'insert into "USERS" ("EMAIL") values (?) returning "ID" into ?', ['foo'], 'id')
+            ->andReturn(1);
         $result = $builder->from('users')->insertGetId(['email' => 'foo'], 'id');
         $this->assertEquals(1, $result);
     }
@@ -2190,12 +2189,12 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-                ->shouldReceive('saveLob')
-                ->once()
-                ->with($builder,
-                    'insert into "USERS" ("EMAIL", "MYBLOB") values (?, EMPTY_BLOB()) returning "MYBLOB", "ID" into ?, ?',
-                    ['foo'], ['test data'])
-                ->andReturn(1);
+            ->shouldReceive('saveLob')
+            ->once()
+            ->with($builder,
+                'insert into "USERS" ("EMAIL", "MYBLOB") values (?, EMPTY_BLOB()) returning "MYBLOB", "ID" into ?, ?',
+                ['foo'], ['test data'])
+            ->andReturn(1);
         $result = $builder->from('users')->insertLob(['email' => 'foo'], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
@@ -2204,12 +2203,12 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-                ->shouldReceive('saveLob')
-                ->once()
-                ->with($builder,
-                    'insert into "USERS" ("MYBLOB") values (EMPTY_BLOB()) returning "MYBLOB", "ID" into ?, ?', [],
-                    ['test data'])
-                ->andReturn(1);
+            ->shouldReceive('saveLob')
+            ->once()
+            ->with($builder,
+                'insert into "USERS" ("MYBLOB") values (EMPTY_BLOB()) returning "MYBLOB", "ID" into ?, ?', [],
+                ['test data'])
+            ->andReturn(1);
         $result = $builder->from('users')->insertLob([], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
@@ -2254,16 +2253,16 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-                ->shouldReceive('saveLob')
-                ->once()
-                ->with($builder,
-                    'update "USERS" set "EMAIL" = ?, "MYBLOB" = EMPTY_BLOB() where "ID" = ? returning "MYBLOB", "ID" into ?, ?',
-                    ['foo', 1],
-                    ['test data'])
-                ->andReturn(1);
+            ->shouldReceive('saveLob')
+            ->once()
+            ->with($builder,
+                'update "USERS" set "EMAIL" = ?, "MYBLOB" = EMPTY_BLOB() where "ID" = ? returning "MYBLOB", "ID" into ?, ?',
+                ['foo', 1],
+                ['test data'])
+            ->andReturn(1);
         $result = $builder->from('users')
-                          ->where('id', '=', 1)
-                          ->updateLob(['email' => 'foo'], ['myblob' => 'test data'], 'id');
+            ->where('id', '=', 1)
+            ->updateLob(['email' => 'foo'], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -2271,16 +2270,16 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
-                ->shouldReceive('saveLob')
-                ->once()
-                ->with($builder,
-                    'update "USERS" set "MYBLOB" = EMPTY_BLOB() where "ID" = ? returning "MYBLOB", "ID" into ?, ?',
-                    [1],
-                    ['test data'])
-                ->andReturn(1);
+            ->shouldReceive('saveLob')
+            ->once()
+            ->with($builder,
+                'update "USERS" set "MYBLOB" = EMPTY_BLOB() where "ID" = ? returning "MYBLOB", "ID" into ?, ?',
+                [1],
+                ['test data'])
+            ->andReturn(1);
         $result = $builder->from('users')
-                          ->where('id', '=', 1)
-                          ->updateLob([], ['myblob' => 'test data'], 'id');
+            ->where('id', '=', 1)
+            ->updateLob([], ['myblob' => 'test data'], 'id');
         $this->assertEquals(1, $result);
     }
 
@@ -2288,15 +2287,15 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('update')
-                ->once()
-                ->with('update "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" set "EMAIL" = ?, "NAME" = ? where "USERS"."ID" = ?',
-                    ['foo', 'bar', 1])
-                ->andReturn(1);
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" set "EMAIL" = ?, "NAME" = ? where "USERS"."ID" = ?',
+                ['foo', 'bar', 1])
+            ->andReturn(1);
         $result = $builder->from('users')
-                          ->join('orders', 'users.id', '=', 'orders.user_id')
-                          ->where('users.id', '=', 1)
-                          ->update(['email' => 'foo', 'name' => 'bar']);
+            ->join('orders', 'users.id', '=', 'orders.user_id')
+            ->where('users.id', '=', 1)
+            ->update(['email' => 'foo', 'name' => 'bar']);
         $this->assertEquals(1, $result);
     }
 
@@ -2304,10 +2303,10 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('update')
-                ->once()
-                ->with('update "USERS" set "EMAIL" = foo, "NAME" = ? where "ID" = ?', ['bar', 1])
-                ->andReturn(1);
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "EMAIL" = foo, "NAME" = ? where "ID" = ?', ['bar', 1])
+            ->andReturn(1);
         $result = $builder->from('users')->where('id', '=', 1)->update(['email' => new Raw('foo'), 'name' => 'bar']);
         $this->assertEquals(1, $result);
     }
@@ -2359,19 +2358,19 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('delete')
-                ->once()
-                ->with('delete from "USERS" where "EMAIL" = ?', ['foo'])
-                ->andReturn(1);
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "USERS" where "EMAIL" = ?', ['foo'])
+            ->andReturn(1);
         $result = $builder->from('users')->where('email', '=', 'foo')->delete();
         $this->assertEquals(1, $result);
 
         $builder = $this->getBuilder();
         $builder->getConnection()
-                ->shouldReceive('delete')
-                ->once()
-                ->with('delete from "USERS" where "USERS"."ID" = ?', [1])
-                ->andReturn(1);
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "USERS" where "USERS"."ID" = ?', [1])
+            ->andReturn(1);
         $result = $builder->from('users')->delete(1);
         $this->assertEquals(1, $result);
     }
@@ -2505,34 +2504,21 @@ class Oci8QueryBuilderTest extends TestCase
     public function testOracleLock()
     {
         $builder = $this->getBuilder();
+        $builder->select('*')->from('foo')->where('bar', '=', 'baz')
+            ->lockForUpdate()
+            ->limit(1);
+        $this->assertEquals('select * from (select * from "FOO" where "BAR" = ?) where rownum = 1 for update', $builder->toSql());
+        $this->assertEquals(['baz'], $builder->getBindings());
+
+        $builder = $this->getBuilder();
         $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock();
         $this->assertEquals('select * from "FOO" where "BAR" = ? for update', $builder->toSql());
         $this->assertEquals(['baz'], $builder->getBindings());
 
         $builder = $this->getBuilder();
-        try {
-            $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
-        } catch (Oci8Exception $e) {
-            // $this->assertEquals('select * from foo where bar = ? lock in share mode', $builder->toSql());
-            $this->assertContains('Lock in share mode not yet supported!', $e->getMessage());
-            $this->assertEquals(['baz'], $builder->getBindings());
-        }
-    }
-
-    /**
-     * @TODO: select with lock not yet supported.
-     */
-    protected function testSelectWithLockUsesWritePdo()
-    {
-        $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('select')->once()
-            ->with(m::any(), m::any(), false);
-        $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock()->get();
-
-        $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('select')->once()
-            ->with(m::any(), m::any(), false);
-        $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false)->get();
+        $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
+        $this->assertEquals('select * from "FOO" where "BAR" = ? for update', $builder->toSql());
+        $this->assertEquals(['baz'], $builder->getBindings());
     }
 
     public function testBindingOrder()

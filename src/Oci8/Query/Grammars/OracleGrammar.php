@@ -70,7 +70,7 @@ class OracleGrammar extends Grammar
      */
     public function compileSelect(Builder $query)
     {
-        if ($query->unions && $query->aggregate) {
+        if (($query->unions || $query->havings) && $query->aggregate) {
             return $this->compileUnionAggregate($query);
         }
 
@@ -83,37 +83,28 @@ class OracleGrammar extends Grammar
             $query->columns = ['*'];
         }
 
-        $components = $this->compileComponents($query);
-
         // To compile the query, we'll spin through each component of the query and
         // see if that component exists. If it does we'll just call the compiler
         // function for the component which is responsible for making the SQL.
+        $components = $this->compileComponents($query);
+        unset($components['lock']);
         $sql = trim($this->concatenate($components));
-
-        // If an offset is present on the query, we will need to wrap the query in
-        // a big "ANSI" offset syntax block. This is very nasty compared to the
-        // other database systems but is necessary for implementing features.
-        if ($this->isPaginationable($query, $components)) {
-            return $this->compileAnsiOffset($query, $components);
-        }
 
         if ($query->unions) {
             $sql = $this->wrapUnion($sql).' '.$this->compileUnions($query);
         }
 
+        if (isset($query->limit) || isset($query->offset)) {
+            $sql = $this->compileAnsiOffset($query, $components);
+        }
+
+        if (isset($query->lock)) {
+            $sql .= ' '.$this->compileLock($query, $query->lock);
+        }
+
         $query->columns = $original;
 
         return $sql;
-    }
-
-    /**
-     * @param  Builder  $query
-     * @param  array  $components
-     * @return bool
-     */
-    protected function isPaginationable(Builder $query, array $components)
-    {
-        return ($query->limit > 0 || $query->offset > 0) && ! array_key_exists('lock', $components);
     }
 
     /**
@@ -493,7 +484,7 @@ class OracleGrammar extends Grammar
             return $value;
         }
 
-        if ($value) {
+        if (is_bool($value)) {
             return 'for update';
         }
 
@@ -696,5 +687,16 @@ class OracleGrammar extends Grammar
         $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
 
         return $sql;
+    }
+
+    /**
+     * Compile the SQL statement to execute a savepoint rollback.
+     *
+     * @param  string  $name
+     * @return string
+     */
+    public function compileSavepointRollBack($name)
+    {
+        return 'ROLLBACK TO '.$name;
     }
 }
