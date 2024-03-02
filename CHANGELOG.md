@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.4.4](https://github.com/yajra/laravel-oci8/compare/v10.4.3...v10.4.4) - 2024-03-02
+
+- fix: lock for update with orders #834
+- fix: #832 
+- fix: #824
+
 ## [v10.4.3](https://github.com/yajra/laravel-oci8/compare/v10.4.2...v10.4.3) - 2024-02-17
 
 - fix: lock for update implementation #824
