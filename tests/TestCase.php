@@ -83,7 +83,7 @@ abstract class TestCase extends BaseTestCase
             'service_name' => 'xe',
             'username' => 'system',
             'password' => 'oracle',
-            'port' => 49161,
+            'port' => 1521,
         ]);
     }
 
