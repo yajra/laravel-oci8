@@ -30,9 +30,6 @@ class OracleEloquentTest extends TestCase
         m::close();
     }
 
-    /**
-     * @test
-     */
     public function testNewBaseQueryBuilderReturnsOracleBuilderForOracleGrammar()
     {
         $model = new OracleEloquentStub;
@@ -84,9 +81,6 @@ class OracleEloquentTest extends TestCase
         $class::setConnectionResolver($resolver);
     }
 
-    /**
-     * @test
-     */
     public function testNewBaseQueryBuilderReturnsIlliminateBuilderForSQLiteGrammar()
     {
         $model = new OracleEloquentStub;
@@ -100,9 +94,6 @@ class OracleEloquentTest extends TestCase
             $builder->getProcessor());
     }
 
-    /**
-     * @test
-     */
     public function testNewBaseQueryBuilderReturnsIlliminateBuilderForMysSqlGrammar()
     {
         $model = new OracleEloquentStub;
@@ -115,9 +106,6 @@ class OracleEloquentTest extends TestCase
             $builder->getProcessor());
     }
 
-    /**
-     * @test
-     */
     public function testNewBaseQueryBuilderReturnsIlliminateBuilderForPostgresGrammar()
     {
         $model = new OracleEloquentStub;
@@ -135,9 +123,6 @@ class OracleEloquentTest extends TestCase
     // HELPER FUNCTIONS
     // #########################################################################
 
-    /**
-     * @test
-     */
     public function testNewBaseQueryBuilderReturnsIlliminateBuilderForSqlServerGrammar()
     {
         $model = new OracleEloquentStub;

@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class SessionVarsTest extends TestCase
@@ -24,7 +25,7 @@ class SessionVarsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_redefine_timestamp_format()
     {
         $this->getConnection()->table('users')->truncate();

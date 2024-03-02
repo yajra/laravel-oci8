@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\MultiBlob;
 use Yajra\Oci8\Tests\TestCase;
 use Yajra\Oci8\Tests\User;
@@ -12,7 +13,7 @@ class ModelTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_can_fill_a_model_to_create_a_record()
     {
         $attributes = [
@@ -27,7 +28,7 @@ class ModelTest extends TestCase
         $this->assertDatabaseHas('users', $attributes);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_insert_record_using_a_model()
     {
         User::query()->insert($attributes = [
@@ -38,7 +39,7 @@ class ModelTest extends TestCase
         $this->assertDatabaseHas('users', $attributes);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_guarded_model_by_setting_the_property()
     {
         $count = UserWithGuardedProperty::count();
@@ -51,7 +52,7 @@ class ModelTest extends TestCase
         $this->assertDatabaseCount('users', $count + 1);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_guarded_model_using_create_method()
     {
         $count = UserWithGuardedProperty::count();
@@ -64,7 +65,7 @@ class ModelTest extends TestCase
         $this->assertDatabaseCount('users', $count + 1);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_model_with_mutliple_blob_columns()
     {
         $multiBlob = MultiBlob::create();

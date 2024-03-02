@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Connection;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Schema\Sequence;
 
@@ -14,7 +15,7 @@ class SequenceTest extends TestCase
         m::close();
     }
 
-    /** @test */
+    #[Test]
     public function it_will_create_sequence()
     {
         $connection = $this->getConnection();
@@ -26,7 +27,7 @@ class SequenceTest extends TestCase
         $this->assertEquals(true, $success);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_wrap_sequence_name_with_schema_prefix()
     {
         $connection = $this->getConnection();
@@ -42,7 +43,7 @@ class SequenceTest extends TestCase
         return m::mock(Connection::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_will_drop_sequence()
     {
         $sequence = m::mock(Sequence::class);
