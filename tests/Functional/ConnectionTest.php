@@ -28,17 +28,8 @@ class ConnectionTest extends TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('app.debug', true);
-        $app['config']->set('database.default', 'oracle');
-        $app['config']->set('database.connections.oracle', [
-            'driver' => 'oracle',
-            'host' => 'localhost',
-            'database' => 'xe',
-            'service_name' => 'xe',
-            'username' => 'system',
-            'password' => 'oracle',
-            'prefix' => 'test_',
-            'port' => 49161,
-        ]);
+        parent::getEnvironmentSetUp($app);
+
+        $app['config']->set('database.connections.oracle.prefix', 'test_');
     }
 }
