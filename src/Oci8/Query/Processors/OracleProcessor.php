@@ -188,4 +188,17 @@ class OracleProcessor extends Processor
 
         return array_map($mapping, $results);
     }
+
+    /**
+     * Process the results of a columns query.
+     *
+     * @param  array  $results
+     * @return array
+     */
+    public function processColumns($results)
+    {
+        return array_map(function ($result) {
+            return (array) $result;
+        }, $results);
+    }
 }

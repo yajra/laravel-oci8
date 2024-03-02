@@ -207,6 +207,25 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile the query to determine the columns.
+     *
+     * @param  string  $database
+     * @param  string  $schema
+     * @param  string  $table
+     * @return string
+     */
+    public function compileColumns($table)
+    {
+        return "select column_name as name,
+                nvl(data_type_mod, data_type) as type_name,
+                data_type as type,
+                data_length as length,
+                nullable,
+                data_default as \"default\"
+            from all_tab_cols where upper(table_name) = upper('{$table}')";
+    }
+
+    /**
      * Compile an add column command.
      *
      * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
