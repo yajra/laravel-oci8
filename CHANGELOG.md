@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.5.0](https://github.com/yajra/laravel-oci8/compare/v10.4.4...v10.5.0) - 2024-03-02
+
+- feat: add support for Schema::getColumns() #836
+- fix: #831
+
 ## [v10.4.4](https://github.com/yajra/laravel-oci8/compare/v10.4.3...v10.4.4) - 2024-03-02
 
 - fix: lock for update with orders #834
