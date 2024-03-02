@@ -15,7 +15,7 @@ jobs:
         image: deepdiver/docker-oracle-xe-11g:2.0
         ports:
           - 49160:22
-          - 49161:1521
+          - 1521:1521
     strategy:
       fail-fast: true
       matrix:
