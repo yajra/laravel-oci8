@@ -5,6 +5,7 @@ namespace Yajra\Oci8\Tests\Functional;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 use Yajra\Oci8\Tests\TestCase;
 
@@ -12,15 +13,15 @@ class SchemaTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_can_get_column_type()
     {
         $type = Schema::getColumnType('users', 'name');
 
-        $this->assertEquals('string', $type);
+        $this->assertEquals('VARCHAR2', $type);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_set_auto_increment_starting_value()
     {
         if (Schema::hasTable('auto_increment_starting_value')) {
@@ -41,7 +42,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1000, $increment->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_set_auto_increment_start_value()
     {
         if (Schema::hasTable('auto_increment_start')) {

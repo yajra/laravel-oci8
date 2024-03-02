@@ -670,21 +670,26 @@ class Oci8SchemaGrammarTest extends TestCase
     public function testAddingFloat()
     {
         $blueprint = new Blueprint('users');
-        $blueprint->float('foo', 5, 2);
+        $blueprint->float('foo', 5);
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table users add ( foo number(5, 2) not null )', $statements[0]);
+        $this->assertEquals('alter table users add ( foo float(5) not null )', $statements[0]);
+
+        $blueprint = new Blueprint('users');
+        $blueprint->float('foo');
+        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $this->assertEquals('alter table users add ( foo float(126) not null )', $statements[0]);
     }
 
     public function testAddingDouble()
     {
         $blueprint = new Blueprint('users');
-        $blueprint->double('foo', 5, 2);
+        $blueprint->double('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table users add ( foo number(5, 2) not null )', $statements[0]);
+        $this->assertEquals('alter table users add ( foo float(126) not null )', $statements[0]);
     }
 
     public function testAddingDecimal()

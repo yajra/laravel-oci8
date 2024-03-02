@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Validator;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 use Yajra\Oci8\Tests\User;
 
@@ -11,7 +12,7 @@ class ValidationTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_works_with_unique_case_insensitive_validation()
     {
         $validator = Validator::make(
@@ -47,7 +48,7 @@ class ValidationTest extends TestCase
         $this->assertFalse($validator->fails());
     }
 
-    /** @test */
+    #[Test]
     public function it_works_with_exists_case_insensitive_validation()
     {
         $validator = Validator::make(

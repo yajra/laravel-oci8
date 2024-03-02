@@ -4,13 +4,14 @@ namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PDO;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class StoredProcedureTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_can_return_sys_refcursor()
     {
         $connection = $this->getConnection();
@@ -32,7 +33,7 @@ class StoredProcedureTest extends TestCase
         $this->assertSame('Record-20', $result[19]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_work_with_numbers()
     {
         $connection = $this->getConnection();
@@ -64,7 +65,7 @@ class StoredProcedureTest extends TestCase
         $this->assertSame($input * 2, $output);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_work_with_strings()
     {
         $connection = $this->getConnection();
