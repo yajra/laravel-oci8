@@ -84,10 +84,15 @@ class OracleGrammar extends Grammar
         }
 
         // To compile the query, we'll spin through each component of the query and
-        // see if that component exists. If it does we'll just call the compiler
+        // see if that component exists. If it does, we'll just call the compiler
         // function for the component which is responsible for making the SQL.
         $components = $this->compileComponents($query);
         unset($components['lock']);
+
+        if (isset($query->lock) && isset($query->limit)) {
+            unset($components['orders']);
+        }
+
         $sql = trim($this->concatenate($components));
 
         if ($query->unions) {
@@ -99,12 +104,12 @@ class OracleGrammar extends Grammar
         }
 
         if (isset($query->lock)) {
-            $sql .= ' '.$this->compileLock($query, $query->lock);
+            $sql .= ' '.$this->compileLock($query, $query->lock).' '.$this->compileOrders($query, $query->orders);
         }
 
         $query->columns = $original;
 
-        return $sql;
+        return trim($sql);
     }
 
     /**
