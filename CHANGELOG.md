@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.5.1](https://github.com/yajra/laravel-oci8/compare/v10.5.0...v10.5.1) - 2024-03-02
+
+- fix: Schema::getColumns() from the current schema. [0b33a39](https://github.com/yajra/laravel-oci8/commit/0b33a392959f8259a91f64047c836a74413d8a16)
+
 ## [v10.5.0](https://github.com/yajra/laravel-oci8/compare/v10.4.4...v10.5.0) - 2024-03-02
 
 - feat: add support for Schema::getColumns() #836
