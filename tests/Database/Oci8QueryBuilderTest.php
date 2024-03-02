@@ -2548,8 +2548,11 @@ class Oci8QueryBuilderTest extends TestCase
             ->orderBy('id')
             ->lockForUpdate()
             ->first();
-        $this->assertEquals('select * from (select * from "FOO" where "BAR" = ?) where rownum = 1 for update order by "ID" asc',
-            $builder->toSql());
+
+        $this->assertEquals(
+            'select * from (select * from "FOO" where "BAR" = ?) where rownum = 1 for update order by "ID" asc',
+            $builder->toSql()
+        );
         $this->assertEquals(['baz'], $builder->getBindings());
     }
 
