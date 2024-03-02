@@ -26,10 +26,9 @@
         "yajra/laravel-pdo-via-oci8": "^3.0"
     },
     "require-dev": {
-        "doctrine/dbal": "^3.5",
-        "mockery/mockery": "^1.4.4",
+        "mockery/mockery": "^1.6",
         "orchestra/testbench": "^9.0",
-        "phpunit/phpunit": "^10.0.9"
+        "phpunit/phpunit": "^10.5|^11.0"
     },
     "autoload": {
         "files": [
