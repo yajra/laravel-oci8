@@ -107,4 +107,16 @@ class OracleBlueprint extends Blueprint
     {
         return $this->addColumn('nvarchar2', $column, compact('length'));
     }
+
+    /**
+     * Create a new float column on the table.
+     *
+     * @param  string  $column
+     * @param  int  $precision
+     * @return \Illuminate\Database\Schema\ColumnDefinition
+     */
+    public function float($column, $precision = 126)
+    {
+        return parent::float($column, $precision);
+    }
 }

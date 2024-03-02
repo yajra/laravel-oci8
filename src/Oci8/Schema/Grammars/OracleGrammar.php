@@ -630,7 +630,11 @@ class OracleGrammar extends Grammar
      */
     protected function typeFloat(Fluent $column)
     {
-        return "number({$column->total}, {$column->places})";
+        if ($column->precision) {
+            return "float({$column->precision})";
+        }
+
+        return 'float(126)';
     }
 
     /**
@@ -641,7 +645,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeDouble(Fluent $column)
     {
-        return "number({$column->total}, {$column->places})";
+        return 'float(126)';
     }
 
     /**
