@@ -216,7 +216,13 @@ class OracleGrammar extends Grammar
      */
     public function compileColumns($table)
     {
-        return "select column_name as name, data_type as type, data_length as length, nullable, data_default as \"default\" from all_tab_cols where upper(table_name) = upper('{$table}')";
+        return "select column_name as name,
+                nvl(data_type_mod, data_type) as type_name,
+                data_type as type,
+                data_length as length,
+                nullable,
+                data_default as \"default\"
+            from all_tab_cols where upper(table_name) = upper('{$table}')";
     }
 
     /**

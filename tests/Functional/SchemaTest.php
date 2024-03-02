@@ -61,4 +61,28 @@ class SchemaTest extends TestCase
         $increment = DB::table('auto_increment_start')->first();
         $this->assertEquals(1000, $increment->id);
     }
+
+    public function testGetColumns()
+    {
+        Schema::create('foo', function (Blueprint $table) {
+            $table->id();
+            $table->string('bar')->nullable();
+            $table->string('baz')->default('test');
+        });
+
+        $columns = Schema::getColumns('foo');
+
+        $this->assertCount(3, $columns);
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'ID' && $column['type'] === 'NUMBER' && $column['nullable'] === 'N'
+        ));
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'BAR' && $column['nullable'] === 'Y'
+        ));
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'BAZ'
+                && $column['nullable'] === 'N'
+                && str_contains($column['default'], 'test')
+        ));
+    }
 }
