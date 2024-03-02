@@ -2504,9 +2504,19 @@ class Oci8QueryBuilderTest extends TestCase
     public function testOracleLock()
     {
         $builder = $this->getBuilder();
-        $builder->select('*')->from('foo')->where('bar', '=', 'baz')
+        $builder->getConnection()
+            ->shouldReceive('beginTransaction')
+            ->shouldReceive('select')
+            ->shouldReceive('commit');
+
+        $builder->getProcessor()
+            ->shouldReceive('processSelect');
+
+        $builder->select('*')
+            ->from('foo')
+            ->where('bar', '=', 'baz')
             ->lockForUpdate()
-            ->limit(1);
+            ->first();
         $this->assertEquals('select * from (select * from "FOO" where "BAR" = ?) where rownum = 1 for update', $builder->toSql());
         $this->assertEquals(['baz'], $builder->getBindings());
 
