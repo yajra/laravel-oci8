@@ -222,7 +222,8 @@ class OracleGrammar extends Grammar
                 data_length as length,
                 nullable,
                 data_default as \"default\"
-            from all_tab_cols where upper(table_name) = upper('{$table}')";
+            from all_tab_cols where upper(table_name) = upper('{$table}')
+                and owner = (select sys_context( 'userenv', 'current_schema' ) from dual)";
     }
 
     /**
