@@ -17,7 +17,7 @@ class SchemaTest extends TestCase
     {
         $type = Schema::getColumnType('users', 'name');
 
-        $this->assertEquals('string', $type);
+        $this->assertEquals('VARCHAR2', $type);
     }
 
     /** @test */
