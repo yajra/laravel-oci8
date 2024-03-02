@@ -780,11 +780,11 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->union($this->getBuilder()->select('*')->from('dogs'));
         $builder->skip(5)->take(10);
         // $this->assertSame('(select * from "USERS") union (select * from "DOGS") limit 10 offset 5', $builder->toSql());
-        $this->assertSame('(select * from "USERS") union (select * from "DOGS")  ', $builder->toSql());
+        $this->assertSame('(select * from "USERS") union (select * from "DOGS")', $builder->toSql());
 
         $builder = $this->getBuilder();
         // $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc limit 10';
-        $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc ';
+        $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc';
         $union = $this->getBuilder()->select('a')->from('t2')->where('a', 11)->where('b', 2);
         $builder->select('a')->from('t1')->where('a', 10)->where('b', 1)->union($union)->orderBy('a')->limit(10);
         $this->assertEquals($expectedSql, $builder->toSql());
@@ -2528,6 +2528,28 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('foo')->where('bar', '=', 'baz')->lock(false);
         $this->assertEquals('select * from "FOO" where "BAR" = ? for update', $builder->toSql());
+        $this->assertEquals(['baz'], $builder->getBindings());
+    }
+
+    public function testOracleLockWithOrder()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('beginTransaction')
+            ->shouldReceive('select')
+            ->shouldReceive('commit');
+
+        $builder->getProcessor()
+            ->shouldReceive('processSelect');
+
+        $builder->select('*')
+            ->from('foo')
+            ->where('bar', '=', 'baz')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first();
+        $this->assertEquals('select * from (select * from "FOO" where "BAR" = ?) where rownum = 1 for update order by "ID" asc',
+            $builder->toSql());
         $this->assertEquals(['baz'], $builder->getBindings());
     }
 
