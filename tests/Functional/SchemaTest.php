@@ -64,7 +64,6 @@ class SchemaTest extends TestCase
 
     public function testGetColumns()
     {
-        Schema::drop('foo');
         Schema::create('foo', function (Blueprint $table) {
             $table->id();
             $table->string('bar')->nullable();
