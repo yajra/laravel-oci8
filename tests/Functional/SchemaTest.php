@@ -73,6 +73,7 @@ class SchemaTest extends TestCase
 
         $columns = Schema::getColumns('foo');
 
+        $this->assertArrayHasKey('auto_increment', $columns[0]);
         $this->assertCount(3, $columns);
         $this->assertTrue(collect($columns)->contains(
             fn ($column) => $column['name'] === 'ID' && $column['type'] === 'NUMBER' && $column['nullable'] === 'N'
