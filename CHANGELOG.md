@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.5.2](https://github.com/yajra/laravel-oci8/compare/v10.5.1...v10.5.2) - 2024-03-16
+
+- fix: missing auto_increment key #838
+- fix: #837
+
 ## [v10.5.1](https://github.com/yajra/laravel-oci8/compare/v10.5.0...v10.5.1) - 2024-03-02
 
 - fix: Schema::getColumns() from the current schema. [0b33a39](https://github.com/yajra/laravel-oci8/commit/0b33a392959f8259a91f64047c836a74413d8a16)
