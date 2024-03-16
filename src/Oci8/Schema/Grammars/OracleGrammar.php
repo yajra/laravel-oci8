@@ -218,6 +218,7 @@ class OracleGrammar extends Grammar
     {
         return "select column_name as name,
                 nvl(data_type_mod, data_type) as type_name,
+                null as auto_increment,
                 data_type as type,
                 data_length as length,
                 nullable,
