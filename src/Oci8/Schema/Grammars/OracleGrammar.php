@@ -214,17 +214,50 @@ class OracleGrammar extends Grammar
      * @param  string  $table
      * @return string
      */
-    public function compileColumns($table)
+    public function compileColumns($schema, $table)
     {
-        return "select column_name as name,
-                nvl(data_type_mod, data_type) as type_name,
+        return "
+            select 
+                t.column_name as name,
+                nvl(t.data_type_mod, data_type) as type_name,
                 null as auto_increment,
-                data_type as type,
-                data_length as length,
-                nullable,
-                data_default as \"default\"
-            from all_tab_cols where upper(table_name) = upper('{$table}')
-                and owner = (select sys_context( 'userenv', 'current_schema' ) from dual)";
+                t.data_type as type,
+                t.data_length,
+                t.char_length,
+                t.data_precision as precision,
+                t.data_scale as places,
+                decode(t.nullable, 'Y', 1, 0) as nullable,
+                t.data_default as \"default\",
+                c.comments as \"comment\"
+            from all_tab_cols t
+            left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
+            where upper(t.table_name) = upper('{$table}')
+                and upper(t.owner) = upper('{$schema}')
+            order by
+                t.column_id
+        ";
+    }
+
+    public function compileForeignKeys($schema, $table)
+    {
+        return "
+            select
+                kc.constraint_name as name,
+                LISTAGG(kc.column_name, ',') WITHIN GROUP (ORDER BY kc.position) as columns,
+                rc.r_owner as foreign_schema,
+                kcr.table_name as foreign_table,
+                LISTAGG(kcr.column_name, ',') WITHIN GROUP (ORDER BY kcr.position) as foreign_columns,
+                rc.delete_rule AS \"on_delete\",
+                null AS \"on_update\"
+            from all_cons_columns kc 
+            inner join all_constraints rc ON kc.constraint_name = rc.constraint_name 
+            inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name 
+            where kc.table_name = upper('{$table}') 
+                and kc.owner = upper('{$schema}') 
+                and rc.constraint_type = 'R'
+            group by 
+                kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
+        ";
     }
 
     /**

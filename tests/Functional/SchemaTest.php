@@ -18,7 +18,7 @@ class SchemaTest extends TestCase
     {
         $type = Schema::getColumnType('users', 'name');
 
-        $this->assertEquals('VARCHAR2', $type);
+        $this->assertEquals('varchar2', $type);
     }
 
     #[Test]
@@ -63,8 +63,13 @@ class SchemaTest extends TestCase
         $this->assertEquals(1000, $increment->id);
     }
 
-    public function testGetColumns()
+    #[Test]
+    public function it_can_get_columns()
     {
+        if (Schema::hasTable('foo')) {
+            Schema::drop('foo');
+        }
+
         Schema::create('foo', function (Blueprint $table) {
             $table->id();
             $table->string('bar')->nullable();
@@ -76,15 +81,135 @@ class SchemaTest extends TestCase
         $this->assertArrayHasKey('auto_increment', $columns[0]);
         $this->assertCount(3, $columns);
         $this->assertTrue(collect($columns)->contains(
-            fn ($column) => $column['name'] === 'ID' && $column['type'] === 'NUMBER' && $column['nullable'] === 'N'
+            fn ($column) => $column['name'] === 'id' && $column['type'] === 'bigint' && $column['nullable'] === false
         ));
         $this->assertTrue(collect($columns)->contains(
-            fn ($column) => $column['name'] === 'BAR' && $column['nullable'] === 'Y'
+            fn ($column) => $column['name'] === 'bar' && $column['nullable'] === true
         ));
         $this->assertTrue(collect($columns)->contains(
-            fn ($column) => $column['name'] === 'BAZ'
-                && $column['nullable'] === 'N'
+            fn ($column) => $column['name'] === 'baz'
+                && $column['nullable'] === false
                 && str_contains($column['default'], 'test')
+        ));
+    }
+
+    #[Test]
+    public function it_can_get_columns_with_schema()
+    {
+        if (Schema::hasTable('foo')) {
+            Schema::drop('foo');
+        }
+
+        Schema::create('system.foo', function (Blueprint $table) {
+            $table->string('bar')->nullable();
+        });
+
+        $columns = Schema::getColumns('system.foo');
+
+        $this->assertCount(1, $columns);
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'bar' && $column['nullable'] === true
+        ));
+    }
+
+    #[Test]
+    public function it_can_get_columns_comments()
+    {
+        if (Schema::hasTable('foo')) {
+            Schema::drop('foo');
+        }
+
+        Schema::create('foo', function (Blueprint $table) {
+            $table->string('bar')->nullable()->comment('Some comment here.');
+        });
+
+        $columns = Schema::getColumns('foo');
+
+        $this->assertCount(1, $columns);
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'bar' && $column['comment'] === 'Some comment here.'
+        ));
+    }
+
+    #[Test]
+    public function it_can_get_columns_number_precision()
+    {
+        if (Schema::hasTable('foo')) {
+            Schema::drop('foo');
+        }
+
+        Schema::create('foo', function (Blueprint $table) {
+            $table->float('a_float', 4)->comment('a float.');
+        });
+
+        $columns = Schema::getColumns('foo');
+
+        $this->assertCount(1, $columns);
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'a_float' && $column['comment'] === 'a float.' && $column['precision'] === 4
+        ));
+    }
+
+    #[Test]
+    public function it_can_get_columns_number_types()
+    {
+        if (Schema::hasTable('foo')) {
+            Schema::drop('foo');
+        }
+
+        Schema::create('foo', function (Blueprint $table) {
+            $table->decimal('a_decimal')->nullable();
+            $table->smallInteger('an_smallint')->nullable();
+            $table->integer('an_int')->nullable();
+            $table->bigInteger('a_bigint')->nullable();
+        });
+
+        $columns = Schema::getColumns('foo');
+
+        $this->assertCount(4, $columns);
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'a_decimal' && $column['type_name'] === 'number' && $column['type'] === 'decimal'
+        ));
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'an_smallint' && $column['type_name'] === 'number' && $column['type'] === 'smallint'
+        ));
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'an_int' && $column['type_name'] === 'number' && $column['type'] === 'int'
+        ));
+        $this->assertTrue(collect($columns)->contains(
+            fn ($column) => $column['name'] === 'a_bigint' && $column['type_name'] === 'number' && $column['type'] === 'bigint'
+        ));
+    }
+
+    #[Test]
+    public function it_can_get_foreign_keys()
+    {
+        if (Schema::hasTable('foo')) {
+            Schema::drop('foo');
+        }
+
+        if (Schema::hasTable('orders')) {
+            Schema::drop('orders');
+        }
+
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+        });
+
+        Schema::create('foo', function (Blueprint $table) {
+            $table->id();
+            $table->bigInteger('foo_id');
+            $table->foreign('foo_id')->references('id')->on('orders')->onDelete('cascade');
+        });
+
+        $foreignKeys = Schema::getForeignKeys('system.foo');
+
+        $this->assertCount(1, $foreignKeys);
+        $this->assertTrue(collect($foreignKeys)->contains(
+            fn ($key) => $key['foreign_schema'] === 'system'
+                && $key['foreign_table'] === 'orders'
+                && in_array('id', $key['foreign_columns'])
+                && in_array('foo_id', $key['columns'])
         ));
     }
 }

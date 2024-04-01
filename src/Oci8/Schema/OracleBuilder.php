@@ -161,4 +161,61 @@ class OracleBuilder extends Builder
 
         return $this->connection->getPostProcessor()->processColumnListing($results);
     }
+
+    /**
+     * Get the columns for a given table.
+     *
+     * @param  string  $table
+     * @return array
+     */
+    public function getColumns($table)
+    {
+        [$schema, $table] = $this->parseSchemaAndTable($table);
+
+        $table = $this->connection->getTablePrefix().$table;
+
+        return $this->connection->getPostProcessor()->processColumns(
+            $this->connection->selectFromWriteConnection($this->grammar->compileColumns($schema, $table))
+        );
+    }
+
+    /**
+     * Get the foreign keys for a given table.
+     *
+     * @param  string  $table
+     * @return array
+     */
+    public function getForeignKeys($table)
+    {
+        [$schema, $table] = $this->parseSchemaAndTable($table);
+
+        $table = $this->connection->getTablePrefix().$table;
+
+        return $this->connection->getPostProcessor()->processForeignKeys(
+            $this->connection->selectFromWriteConnection($this->grammar->compileForeignKeys($schema, $table))
+        );
+    }
+
+    /**
+     * Parse the database object reference and extract the schema and table.
+     *
+     * @param  string  $reference
+     * @return array
+     */
+    protected function parseSchemaAndTable($reference)
+    {
+        $parts = explode('.', $reference);
+
+        // We will use the default schema unless the schema has been specified in the
+        // query. If the schema has been specified in the query then we can use it
+        // instead of a default schema configured in the connection search path.
+        $schema = $this->connection->getConfig('username');
+
+        if (count($parts) === 2) {
+            $schema = $parts[0];
+            array_shift($parts);
+        }
+
+        return [$schema, $parts[0]];
+    }
 }
