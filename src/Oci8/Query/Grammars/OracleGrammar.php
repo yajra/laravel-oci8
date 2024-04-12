@@ -268,6 +268,13 @@ class OracleGrammar extends Grammar
         return ! empty($this->maxLength) ? $this->maxLength : 30;
     }
 
+    /**
+     * Compile an insert ignore statement into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @return string
+     */
     public function compileInsertOrIgnore(Builder $query, array $values)
     {
         $keys = array_keys(reset($values));
