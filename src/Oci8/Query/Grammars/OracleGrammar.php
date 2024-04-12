@@ -270,23 +270,17 @@ class OracleGrammar extends Grammar
 
     public function compileInsertOrIgnore(Builder $query, array $values)
     {
-        $columns = $this->columnize(array_keys(reset($values)));
+        $keys = array_keys(reset($values));
+        $columns = $this->columnize($keys);
 
-        $sql = 'merge into '.$this->wrapTable($query->from).' ';
-
-        $parameters = collect($values)->map(function ($record) {
-            $values = collect($record)->map(function ($value, $key) {
-                return '? as '.$this->wrap($key);
-            })->implode(', ');
-
-            return 'select '.$values.' from dual';
-        })->implode(' union all ');
+        $parameters = $this->compileUnionSelectFromDual($values);
 
         $source = $this->wrapTable('laravel_source');
 
+        $sql = 'merge into '.$this->wrapTable($query->from).' ';
         $sql .= 'using ('.$parameters.') '.$source;
 
-        $uniqueBy = array_keys(reset($values));
+        $uniqueBy = $keys;
         if (strtolower($query->from) == 'cache') {
             $uniqueBy = ['key'];
         }
@@ -664,19 +658,11 @@ class OracleGrammar extends Grammar
     public function compileUpsert(Builder $query, array $values, array $uniqueBy, array $update)
     {
         $columns = $this->columnize(array_keys(reset($values)));
-
-        $sql = 'merge into '.$this->wrapTable($query->from).' ';
-
-        $parameters = collect($values)->map(function ($record) {
-            $values = collect($record)->map(function ($value, $key) {
-                return '? as '.$this->wrap($key);
-            })->implode(', ');
-
-            return 'select '.$values.' from dual';
-        })->implode(' union all ');
+        $parameters = $this->compileUnionSelectFromDual($values);
 
         $source = $this->wrapTable('laravel_source');
 
+        $sql = 'merge into '.$this->wrapTable($query->from).' ';
         $sql .= 'using ('.$parameters.') '.$source;
 
         $on = collect($uniqueBy)->map(function ($column) use ($query) {
@@ -718,5 +704,20 @@ class OracleGrammar extends Grammar
     public function compileSavepointRollBack($name)
     {
         return 'ROLLBACK TO '.$name;
+    }
+
+    /**
+     * @param  array  $values
+     * @return string
+     */
+    protected function compileUnionSelectFromDual(array $values): string
+    {
+        return collect($values)->map(function ($record) {
+            $values = collect($record)->map(function ($value, $key) {
+                return '? as '.$this->wrap($key);
+            })->implode(', ');
+
+            return 'select '.$values.' from dual';
+        })->implode(' union all ');
     }
 }
