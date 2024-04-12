@@ -2136,7 +2136,6 @@ class Oci8QueryBuilderTest extends TestCase
     public function testMultipleInsertMethod()
     {
         $builder = $this->getBuilder();
-        $grammar = $builder->getGrammar();
         $builder->getConnection()
             ->shouldReceive('insert')
             ->once()
