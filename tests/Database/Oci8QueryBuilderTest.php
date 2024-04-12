@@ -2102,10 +2102,16 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testInsertOrIgnoreMethod()
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('does not support');
+        $expected = 'merge into "USERS" using (select ? as "EMAIL" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL") values ("LARAVEL_SOURCE"."EMAIL")';
         $builder = $this->getBuilder();
-        $builder->from('users')->insertOrIgnore(['email' => 'foo']);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, ['foo'])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->insertOrIgnore(['email' => 'foo']);
+        $this->assertEquals(1, $result);
     }
 
     public function testMultipleInsertMethod()
@@ -3114,7 +3120,7 @@ class Oci8QueryBuilderTest extends TestCase
         return $connection;
     }
 
-    protected function getBuilder()
+    protected function getBuilder(): Builder
     {
         $grammar = new OracleGrammar;
         $processor = m::mock(OracleProcessor::class);
