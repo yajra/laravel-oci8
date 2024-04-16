@@ -2102,10 +2102,35 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testInsertOrIgnoreMethod()
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('does not support');
+        $expected = 'merge into "USERS" using (select ? as "EMAIL" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL") values ("LARAVEL_SOURCE"."EMAIL")';
         $builder = $this->getBuilder();
-        $builder->from('users')->insertOrIgnore(['email' => 'foo']);
+        $grammar = $builder->getGrammar();
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, ['foo'])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->insertOrIgnore(['email' => 'foo']);
+        $this->assertEquals(1, $result);
+        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [['email' => 'foo']]));
+    }
+
+    public function testInsertOrIgnoreMethodOnCacheStore()
+    {
+        $expected = 'merge into "CACHE" using (select ? as "KEY", ? as "VALUES", ? as "EXPIRATION" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."KEY" = "CACHE"."KEY") when not matched then insert ("KEY", "VALUES", "EXPIRATION") values ("LARAVEL_SOURCE"."KEY", "LARAVEL_SOURCE"."VALUES", "LARAVEL_SOURCE"."EXPIRATION")';
+        $builder = $this->getBuilder();
+        $grammar = $builder->getGrammar();
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, ['foo', 'bar', 1234567890])
+            ->andReturn(1);
+
+        $values = ['key' => 'foo', 'values' => 'bar', 'expiration' => 1234567890];
+        $result = $builder->from('cache')->insertOrIgnore($values);
+        $this->assertEquals(1, $result);
+        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [$values]));
     }
 
     public function testMultipleInsertMethod()
@@ -3114,7 +3139,7 @@ class Oci8QueryBuilderTest extends TestCase
         return $connection;
     }
 
-    protected function getBuilder()
+    protected function getBuilder(): Builder
     {
         $grammar = new OracleGrammar;
         $processor = m::mock(OracleProcessor::class);

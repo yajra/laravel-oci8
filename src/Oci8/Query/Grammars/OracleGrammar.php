@@ -32,7 +32,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile a delete statement with joins into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  string  $table
      * @param  string  $where
      * @return string
@@ -49,7 +48,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile an exists statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @return string
      */
     public function compileExists(Builder $query)
@@ -57,7 +55,7 @@ class OracleGrammar extends Grammar
         $q = clone $query;
         $q->columns = [];
         $q->selectRaw('1 as "exists"')
-          ->whereRaw('rownum = 1');
+            ->whereRaw('rownum = 1');
 
         return $this->compileSelect($q);
     }
@@ -115,7 +113,6 @@ class OracleGrammar extends Grammar
     /**
      * Create a full ANSI offset clause for the query.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $components
      * @return string
      */
@@ -190,7 +187,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile a truncate table statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @return array
      */
     public function compileTruncate(Builder $query)
@@ -273,6 +269,45 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile an insert ignore statement into SQL.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $values
+     * @return string
+     */
+    public function compileInsertOrIgnore(Builder $query, array $values)
+    {
+        $keys = array_keys(reset($values));
+        $columns = $this->columnize($keys);
+
+        $parameters = $this->compileUnionSelectFromDual($values);
+
+        $source = $this->wrapTable('laravel_source');
+
+        $sql = 'merge into '.$this->wrapTable($query->from).' ';
+        $sql .= 'using ('.$parameters.') '.$source;
+
+        $uniqueBy = $keys;
+        if (strtolower($query->from) == 'cache') {
+            $uniqueBy = ['key'];
+        }
+
+        $on = collect($uniqueBy)->map(function ($column) use ($query) {
+            return $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column);
+        })->implode(' and ');
+
+        $sql .= ' on ('.$on.') ';
+
+        $columnValues = collect(explode(', ', $columns))->map(function ($column) use ($source) {
+            return $source.'.'.$column;
+        })->implode(', ');
+
+        $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
+
+        return $sql;
+    }
+
+    /**
      * Set the schema prefix.
      *
      * @param  string  $prefix
@@ -312,7 +347,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert and get ID statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $values
      * @param  string  $sequence
      * @return string
@@ -338,8 +372,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $values
      * @return string
      */
     public function compileInsert(Builder $query, array $values)
@@ -380,7 +412,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert with blob field statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $values
      * @param  array  $binaries
      * @param  string  $sequence
@@ -421,9 +452,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile an update statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $values
-     * @param  array  $binaries
      * @param  string  $sequence
      * @return string
      */
@@ -479,7 +507,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile the lock into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  bool|string  $value
      * @return string
      */
@@ -499,7 +526,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile the "limit" portions of the query.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  int  $limit
      * @return string
      */
@@ -511,7 +537,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile the "offset" portions of the query.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  int  $offset
      * @return string
      */
@@ -523,7 +548,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where date" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
      * @return string
      */
@@ -538,7 +562,6 @@ class OracleGrammar extends Grammar
      * Compile a date based where clause.
      *
      * @param  string  $type
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
      * @return string
      */
@@ -554,7 +577,6 @@ class OracleGrammar extends Grammar
      *
      * For safety, whereIntegerInRaw ensures this method is only used with integer values.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
      * @return string
      */
@@ -576,7 +598,6 @@ class OracleGrammar extends Grammar
      *
      * For safety, whereIntegerInRaw ensures this method is only used with integer values.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
      * @return string
      */
@@ -614,7 +635,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile a union aggregate query into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @return string
      */
     protected function compileUnionAggregate(Builder $query)
@@ -640,28 +660,16 @@ class OracleGrammar extends Grammar
     /**
      * Compile an "upsert" statement into SQL.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $values
-     * @param  array  $uniqueBy
-     * @param  array  $update
      * @return string
      */
     public function compileUpsert(Builder $query, array $values, array $uniqueBy, array $update)
     {
         $columns = $this->columnize(array_keys(reset($values)));
-
-        $sql = 'merge into '.$this->wrapTable($query->from).' ';
-
-        $parameters = collect($values)->map(function ($record) {
-            $values = collect($record)->map(function ($value, $key) {
-                return '? as '.$this->wrap($key);
-            })->implode(', ');
-
-            return 'select '.$values.' from dual';
-        })->implode(' union all ');
+        $parameters = $this->compileUnionSelectFromDual($values);
 
         $source = $this->wrapTable('laravel_source');
 
+        $sql = 'merge into '.$this->wrapTable($query->from).' ';
         $sql .= 'using ('.$parameters.') '.$source;
 
         $on = collect($uniqueBy)->map(function ($column) use ($query) {
@@ -703,5 +711,20 @@ class OracleGrammar extends Grammar
     public function compileSavepointRollBack($name)
     {
         return 'ROLLBACK TO '.$name;
+    }
+
+    /**
+     * @param  array  $values
+     * @return string
+     */
+    protected function compileUnionSelectFromDual(array $values): string
+    {
+        return collect($values)->map(function ($record) {
+            $values = collect($record)->map(function ($value, $key) {
+                return '? as '.$this->wrap($key);
+            })->implode(', ');
+
+            return 'select '.$values.' from dual';
+        })->implode(' union all ');
     }
 }
