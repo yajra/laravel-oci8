@@ -235,9 +235,9 @@ class Oci8ConnectorTest extends TestCase
 
 class OracleConnectorStub extends OracleConnector
 {
-    public function createConnection($tns, array $config, array $options)
+    public function createConnection($dsn, array $config, array $options)
     {
-        return new Oci8Stub($tns, $config['username'], $config['password'], $config['options']);
+        return new Oci8Stub($dsn, $config['username'], $config['password'], $config['options']);
     }
 }
 

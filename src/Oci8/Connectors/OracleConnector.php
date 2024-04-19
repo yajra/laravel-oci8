@@ -197,21 +197,37 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Create a new PDO connection.
      *
-     * @param  string  $tns
+     * @param  string  $dsn
      * @param  array  $config
      * @param  array  $options
      * @return PDO
+     *
+     * @throws \Exception
      */
-    public function createConnection($tns, array $config, array $options)
+    public function createConnection($dsn, array $config, array $options)
     {
         // add fallback in case driver is not set, will use pdo instead
         if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
-            return parent::createConnection($tns, $config, $options);
+            return parent::createConnection($dsn, $config, $options);
         }
 
         $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
-        return new Oci8($tns, $config['username'], $config['password'], $options);
+        return parent::createConnection($dsn, $config, $options);
+    }
+
+    /**
+     * Create a new PDO connection instance.
+     *
+     * @param  string  $dsn
+     * @param  string  $username
+     * @param  string  $password
+     * @param  array  $options
+     * @return \PDO
+     */
+    protected function createPdoConnection($dsn, $username, $password, $options)
+    {
+        return new Oci8($dsn, $username, $password, $options);
     }
 }
