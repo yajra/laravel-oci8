@@ -5,7 +5,6 @@ namespace Yajra\Oci8\Connectors;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use PDO;
 use Yajra\Pdo\Oci8;
 
