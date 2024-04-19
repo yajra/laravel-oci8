@@ -215,19 +215,7 @@ class OracleConnector extends Connector implements ConnectorInterface
         $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
-        [$username, $password] = [
-            $config['username'] ?? null, $config['password'] ?? null,
-        ];
-
-        try {
-            return $this->createPdoConnection(
-                $dsn, $username, $password, $options
-            );
-        } catch (Exception $e) {
-            return $this->tryAgainIfCausedByLostConnection(
-                $e, $dsn, $username, $password, $options
-            );
-        }
+        return parent::createConnection($dsn, $config, $options);
     }
 
     /**
@@ -242,22 +230,5 @@ class OracleConnector extends Connector implements ConnectorInterface
     protected function createPdoConnection($dsn, $username, $password, $options)
     {
         return new Oci8($dsn, $username, $password, $options);
-    }
-
-    /**
-     * Determine if the given exception was caused by a lost connection.
-     *
-     * @param  \Throwable  $e
-     * @return bool
-     */
-    protected function causedByLostConnection(Throwable $e)
-    {
-        if (parent::causedByLostConnection($e)) {
-            return true;
-        }
-
-        return Str::contains($e->getMessage(), [
-            'the password will expire within',
-        ]);
     }
 }
