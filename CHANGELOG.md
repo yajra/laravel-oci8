@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.2.1](https://github.com/yajra/laravel-oci8/compare/v11.2.0...v11.2.1) - 2024-04-19
+
+- fix: retry on lost connection #846
+
 ## [v11.2.0](https://github.com/yajra/laravel-oci8/compare/v11.1.0...v11.2.0) - 2024-04-16
 
 - feat: add support for database cache store #844
