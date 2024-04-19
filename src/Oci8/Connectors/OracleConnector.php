@@ -5,6 +5,7 @@ namespace Yajra\Oci8\Connectors;
 use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use PDO;
 use Yajra\Pdo\Oci8;
 
@@ -197,21 +198,66 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Create a new PDO connection.
      *
-     * @param  string  $tns
+     * @param  string  $dsn
      * @param  array  $config
      * @param  array  $options
      * @return PDO
+     *
+     * @throws \Exception
      */
-    public function createConnection($tns, array $config, array $options)
+    public function createConnection($dsn, array $config, array $options)
     {
         // add fallback in case driver is not set, will use pdo instead
         if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
-            return parent::createConnection($tns, $config, $options);
+            return parent::createConnection($dsn, $config, $options);
         }
 
         $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
-        return new Oci8($tns, $config['username'], $config['password'], $options);
+        [$username, $password] = [
+            $config['username'] ?? null, $config['password'] ?? null,
+        ];
+
+        try {
+            return $this->createPdoConnection(
+                $dsn, $username, $password, $options
+            );
+        } catch (Exception $e) {
+            return $this->tryAgainIfCausedByLostConnection(
+                $e, $dsn, $username, $password, $options
+            );
+        }
+    }
+
+    /**
+     * Create a new PDO connection instance.
+     *
+     * @param  string  $dsn
+     * @param  string  $username
+     * @param  string  $password
+     * @param  array  $options
+     * @return \PDO
+     */
+    protected function createPdoConnection($dsn, $username, $password, $options)
+    {
+        return new Oci8($dsn, $username, $password, $options);
+    }
+
+    /**
+     * Determine if the given exception was caused by a lost connection.
+     *
+     * @param  \Throwable  $e
+     * @return bool
+     */
+    protected function causedByLostConnection(Throwable $e)
+    {
+        if (parent::causedByLostConnection($e)) {
+            return true;
+        }
+
+        return Str::contains($e->getMessage(), [
+            'the password will expire within',
+        ]);
     }
 }
