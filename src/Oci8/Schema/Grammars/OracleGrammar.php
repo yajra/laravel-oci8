@@ -217,7 +217,7 @@ class OracleGrammar extends Grammar
     public function compileColumns($schema, $table)
     {
         return "
-            select 
+            select
                 t.column_name as name,
                 nvl(t.data_type_mod, data_type) as type_name,
                 null as auto_increment,
@@ -249,13 +249,13 @@ class OracleGrammar extends Grammar
                 LISTAGG(kcr.column_name, ',') WITHIN GROUP (ORDER BY kcr.position) as foreign_columns,
                 rc.delete_rule AS \"on_delete\",
                 null AS \"on_update\"
-            from all_cons_columns kc 
-            inner join all_constraints rc ON kc.constraint_name = rc.constraint_name 
-            inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name 
-            where kc.table_name = upper('{$table}') 
-                and kc.owner = upper('{$schema}') 
+            from all_cons_columns kc
+            inner join all_constraints rc ON kc.constraint_name = rc.constraint_name
+            inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name
+            where kc.table_name = upper('{$table}')
+                and kc.owner = upper('{$schema}')
                 and rc.constraint_type = 'R'
-            group by 
+            group by
                 kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
         ";
     }
