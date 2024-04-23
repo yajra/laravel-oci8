@@ -900,10 +900,8 @@ class OracleGrammar extends Grammar
      */
     protected function wrapValue($value)
     {
-        if ($this->isReserved($value)) {
-            return Str::upper(parent::wrapValue($value));
-        }
+        $value = Str::upper($value);
 
-        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+        return parent::wrapValue($value);
     }
 }
