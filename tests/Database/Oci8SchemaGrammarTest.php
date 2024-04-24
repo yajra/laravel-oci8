@@ -31,6 +31,36 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function testAddColumnWithSpace(): void
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->create();
+        $blueprint->string('first name');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals('create table "USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
+    }
+
+    public function testCreateIndexNameUsingColumnWithSpace()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->create();
+        $blueprint->string('first name');
+        $blueprint->index('first name');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertEquals(2, count($statements));
+        $this->assertEquals('create table "USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
+        $this->assertEquals('create index users_first_name_index on "USERS" ( "FIRST NAME" )', $statements[1]);
+    }
+
     protected function getConnection()
     {
         return m::mock('Illuminate\Database\Connection');
