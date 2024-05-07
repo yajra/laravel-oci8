@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.5.3](https://github.com/yajra/laravel-oci8/compare/v10.5.2...v10.5.3) - 2024-05-07
+
+- fix: pagination when sorting by string with same values #851
+- revert: #611 
+- fix: #651
+
 ## [v10.5.2](https://github.com/yajra/laravel-oci8/compare/v10.5.1...v10.5.2) - 2024-03-16
 
 - fix: missing auto_increment key #838
@@ -19,7 +25,7 @@
 ## [v10.4.4](https://github.com/yajra/laravel-oci8/compare/v10.4.3...v10.4.4) - 2024-03-02
 
 - fix: lock for update with orders #834
-- fix: #832 
+- fix: #832
 - fix: #824
 
 ## [v10.4.3](https://github.com/yajra/laravel-oci8/compare/v10.4.2...v10.4.3) - 2024-02-17
