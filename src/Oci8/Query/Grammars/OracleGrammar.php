@@ -174,13 +174,6 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        if (! is_null($query->limit && ! is_null($query->offset))) {
-            $start = $query->offset + 1;
-            $finish = $query->offset + $query->limit;
-
-            return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 where rownum <= {$finish}) t2 where t2.\"rn\" >= {$start}";
-        }
-
         return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
     }
 
