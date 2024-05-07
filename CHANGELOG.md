@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.2.3](https://github.com/yajra/laravel-oci8/compare/v11.2.2...v11.2.3) - 2024-05-07
+
+- fix: pagination when sorting by string with same values #850
+- revert: #611
+- fix: #651
+
 ## [v11.2.2](https://github.com/yajra/laravel-oci8/compare/v11.2.1...v11.2.2) - 2024-04-24
 
 - fix: migration when column name has space #849
