@@ -383,6 +383,25 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $sql);
     }
 
+    public function testDropTableIfExists()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->dropIfExists();
+
+        $grammar = $this->getGrammar();
+
+        $statements = $blueprint->toSql($this->getConnection(), $grammar);
+
+        $this->assertEquals(1, count($statements));
+        $this->assertEquals("declare c int;
+            begin
+               select count(*) into c from user_tables where upper(table_name) = upper('USERS');
+               if c = 1 then
+                  execute immediate 'drop table \"USERS\"';
+               end if;
+            end;", $statements[0]);
+    }
+
     public function testDropTableWithPrefix()
     {
         $blueprint = new Blueprint('users');
