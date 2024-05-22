@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.2.4](https://github.com/yajra/laravel-oci8/compare/v11.2.3...v11.2.4) - 2024-05-22
+
+- fix: Schema::dropIfExists #854
+- fix: #853
+
 ## [v11.2.3](https://github.com/yajra/laravel-oci8/compare/v11.2.2...v11.2.3) - 2024-05-07
 
 - fix: pagination when sorting by string with same values #850
