@@ -291,6 +291,19 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) not null', $statements[0]);
     }
 
+    public function testAlterTableModifyColumnWithCollate()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->change()->collation('latin1_swedish_ci');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null', $statements[0]);
+    }
+
     public function testAlterTableModifyMultipleColumns()
     {
         $blueprint = new Blueprint('users');
