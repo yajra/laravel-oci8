@@ -522,9 +522,9 @@ class OracleGrammar extends Grammar
         $table = $this->wrapTable($blueprint);
 
         $rs = [];
-        $rs[0] = 'alter table '.$table.' rename column '.$command->from.' to '.$command->to;
+        $rs[0] = 'alter table '.$table.' rename column '.$this->wrap($command->from).' to '.$this->wrap($command->to);
 
-        return (array) $rs;
+        return $rs;
     }
 
     /**
