@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.2.5](https://github.com/yajra/laravel-oci8/compare/v11.2.4...v11.2.5) - 2024-05-22
+
+- fix: schema due to removal of dbal #855
+- fix: #852
+- fix: rename column wrapping
+- fix: modify column
+
 ## [v11.2.4](https://github.com/yajra/laravel-oci8/compare/v11.2.3...v11.2.4) - 2024-05-22
 
 - fix: Schema::dropIfExists #854
