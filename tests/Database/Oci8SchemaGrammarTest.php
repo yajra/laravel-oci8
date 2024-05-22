@@ -291,6 +291,20 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) not null', $statements[0]);
     }
 
+    public function testAlterTableModifyMultipleColumns()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->change();
+        $blueprint->string('name')->change();
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) not null modify "NAME" varchar2(255) not null', $statements[0]);
+    }
+
     public function testBasicAlterTableWithPrimary()
     {
         $blueprint = new Blueprint('users');

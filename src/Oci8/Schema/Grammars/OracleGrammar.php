@@ -940,7 +940,7 @@ class OracleGrammar extends Grammar
             $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
         }
 
-        return 'alter table '.$this->wrapTable($blueprint).' '.implode(', ', $columns);
+        return 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
     }
 
     /**
