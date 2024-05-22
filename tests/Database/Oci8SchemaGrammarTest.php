@@ -250,6 +250,74 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function testAlterTableRenameColumn()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->renameColumn('email', 'email_address');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" rename column "EMAIL" to "EMAIL_ADDRESS"', $statements[0]);
+    }
+
+    public function testAlterTableRenameMultipleColumns()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->renameColumn('email', 'email_address');
+        $blueprint->renameColumn('address', 'address_1');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals('alter table "USERS" rename column "EMAIL" to "EMAIL_ADDRESS"', $statements[0]);
+        $this->assertEquals('alter table "USERS" rename column "ADDRESS" to "ADDRESS_1"', $statements[1]);
+    }
+
+    public function testAlterTableModifyColumn()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->change();
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) not null', $statements[0]);
+    }
+
+    public function testAlterTableModifyColumnWithCollate()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->change()->collation('latin1_swedish_ci');
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null', $statements[0]);
+    }
+
+    public function testAlterTableModifyMultipleColumns()
+    {
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->change();
+        $blueprint->string('name')->change();
+
+        $conn = $this->getConnection();
+
+        $statements = $blueprint->toSql($conn, $this->getGrammar());
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) not null modify "NAME" varchar2(255) not null', $statements[0]);
+    }
+
     public function testBasicAlterTableWithPrimary()
     {
         $blueprint = new Blueprint('users');
