@@ -905,4 +905,55 @@ class OracleGrammar extends Grammar
 
         return parent::wrapValue($value);
     }
+
+    /**
+     * Compile a change column command into a series of SQL statements.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @param  \Illuminate\Database\Connection  $connection
+     * @return array|string
+     *
+     * @throws \RuntimeException
+     */
+    public function compileChange(Blueprint $blueprint, Fluent $command, Connection $connection)
+    {
+        $columns = [];
+
+        foreach ($blueprint->getChangedColumns() as $column) {
+            $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
+
+            foreach ($this->modifiers as $modifier) {
+                if ($modifier === 'Collate') {
+                    continue;
+                }
+
+                if (method_exists($this, $method = "modify{$modifier}")) {
+                    $constraints = (array) $this->{$method}($blueprint, $column);
+
+                    foreach ($constraints as $constraint) {
+                        $changes[] = $constraint;
+                    }
+                }
+            }
+
+            $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
+        }
+
+        return 'alter table '.$this->wrapTable($blueprint).' '.implode(', ', $columns);
+    }
+
+    /**
+     * Get the SQL for a collation column modifier.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $column
+     * @return string|null
+     */
+    protected function modifyCollate(Blueprint $blueprint, Fluent $column)
+    {
+        if (! is_null($column->collation)) {
+            return ' collate '.$this->wrapValue($column->collation);
+        }
+    }
 }
