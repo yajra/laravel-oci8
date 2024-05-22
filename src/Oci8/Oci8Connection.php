@@ -2,15 +2,12 @@
 
 namespace Yajra\Oci8;
 
-use Doctrine\DBAL\Driver\OCI8\Driver as DoctrineDriver;
-use Doctrine\DBAL\Version;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Grammar;
 use Illuminate\Support\Str;
 use PDO;
 use PDOStatement;
 use Throwable;
-use Yajra\Oci8\PDO\Oci8Driver;
 use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
@@ -185,16 +182,6 @@ class Oci8Connection extends Connection
         ];
 
         return $this->setSessionVars($sessionVars);
-    }
-
-    /**
-     * Get doctrine driver.
-     *
-     * @return \Doctrine\DBAL\Driver\OCI8\Driver|\Yajra\Oci8\PDO\Oci8Driver
-     */
-    protected function getDoctrineDriver()
-    {
-        return class_exists(Version::class) ? new DoctrineDriver : new Oci8Driver();
     }
 
     /**
