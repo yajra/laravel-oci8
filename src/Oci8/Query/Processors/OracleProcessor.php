@@ -268,4 +268,25 @@ class OracleProcessor extends Processor
             ];
         }, $results);
     }
+
+    /**
+     * Process the results of an indexes query.
+     *
+     * @param  array  $results
+     * @return array
+     */
+    public function processIndexes($results)
+    {
+        return array_map(function ($result) {
+            $result = (object) $result;
+
+            return [
+                'name' => $name = strtolower($result->name),
+                'columns' => explode(',', $result->columns),
+                'type' => strtolower($result->type),
+                'unique' => (bool) $result->unique,
+                'primary' => str_contains($name, '_pk'),
+            ];
+        }, $results);
+    }
 }
