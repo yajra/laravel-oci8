@@ -967,7 +967,7 @@ class OracleGrammar extends Grammar
     public function compileIndexes($database, $table)
     {
         return sprintf(
-            "select i.index_name as name, i.column_name as columns, "
+            'select i.index_name as name, i.column_name as columns, '
             ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"UNIQUE\" "
             .'from all_ind_columns i join ALL_INDEXES a on a.index_name = i.index_name '
             .'WHERE i.table_name = a.table_name AND i.table_owner = a.table_owner AND '
