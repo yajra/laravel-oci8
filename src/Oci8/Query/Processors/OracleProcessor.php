@@ -277,16 +277,26 @@ class OracleProcessor extends Processor
      */
     public function processIndexes($results)
     {
-        return array_map(function ($result) {
+        $collection = array_map(function ($result) {
             $result = (object) $result;
 
             return [
                 'name' => $name = strtolower($result->name),
-                'columns' => explode(',', $result->columns),
+                'columns' => $result->columns,
                 'type' => strtolower($result->type),
                 'unique' => (bool) $result->unique,
                 'primary' => str_contains($name, '_pk'),
             ];
         }, $results);
+
+        return collect($collection)->groupBy('name')->map(function ($items) {
+            return [
+                'name' => $items->first()['name'],
+                'columns' => $items->pluck('columns')->all(),
+                'type' => $items->first()['type'],
+                'unique' => $items->first()['unique'],
+                'primary' => $items->first()['primary'],
+            ];
+        })->values()->all();
     }
 }
