@@ -292,7 +292,7 @@ class OracleProcessor extends Processor
         return collect($collection)->groupBy('name')->map(function ($items) {
             return [
                 'name' => $items->first()['name'],
-                'columns' => $items->pluck('columns')->all(),
+                'columns' => $items->pluck('columns')->map(fn($item) => strtolower($item))->all(),
                 'type' => $items->first()['type'],
                 'unique' => $items->first()['unique'],
                 'primary' => $items->first()['primary'],
