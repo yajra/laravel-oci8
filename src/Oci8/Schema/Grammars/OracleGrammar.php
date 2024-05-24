@@ -969,10 +969,10 @@ class OracleGrammar extends Grammar
         return sprintf(
             "select i.index_name as name, listagg(i.column_name, ',') as columns, "
             ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"UNIQUE\" "
-            ."from all_ind_columns i join ALL_INDEXES a on a.index_name = i.index_name "
-            ."WHERE i.table_name = a.table_name AND i.table_owner = a.table_owner AND "
-            ."i.TABLE_OWNER = upper(%s) AND i.TABLE_NAME = upper(%s) "
-            ."group by i.index_name, a.index_type, a.uniqueness",
+            .'from all_ind_columns i join ALL_INDEXES a on a.index_name = i.index_name '
+            .'WHERE i.table_name = a.table_name AND i.table_owner = a.table_owner AND '
+            .'i.TABLE_OWNER = upper(%s) AND i.TABLE_NAME = upper(%s) '
+            .'group by i.index_name, a.index_type, a.uniqueness',
             $this->quoteString($database),
             $this->quoteString($table)
         );
