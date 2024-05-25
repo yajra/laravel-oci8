@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.3.0](https://github.com/yajra/laravel-oci8/compare/v11.2.5...v11.3.0) - 2024-05-25
+
+- feat: add support for Schema::getIndexes #856
+
 ## [v11.2.5](https://github.com/yajra/laravel-oci8/compare/v11.2.4...v11.2.5) - 2024-05-22
 
 - fix: schema due to removal of dbal #855
