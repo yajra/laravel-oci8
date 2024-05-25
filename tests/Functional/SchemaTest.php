@@ -146,7 +146,9 @@ class SchemaTest extends TestCase
 
         $this->assertCount(1, $columns);
         $this->assertTrue(collect($columns)->contains(
-            fn ($column) => $column['name'] === 'a_float' && $column['comment'] === 'a float.' && $column['precision'] === 4
+            fn ($column) => $column['name'] === 'a_float'
+                && $column['comment'] === 'a float.'
+                && $column['precision'] === 4
         ));
     }
 
@@ -211,5 +213,22 @@ class SchemaTest extends TestCase
                 && in_array('id', $key['foreign_columns'])
                 && in_array('foo_id', $key['columns'])
         ));
+    }
+
+    #[Test]
+    public function it_can_add_column_index()
+    {
+        if (Schema::hasTable('index_table')) {
+            Schema::drop('index_table');
+        }
+
+        Schema::create('index_table', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('name')->index();
+        });
+
+        $indexes = array_column(Schema::getIndexes('index_table'), 'name');
+
+        $this->assertContains('index_table_name_index', $indexes, 'name');
     }
 }
