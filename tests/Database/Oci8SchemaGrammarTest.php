@@ -284,6 +284,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->string('email')->change();
 
         $conn = $this->getConnection();
+        $conn->expects('usingNativeSchemaOperations')->andReturn(false);
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
@@ -297,6 +298,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->string('email')->change()->collation('latin1_swedish_ci');
 
         $conn = $this->getConnection();
+        $conn->expects('usingNativeSchemaOperations')->andReturn(false);
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
@@ -311,6 +313,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->string('name')->change();
 
         $conn = $this->getConnection();
+        $conn->expects('usingNativeSchemaOperations')->twice()->andReturn(false);
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
