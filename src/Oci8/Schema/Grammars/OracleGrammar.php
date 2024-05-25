@@ -214,17 +214,50 @@ class OracleGrammar extends Grammar
      * @param  string  $table
      * @return string
      */
-    public function compileColumns($table)
+    public function compileColumns($schema, $table)
     {
-        return "select column_name as name,
-                nvl(data_type_mod, data_type) as type_name,
+        return "
+            select
+                t.column_name as name,
+                nvl(t.data_type_mod, data_type) as type_name,
                 null as auto_increment,
-                data_type as type,
-                data_length as length,
-                nullable,
-                data_default as \"default\"
-            from all_tab_cols where upper(table_name) = upper('{$table}')
-                and owner = (select sys_context( 'userenv', 'current_schema' ) from dual)";
+                t.data_type as type,
+                t.data_length,
+                t.char_length,
+                t.data_precision as precision,
+                t.data_scale as places,
+                decode(t.nullable, 'Y', 1, 0) as nullable,
+                t.data_default as \"default\",
+                c.comments as \"comment\"
+            from all_tab_cols t
+            left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
+            where upper(t.table_name) = upper('{$table}')
+                and upper(t.owner) = upper('{$schema}')
+            order by
+                t.column_id
+        ";
+    }
+
+    public function compileForeignKeys($schema, $table)
+    {
+        return "
+            select
+                kc.constraint_name as name,
+                LISTAGG(kc.column_name, ',') WITHIN GROUP (ORDER BY kc.position) as columns,
+                rc.r_owner as foreign_schema,
+                kcr.table_name as foreign_table,
+                LISTAGG(kcr.column_name, ',') WITHIN GROUP (ORDER BY kcr.position) as foreign_columns,
+                rc.delete_rule AS \"on_delete\",
+                null AS \"on_update\"
+            from all_cons_columns kc
+            inner join all_constraints rc ON kc.constraint_name = rc.constraint_name
+            inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name
+            where kc.table_name = upper('{$table}')
+                and kc.owner = upper('{$schema}')
+                and rc.constraint_type = 'R'
+            group by
+                kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
+        ";
     }
 
     /**
@@ -368,10 +401,11 @@ class OracleGrammar extends Grammar
     public function compileDropIfExists(Blueprint $blueprint, Fluent $command)
     {
         $table = $this->wrapTable($blueprint);
+        $search = str_replace('"', '', $table);
 
         return "declare c int;
             begin
-               select count(*) into c from user_tables where table_name = upper('$table');
+               select count(*) into c from user_tables where upper(table_name) = upper('$search');
                if c = 1 then
                   execute immediate 'drop table $table';
                end if;
@@ -488,9 +522,9 @@ class OracleGrammar extends Grammar
         $table = $this->wrapTable($blueprint);
 
         $rs = [];
-        $rs[0] = 'alter table '.$table.' rename column '.$command->from.' to '.$command->to;
+        $rs[0] = 'alter table '.$table.' rename column '.$this->wrap($command->from).' to '.$this->wrap($command->to);
 
-        return (array) $rs;
+        return $rs;
     }
 
     /**
@@ -632,7 +666,11 @@ class OracleGrammar extends Grammar
      */
     protected function typeFloat(Fluent $column)
     {
-        return "number({$column->total}, {$column->places})";
+        if ($column->precision) {
+            return "float({$column->precision})";
+        }
+
+        return 'float(126)';
     }
 
     /**
@@ -643,7 +681,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeDouble(Fluent $column)
     {
-        return "number({$column->total}, {$column->places})";
+        return 'float(126)';
     }
 
     /**
@@ -863,10 +901,79 @@ class OracleGrammar extends Grammar
      */
     protected function wrapValue($value)
     {
-        if ($this->isReserved($value)) {
-            return Str::upper(parent::wrapValue($value));
+        $value = Str::upper($value);
+
+        return parent::wrapValue($value);
+    }
+
+    /**
+     * Compile a change column command into a series of SQL statements.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @param  \Illuminate\Database\Connection  $connection
+     * @return array|string
+     *
+     * @throws \RuntimeException
+     */
+    public function compileChange(Blueprint $blueprint, Fluent $command, Connection $connection)
+    {
+        $columns = [];
+
+        foreach ($blueprint->getChangedColumns() as $column) {
+            $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
+
+            foreach ($this->modifiers as $modifier) {
+                if ($modifier === 'Collate') {
+                    continue;
+                }
+
+                if (method_exists($this, $method = "modify{$modifier}")) {
+                    $constraints = (array) $this->{$method}($blueprint, $column);
+
+                    foreach ($constraints as $constraint) {
+                        $changes[] = $constraint;
+                    }
+                }
+            }
+
+            $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
         }
 
-        return $value !== '*' ? sprintf($this->wrapper, $value) : $value;
+        return 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
+    }
+
+    /**
+     * Get the SQL for a collation column modifier.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $column
+     * @return string|null
+     */
+    protected function modifyCollate(Blueprint $blueprint, Fluent $column)
+    {
+        if (! is_null($column->collation)) {
+            return ' collate '.$this->wrapValue($column->collation);
+        }
+    }
+
+    /**
+     * Compile the query to determine the indexes.
+     *
+     * @param  string  $database
+     * @param  string  $table
+     * @return string
+     */
+    public function compileIndexes($database, $table)
+    {
+        return sprintf(
+            'select i.index_name as name, i.column_name as columns, '
+            ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"UNIQUE\" "
+            .'from all_ind_columns i join ALL_INDEXES a on a.index_name = i.index_name '
+            .'WHERE i.table_name = a.table_name AND i.table_owner = a.table_owner AND '
+            .'i.TABLE_OWNER = upper(%s) AND i.TABLE_NAME = upper(%s) ',
+            $this->quoteString($database),
+            $this->quoteString($table)
+        );
     }
 }
