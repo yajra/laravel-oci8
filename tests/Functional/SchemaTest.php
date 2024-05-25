@@ -146,8 +146,9 @@ class SchemaTest extends TestCase
 
         $this->assertCount(1, $columns);
         $this->assertTrue(collect($columns)->contains(
-            fn ($column
-            ) => $column['name'] === 'a_float' && $column['comment'] === 'a float.' && $column['precision'] === 4
+            fn ($column) => $column['name'] === 'a_float'
+                && $column['comment'] === 'a float.'
+                && $column['precision'] === 4
         ));
     }
 
