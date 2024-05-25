@@ -677,7 +677,10 @@ class OracleGrammar extends Grammar
      */
     protected function typeDouble(Fluent $column)
     {
-        return "number({$column->total}, {$column->places})";
+        $total = $column->total ?? 8;
+        $places = $column->places ?? 2;
+
+        return "number({$total}, {$places})";
     }
 
     /**
