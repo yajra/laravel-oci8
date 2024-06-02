@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Connectors\Connector;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Yajra\Pdo\Oci8;
@@ -41,26 +42,21 @@ class Oci8ConnectorTest extends TestCase
             $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']]));
     }
 
-    /**
-     * @dataProvider tnsDataProvider
-     *
-     * @param  $dsn
-     * @param  $config
-     */
+    #[DataProvider('tnsDataProvider')]
     public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
     {
         $connector = $this->getMockBuilder(OracleConnector::class)
-                           ->onlyMethods(['createConnection', 'getOptions'])
-                           ->getMock();
+            ->onlyMethods(['createConnection', 'getOptions'])
+            ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
-                  ->method('getOptions')
-                  ->with($this->equalTo($config))
-                  ->will($this->returnValue(['options']));
+            ->method('getOptions')
+            ->with($this->equalTo($config))
+            ->willReturn(['options']);
         $connector->expects($this->once())
-                  ->method('createConnection')
-                  ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
-                  ->will($this->returnValue($connection));
+            ->method('createConnection')
+            ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
+            ->willReturn($connection);
 
         if (isset($config['schema'])) {
             $connection->shouldReceive('setSchema')->andReturnSelf();
@@ -239,9 +235,9 @@ class Oci8ConnectorTest extends TestCase
 
 class OracleConnectorStub extends OracleConnector
 {
-    public function createConnection($tns, array $config, array $options)
+    public function createConnection($dsn, array $config, array $options)
     {
-        return new Oci8Stub($tns, $config['username'], $config['password'], $config['options']);
+        return new Oci8Stub($dsn, $config['username'], $config['password'], $config['options']);
     }
 }
 

@@ -198,7 +198,105 @@ class OracleProcessor extends Processor
     public function processColumns($results)
     {
         return array_map(function ($result) {
-            return (array) $result;
+            $result = (object) $result;
+
+            $type = strtolower($result->type);
+            $precision = (int) $result->precision;
+            $places = (int) $result->places;
+            $length = (int) $result->data_length;
+
+            switch ($typeName = strtolower($result->type_name)) {
+                case 'number':
+                    if ($precision === 19 && $places === 0) {
+                        $type = 'bigint';
+                    } elseif ($precision === 10 && $places === 0) {
+                        $type = 'int';
+                    } elseif ($precision === 5 && $places === 0) {
+                        $type = 'smallint';
+                    } elseif ($precision === 1 && $places === 0) {
+                        $type = 'boolean';
+                    } elseif ($places > 0) {
+                        $type = 'decimal';
+                    }
+
+                    break;
+
+                case 'varchar':
+                case 'varchar2':
+                case 'nvarchar2':
+                case 'char':
+                case 'nchar':
+                    $length = (int) $result->char_length;
+                    break;
+                default:
+                    $type = $typeName;
+            }
+
+            return [
+                'name' => strtolower($result->name),
+                'type_name' => strtolower($result->type_name),
+                'type' => $type,
+                'nullable' => (bool) $result->nullable,
+                'default' => $result->default,
+                'auto_increment' => (bool) $result->auto_increment,
+                'comment' => $result->comment != '' ? $result->comment : null,
+                'length' => $length,
+                'precision' => $precision,
+            ];
         }, $results);
+    }
+
+    /**
+     * Process the results of a columns query.
+     *
+     * @param  array  $results
+     * @return array
+     */
+    public function processForeignKeys($results)
+    {
+        return array_map(function ($result) {
+            $result = (object) $result;
+
+            return [
+                'name' => strtolower($result->name),
+                'columns' => explode(',', strtolower($result->columns)),
+                'foreign_schema' => strtolower($result->foreign_schema),
+                'foreign_table' => strtolower($result->foreign_table),
+                'foreign_columns' => explode(',', strtolower($result->foreign_columns)),
+                'on_update' => strtolower($result->on_update),
+                'on_delete' => $result->on_delete,
+            ];
+        }, $results);
+    }
+
+    /**
+     * Process the results of an indexes query.
+     *
+     * @param  array  $results
+     * @return array
+     */
+    public function processIndexes($results)
+    {
+        $collection = array_map(function ($result) {
+            $result = (object) $result;
+
+            return [
+                'name' => $name = strtolower($result->name),
+                'columns' => $result->columns,
+                'type' => strtolower($result->type),
+                'unique' => (bool) $result->unique,
+                'primary' => str_contains($name, '_pk'),
+            ];
+        }, $results);
+
+        return collect($collection)->groupBy('name')->map(function ($items) {
+            return [
+                'name' => $items->first()['name'],
+                'columns' => $items->pluck('columns')->map(fn ($item) => strtolower($item))->all(),
+                'type' => $items->first()['type'],
+                'unique' => $items->first()['unique'],
+                'primary' => $items->first()['primary'],
+            ];
+        })->values()->all();
     }
 }
