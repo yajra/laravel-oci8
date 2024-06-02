@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v10.0.0...10.x)
 
+## [v10.6.0](https://github.com/yajra/laravel-oci8/compare/v10.5.3...v10.6.0) - 2024-06-02
+
+- feat: sync 11.x grammar and builder to 10.x #859
+- feat: add support for Schema::getIndexes #856 
+- fix: Schema::dropIfExists #854 
+- fix: pagination when sorting by string with same values #850 
+- fix: migration when column name has space #849 
+- fix: retry on lost connection #846 
+- feat: Improve schema grammar #842
+
 ## [v10.5.3](https://github.com/yajra/laravel-oci8/compare/v10.5.2...v10.5.3) - 2024-05-07
 
 - fix: pagination when sorting by string with same values #851
