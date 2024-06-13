@@ -77,6 +77,7 @@ This will copy the configuration file to `config/oracle.php`.
     'server_version' => env('DB_SERVER_VERSION', '11g'),
     'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
     'dynamic'        => [],
+    'max_name_len'   => env('ORA_MAX_NAME_LEN', 30),
 ],
 ```
 
