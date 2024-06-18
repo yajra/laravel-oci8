@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/v9.0.0...9.x)
 
+## [v9.5.4](https://github.com/yajra/laravel-oci8/compare/v9.5.3...v9.5.4) - 2024-06-18
+
+- revert: #611 #861
+- fix: pagination
+
 ## [v9.5.3](https://github.com/yajra/laravel-oci8/compare/v9.5.2...v9.5.3) - 2024-02-03
 
 - fix: multiple blob update and add test #821
