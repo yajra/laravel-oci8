@@ -1156,22 +1156,19 @@ class Oci8QueryBuilderTest extends TestCase
         );
     }
 
-    /**
-     * @TODO: Review for page
-     */
     public function testForPage()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
-        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 30) t2 where t2."rn" >= 16', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 15);
-        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
-        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 where rownum <= 15) t2 where t2."rn" >= 1', $builder->toSql());
+        $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15', $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
