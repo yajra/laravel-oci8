@@ -1065,4 +1065,42 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertEquals($expected, $statement);
     }
+
+    public function testCompileEnableForeignKeyConstraints()
+    {
+        $statement = $this->getGrammar()->compileEnableForeignKeyConstraints();
+
+        $expected = 'BEGIN
+            FOR R IN
+                ( SELECT \'ALTER TABLE \'||TABLE_NAME||\' ENABLE CONSTRAINT \'||CONSTRAINT_NAME AS STATEMENT
+                  FROM USER_CONSTRAINTS
+                  WHERE STATUS = \'DISABLED\'
+                  ORDER BY CASE CONSTRAINT_TYPE WHEN \'R\' THEN 2 ELSE 1 END
+                )
+                LOOP
+                    EXECUTE IMMEDIATE R.STATEMENT;
+                END LOOP;
+        END;';
+
+        $this->assertEquals($expected, $statement);
+    }
+
+    public function testCompileDisableForeignKeyConstraints()
+    {
+        $statement = $this->getGrammar()->compileDisableForeignKeyConstraints();
+
+        $expected = 'BEGIN
+            FOR R IN
+                ( SELECT \'ALTER TABLE \'||TABLE_NAME||\' DISABLE CONSTRAINT \'||CONSTRAINT_NAME AS STATEMENT
+                  FROM USER_CONSTRAINTS
+                  WHERE STATUS = \'ENABLED\'
+                  ORDER BY CASE CONSTRAINT_TYPE WHEN \'R\' THEN 1 ELSE 2 END
+                )
+                LOOP
+                    EXECUTE IMMEDIATE R.STATEMENT;
+                END LOOP;
+        END;';
+
+        $this->assertEquals($expected, $statement);
+    }
 }
