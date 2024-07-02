@@ -976,4 +976,44 @@ class OracleGrammar extends Grammar
             $this->quoteString($table)
         );
     }
+
+    /**
+     * Compile the command to enable foreign key constraints.
+     *
+     * @return string
+     */
+    public function compileEnableForeignKeyConstraints()
+    {
+        return 'BEGIN
+            FOR R IN
+                ( SELECT \'ALTER TABLE \'||TABLE_NAME||\' ENABLE CONSTRAINT \'||CONSTRAINT_NAME AS STATEMENT
+                  FROM USER_CONSTRAINTS
+                  WHERE STATUS = \'DISABLED\'
+                  ORDER BY CASE CONSTRAINT_TYPE WHEN \'R\' THEN 2 ELSE 1 END
+                )
+                LOOP
+                    EXECUTE IMMEDIATE R.STATEMENT;
+                END LOOP;
+        END;';
+    }
+
+    /**
+     * Compile the command to disable foreign key constraints.
+     *
+     * @return string
+     */
+    public function compileDisableForeignKeyConstraints()
+    {
+        return 'BEGIN
+            FOR R IN
+                ( SELECT \'ALTER TABLE \'||TABLE_NAME||\' DISABLE CONSTRAINT \'||CONSTRAINT_NAME AS STATEMENT
+                  FROM USER_CONSTRAINTS
+                  WHERE STATUS = \'ENABLED\'
+                  ORDER BY CASE CONSTRAINT_TYPE WHEN \'R\' THEN 1 ELSE 2 END
+                )
+                LOOP
+                    EXECUTE IMMEDIATE R.STATEMENT;
+                END LOOP;
+        END;';
+    }
 }
