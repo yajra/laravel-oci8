@@ -368,7 +368,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $blueprint = new Blueprint('users');
         $blueprint->setTablePrefix('prefix_');
-        $blueprint->increments('id');
+        $blueprint->increments('id')->primary();
         $blueprint->string('email');
 
         $grammar = $this->getGrammar();
@@ -378,10 +378,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $grammar);
 
-        $this->assertCount(2, $statements);
+        $this->assertCount(3, $statements);
         $this->assertEquals([
             'alter table "PREFIX_USERS" add ( "ID" number(10,0) not null )',
             'alter table "PREFIX_USERS" add ( "EMAIL" varchar2(255) not null )',
+            'alter table "PREFIX_USERS" add constraint prefix_users_id_pk primary key ("ID")',
         ], $statements);
     }
 
