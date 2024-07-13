@@ -506,14 +506,14 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->dropColumn('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" drop ( "FOO" )', $statements[0]);
 
         $blueprint = new Blueprint('users');
         $blueprint->dropColumn(['foo', 'bar']);
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" drop ( "FOO", "BAR" )', $statements[0]);
     }
 
@@ -523,7 +523,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->dropPrimary('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" drop constraint foo', $statements[0]);
     }
 
@@ -533,7 +533,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->dropUnique('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" drop constraint foo', $statements[0]);
     }
 
@@ -543,7 +543,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->dropIndex('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('drop index foo', $statements[0]);
     }
 
@@ -553,7 +553,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->dropForeign('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" drop constraint foo', $statements[0]);
     }
 
@@ -563,7 +563,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->dropTimestamps();
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" drop ( "CREATED_AT", "UPDATED_AT" )', $statements[0]);
     }
 
@@ -573,7 +573,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->rename('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" rename to "FOO"', $statements[0]);
     }
 
@@ -585,7 +585,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $grammar->setTablePrefix('prefix_');
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "PREFIX_USERS" rename to "PREFIX_FOO"', $statements[0]);
     }
 
@@ -595,7 +595,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->primary('foo', 'bar');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint bar primary key ("FOO")', $statements[0]);
     }
 
@@ -605,7 +605,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->primary('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint users_foo_pk primary key ("FOO")', $statements[0]);
     }
 
@@ -615,7 +615,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->primary('reset_password_secret_code');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals(
             'alter table "USERS" add constraint user_rese_passwor_secre_cod_pk primary key ("RESET_PASSWORD_SECRET_CODE")',
             $statements[0]);
@@ -627,7 +627,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->unique('foo', 'bar');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint bar unique ( "FOO" )', $statements[0]);
     }
 
@@ -642,7 +642,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "PREFIX_USERS" add constraint bar unique ( "FOO" )', $statements[0]);
     }
 
@@ -657,7 +657,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($this->getConnection(), $grammar);
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "PREFIX_USERS" add constraint prefix_users_foo_uk unique ( "FOO" )',
             $statements[0]);
     }
@@ -668,8 +668,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->index(['foo', 'bar'], 'baz');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-
+        $this->assertCount(1, $statements);
         $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
     }
 
@@ -679,7 +678,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->foreign('foo_id')->references('id')->on('orders');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" )',
             $statements[0]);
     }
@@ -690,7 +689,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->foreign('foo_id')->references('id')->on('orders')->onDelete('cascade');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) on delete cascade',
             $statements[0]);
     }
@@ -711,21 +710,21 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->string('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" varchar2(255) not null )', $statements[0]);
 
         $blueprint = new Blueprint('users');
         $blueprint->string('foo', 100);
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" varchar2(100) not null )', $statements[0]);
 
         $blueprint = new Blueprint('users');
         $blueprint->string('foo', 100)->nullable()->default('bar');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" varchar2(100) default \'bar\' null )', $statements[0]);
 
         $blueprint = new Blueprint('users');
@@ -734,7 +733,7 @@ class Oci8SchemaGrammarTest extends TestCase
             ->default(new Expression('CURRENT TIMESTAMP'));
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" varchar2(100) default CURRENT TIMESTAMP null )',
             $statements[0]);
     }
@@ -745,7 +744,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->longText('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
     }
 
@@ -755,7 +754,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->mediumText('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
     }
 
@@ -765,7 +764,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->text('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
     }
 
@@ -775,14 +774,14 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->char('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" char(255) not null )', $statements[0]);
 
         $blueprint = new Blueprint('users');
         $blueprint->char('foo', 1);
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" char(1) not null )', $statements[0]);
     }
 
@@ -792,7 +791,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->bigInteger('foo');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" number(19,0) not null )', $statements[0]);
 
         $blueprint = new Blueprint('users');
