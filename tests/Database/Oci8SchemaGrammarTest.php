@@ -31,6 +31,16 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    protected function getConnection()
+    {
+        return m::mock('Illuminate\Database\Connection');
+    }
+
+    public function getGrammar()
+    {
+        return new OracleGrammar;
+    }
+
     public function testAddColumnWithSpace(): void
     {
         $blueprint = new Blueprint('users');
@@ -59,16 +69,6 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals(2, count($statements));
         $this->assertEquals('create table "USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
         $this->assertEquals('create index users_first_name_index on "USERS" ( "FIRST NAME" )', $statements[1]);
-    }
-
-    protected function getConnection()
-    {
-        return m::mock('Illuminate\Database\Connection');
-    }
-
-    public function getGrammar()
-    {
-        return new OracleGrammar;
     }
 
     public function testBasicCreateTableWithReservedWords()
@@ -245,9 +245,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "ID" number(10,0) not null )',
+            'alter table "USERS" add ( "EMAIL" varchar2(255) not null )',
+        ], $statements);
     }
 
     public function testAlterTableRenameColumn()
@@ -301,7 +303,9 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null', $statements[0]);
+        $this->assertSame([
+            'alter table "USERS" modify "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null',
+        ], $statements);
     }
 
     public function testAlterTableModifyMultipleColumns()
@@ -314,8 +318,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
-        $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" modify "EMAIL" varchar2(255) not null modify "NAME" varchar2(255) not null', $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertSame([
+            'alter table "USERS" modify "EMAIL" varchar2(255) not null',
+            'alter table "USERS" modify "NAME" varchar2(255) not null',
+        ], $statements);
     }
 
     public function testBasicAlterTableWithPrimary()
@@ -328,9 +335,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "ID" number(10,0) not null )',
+            'alter table "USERS" add ( "EMAIL" varchar2(255) not null )',
+        ], $statements);
     }
 
     public function testBasicAlterTableWithPrefix()
@@ -347,9 +356,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $grammar);
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "PREFIX_USERS" add ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint prefix_users_id_pk primary key ( "ID" ) )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertSame([
+            'alter table "PREFIX_USERS" add ( "ID" number(10,0) not null )',
+            'alter table "PREFIX_USERS" add ( "EMAIL" varchar2(255) not null )',
+        ], $statements);
     }
 
     public function testBasicAlterTableWithPrefixAndPrimary()
@@ -366,9 +377,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $grammar);
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "PREFIX_USERS" add ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint prefix_users_id_pk primary key ( "ID" ) )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertEquals([
+            'alter table "PREFIX_USERS" add ( "ID" number(10,0) not null )',
+            'alter table "PREFIX_USERS" add ( "EMAIL" varchar2(255) not null )',
+        ], $statements);
     }
 
     public function testDropTable()
@@ -686,9 +699,8 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->increments('id');
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "ID" number(10,0) not null, constraint users_id_pk primary key ( "ID" ) )',
-            $statements[0]);
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "ID" number(10,0) not null )', $statements[0]);
     }
 
     public function testAddingString()
@@ -716,8 +728,8 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $blueprint = new Blueprint('users');
         $blueprint->string('foo', 100)
-                  ->nullable()
-                  ->default(new Expression('CURRENT TIMESTAMP'));
+            ->nullable()
+            ->default(new Expression('CURRENT TIMESTAMP'));
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
         $this->assertEquals(1, count($statements));
@@ -785,9 +797,10 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->bigInteger('foo', true);
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "FOO" number(19,0) not null, constraint users_foo_pk primary key ( "FOO" ) )',
-            $statements[0]);
+        $this->assertCount(1, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" number(19,0) not null )',
+        ], $statements);
     }
 
     public function testAddingInteger()
@@ -803,9 +816,10 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->integer('foo', true);
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "FOO" number(10,0) not null, constraint users_foo_pk primary key ( "FOO" ) )',
-            $statements[0]);
+        $this->assertCount(1, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" number(10,0) not null )',
+        ], $statements);
     }
 
     public function testAddingMediumInteger()
@@ -979,9 +993,11 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->nullableTimestamps();
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "CREATED_AT" timestamp null, "UPDATED_AT" timestamp null )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "CREATED_AT" timestamp null )',
+            'alter table "USERS" add ( "UPDATED_AT" timestamp null )',
+        ], $statements);
     }
 
     public function testAddingTimeStamps()
@@ -990,9 +1006,11 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->timestamps();
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "CREATED_AT" timestamp null, "UPDATED_AT" timestamp null )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "CREATED_AT" timestamp null )',
+            'alter table "USERS" add ( "UPDATED_AT" timestamp null )',
+        ], $statements);
     }
 
     public function testAddingTimeStampTzs()
@@ -1001,9 +1019,11 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->timestampsTz();
         $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
-        $this->assertEquals('alter table "USERS" add ( "CREATED_AT" timestamp with time zone null, "UPDATED_AT" timestamp with time zone null )',
-            $statements[0]);
+        $this->assertCount(2, $statements);
+        $this->assertEquals([
+            'alter table "USERS" add ( "CREATED_AT" timestamp with time zone null )',
+            'alter table "USERS" add ( "UPDATED_AT" timestamp with time zone null )',
+        ], $statements);
     }
 
     public function testAddingUuid()
