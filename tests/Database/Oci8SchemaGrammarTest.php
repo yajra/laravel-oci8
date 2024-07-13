@@ -1065,4 +1065,50 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertEquals($expected, $statement);
     }
+
+    public function testCompileEnableForeignKeyConstraints()
+    {
+        $statement = $this->getGrammar()->compileEnableForeignKeyConstraints('username');
+
+        $expected = 'begin
+            for s in (
+                SELECT \'alter table \' || c2.table_name || \' enable constraint \' || c2.constraint_name as statement
+                FROM all_constraints c
+                         INNER JOIN all_constraints c2
+                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
+                         INNER JOIN all_cons_columns col
+                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
+                WHERE c2.constraint_type = \'R\'
+                  AND c.owner = \'USERNAME\'
+                )
+                loop
+                    execute immediate s.statement;
+                end loop;
+        end;';
+
+        $this->assertEquals($expected, $statement);
+    }
+
+    public function testCompileDisableForeignKeyConstraints()
+    {
+        $statement = $this->getGrammar()->compileDisableForeignKeyConstraints('username');
+
+        $expected = 'begin
+            for s in (
+                SELECT \'alter table \' || c2.table_name || \' disable constraint \' || c2.constraint_name as statement
+                FROM all_constraints c
+                         INNER JOIN all_constraints c2
+                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
+                         INNER JOIN all_cons_columns col
+                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
+                WHERE c2.constraint_type = \'R\'
+                  AND c.owner = \'USERNAME\'
+                )
+                loop
+                    execute immediate s.statement;
+                end loop;
+        end;';
+
+        $this->assertEquals($expected, $statement);
+    }
 }

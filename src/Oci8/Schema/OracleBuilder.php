@@ -235,4 +235,28 @@ class OracleBuilder extends Builder
             )
         );
     }
+
+    /**
+     * Disable foreign key constraints.
+     *
+     * @return bool
+     */
+    public function disableForeignKeyConstraints()
+    {
+        return $this->connection->statement(
+            $this->grammar->compileDisableForeignKeyConstraints($this->connection->getConfig('username'))
+        );
+    }
+
+    /**
+     * Enable foreign key constraints.
+     *
+     * @return bool
+     */
+    public function enableForeignKeyConstraints()
+    {
+        return $this->connection->statement(
+            $this->grammar->compileEnableForeignKeyConstraints($this->connection->getConfig('username'))
+        );
+    }
 }
