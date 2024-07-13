@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.4.0](https://github.com/yajra/laravel-oci8/compare/v11.3.0...v11.4.0) - 2024-07-13
+
+- feat: disable/enable foreign keys #866
+- fix: #863 
+- fix: #488
+
 ## [v11.3.0](https://github.com/yajra/laravel-oci8/compare/v11.2.5...v11.3.0) - 2024-05-25
 
 - feat: add support for Schema::getIndexes #856
