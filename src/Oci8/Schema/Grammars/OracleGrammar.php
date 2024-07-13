@@ -976,4 +976,52 @@ class OracleGrammar extends Grammar
             $this->quoteString($table)
         );
     }
+
+    /**
+     * Compile the command to enable foreign key constraints.
+     *
+     * @param  string  $owner
+     * @return string
+     */
+    public function compileEnableForeignKeyConstraints(string $owner): string
+    {
+        return $this->compileForeignKeyConstraints($owner, 'enable');
+    }
+
+    /**
+     * Compile the command to disable foreign key constraints.
+     *
+     * @param  string  $owner
+     * @return string
+     */
+    public function compileDisableForeignKeyConstraints(string $owner): string
+    {
+        return $this->compileForeignKeyConstraints($owner, 'disable');
+    }
+
+    /**
+     * Compile foregin key constraints with enable or disable action.
+     *
+     * @param  string  $owner
+     * @param  string  $action
+     * @return string
+     */
+    public function compileForeignKeyConstraints(string $owner, string $action): string
+    {
+        return 'begin
+            for s in (
+                SELECT \'alter table \' || c2.table_name || \' '.$action.' constraint \' || c2.constraint_name as statement
+                FROM all_constraints c
+                         INNER JOIN all_constraints c2
+                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
+                         INNER JOIN all_cons_columns col
+                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
+                WHERE c2.constraint_type = \'R\'
+                  AND c.owner = \''.strtoupper($owner).'\'
+                )
+                loop
+                    execute immediate s.statement;
+                end loop;
+        end;';
+    }
 }
