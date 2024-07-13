@@ -19,16 +19,16 @@
         "php": "^8.2",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
-        "illuminate/database": "^11.0",
-        "illuminate/pagination": "^11.0",
-        "illuminate/support": "^11.0",
-        "illuminate/validation": "^11.0",
-        "yajra/laravel-pdo-via-oci8": "^3.0"
+        "illuminate/database": "^11.15.0",
+        "illuminate/pagination": "^11.15.0",
+        "illuminate/support": "^11.15.0",
+        "illuminate/validation": "^11.15.0",
+        "yajra/laravel-pdo-via-oci8": "^3.4.4"
     },
     "require-dev": {
-        "mockery/mockery": "^1.6",
-        "orchestra/testbench": "^9.0",
-        "phpunit/phpunit": "^10.5|^11.0"
+        "mockery/mockery": "^1.6.12",
+        "orchestra/testbench": "^9.1.2",
+        "phpunit/phpunit": "^10.5|^11.2.7"
     },
     "autoload": {
         "files": [
