@@ -269,17 +269,10 @@ class OracleGrammar extends Grammar
      */
     public function compileAdd(Blueprint $blueprint, Fluent $command)
     {
-        if (method_exists($this, 'getColumn')) {
-            $columns = $this->getColumn($blueprint, $command->column);
-        } else {
-            $columns = implode(', ', $this->getColumns($blueprint));
-        }
-
-        $sql = 'alter table '.$this->wrapTable($blueprint)." add ( $columns";
-
-        $sql .= (string) $this->addPrimaryKeys($blueprint);
-
-        return $sql .= ' )';
+        return sprintf('alter table %s add ( %s )',
+            $this->wrapTable($blueprint),
+            $this->getColumn($blueprint, $command->column)
+        );
     }
 
     /**
