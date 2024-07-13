@@ -98,7 +98,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
             $statements[0]);
     }
@@ -118,7 +118,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql($conn, $grammar);
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint users_id_pk primary key ( "ID" ) )',
             $statements[0]);
     }
@@ -328,17 +328,18 @@ class Oci8SchemaGrammarTest extends TestCase
     public function testBasicAlterTableWithPrimary()
     {
         $blueprint = new Blueprint('users');
-        $blueprint->increments('id');
+        $blueprint->increments('id')->primary();
         $blueprint->string('email');
 
         $conn = $this->getConnection();
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
-        $this->assertCount(2, $statements);
+        $this->assertCount(3, $statements);
         $this->assertSame([
             'alter table "USERS" add ( "ID" number(10,0) not null )',
             'alter table "USERS" add ( "EMAIL" varchar2(255) not null )',
+            'alter table "USERS" add constraint users_id_pk primary key ("ID")',
         ], $statements);
     }
 
