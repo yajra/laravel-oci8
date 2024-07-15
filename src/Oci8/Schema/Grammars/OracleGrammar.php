@@ -1025,7 +1025,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile the query to determine the tables.
      *
-     * @param  string $owner
+     * @param  string  $owner
      * @return string
      */
     public function compileTables(string $owner): string
