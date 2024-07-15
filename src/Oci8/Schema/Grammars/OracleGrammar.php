@@ -269,13 +269,10 @@ class OracleGrammar extends Grammar
      */
     public function compileAdd(Blueprint $blueprint, Fluent $command)
     {
-        $columns = implode(', ', $this->getColumns($blueprint));
-
-        $sql = 'alter table '.$this->wrapTable($blueprint)." add ( $columns";
-
-        $sql .= (string) $this->addPrimaryKeys($blueprint);
-
-        return $sql .= ' )';
+        return sprintf('alter table %s add ( %s )',
+            $this->wrapTable($blueprint),
+            $this->getColumn($blueprint, $command->column)
+        );
     }
 
     /**
@@ -920,25 +917,25 @@ class OracleGrammar extends Grammar
     {
         $columns = [];
 
-        foreach ($blueprint->getChangedColumns() as $column) {
-            $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
+        $column = $command->column;
 
-            foreach ($this->modifiers as $modifier) {
-                if ($modifier === 'Collate') {
-                    continue;
-                }
+        $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
 
-                if (method_exists($this, $method = "modify{$modifier}")) {
-                    $constraints = (array) $this->{$method}($blueprint, $column);
-
-                    foreach ($constraints as $constraint) {
-                        $changes[] = $constraint;
-                    }
-                }
+        foreach ($this->modifiers as $modifier) {
+            if ($modifier === 'Collate') {
+                continue;
             }
 
-            $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
+            if (method_exists($this, $method = "modify{$modifier}")) {
+                $constraints = (array) $this->{$method}($blueprint, $column);
+
+                foreach ($constraints as $constraint) {
+                    $changes[] = $constraint;
+                }
+            }
         }
+
+        $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
 
         return 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
     }
