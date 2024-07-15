@@ -1021,4 +1021,20 @@ class OracleGrammar extends Grammar
                 end loop;
         end;';
     }
+
+    /**
+     * Compile the query to determine the tables.
+     *
+     * @param string $owner
+     * @return string
+     */
+    public function compileTables(string $owner): string
+    {
+        return 'select all_tab_comments.table_name  as "name"
+            from all_tab_comments
+                join all_tables on all_tab_comments.table_name = all_tables.table_name
+            where all_tab_comments.owner = \''.strtoupper($owner).'\'
+                and all_tab_comments.table_type in (\'TABLE\')
+            order by all_tab_comments.table_name';
+    }
 }

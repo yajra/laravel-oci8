@@ -1134,4 +1134,18 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertEquals($expected, $statement);
     }
+
+    public function testCompileTables()
+    {
+        $statement = $this->getGrammar()->compileTables('username');
+
+        $expected = 'select all_tab_comments.table_name  as "name"
+            from all_tab_comments
+                join all_tables on all_tab_comments.table_name = all_tables.table_name
+            where all_tab_comments.owner = \'USERNAME\'
+                and all_tab_comments.table_type in (\'TABLE\')
+            order by all_tab_comments.table_name';
+
+        $this->assertEquals($expected, $statement);
+    }
 }
