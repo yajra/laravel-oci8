@@ -1139,11 +1139,11 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $statement = $this->getGrammar()->compileTables('username');
 
-        $expected = 'select all_tab_comments.table_name  as "name",
-                all_tables.owner as "schema",
-                coalesce(round(sum(user_segments.bytes) / 1024 / 1024, 2), 0) as "size",
+        $expected = 'select lower(all_tab_comments.table_name)  as "name",
+                lower(all_tables.owner) as "schema",
+                sum(user_segments.bytes) as "size",
                 all_tab_comments.comments as "comments",
-                (select value from nls_database_parameters where parameter = \'nls_sort\') as "collation"
+                (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
             from all_tables
                 join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
                 left join user_segments on user_segments.segment_name = all_tables.table_name
