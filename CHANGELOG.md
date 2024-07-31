@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.5.0](https://github.com/yajra/laravel-oci8/compare/v11.4.1...v11.5.0) - 2024-07-31
+
+- feat: Implement compileTables missing method #868
+- fix: Test for existence of AuthServiceProvider before trying to use it #872
+
 ## [v11.4.1](https://github.com/yajra/laravel-oci8/compare/v11.4.0...v11.4.1) - 2024-07-15
 
 - fix: Laravel 11.15 compatibility #867
