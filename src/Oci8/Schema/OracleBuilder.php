@@ -259,4 +259,18 @@ class OracleBuilder extends Builder
             $this->grammar->compileEnableForeignKeyConstraints($this->connection->getConfig('username'))
         );
     }
+
+    /**
+     * Get the tables that belong to the database.
+     *
+     * @return array
+     */
+    public function getTables()
+    {
+        return $this->connection->getPostProcessor()->processTables(
+            $this->connection->selectFromWriteConnection(
+                $this->grammar->compileTables($this->connection->getConfig('username'))
+            )
+        );
+    }
 }

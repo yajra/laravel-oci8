@@ -1021,4 +1021,28 @@ class OracleGrammar extends Grammar
                 end loop;
         end;';
     }
+
+    /**
+     * Compile the query to determine the tables.
+     *
+     * @param  string  $owner
+     * @return string
+     */
+    public function compileTables(string $owner): string
+    {
+        return 'select lower(all_tab_comments.table_name)  as "name",
+                lower(all_tables.owner) as "schema",
+                sum(user_segments.bytes) as "size",
+                all_tab_comments.comments as "comments",
+                (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
+            from all_tables
+                join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
+                left join user_segments on user_segments.segment_name = all_tables.table_name
+            where all_tables.owner = \''.strtoupper($owner).'\'
+                and all_tab_comments.owner = \''.strtoupper($owner).'\'
+                and all_tab_comments.table_type in (\'TABLE\')
+            group by all_tab_comments.table_name, all_tables.owner, all_tables.num_rows,
+                all_tables.avg_row_len, all_tables.blocks, all_tab_comments.comments
+            order by all_tab_comments.table_name';
+    }
 }
