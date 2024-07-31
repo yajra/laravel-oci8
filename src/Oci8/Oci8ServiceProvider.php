@@ -26,9 +26,14 @@ class Oci8ServiceProvider extends ServiceProvider
             __DIR__.'/../config/oracle.php' => config_path('oracle.php'),
         ], 'oracle');
 
-        Auth::provider('oracle', function ($app, array $config) {
-            return new OracleUserProvider($app['hash'], $config['model']);
-        });
+        // Testing for existence of AuthServiceProvider before invoking it
+        // prevents errors when used with laravel-zero micro-framework which
+        // doesn't need auth.
+        if (class_exists('\Illuminate\Auth\AuthServiceProvider')) {
+            Auth::provider('oracle', function ($app, array $config) {
+                return new OracleUserProvider($app['hash'], $config['model']);
+            });
+        }
     }
 
     /**
