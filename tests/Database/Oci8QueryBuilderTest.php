@@ -3036,7 +3036,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereJsonContains('options->languages', new Raw("'[\"en\"]'"));
-        $this->assertSame('select * from "USERS" where "ID"r ("OPTIONS"->\'languages\')::jsonb @> \'["en"]\'', $builder->toSql());
+        $this->assertSame('select * from "USERS" where "id" = ? or ("OPTIONS"->\'languages\')::jsonb @> \'["en"]\'', $builder->toSql());
         $this->assertEquals([1], $builder->getBindings());
     }
 
