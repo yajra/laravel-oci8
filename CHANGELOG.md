@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.6.0](https://github.com/yajra/laravel-oci8/compare/v11.5.1...v11.6.0) - 2024-08-01
+
+- feat: Add whereLike clause to query builder #874
+
 ## [v11.5.1](https://github.com/yajra/laravel-oci8/compare/v11.5.0...v11.5.1) - 2024-08-01
 
 - fix: Added "order by" clause to compileColumnExists #873
