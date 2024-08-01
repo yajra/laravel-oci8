@@ -39,10 +39,6 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
 
     public function testWhereLikeCaseSensitive()
     {
-        if ($this->driver === 'sqlsrv') {
-            $this->markTestSkipped('The case-sensitive whereLike clause is not supported on MSSQL.');
-        }
-
         $users = DB::table('users')->whereLike('email', 'john.doe@example.com', true)->get();
         $this->assertCount(0, $users);
 
@@ -54,10 +50,6 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
 
     public function testWhereLikeWithPercentWildcardCaseSensitive()
     {
-        if ($this->driver === 'sqlsrv') {
-            $this->markTestSkipped('The case-sensitive whereLike clause is not supported on MSSQL.');
-        }
-
         $this->assertSame(2, DB::table('users')->whereLike('email', '%Doe@example.com', true)->count());
         $this->assertSame(4, DB::table('users')->whereNotLike('email', '%smith%', true)->count());
 
@@ -69,10 +61,6 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
 
     public function testWhereLikeWithUnderscoreWildcardCaseSensitive()
     {
-        if ($this->driver === 'sqlsrv') {
-            $this->markTestSkipped('The case-sensitive whereLike clause is not supported on MSSQL.');
-        }
-
         $users = DB::table('users')->whereLike('email', 'j__edoe@example.com', true)->get();
         $this->assertCount(1, $users);
         $this->assertSame('janedoe@example.com', $users[0]->email);
@@ -83,7 +71,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         $this->assertSame('tim.smith@example.com', $users[1]->email);
     }
 
-    protected function afterRefreshingDatabase()
+    protected function afterRefreshingDatabase(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id('id');
@@ -92,7 +80,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         });
     }
 
-    protected function destroyDatabaseMigrations()
+    protected function destroyDatabaseMigrations(): void
     {
         Schema::drop('users');
     }
