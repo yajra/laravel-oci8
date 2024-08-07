@@ -174,7 +174,18 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        // Apply ROW_NUMBER() for pagination
+        $orderBy = $this->compileOrders($query, $query->orders);
+
+        // If no ORDER BY is specified, use ROWID for ordering
+        if (empty($orderBy)) {
+            $orderBy = "order by ROWID";
+        }
+
+        return "select * from (
+                    select t1.*, row_number() over ({$orderBy}) as row_num
+                    from ({$sql}) t1
+                ) where row_num {$constraint}";
     }
 
     /**
