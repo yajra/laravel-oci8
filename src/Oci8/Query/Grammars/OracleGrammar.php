@@ -175,7 +175,7 @@ class OracleGrammar extends Grammar
         }
 
         $orders = $query->orders;
-        foreach($orders as $key => $order) {
+        foreach ($orders as $key => $order) {
             if (isset($order['sql'])) {
                 [$column, $direction] = explode(' ', $order['sql']);
                 if (Str::contains($column, '.')) {
@@ -195,7 +195,7 @@ class OracleGrammar extends Grammar
 
         // If no ORDER BY is specified, use ROWID for ordering
         if (empty($orderBy)) {
-            $orderBy = "order by ROWID";
+            $orderBy = 'order by ROWID';
         }
 
         return "select * from (select t1.*, row_number() over ({$orderBy}) as rn from ({$sql}) t1) where rn {$constraint}";
