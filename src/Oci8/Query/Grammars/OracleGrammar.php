@@ -174,7 +174,37 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        $orders = $query->orders;
+        foreach ($orders as $key => $order) {
+            if (isset($order['sql'])) {
+                [$column, $direction] = explode(' ', $order['sql']);
+                if (Str::contains($column, '.')) {
+                    [$table, $column] = explode('.', $column);
+                    $orders[$key]['sql'] = 't1.'.$column.' '.$direction;
+                }
+                continue;
+            }
+            if (isset($order['column']) && Str::contains($order['column'], '.')) {
+                [,$column] = explode('.', $order['column']);
+                $orders[$key]['column'] = 't1.'.$column;
+            }
+        }
+
+        // Apply ROW_NUMBER() for pagination
+        $orderBy = $this->compileOrders($query, $orders);
+
+        // If no ORDER BY is specified, use ROWID for ordering
+        if (empty($orderBy)) {
+            $orderBy = 'order by ROWID';
+        }
+
+        if ($query->columns) {
+            $columns = $this->columnize($query->columns);
+        } else {
+            $columns = '*';
+        }
+
+        return "select {$columns} from (select t1.*, row_number() over ({$orderBy}) as rn from ({$sql}) t1) where rn {$constraint}";
     }
 
     /**
