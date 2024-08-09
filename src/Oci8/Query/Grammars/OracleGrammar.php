@@ -174,18 +174,31 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
+        $orders = $query->orders;
+        foreach($orders as $key => $order) {
+            if (isset($order['sql'])) {
+                [$column, $direction] = explode(' ', $order['sql']);
+                if (Str::contains($column, '.')) {
+                    [$table, $column] = explode('.', $column);
+                    $orders[$key]['sql'] = 't1.'.$column.' '.$direction;
+                }
+                continue;
+            }
+            if (isset($order['column']) && Str::contains($order['column'], '.')) {
+                [,$column] = explode('.', $order['column']);
+                $orders[$key]['column'] = 't1.'.$column;
+            }
+        }
+
         // Apply ROW_NUMBER() for pagination
-        $orderBy = $this->compileOrders($query, $query->orders);
+        $orderBy = $this->compileOrders($query, $orders);
 
         // If no ORDER BY is specified, use ROWID for ordering
         if (empty($orderBy)) {
             $orderBy = "order by ROWID";
         }
 
-        return "select * from (
-                    select t1.*, row_number() over ({$orderBy}) as row_num
-                    from ({$sql}) t1
-                ) where row_num {$constraint}";
+        return "select * from (select t1.*, row_number() over ({$orderBy}) as rn from ({$sql}) t1) where rn {$constraint}";
     }
 
     /**
