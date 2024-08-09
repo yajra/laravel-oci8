@@ -863,7 +863,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals(
-            'select * from "USERS" where "ID" in (select * from (select t1.*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) t1) where rn between 1 and 3)',
+            'select * from "USERS" where "ID" in (select "ID" from (select t1.*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) t1) where rn between 1 and 3)',
             $builder->toSql()
         );
         $this->assertEquals([25], $builder->getBindings());
@@ -873,7 +873,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals(
-            'select * from "USERS" where "ID" not in (select * from (select t1.*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) t1) where rn between 1 and 3)',
+            'select * from "USERS" where "ID" not in (select "ID" from (select t1.*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) t1) where rn between 1 and 3)',
             $builder->toSql()
         );
         $this->assertEquals([25], $builder->getBindings());

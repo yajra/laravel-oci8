@@ -198,7 +198,13 @@ class OracleGrammar extends Grammar
             $orderBy = "order by ROWID";
         }
 
-        return "select * from (select t1.*, row_number() over ({$orderBy}) as rn from ({$sql}) t1) where rn {$constraint}";
+        if ($query->columns) {
+            $columns = $this->columnize($query->columns);
+        } else {
+            $columns = '*';
+        }
+
+        return "select {$columns} from (select t1.*, row_number() over ({$orderBy}) as rn from ({$sql}) t1) where rn {$constraint}";
     }
 
     /**
