@@ -1111,7 +1111,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(10);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn >= 11',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn >= 11',
             $builder->toSql()
         );
     }
