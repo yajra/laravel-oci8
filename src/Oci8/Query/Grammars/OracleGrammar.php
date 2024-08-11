@@ -181,6 +181,10 @@ class OracleGrammar extends Grammar
             $table = last(explode(' ', $this->wrapTable($query->from)));
         }
 
+        if (count($query->columns) > 1) {
+            $query->columns = ['*'];
+        }
+
         $select = $this->compileColumns($query, $query->columns);
 
         // Apply ROW_NUMBER() for pagination
