@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
@@ -175,6 +176,12 @@ class OracleGrammar extends Grammar
         }
 
         $table = $this->wrapTable($query->from);
+        if ($query->from instanceof Expression) {
+            // Get the last item in the array which represents the table alias
+            $table = last(explode(' ', $this->wrapTable($query->from)));
+        }
+
+        $select = $this->compileColumns($query, $query->columns);
 
         // Apply ROW_NUMBER() for pagination
         $orderBy = $this->compileOrders($query, $query->orders);
@@ -184,13 +191,7 @@ class OracleGrammar extends Grammar
             $orderBy = 'order by ROWID';
         }
 
-        if ($query->columns) {
-            $columns = $this->columnize($query->columns);
-        } else {
-            $columns = '*';
-        }
-
-        return "select {$columns} from (select {$table}.*, row_number() over ({$orderBy}) as rn from ({$sql}) {$table}) where rn {$constraint}";
+        return "{$select} from (select {$table}.*, row_number() over ({$orderBy}) as rn from ({$sql}) {$table}) {$table} where rn {$constraint}";
     }
 
     /**

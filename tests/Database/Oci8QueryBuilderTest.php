@@ -863,7 +863,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals(
-            'select * from "USERS" where "ID" in (select "ID" from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) "USERS") where rn between 1 and 3)',
+            'select * from "USERS" where "ID" in (select "ID" from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) "USERS") "USERS" where rn between 1 and 3)',
             $builder->toSql()
         );
         $this->assertEquals([25], $builder->getBindings());
@@ -873,7 +873,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
         $this->assertEquals(
-            'select * from "USERS" where "ID" not in (select "ID" from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) "USERS") where rn between 1 and 3)',
+            'select * from "USERS" where "ID" not in (select "ID" from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "ID" from "USERS" where "AGE" > ?) "USERS") "USERS" where rn between 1 and 3)',
             $builder->toSql()
         );
         $this->assertEquals([25], $builder->getBindings());
@@ -1121,42 +1121,49 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(5)->limit(10);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 6 and 15',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 6 and 15',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(5)->take(10);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 6 and 15',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 6 and 15',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(-5)->take(10);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 10',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 10',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 16 and 30',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 16 and 30',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 15',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 15',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('users.*')->from('users')->forPage(1, 10);
         $this->assertEquals(
-            'select "USERS".* from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "USERS".* from "USERS") "USERS") where rn between 1 and 10',
+            'select "USERS".* from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "USERS".* from "USERS") "USERS") "USERS" where rn between 1 and 10',
+            $builder->toSql()
+        );
+
+        $builder = $this->getBuilder();
+        $builder->select('users.*')->fromSub(fn($query) => $query->from('users'), 'users')->forPage(1, 10);
+        $this->assertEquals(
+            'select "USERS".* from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "USERS".* from (select * from "USERS") "USERS") "USERS") "USERS" where rn between 1 and 10',
             $builder->toSql()
         );
     }
@@ -1166,14 +1173,14 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(0)->limit(1);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 1',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 1',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(1)->limit(1);
         $this->assertEquals(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 2 and 2',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 2 and 2',
             $builder->toSql()
         );
     }
@@ -1183,42 +1190,42 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
         $this->assertSame(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 16 and 30',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 16 and 30',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 15);
         $this->assertSame(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 15',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 15',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
         $this->assertSame(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 15',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 15',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
         $this->assertSame(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 0',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 0',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 0);
         $this->assertSame(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 0',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 0',
             $builder->toSql()
         );
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 0);
         $this->assertSame(
-            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 0',
+            'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") "USERS" where rn between 1 and 0',
             $builder->toSql()
         );
     }
