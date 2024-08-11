@@ -1152,6 +1152,13 @@ class Oci8QueryBuilderTest extends TestCase
             'select * from (select "USERS".*, row_number() over (order by ROWID) as rn from (select * from "USERS") "USERS") where rn between 1 and 15',
             $builder->toSql()
         );
+
+        $builder = $this->getBuilder();
+        $builder->select('users.*')->from('users')->forPage(1, 10);
+        $this->assertEquals(
+            'select "USERS".* from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "USERS".* from "USERS") "USERS") where rn between 1 and 10',
+            $builder->toSql()
+        );
     }
 
     public function testLimitAndOffsetToPaginateOne()
