@@ -1164,7 +1164,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function testLimitAndOffsetFromSub()
     {
         $builder = $this->getBuilder();
-        $builder->select('users.*')->fromSub(fn($query) => $query->from('users'), 'users')->limit(10);
+        $builder->select('users.*')->fromSub(fn ($query) => $query->from('users'), 'users')->limit(10);
         $this->assertEquals(
             'select "USERS".* from (select "USERS".*, row_number() over (order by ROWID) as rn from (select "USERS".* from (select * from "USERS") "USERS") "USERS") "USERS" where rn between 1 and 10',
             $builder->toSql()
