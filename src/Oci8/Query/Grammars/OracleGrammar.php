@@ -175,10 +175,9 @@ class OracleGrammar extends Grammar
         }
 
         $table = $this->wrapTable($query->from);
-        $orders = $query->orders;
 
         // Apply ROW_NUMBER() for pagination
-        $orderBy = $this->compileOrders($query, $orders);
+        $orderBy = $this->compileOrders($query, $query->orders);
 
         // If no ORDER BY is specified, use ROWID for ordering
         if (empty($orderBy)) {
