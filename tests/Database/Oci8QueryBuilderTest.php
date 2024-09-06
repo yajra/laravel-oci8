@@ -138,28 +138,20 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select "FOO" as "BAR" from "USERS"', $builder->toSql());
     }
 
-    /**
-     * @TODO: Fix alias prefix and wrapping.
-     *      select * from "PREFIX_USERS" "PREFIX_PEOPLE"
-     */
     public function testAliasWithPrefix()
     {
         $builder = $this->getBuilder();
         $builder->getGrammar()->setTablePrefix('prefix_');
         $builder->select('*')->from('users as people');
-        $this->assertSame('select * from "PREFIX_USERS" people', $builder->toSql());
+        $this->assertSame('select * from "PREFIX_USERS" prefix_people', $builder->toSql());
     }
 
-    /**
-     * @TODO: Fix alias prefix
-     *      select * from "PREFIX_SERVICES" inner join "PREFIX_TRANSLATIONS" "PREFIX_T" on "PREFIX_T"."ITEM_ID" = "PREFIX_SERVICES"."ID"
-     */
     public function testJoinAliasesWithPrefix()
     {
         $builder = $this->getBuilder();
         $builder->getGrammar()->setTablePrefix('prefix_');
         $builder->select('*')->from('services')->join('translations AS t', 't.item_id', '=', 'services.id');
-        $this->assertSame('select * from "PREFIX_SERVICES" inner join "PREFIX_TRANSLATIONS" t on "PREFIX_T"."ITEM_ID" = "PREFIX_SERVICES"."ID"', $builder->toSql());
+        $this->assertSame('select * from "PREFIX_SERVICES" inner join "PREFIX_TRANSLATIONS" prefix_t on "PREFIX_T"."ITEM_ID" = "PREFIX_SERVICES"."ID"', $builder->toSql());
     }
 
     public function testBasicTableWrapping()
