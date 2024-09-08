@@ -151,6 +151,6 @@ class Sequence
 
         $name = $this->wrap($name);
 
-        return $this->connection->selectOne("select '{$name}.currval' as \"id\" from dual")->id;
+        return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
     }
 }
