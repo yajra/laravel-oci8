@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.6.2](https://github.com/yajra/laravel-oci8/compare/v11.6.1...v11.6.2) - 2024-09-09
+
+- fix: #890
+- fix: #891
+- remove: v11.6.1 tagged on wrong branch.
+
 ## [v11.6.1](https://github.com/yajra/laravel-oci8/compare/v11.6.0...v11.6.1) - 2024-09-07
 
 - fix: missing prefix on table alias #889
