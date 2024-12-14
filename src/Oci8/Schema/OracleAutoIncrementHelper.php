@@ -95,7 +95,7 @@ class OracleAutoIncrementHelper
     {
         $maxLength = $this->connection->getSchemaGrammar()->getMaxLength();
 
-        return substr($prefix.$table.'_'.$col.'_'.$type, 0, $maxLength);
+        return mb_substr($prefix.$table.'_'.$col.'_'.$type, 0, $maxLength);
     }
 
     /**

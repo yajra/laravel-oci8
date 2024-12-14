@@ -83,14 +83,14 @@ class OracleBlueprint extends Blueprint
                     // if any part is longer than 2 chars, take one off
                     $len = strlen($parts[$i]);
                     if ($len > 2) {
-                        $parts[$i] = substr($parts[$i], 0, $len - 1);
+                        $parts[$i] = mb_substr($parts[$i], 0, $len - 1);
                     }
                 }
 
                 $index = implode('_', $parts);
             }
         } else {
-            $index = substr($this->table, 0, 10).'_comp_'.str_replace('.', '_', microtime(true));
+            $index = mb_substr($this->table, 0, 10).'_comp_'.str_replace('.', '_', microtime(true));
         }
 
         return $index;
