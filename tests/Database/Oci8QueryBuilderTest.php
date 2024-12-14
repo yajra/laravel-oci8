@@ -811,7 +811,7 @@ class Oci8QueryBuilderTest extends TestCase
         $bindings = str_repeat('?, ', 1000);
         $expected = sprintf(
             'select * from "USERS" where ("ID" in (%s) or "ID" in (?))',
-            substr($bindings, 0, 2998)
+            mb_substr($bindings, 0, 2998)
         );
         $this->assertEquals($expected, $builder->toSql());
         $this->assertEquals(range(1, 1001), $builder->getBindings());
@@ -821,7 +821,7 @@ class Oci8QueryBuilderTest extends TestCase
         $bindings = str_repeat('?, ', 1000);
         $expected = sprintf(
             'select * from "USERS" where ("ID" in (%s) or "ID" in (?)) and "ID" = ?',
-            substr($bindings, 0, 2998)
+            mb_substr($bindings, 0, 2998)
         );
         $this->assertEquals($expected, $builder->toSql());
     }
@@ -833,7 +833,7 @@ class Oci8QueryBuilderTest extends TestCase
         $bindings = str_repeat('?, ', 1000);
         $expected = sprintf(
             'select * from "USERS" where ("ID" not in (%s) and "ID" not in (?))',
-            substr($bindings, 0, 2998)
+            mb_substr($bindings, 0, 2998)
         );
         $this->assertEquals($expected, $builder->toSql());
         $this->assertEquals(range(1, 1001), $builder->getBindings());
@@ -843,7 +843,7 @@ class Oci8QueryBuilderTest extends TestCase
         $bindings = str_repeat('?, ', 1000);
         $expected = sprintf(
             'select * from "USERS" where ("ID" not in (%s) and "ID" not in (?)) and "ID" = ?',
-            substr($bindings, 0, 2998)
+            mb_substr($bindings, 0, 2998)
         );
         $this->assertEquals($expected, $builder->toSql());
     }
