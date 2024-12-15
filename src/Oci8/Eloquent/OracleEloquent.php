@@ -152,8 +152,8 @@ class OracleEloquent extends Model
             return $this->getTable().'.'.$this->getKeyName();
         }
 
-        $table = substr($this->getTable(), 0, $pos);
-        $dbLink = substr($this->getTable(), $pos);
+        $table = mb_substr($this->getTable(), 0, $pos);
+        $dbLink = mb_substr($this->getTable(), $pos);
 
         return $table.'.'.$this->getKeyName().$dbLink;
     }
