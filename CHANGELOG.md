@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.6.3](https://github.com/yajra/laravel-oci8/compare/v11.6.2...v11.6.3) - 2024-12-15
+
+- fix: 🐛 multibyte object name causes error #895
+
 ## [v11.6.2](https://github.com/yajra/laravel-oci8/compare/v11.6.1...v11.6.2) - 2024-09-09
 
 - fix: #890
