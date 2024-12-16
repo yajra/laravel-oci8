@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
@@ -174,7 +175,27 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        $table = $this->wrapTable($query->from);
+        if ($query->from instanceof Expression) {
+            // Get the last item in the array which represents the table alias
+            $table = last(explode(' ', $this->wrapTable($query->from)));
+        }
+
+        if (count($query->columns) > 1) {
+            $query->columns = ['*'];
+        }
+
+        $select = $this->compileColumns($query, $query->columns);
+
+        // Apply ROW_NUMBER() for pagination
+        $orderBy = $this->compileOrders($query, $query->orders);
+
+        // If no ORDER BY is specified, use ROWID for ordering
+        if (empty($orderBy)) {
+            $orderBy = 'order by ROWID';
+        }
+
+        return "{$select} from (select {$table}.*, row_number() over ({$orderBy}) as rn from ({$sql}) {$table}) {$table} where rn {$constraint}";
     }
 
     /**
