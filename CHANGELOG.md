@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.6.4](https://github.com/yajra/laravel-oci8/compare/v11.6.3...v11.6.4) - 2024-12-31
+
+- fix: OracleGrammar::compileDropAllTables method to ignore secondary objects. #897
+- fix: #896
+
 ## [v11.6.3](https://github.com/yajra/laravel-oci8/compare/v11.6.2...v11.6.3) - 2024-12-15
 
 - fix: 🐛 multibyte object name causes error #895
