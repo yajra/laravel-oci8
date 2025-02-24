@@ -19,10 +19,10 @@
         "php": "^8.2",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
-        "illuminate/database": "^11.15.0",
-        "illuminate/pagination": "^11.15.0",
-        "illuminate/support": "^11.15.0",
-        "illuminate/validation": "^11.15.0",
+        "illuminate/database": "^11.15.0 || ^12",
+        "illuminate/pagination": "^11.15.0 || ^12",
+        "illuminate/support": "^11.15.0  || ^12",
+        "illuminate/validation": "^11.15.0 || ^12",
         "yajra/laravel-pdo-via-oci8": "^3.4.4"
     },
     "require-dev": {
