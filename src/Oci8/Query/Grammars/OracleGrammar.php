@@ -222,7 +222,7 @@ class OracleGrammar extends Grammar
      * @param  \Illuminate\Database\Query\Expression|string  $table
      * @return string
      */
-    public function wrapTable($table)
+    public function wrapTable($table, $prefix = null)
     {
         if ($this->isExpression($table)) {
             return $this->getValue($table);
