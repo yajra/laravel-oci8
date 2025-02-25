@@ -22,7 +22,7 @@
         "illuminate/database": "^12",
         "illuminate/pagination": "^12",
         "illuminate/support": "^12",
-        "illuminate/validation": "^^12",
+        "illuminate/validation": "^12",
         "yajra/laravel-pdo-via-oci8": "^3.4.4"
     },
     "require-dev": {
