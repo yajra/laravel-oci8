@@ -82,10 +82,11 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a table in keyword identifiers.
      *
-     * @param  mixed  $table
+     * @param mixed $table
+     * @param null $prefix
      * @return string
      */
-    public function wrapTable($table)
+    public function wrapTable($table, $prefix = null)
     {
         return $this->getSchemaPrefix().parent::wrapTable($table);
     }

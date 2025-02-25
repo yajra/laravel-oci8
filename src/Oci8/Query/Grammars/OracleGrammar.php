@@ -232,10 +232,10 @@ class OracleGrammar extends Grammar
             $table = str_replace(' as ', ' ', strtolower($table));
         }
 
-        $tableName = $this->wrap($this->tablePrefix.$table, true);
+        $tableName = $this->wrap($this->getTablePrefix().$table, true);
         $segments = explode(' ', $table);
         if (count($segments) > 1) {
-            $tableName = $this->wrap($this->tablePrefix.$segments[0]).' '.$this->tablePrefix.$segments[1];
+            $tableName = $this->wrap($this->getTablePrefix().$segments[0]).' '.$this->getTablePrefix().$segments[1];
         }
 
         return $this->getSchemaPrefix().$tableName;

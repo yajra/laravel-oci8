@@ -316,7 +316,7 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        ($grammar = new QueryGrammar)->setConnection($this);
+        ($grammar = new QueryGrammar($this));
 
         return $this->withTablePrefix($grammar);
     }
@@ -329,7 +329,7 @@ class Oci8Connection extends Connection
      */
     public function withTablePrefix(Grammar $grammar)
     {
-        return $this->withSchemaPrefix(parent::withTablePrefix($grammar));
+        return $this->withSchemaPrefix($grammar);
     }
 
     /**
