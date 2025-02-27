@@ -3,20 +3,18 @@
 namespace Yajra\Oci8\Auth;
 
 use Illuminate\Auth\EloquentUserProvider;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
 
 class OracleUserProvider extends EloquentUserProvider
 {
     /**
      * Retrieve a user by the given credentials.
-     *
-     * @param  array  $credentials
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
-    public function retrieveByCredentials(#[\SensitiveParameter] array $credentials)
+    public function retrieveByCredentials(#[\SensitiveParameter] array $credentials): ?Authenticatable
     {
         if (empty($credentials)) {
-            return;
+            return null;
         }
 
         // First we will add each credential element to the query as a where clause.
