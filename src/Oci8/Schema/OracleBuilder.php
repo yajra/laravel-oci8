@@ -265,11 +265,11 @@ class OracleBuilder extends Builder
      *
      * @return array
      */
-    public function getTables()
+    public function getTables($schema = null)
     {
         return $this->connection->getPostProcessor()->processTables(
             $this->connection->selectFromWriteConnection(
-                $this->grammar->compileTables($this->connection->getConfig('username'))
+                $this->grammar->compileTables($schema ?? $this->connection->getConfig('username'))
             )
         );
     }
