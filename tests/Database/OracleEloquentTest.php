@@ -13,18 +13,13 @@ use Illuminate\Database\Query\Processors\SQLiteProcessor;
 use Illuminate\Database\Query\Processors\SqlServerProcessor;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
-/**
- * {@inheritdoc}
- */
 class OracleEloquentTest extends TestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     public function tearDown(): void
     {
         m::close();
@@ -40,8 +35,7 @@ class OracleEloquentTest extends TestCase
 
         $this->assertInstanceOf(OracleBuilder::class, $builder);
         $this->assertInstanceOf(OracleGrammar::class, $builder->getGrammar());
-        $this->assertInstanceOf(OracleProcessor::class,
-            $builder->getProcessor());
+        $this->assertInstanceOf(OracleProcessor::class, $builder->getProcessor());
     }
 
     /**
@@ -53,7 +47,12 @@ class OracleEloquentTest extends TestCase
         if ($database == 'Oracle') {
             $grammarClass = OracleGrammar::class;
             $processorClass = OracleProcessor::class;
-            $grammar = new $grammarClass;
+
+            $oci8Connection = m::mock(Oci8Connection::class);
+            $oci8Connection->shouldReceive('getSchemaPrefix')->andReturn('');
+            $oci8Connection->shouldReceive('getMaxLength')->andReturn(30);
+
+            $grammar = new $grammarClass($oci8Connection);
             $processor = new $processorClass;
             $connection = m::mock('Illuminate\Database\ConnectionInterface', [
                 'getQueryGrammar' => $grammar,
@@ -69,7 +68,7 @@ class OracleEloquentTest extends TestCase
 
         $grammarClass = 'Illuminate\Database\Query\Grammars\\'.$database.'Grammar';
         $processorClass = 'Illuminate\Database\Query\Processors\\'.$database.'Processor';
-        $grammar = new $grammarClass;
+        $grammar = new $grammarClass(m::mock('Illuminate\Database\Connection'));
         $processor = new $processorClass;
         $connection = m::mock('Illuminate\Database\ConnectionInterface', [
             'getQueryGrammar' => $grammar,
@@ -81,7 +80,7 @@ class OracleEloquentTest extends TestCase
         $class::setConnectionResolver($resolver);
     }
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForSQLiteGrammar()
+    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForSQLiteGrammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'SQLite');
@@ -90,11 +89,10 @@ class OracleEloquentTest extends TestCase
 
         $this->assertInstanceOf(Builder::class, $builder);
         $this->assertInstanceOf(SQLiteGrammar::class, $builder->getGrammar());
-        $this->assertInstanceOf(SQLiteProcessor::class,
-            $builder->getProcessor());
+        $this->assertInstanceOf(SQLiteProcessor::class, $builder->getProcessor());
     }
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForMysSqlGrammar()
+    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForMysSqlGrammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'MySql');
@@ -106,7 +104,7 @@ class OracleEloquentTest extends TestCase
             $builder->getProcessor());
     }
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForPostgresGrammar()
+    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForPostgresGrammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'Postgres');
@@ -123,7 +121,7 @@ class OracleEloquentTest extends TestCase
     // HELPER FUNCTIONS
     // #########################################################################
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForSqlServerGrammar()
+    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForSqlServerGrammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'SqlServer');
