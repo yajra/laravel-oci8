@@ -23,12 +23,12 @@
         "illuminate/pagination": "^12",
         "illuminate/support": "^12",
         "illuminate/validation": "^12",
-        "yajra/laravel-pdo-via-oci8": "^3.4.4"
+        "yajra/laravel-pdo-via-oci8": "^3.7.1"
     },
     "require-dev": {
         "mockery/mockery": "^1.6.12",
         "orchestra/testbench": "^10",
-        "phpunit/phpunit": "^10.5.35|^11.5.3|^12.0.1"
+        "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1"
     },
     "autoload": {
         "files": [

@@ -316,34 +316,7 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        ($grammar = new QueryGrammar)->setConnection($this);
-
-        return $this->withTablePrefix($grammar);
-    }
-
-    /**
-     * Set the table prefix and return the grammar.
-     *
-     * @param  \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar  $grammar
-     * @return \Illuminate\Database\Grammar
-     */
-    public function withTablePrefix(Grammar $grammar)
-    {
-        return $this->withSchemaPrefix(parent::withTablePrefix($grammar));
-    }
-
-    /**
-     * Set the schema prefix and return the grammar.
-     *
-     * @param  \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar  $grammar
-     * @return \Illuminate\Database\Grammar
-     */
-    public function withSchemaPrefix(Grammar $grammar)
-    {
-        $grammar->setSchemaPrefix($this->getConfigSchemaPrefix());
-        $grammar->setMaxLength($this->getConfigMaxLength());
-
-        return $grammar;
+        return new QueryGrammar($this);
     }
 
     /**
@@ -351,7 +324,7 @@ class Oci8Connection extends Connection
      *
      * @return string
      */
-    protected function getConfigSchemaPrefix()
+    public function getSchemaPrefix()
     {
         return isset($this->config['prefix_schema']) ? $this->config['prefix_schema'] : '';
     }
@@ -361,7 +334,7 @@ class Oci8Connection extends Connection
      *
      * @return string
      */
-    protected function getConfigMaxLength()
+    public function getMaxLength()
     {
         return isset($this->config['max_name_len']) ? $this->config['max_name_len'] : 30;
     }
@@ -373,9 +346,7 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultSchemaGrammar()
     {
-        ($grammar = new SchemaGrammar)->setConnection($this);
-
-        return $this->withTablePrefix($grammar);
+        return new SchemaGrammar($this);
     }
 
     /**

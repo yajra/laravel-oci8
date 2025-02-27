@@ -12,17 +12,13 @@ use InvalidArgumentException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Yajra\Oci8\Oci8Connection as Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class Oci8QueryBuilderTest extends TestCase
 {
-    public function tearDown(): void
-    {
-        m::close();
-    }
-
     public function testBasicSelect()
     {
         $builder = $this->getBuilder();
@@ -111,8 +107,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testBasicSelectWithPrefix()
     {
-        $builder = $this->getBuilder();
-        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('users');
         $this->assertEquals('select * from "PREFIX_USERS"', $builder->toSql());
     }
@@ -140,18 +135,16 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testAliasWithPrefix()
     {
-        $builder = $this->getBuilder();
-        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('users as people');
-        $this->assertSame('select * from "PREFIX_USERS" prefix_people', $builder->toSql());
+        $this->assertSame('select * from "PREFIX_USERS" "PREFIX_PEOPLE"', $builder->toSql());
     }
 
     public function testJoinAliasesWithPrefix()
     {
-        $builder = $this->getBuilder();
-        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('services')->join('translations AS t', 't.item_id', '=', 'services.id');
-        $this->assertSame('select * from "PREFIX_SERVICES" inner join "PREFIX_TRANSLATIONS" prefix_t on "PREFIX_T"."ITEM_ID" = "PREFIX_SERVICES"."ID"', $builder->toSql());
+        $this->assertSame('select * from "PREFIX_SERVICES" inner join "PREFIX_TRANSLATIONS" "PREFIX_T" on "PREFIX_T"."ITEM_ID" = "PREFIX_SERVICES"."ID"', $builder->toSql());
     }
 
     public function testBasicTableWrapping()
@@ -1640,8 +1633,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testJoinSubWithPrefix()
     {
-        $builder = $this->getBuilder();
-        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder = $this->getBuilder('prefix_');
         $builder->from('users')->joinSub('select * from "CONTACTS"', 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "PREFIX_USERS" inner join (select * from "CONTACTS") "PREFIX_SUB" on "PREFIX_USERS"."ID" = "PREFIX_SUB"."ID"', $builder->toSql());
     }
@@ -2338,7 +2330,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = m::mock(Builder::class.'[where,exists,insert]', [
             m::mock(ConnectionInterface::class),
-            new OracleGrammar,
+            $this->getGrammar(),
             m::mock(OracleProcessor::class),
         ]);
 
@@ -2350,7 +2342,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = m::mock(Builder::class.'[where,exists,update]', [
             m::mock(ConnectionInterface::class),
-            new OracleGrammar,
+            $this->getGrammar(),
             m::mock(OracleProcessor::class),
         ]);
 
@@ -2366,7 +2358,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = m::spy(Builder::class.'[where,exists,update]', [
             m::mock(ConnectionInterface::class),
-            new OracleGrammar,
+            $this->getGrammar(),
             m::mock(OracleProcessor::class),
         ]);
 
@@ -2396,6 +2388,15 @@ class Oci8QueryBuilderTest extends TestCase
             ->andReturn(1);
         $result = $builder->from('users')->delete(1);
         $this->assertEquals(1, $result);
+    }
+
+    /**
+     * @param  string  $prefix
+     * @return \Yajra\Oci8\Query\Grammars\OracleGrammar
+     */
+    public function getGrammar(string $prefix = ''): OracleGrammar
+    {
+        return new OracleGrammar($this->getConnection(prefix: $prefix));
     }
 
     /**
@@ -2480,7 +2481,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
-        $grammar = new OracleGrammar;
+        $grammar = $this->getGrammar();
         $processor = m::mock('\Yajra\Oci8\Query\Processors\OracleProcessor');
         $builder = m::mock('Illuminate\Database\Query\Builder[where]',
             [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
@@ -3048,8 +3049,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function testFromSubWithPrefix()
     {
-        $builder = $this->getBuilder();
-        $builder->getGrammar()->setTablePrefix('prefix_');
+        $builder = $this->getBuilder('prefix_');
         $builder->fromSub(function ($query) {
             $query->select(new Raw('max(last_seen_at) as last_seen_at'))->from('user_sessions')->where('foo', '=', '1');
         }, 'sessions')->where('bar', '<', '10');
@@ -3161,38 +3161,42 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => '1'], $builder->getBindings());
     }
 
-    protected function getConnection()
+    protected function getConnection(string $prefix = '')
     {
-        $connection = m::mock(ConnectionInterface::class);
-        $connection->shouldReceive('getConfig')->andReturn('');
+        $connection = m::mock(Connection::class);
         $connection->shouldReceive('getDatabaseName')->andReturn('database');
+        $connection->shouldReceive('getTablePrefix')->andReturn($prefix);
+        $connection->shouldReceive('getSchemaPrefix')->andReturn($prefix);
+        $connection->shouldReceive('getMaxLength')->andReturn(30);
+        $connection->shouldReceive('getConfig')->andReturn([]);
 
         return $connection;
     }
 
-    protected function getBuilder(): Builder
+    protected function getBuilder(string $prefix = '')
     {
-        $grammar = new OracleGrammar;
+        $connection = $this->getConnection(prefix: $prefix);
+        $grammar = new OracleGrammar($connection);
         $processor = m::mock(OracleProcessor::class);
 
-        return new Builder($this->getConnection(), $grammar, $processor);
+        return new Builder($connection, $grammar, $processor);
     }
 
     /**
      * @return m\MockInterface
      */
-    protected function getMockQueryBuilder()
+    protected function getMockQueryBuilder($prefix = '')
     {
         return m::mock(Builder::class, [
             m::mock(ConnectionInterface::class),
-            new OracleGrammar,
+            $this->getGrammar($prefix),
             m::mock(OracleProcessor::class),
         ])->makePartial();
     }
 
-    protected function getBuilderWithProcessor()
+    protected function getBuilderWithProcessor($prefix = '')
     {
-        $grammar = new OracleGrammar;
+        $grammar = $this->getGrammar($prefix);
         $processor = new OracleProcessor;
 
         return new Builder(m::mock(ConnectionInterface::class), $grammar, $processor);

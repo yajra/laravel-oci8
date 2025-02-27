@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Query\Grammars;
 
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
@@ -28,6 +29,14 @@ class OracleGrammar extends Grammar
      * @var int
      */
     protected $maxLength;
+
+    public function __construct(Connection $connection)
+    {
+        parent::__construct($connection);
+
+        $this->setSchemaPrefix($connection->getSchemaPrefix());
+        $this->setMaxLength($connection->getMaxLength());
+    }
 
     /**
      * Compile a delete statement with joins into SQL.
@@ -228,17 +237,28 @@ class OracleGrammar extends Grammar
             return $this->getValue($table);
         }
 
+        $prefix = $prefix ?? $this->connection->getTablePrefix();
+
         if (strpos(strtolower($table), ' as ') !== false) {
-            $table = str_replace(' as ', ' ', strtolower($table));
+            return $this->wrapAliasedTable($table, $prefix);
         }
 
-        $tableName = $this->wrap($this->tablePrefix.$table, true);
+        $tableName = $this->wrap($prefix.$table, true);
         $segments = explode(' ', $table);
         if (count($segments) > 1) {
-            $tableName = $this->wrap($this->tablePrefix.$segments[0]).' '.$this->tablePrefix.$segments[1];
+            $tableName = $this->wrap($prefix.$segments[0]).' '.$prefix.$segments[1];
         }
 
-        return $this->getSchemaPrefix().$tableName;
+        return $tableName;
+    }
+
+    protected function wrapAliasedTable($value, $prefix = null)
+    {
+        $segments = preg_split('/\s+as\s+/i', $value);
+
+        $prefix ??= $this->connection->getTablePrefix();
+
+        return $this->wrapTable($segments[0], $prefix).' '.$this->wrapValue($prefix.$segments[1]);
     }
 
     /**
