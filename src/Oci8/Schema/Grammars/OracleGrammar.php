@@ -488,7 +488,7 @@ class OracleGrammar extends Grammar
     /**
      * Create the column definition for a medium text type.
      */
-    protected function typeMediumText(Fluent $column)
+    protected function typeMediumText(Fluent $column): string
     {
         return 'clob';
     }
