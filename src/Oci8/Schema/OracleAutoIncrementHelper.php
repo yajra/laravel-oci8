@@ -2,44 +2,26 @@
 
 namespace Yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Fluent;
+use Yajra\Oci8\Oci8Connection;
 
 class OracleAutoIncrementHelper
 {
-    /**
-     * @var \Illuminate\Database\Connection
-     */
-    protected $connection;
+    protected Trigger $trigger;
 
-    /**
-     * @var \Yajra\Oci8\Schema\Trigger
-     */
-    protected $trigger;
+    protected Sequence $sequence;
 
-    /**
-     * @var \Yajra\Oci8\Schema\Sequence
-     */
-    protected $sequence;
-
-    /**
-     * @param  \Illuminate\Database\Connection  $connection
-     */
-    public function __construct(Connection $connection)
+    public function __construct(protected Oci8Connection $connection)
     {
-        $this->connection = $connection;
         $this->sequence = new Sequence($connection);
         $this->trigger = new Trigger($connection);
     }
 
     /**
-     * create sequence and trigger for autoIncrement support.
-     *
-     * @param  Blueprint  $blueprint
-     * @param  string  $table
-     * @return null
+     * Create a sequence and trigger for autoIncrement support.
      */
-    public function createAutoIncrementObjects(Blueprint $blueprint, $table)
+    public function createAutoIncrementObjects(Blueprint $blueprint, string $table): void
     {
         $column = $this->getQualifiedAutoIncrementColumn($blueprint);
 
@@ -51,25 +33,19 @@ class OracleAutoIncrementHelper
         $col = $column->name;
         $start = $column->start ?? $column->startingValue ?? 1;
 
-        // get table prefix
-        $prefix = $this->connection->getTablePrefix();
-
         // create sequence for auto increment
-        $sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
-        $this->sequence->create($sequenceName, $start, $column->nocache);
+        $sequenceName = $this->createObjectName($table, $col, 'seq');
+        $this->sequence->create($sequenceName, $start, (bool) $column->nocache);
 
         // create trigger for auto increment work around
-        $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
-        $this->trigger->autoIncrement($prefix.$table, $col, $triggerName, $sequenceName);
+        $triggerName = $this->createObjectName($table, $col, 'trg');
+        $this->trigger->autoIncrement($table, $col, $triggerName, $sequenceName);
     }
 
     /**
      * Get qualified autoincrement column.
-     *
-     * @param  Blueprint  $blueprint
-     * @return \Illuminate\Support\Fluent|null
      */
-    public function getQualifiedAutoIncrementColumn(Blueprint $blueprint)
+    public function getQualifiedAutoIncrementColumn(Blueprint $blueprint): ?Fluent
     {
         $columns = $blueprint->getColumns();
 
@@ -80,45 +56,36 @@ class OracleAutoIncrementHelper
                 return $column;
             }
         }
+
+        return null;
     }
 
     /**
      * Create an object name that limits to 30 or 128 chars depending on the server version.
-     *
-     * @param  string  $prefix
-     * @param  string  $table
-     * @param  string  $col
-     * @param  string  $type
-     * @return string
      */
-    private function createObjectName(string $prefix, string $table, string $col, string $type): string
+    private function createObjectName(string $table, string $col, string $type): string
     {
         $maxLength = $this->connection->getMaxLength();
+        $table = $this->connection->getTablePrefix().$table;
 
-        return mb_substr($prefix.$table.'_'.$col.'_'.$type, 0, $maxLength);
+        return mb_substr($table.'_'.$col.'_'.$type, 0, $maxLength);
     }
 
     /**
-     * Drop sequence and triggers if exists, autoincrement objects.
-     *
-     * @param  string  $table
+     * Drop the sequence and triggers if exists, autoincrement objects.
      */
     public function dropAutoIncrementObjects(string $table): void
     {
-        // drop sequence and trigger object
-        $prefix = $this->connection->getTablePrefix();
-
-        // get the actual primary column name from table
-        $col = $this->getPrimaryKey($prefix.$table);
+        $col = $this->getPrimaryKey($table);
 
         // if primary key col is set, drop auto increment objects
         if (! empty($col)) {
             // drop sequence for auto increment
-            $sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
+            $sequenceName = $this->createObjectName($table, $col, 'seq');
             $this->sequence->drop($sequenceName);
 
             // drop trigger for auto increment work around
-            $triggerName = $this->createObjectName($prefix, $table, $col, 'trg');
+            $triggerName = $this->createObjectName($table, $col, 'trg');
             $this->trigger->drop($triggerName);
         }
     }
@@ -128,11 +95,15 @@ class OracleAutoIncrementHelper
      */
     public function getPrimaryKey(string $table): string
     {
+        $table = $this->connection->getQueryGrammar()->wrapTable($table);
         $owner = $this->connection->getConfig('username');
 
-        if (str_contains($table, '.'))  {
+        if (str_contains($table, '.')) {
             [$owner, $table] = explode('.', $table);
         }
+
+        $table = str_replace('"', '', $table);
+        $owner = str_replace('"', '', $owner);
 
         $sql = "SELECT cols.column_name
             FROM all_constraints cons, all_cons_columns cols
@@ -151,37 +122,5 @@ class OracleAutoIncrementHelper
         }
 
         return '';
-    }
-
-    /**
-     * Get sequence instance.
-     */
-    public function getSequence(): Sequence
-    {
-        return $this->sequence;
-    }
-
-    /**
-     * Set the sequence instance.
-     */
-    public function setSequence(Sequence $sequence): void
-    {
-        $this->sequence = $sequence;
-    }
-
-    /**
-     * Get the trigger instance.
-     */
-    public function getTrigger(): Trigger
-    {
-        return $this->trigger;
-    }
-
-    /**
-     * Set the trigger instance.
-     */
-    public function setTrigger(Trigger $trigger): void
-    {
-        $this->trigger = $trigger;
     }
 }

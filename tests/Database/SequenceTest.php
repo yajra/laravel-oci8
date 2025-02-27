@@ -2,10 +2,10 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
-use Illuminate\Database\Connection;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Schema\Sequence;
 
 class SequenceTest extends TestCase
@@ -34,13 +34,13 @@ class SequenceTest extends TestCase
         $connection->shouldReceive('getConfig')->andReturn('schema_prefix');
 
         $sequence = new Sequence($connection);
-        $name = $sequence->wrap('users_id_seq');
+        $name = $sequence->wrapSchema('users_id_seq');
         $this->assertEquals($name, 'schema_prefix.users_id_seq');
     }
 
     protected function getConnection()
     {
-        return m::mock(Connection::class);
+        return m::mock(Oci8Connection::class);
     }
 
     #[Test]
