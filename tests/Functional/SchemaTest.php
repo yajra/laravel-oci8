@@ -3,6 +3,8 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,7 +13,7 @@ use Yajra\Oci8\Tests\TestCase;
 
 class SchemaTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
     #[Test]
     public function it_can_get_column_type()
@@ -66,17 +68,17 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_get_columns()
     {
-        if (Schema::hasTable('foo')) {
-            Schema::drop('foo');
+        if (Schema::hasTable('users')) {
+            Schema::drop('users');
         }
 
-        Schema::create('foo', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('bar')->nullable();
             $table->string('baz')->default('test');
         });
 
-        $columns = Schema::getColumns('foo');
+        $columns = Schema::getColumns('users');
 
         $this->assertArrayHasKey('auto_increment', $columns[0]);
         $this->assertCount(3, $columns);
@@ -186,8 +188,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_get_foreign_keys()
     {
-        if (Schema::hasTable('foo')) {
-            Schema::drop('foo');
+        if (Schema::hasTable('bar')) {
+            Schema::drop('bar');
         }
 
         if (Schema::hasTable('orders')) {
@@ -198,20 +200,20 @@ class SchemaTest extends TestCase
             $table->id();
         });
 
-        Schema::create('foo', function (Blueprint $table) {
+        Schema::create('bar', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('foo_id');
-            $table->foreign('foo_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->bigInteger('bar_id');
+            $table->foreign('bar_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-        $foreignKeys = Schema::getForeignKeys('foo');
+        $foreignKeys = Schema::getForeignKeys('bar');
 
         $this->assertCount(1, $foreignKeys);
         $this->assertTrue(collect($foreignKeys)->contains(
             fn ($key) => $key['foreign_schema'] === Schema::getConnection()->getConfig('username')
                 && $key['foreign_table'] === 'orders'
                 && in_array('id', $key['foreign_columns'])
-                && in_array('foo_id', $key['columns'])
+                && in_array('bar_id', $key['columns'])
         ));
     }
 
