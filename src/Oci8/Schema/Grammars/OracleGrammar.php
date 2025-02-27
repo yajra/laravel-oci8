@@ -192,7 +192,11 @@ class OracleGrammar extends Grammar
      */
     public function compileTableExists($schema, $table)
     {
-        return 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
+        return sprintf(
+            'select * from all_tables where upper(owner) = upper(%s) and upper(table_name) = upper(%s)',
+            $this->quoteString($schema),
+            $this->quoteString($table)
+        );
     }
 
     /**

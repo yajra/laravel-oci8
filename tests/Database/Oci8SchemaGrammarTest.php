@@ -22,9 +22,9 @@ class Oci8SchemaGrammarTest extends TestCase
         $conn = $this->getConnection();
 
         $blueprint = new Blueprint($conn, 'users');
-        $blueprint->create();
         $blueprint->increments('id');
         $blueprint->string('email');
+        $blueprint->create();
 
         $statements = $blueprint->toSql();
 
@@ -420,7 +420,7 @@ class Oci8SchemaGrammarTest extends TestCase
     public function testCompileTableExistsMethod()
     {
         $grammar = $this->getGrammar();
-        $expected = 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
+        $expected = "select * from all_tables where upper(owner) = upper('schema') and upper(table_name) = upper('test_table')";
         $sql = $grammar->compileTableExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
     }

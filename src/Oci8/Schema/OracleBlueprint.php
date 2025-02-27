@@ -39,7 +39,9 @@ class OracleBlueprint extends Blueprint
     public function __construct(Connection $connection, $table, ?Closure $callback = null)
     {
         parent::__construct($connection, $table, $callback);
-        $this->prefix = $connection->getTablePrefix();
+
+        $this->setTablePrefix($this->connection->getTablePrefix());
+        $this->setMaxLength($this->grammar->getMaxLength());
     }
 
     /**

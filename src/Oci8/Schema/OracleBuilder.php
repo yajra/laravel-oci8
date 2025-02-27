@@ -59,11 +59,7 @@ class OracleBuilder extends Builder
      */
     protected function createBlueprint($table, Closure $callback = null)
     {
-        $blueprint = new OracleBlueprint($table, $callback);
-        $blueprint->setTablePrefix($this->connection->getTablePrefix());
-        $blueprint->setMaxLength($this->grammar->getMaxLength());
-
-        return $blueprint;
+        return new OracleBlueprint($this->connection, $table, $callback);
     }
 
     /**
@@ -132,17 +128,33 @@ class OracleBuilder extends Builder
      */
     public function hasTable($table)
     {
-        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
-        $grammar = $this->grammar;
-        $sql = $grammar->compileTableExists();
+        [$schema, $table] = $this->parseSchemaAndTable($table);
 
-        $database = $this->connection->getConfig('username');
-        if ($this->connection->getConfig('prefix_schema')) {
-            $database = $this->connection->getConfig('prefix_schema');
-        }
         $table = $this->connection->getTablePrefix().$table;
 
-        return count($this->connection->select($sql, [$database, $table])) > 0;
+        if ($sql = $this->grammar->compileTableExists($schema, $table)) {
+            return (bool) $this->connection->scalar($sql);
+        }
+
+        foreach ($this->getTables($schema ?? $this->getCurrentSchemaName()) as $value) {
+            if (strtolower($table) === strtolower($value['name'])) {
+                return true;
+            }
+        }
+
+        return false;
+
+//        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
+//        $grammar = $this->grammar;
+//        $sql = $grammar->compileTableExists();
+//
+//        $database = $this->connection->getConfig('username');
+//        if ($this->connection->getConfig('prefix_schema')) {
+//            $database = $this->connection->getConfig('prefix_schema');
+//        }
+//        $table = $this->connection->getTablePrefix().$table;
+//
+//        return count($this->connection->select($sql, [$database, $table])) > 0;
     }
 
     /**

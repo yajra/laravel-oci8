@@ -19,6 +19,11 @@ use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class Oci8QueryBuilderTest extends TestCase
 {
+    public function tearDown(): void
+    {
+        m::close();
+    }
+
     public function testBasicSelect()
     {
         $builder = $this->getBuilder();
@@ -2709,9 +2714,13 @@ class Oci8QueryBuilderTest extends TestCase
         $chunk1 = collect(['foo1', 'foo2']);
         $chunk2 = collect(['foo3', 'foo4']);
         $chunk3 = collect([]);
-        $builder->shouldReceive('forPage')->once()->with(1, 2)->andReturnSelf();
-        $builder->shouldReceive('forPage')->once()->with(2, 2)->andReturnSelf();
-        $builder->shouldReceive('forPage')->once()->with(3, 2)->andReturnSelf();
+
+        $builder->shouldReceive('getOffset')->once()->andReturnNull();
+        $builder->shouldReceive('getLimit')->once()->andReturnNull();
+        $builder->shouldReceive('offset')->once()->with(0)->andReturnSelf();
+        $builder->shouldReceive('offset')->once()->with(2)->andReturnSelf();
+        $builder->shouldReceive('offset')->once()->with(4)->andReturnSelf();
+        $builder->shouldReceive('limit')->times(3)->with(2)->andReturnSelf();
         $builder->shouldReceive('get')->times(3)->andReturn($chunk1, $chunk2, $chunk3);
 
         $callbackAssertor = m::mock(stdClass::class);
@@ -2731,8 +2740,12 @@ class Oci8QueryBuilderTest extends TestCase
 
         $chunk1 = collect(['foo1', 'foo2']);
         $chunk2 = collect(['foo3']);
-        $builder->shouldReceive('forPage')->once()->with(1, 2)->andReturnSelf();
-        $builder->shouldReceive('forPage')->once()->with(2, 2)->andReturnSelf();
+
+        $builder->shouldReceive('getOffset')->once()->andReturnNull();
+        $builder->shouldReceive('getLimit')->once()->andReturnNull();
+        $builder->shouldReceive('offset')->once()->with(0)->andReturnSelf();
+        $builder->shouldReceive('offset')->once()->with(2)->andReturnSelf();
+        $builder->shouldReceive('limit')->twice()->with(2)->andReturnSelf();
         $builder->shouldReceive('get')->times(2)->andReturn($chunk1, $chunk2);
 
         $callbackAssertor = m::mock(stdClass::class);
@@ -2751,8 +2764,10 @@ class Oci8QueryBuilderTest extends TestCase
 
         $chunk1 = collect(['foo1', 'foo2']);
         $chunk2 = collect(['foo3']);
-        $builder->shouldReceive('forPage')->once()->with(1, 2)->andReturnSelf();
-        $builder->shouldReceive('forPage')->never()->with(2, 2);
+        $builder->shouldReceive('getOffset')->once()->andReturnNull();
+        $builder->shouldReceive('getLimit')->once()->andReturnNull();
+        $builder->shouldReceive('offset')->once()->with(0)->andReturnSelf();
+        $builder->shouldReceive('limit')->once()->with(2)->andReturnSelf();
         $builder->shouldReceive('get')->times(1)->andReturn($chunk1);
 
         $callbackAssertor = m::mock(stdClass::class);
@@ -2771,16 +2786,38 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk = collect([]);
-        $builder->shouldReceive('forPage')->once()->with(1, 0)->andReturnSelf();
-        $builder->shouldReceive('get')->times(1)->andReturn($chunk);
+        $builder->shouldReceive('getOffset')->once()->andReturnNull();
+        $builder->shouldReceive('getLimit')->once()->andReturnNull();
+        $builder->shouldReceive('offset')->never();
+        $builder->shouldReceive('limit')->never();
+        $builder->shouldReceive('get')->never();
+
+        $builder->chunk(0, function () {
+            $this->fail('Should never be called.');
+        });
+    }
+
+    public function testChunkByIdOnArrays()
+    {
+        $builder = $this->getMockQueryBuilder();
+        $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
+
+        $chunk1 = collect([['someIdField' => 1], ['someIdField' => 2]]);
+        $chunk2 = collect([['someIdField' => 10], ['someIdField' => 11]]);
+        $chunk3 = collect([]);
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 2, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('forPageAfterId')->once()->with(2, 11, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('get')->times(3)->andReturn($chunk1, $chunk2, $chunk3);
 
         $callbackAssertor = m::mock(stdClass::class);
-        $callbackAssertor->shouldReceive('doSomething')->never();
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk1);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk2);
+        $callbackAssertor->shouldReceive('doSomething')->never()->with($chunk3);
 
-        $builder->chunk(0, function ($results) use ($callbackAssertor) {
+        $builder->chunkById(2, function ($results) use ($callbackAssertor) {
             $callbackAssertor->doSomething($results);
-        });
+        }, 'someIdField');
     }
 
     public function testChunkPaginatesUsingIdWithLastChunkComplete()
@@ -2831,15 +2868,11 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
 
-        $chunk = collect([]);
-        $builder->shouldReceive('forPageAfterId')->once()->with(0, 0, 'someIdField')->andReturnSelf();
-        $builder->shouldReceive('get')->times(1)->andReturn($chunk);
+        $builder->shouldReceive('forPageAfterId')->never();
+        $builder->shouldReceive('get')->never();
 
-        $callbackAssertor = m::mock(stdClass::class);
-        $callbackAssertor->shouldReceive('doSomething')->never();
-
-        $builder->chunkById(0, function ($results) use ($callbackAssertor) {
-            $callbackAssertor->doSomething($results);
+        $builder->chunkById(0, function () {
+            $this->fail('Should never be called.');
         }, 'someIdField');
     }
 
@@ -2861,6 +2894,26 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->chunkById(2, function ($results) use ($callbackAssertor) {
             $callbackAssertor->doSomething($results);
         }, 'table.id', 'table_id');
+    }
+
+    public function testChunkPaginatesUsingIdDesc()
+    {
+        $builder = $this->getMockQueryBuilder();
+        $builder->orders[] = ['column' => 'foobar', 'direction' => 'desc'];
+
+        $chunk1 = collect([(object) ['someIdField' => 10], (object) ['someIdField' => 1]]);
+        $chunk2 = collect([]);
+        $builder->shouldReceive('forPageBeforeId')->once()->with(2, 0, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('forPageBeforeId')->once()->with(2, 1, 'someIdField')->andReturnSelf();
+        $builder->shouldReceive('get')->times(2)->andReturn($chunk1, $chunk2);
+
+        $callbackAssertor = m::mock(stdClass::class);
+        $callbackAssertor->shouldReceive('doSomething')->once()->with($chunk1);
+        $callbackAssertor->shouldReceive('doSomething')->never()->with($chunk2);
+
+        $builder->chunkByIdDesc(2, function ($results) use ($callbackAssertor) {
+            $callbackAssertor->doSomething($results);
+        }, 'someIdField');
     }
 
     public function testPaginate()
@@ -3183,13 +3236,13 @@ class Oci8QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return m\MockInterface
+     * @return \Mockery\MockInterface|\Illuminate\Database\Query\Builder
      */
-    protected function getMockQueryBuilder($prefix = '')
+    protected function getMockQueryBuilder()
     {
         return m::mock(Builder::class, [
-            m::mock(ConnectionInterface::class),
-            $this->getGrammar($prefix),
+            $connection = $this->getConnection(),
+            new OracleGrammar($connection),
             m::mock(OracleProcessor::class),
         ])->makePartial();
     }
