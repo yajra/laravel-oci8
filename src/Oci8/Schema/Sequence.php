@@ -27,13 +27,13 @@ class Sequence
 
         $sql = "create sequence {$name} minvalue {$min} {$max} start with {$start} increment by {$increment} {$nocache}";
 
-        return $this->connection->statement($sql);
+        return $this->connection->statement(trim($sql));
     }
 
     public function wrapSchema(string $name): string
     {
-        if ($this->connection->getConfig('prefix_schema')) {
-            return $this->connection->getConfig('prefix_schema').'.'.$name;
+        if ($this->connection->getSchemaPrefix()) {
+            return $this->connection->getSchemaPrefix().'.'.$name;
         }
 
         return $name;
@@ -42,7 +42,7 @@ class Sequence
     public function drop(string $name): bool
     {
         if (! $this->exists($name)) {
-            return false;
+            return true;
         }
 
         $name = $this->wrapSchema($name);
@@ -65,6 +65,10 @@ class Sequence
 
         if (str_contains($name, '.')) {
             [$owner, $name] = explode('.', $name);
+        }
+
+        if ($this->connection->getSchemaPrefix()) {
+            $owner = $this->connection->getSchemaPrefix();
         }
 
         return (bool) $this->connection->scalar(
@@ -97,5 +101,12 @@ class Sequence
         } catch (QueryException $e) {
             return 0;
         }
+    }
+
+    public function forceCreate(string $name): bool
+    {
+        $this->drop($name);
+
+        return $this->create($name);
     }
 }

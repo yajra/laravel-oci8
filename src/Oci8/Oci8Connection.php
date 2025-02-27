@@ -28,6 +28,8 @@ class Oci8Connection extends Connection
 
     protected int $maxLength = 30;
 
+    protected string $schemaPrefix = '';
+
     /**
      * @param  PDO|\Closure  $pdo
      * @param  string  $database
@@ -41,7 +43,8 @@ class Oci8Connection extends Connection
         $this->sequence = new Sequence($this);
         $this->trigger = new Trigger($this);
         $this->schema = $config['username'] ?? '';
-        $this->maxLength = intval($this->config['max_name_len'] ?? 30);
+        $this->maxLength = intval($config['max_name_len'] ?? 30);
+        $this->schemaPrefix = $config['prefix_schema'] ?? '';
     }
 
     /**
@@ -253,15 +256,25 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Get config schema prefix.
+     * Get the schema prefix.
      */
     public function getSchemaPrefix(): string
     {
-        return $this->config['prefix_schema'] ?? '';
+        return $this->schemaPrefix;
     }
 
     /**
-     * Get config max object name length.
+     * Set the schema prefix.
+     */
+    public function setSchemaPrefix(string $prefix): static
+    {
+        $this->schemaPrefix = $prefix;
+
+        return $this;
+    }
+
+    /**
+     * Get the max object name length.
      */
     public function getMaxLength(): int
     {
@@ -269,7 +282,7 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Set database object max length name settings.
+     * Set the object max length name settings.
      */
     public function setMaxLength(int $maxLength = 30): static
     {

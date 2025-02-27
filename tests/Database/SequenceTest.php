@@ -22,20 +22,21 @@ class SequenceTest extends TestCase
         $sequence = new Sequence($connection);
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('statement')->andReturn(true);
+        $connection->shouldReceive('getSchemaPrefix')->andReturn('');
 
         $success = $sequence->create('users_id_seq');
-        $this->assertEquals(true, $success);
+        $this->assertTrue($success);
     }
 
     #[Test]
     public function it_can_wrap_sequence_name_with_schema_prefix()
     {
         $connection = $this->getConnection();
-        $connection->shouldReceive('getConfig')->andReturn('schema_prefix');
+        $connection->shouldReceive('getSchemaPrefix')->andReturn('schema_prefix');
 
         $sequence = new Sequence($connection);
         $name = $sequence->wrapSchema('users_id_seq');
-        $this->assertEquals($name, 'schema_prefix.users_id_seq');
+        $this->assertSame($name, 'schema_prefix.users_id_seq');
     }
 
     protected function getConnection()
@@ -50,6 +51,6 @@ class SequenceTest extends TestCase
         $sequence->shouldReceive('drop')->andReturn(true);
         $sequence->shouldReceive('exists')->andReturn(false);
         $success = $sequence->drop('users_id_seq');
-        $this->assertEquals(true, $success);
+        $this->assertTrue($success);
     }
 }

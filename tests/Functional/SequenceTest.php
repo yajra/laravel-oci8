@@ -66,4 +66,35 @@ class SequenceTest extends TestCase
 
         $sequence->drop('demo.transaction_seq');
     }
+
+    #[Test]
+    public function it_can_use_schema_prefix()
+    {
+        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        $connection = $this->getConnection();
+        try {
+            $connection->statement('alter session set "_oracle_script"=true');
+            $connection->statement('grant all privileges to demo identified by oracle container=ALL');
+        } catch (\Exception $e) {
+            $connection->statement('grant all privileges to demo identified by oracle');
+        }
+
+        $connection->setSchemaPrefix('demo');
+        $connection->enableQueryLog();
+
+        $sequence = $connection->getSequence();
+        $sequence->forceCreate('transaction_seq');
+
+        $lastSql = array_slice($connection->getQueryLog(), -1)[0];
+
+        $this->assertSame(
+            'create sequence demo.transaction_seq minvalue 1  start with 1 increment by 1',
+            $lastSql['query']
+        );
+        $this->assertTrue($sequence->exists('transaction_seq'));
+        $this->assertSame(0, $sequence->currentValue('transaction_seq'));
+        $this->assertSame(1, $sequence->nextValue('transaction_seq'));
+
+        $sequence->drop('transaction_seq');
+    }
 }
