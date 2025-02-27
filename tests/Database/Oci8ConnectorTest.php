@@ -16,6 +16,9 @@ class Oci8ConnectorTest extends TestCase
         m::close();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testCreateConnection()
     {
         $connector = new OracleConnectorStub;
@@ -38,8 +41,10 @@ class Oci8ConnectorTest extends TestCase
     {
         $connector = new Connector;
         $connector->setDefaultOptions([0 => 'foo', 1 => 'bar']);
-        $this->assertEquals([0 => 'baz', 1 => 'bar', 2 => 'boom'],
-            $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']]));
+        $this->assertEquals(
+            [0 => 'baz', 1 => 'bar', 2 => 'boom'],
+            $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']])
+        );
     }
 
     #[DataProvider('tnsDataProvider')]
@@ -235,15 +240,15 @@ class Oci8ConnectorTest extends TestCase
 
 class OracleConnectorStub extends OracleConnector
 {
-    public function createConnection($dsn, array $config, array $options)
+    protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options): Oci8
     {
-        return new Oci8Stub($dsn, $config['username'], $config['password'], $config['options']);
+        return new Oci8Stub($dsn, $username, $password, $options);
     }
 }
 
 class Oci8Stub extends Oci8
 {
-    public function __construct($dsn, $username, $password, array $options = [])
+    public function __construct(string $dsn, ?string $username, ?string $password, ?array $options = [])
     {
         return true;
     }

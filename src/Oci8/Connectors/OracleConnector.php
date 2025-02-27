@@ -27,8 +27,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      *
      * @param  array  $config
      * @return PDO
+     * @throws \Exception
      */
-    public function connect(array $config)
+    public function connect(array $config): PDO
     {
         $tns = ! empty($config['tns']) ? $config['tns'] : $this->getDsn($config);
 
@@ -40,9 +41,7 @@ class OracleConnector extends Connector implements ConnectorInterface
             $config['password'] = null;
         }
 
-        $connection = $this->createConnection($tns, $config, $options);
-
-        return $connection;
+        return $this->createConnection($tns, $config, $options);
     }
 
     /**
@@ -104,9 +103,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  array  $config
      * @return array
      */
-    private function setPort(array $config)
+    private function setPort(array $config): array
     {
-        $config['port'] = isset($config['port']) ? $config['port'] : '1521';
+        $config['port'] = $config['port'] ?? '1521';
 
         return $config;
     }
@@ -117,9 +116,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  array  $config
      * @return array
      */
-    private function setProtocol(array $config)
+    private function setProtocol(array $config): array
     {
-        $config['protocol'] = isset($config['protocol']) ? $config['protocol'] : 'TCP';
+        $config['protocol'] = $config['protocol'] ?? 'TCP';
 
         return $config;
     }
@@ -130,7 +129,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  array  $config
      * @return array
      */
-    protected function setServiceId(array $config)
+    protected function setServiceId(array $config): array
     {
         $config['service'] = empty($config['service_name'])
             ? $service_param = 'SID = '.$config['database']
@@ -145,7 +144,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  array  $config
      * @return array
      */
-    protected function setTNS(array $config)
+    protected function setTNS(array $config): array
     {
         $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
 
@@ -158,7 +157,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  array  $config
      * @return array
      */
-    protected function setCharset(array $config)
+    protected function setCharset(array $config): array
     {
         if (! isset($config['charset'])) {
             $config['charset'] = 'AL32UTF8';
@@ -173,7 +172,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  array  $config
      * @return array
      */
-    protected function checkMultipleHostDsn(array $config)
+    protected function checkMultipleHostDsn(array $config): array
     {
         $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
 
@@ -200,11 +199,11 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  string  $dsn
      * @param  array  $config
      * @param  array  $options
-     * @return PDO
+     * @return PDO|Oci8
      *
      * @throws \Exception
      */
-    public function createConnection($dsn, array $config, array $options)
+    public function createConnection($dsn, array $config, array $options): PDO|Oci8
     {
         // add fallback in case driver is not set, will use pdo instead
         if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
@@ -224,9 +223,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  string  $username
      * @param  string  $password
      * @param  array  $options
-     * @return \PDO
+     * @return Oci8
      */
-    protected function createPdoConnection($dsn, $username, $password, $options)
+    protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options): Oci8
     {
         return new Oci8($dsn, $username, $password, $options);
     }
