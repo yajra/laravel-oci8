@@ -202,7 +202,7 @@ class OracleBuilder extends Builder
      * @param  string  $reference
      * @return array
      */
-    protected function parseSchemaAndTable($reference)
+    public function parseSchemaAndTable($reference, $withDefaultSchema = null)
     {
         $parts = explode('.', $reference);
 
