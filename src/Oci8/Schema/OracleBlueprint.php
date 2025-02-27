@@ -2,6 +2,8 @@
 
 namespace Yajra\Oci8\Schema;
 
+use Closure;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 
 class OracleBlueprint extends Blueprint
@@ -33,6 +35,12 @@ class OracleBlueprint extends Blueprint
      * @var int
      */
     protected $maxLength = 30;
+
+    public function __construct(Connection $connection, $table, ?Closure $callback = null)
+    {
+        parent::__construct($connection, $table, $callback);
+        $this->prefix = $connection->getTablePrefix();
+    }
 
     /**
      * Set table prefix settings.
