@@ -41,7 +41,12 @@ class SequenceTest extends TestCase
         /** @var \Yajra\Oci8\Oci8Connection $connection */
         $connection = $this->getConnection();
 
-        $connection->statement('alter session set "_oracle_script"=true');
+        try {
+            $connection->statement('alter session set "_oracle_script"=true');
+        } catch (\Exception $e) {
+            // ignore
+        }
+
         $connection->statement('grant all privileges to demo identified by oracle container=ALL');
 
         $sequence = $connection->getSequence();
