@@ -5,63 +5,35 @@ namespace Yajra\Oci8\Schema;
 use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ColumnDefinition;
+use Yajra\Oci8\Oci8Connection;
 
+/**
+ * @property Oci8Connection $connection
+ */
 class OracleBlueprint extends Blueprint
 {
     /**
      * Table comment.
-     *
-     * @var string
      */
-    public $comment = null;
+    public ?string $comment = null;
 
     /**
      * Column comments.
-     *
-     * @var array
      */
-    public $commentColumns = [];
-
-    /**
-     * Database prefix variable.
-     *
-     * @var string
-     */
-    protected $prefix;
-
-    /**
-     * Database object max length variable.
-     *
-     * @var int
-     */
-    protected $maxLength = 30;
+    public array $commentColumns = [];
 
     public function __construct(Connection $connection, $table, ?Closure $callback = null)
     {
         parent::__construct($connection, $table, $callback);
-
-        $this->setTablePrefix($this->connection->getTablePrefix());
-        $this->setMaxLength($this->grammar->getMaxLength());
-    }
-
-    /**
-     * Set table prefix settings.
-     *
-     * @param  string  $prefix
-     */
-    public function setTablePrefix($prefix = '')
-    {
-        $this->prefix = $prefix;
     }
 
     /**
      * Set database object max length name settings.
-     *
-     * @param  int  $maxLength
      */
-    public function setMaxLength($maxLength = 30)
+    public function setMaxLength(int $maxLength = 30): void
     {
-        $this->maxLength = $maxLength;
+        $this->connection->setMaxLength($maxLength);
     }
 
     /**
@@ -71,7 +43,7 @@ class OracleBlueprint extends Blueprint
      * @param  array  $columns
      * @return string
      */
-    protected function createIndexName($type, array $columns)
+    protected function createIndexName($type, array $columns): string
     {
         // if we are creating a compound/composite index with more than 2 columns, do not use the standard naming scheme
         if (count($columns) <= 2) {
@@ -81,12 +53,12 @@ class OracleBlueprint extends Blueprint
                 'unique' => 'uk',
             ];
 
-            $type = isset($short_type[$type]) ? $short_type[$type] : $type;
+            $type = $short_type[$type] ?? $type;
 
-            $index = strtolower($this->prefix.$this->table.'_'.implode('_', $columns).'_'.$type);
+            $index = strtolower($this->connection->getTablePrefix().$this->table.'_'.implode('_', $columns).'_'.$type);
 
             $index = str_replace(['-', '.', ' '], '_', $index);
-            while (strlen($index) > $this->maxLength) {
+            while (strlen($index) > $this->connection->getMaxLength()) {
                 $parts = explode('_', $index);
 
                 for ($i = 0; $i < count($parts); $i++) {
@@ -108,12 +80,8 @@ class OracleBlueprint extends Blueprint
 
     /**
      * Create a new nvarchar2 column on the table.
-     *
-     * @param  string  $column
-     * @param  int  $length
-     * @return \Illuminate\Support\Fluent
      */
-    public function nvarchar2($column, $length = 255)
+    public function nvarchar2(string $column, int $length = 255): ColumnDefinition
     {
         return $this->addColumn('nvarchar2', $column, compact('length'));
     }
@@ -123,9 +91,8 @@ class OracleBlueprint extends Blueprint
      *
      * @param  string  $column
      * @param  int  $precision
-     * @return \Illuminate\Database\Schema\ColumnDefinition
      */
-    public function float($column, $precision = 126)
+    public function float($column, $precision = 126): ColumnDefinition
     {
         return parent::float($column, $precision);
     }

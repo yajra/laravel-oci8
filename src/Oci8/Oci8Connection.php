@@ -26,6 +26,8 @@ class Oci8Connection extends Connection
 
     protected Trigger $trigger;
 
+    protected int $maxLength = 30;
+
     /**
      * @param  PDO|\Closure  $pdo
      * @param  string  $database
@@ -39,6 +41,7 @@ class Oci8Connection extends Connection
         $this->sequence = new Sequence($this);
         $this->trigger = new Trigger($this);
         $this->schema = $config['username'] ?? '';
+        $this->maxLength = intval($this->config['max_name_len'] ?? 30);
     }
 
     /**
@@ -262,9 +265,18 @@ class Oci8Connection extends Connection
      */
     public function getMaxLength(): int
     {
-        return intval($this->config['max_name_len'] ?? 30);
+        return $this->maxLength;
     }
 
+    /**
+     * Set database object max length name settings.
+     */
+    public function setMaxLength(int $maxLength = 30): static
+    {
+        $this->maxLength = $maxLength;
+
+        return $this;
+    }
     /**
      * Get the default schema grammar instance.
      */
