@@ -46,11 +46,8 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Create a DSN string from a configuration.
-     *
-     * @param  array  $config
-     * @return string
      */
-    protected function getDsn(array $config)
+    protected function getDsn(array $config): string
     {
         if (! empty($config['tns'])) {
             return $config['tns'];
@@ -68,40 +65,30 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Parse configurations.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function parseConfig(array $config)
+    protected function parseConfig(array $config): array
     {
         $config = $this->setHost($config);
         $config = $this->setPort($config);
         $config = $this->setProtocol($config);
         $config = $this->setServiceId($config);
         $config = $this->setTNS($config);
-        $config = $this->setCharset($config);
 
-        return $config;
+        return $this->setCharset($config);
     }
 
     /**
      * Set host from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function setHost(array $config)
+    protected function setHost(array $config): array
     {
-        $config['host'] = isset($config['host']) ? $config['host'] : $config['hostname'];
+        $config['host'] = $config['host'] ?? $config['hostname'];
 
         return $config;
     }
 
     /**
      * Set port from config.
-     *
-     * @param  array  $config
-     * @return array
      */
     private function setPort(array $config): array
     {
@@ -112,9 +99,6 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Set protocol from config.
-     *
-     * @param  array  $config
-     * @return array
      */
     private function setProtocol(array $config): array
     {
@@ -125,24 +109,18 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Set service id from config.
-     *
-     * @param  array  $config
-     * @return array
      */
     protected function setServiceId(array $config): array
     {
         $config['service'] = empty($config['service_name'])
-            ? $service_param = 'SID = '.$config['database']
-            : $service_param = 'SERVICE_NAME = '.$config['service_name'];
+            ? 'SID = '.$config['database']
+            : 'SERVICE_NAME = '.$config['service_name'];
 
         return $config;
     }
 
     /**
      * Set tns from config.
-     *
-     * @param  array  $config
-     * @return array
      */
     protected function setTNS(array $config): array
     {
@@ -153,9 +131,6 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Set charset from config.
-     *
-     * @param  array  $config
-     * @return array
      */
     protected function setCharset(array $config): array
     {
@@ -168,9 +143,6 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Set DSN host from config.
-     *
-     * @param  array  $config
-     * @return array
      */
     protected function checkMultipleHostDsn(array $config): array
     {
