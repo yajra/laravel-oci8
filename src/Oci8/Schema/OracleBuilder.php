@@ -121,43 +121,6 @@ class OracleBuilder extends Builder
     }
 
     /**
-     * Determine if the given table exists.
-     *
-     * @param  string  $table
-     * @return bool
-     */
-    public function hasTable($table)
-    {
-        [$schema, $table] = $this->parseSchemaAndTable($table);
-
-        $table = $this->connection->getTablePrefix().$table;
-
-        if ($sql = $this->grammar->compileTableExists($schema, $table)) {
-            return (bool) $this->connection->scalar($sql);
-        }
-
-        foreach ($this->getTables($schema ?? $this->getCurrentSchemaName()) as $value) {
-            if (strtolower($table) === strtolower($value['name'])) {
-                return true;
-            }
-        }
-
-        return false;
-
-//        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
-//        $grammar = $this->grammar;
-//        $sql = $grammar->compileTableExists();
-//
-//        $database = $this->connection->getConfig('username');
-//        if ($this->connection->getConfig('prefix_schema')) {
-//            $database = $this->connection->getConfig('prefix_schema');
-//        }
-//        $table = $this->connection->getTablePrefix().$table;
-//
-//        return count($this->connection->select($sql, [$database, $table])) > 0;
-    }
-
-    /**
      * Get the column listing for a given table.
      *
      * @param  string  $table
@@ -188,23 +151,6 @@ class OracleBuilder extends Builder
 
         return $this->connection->getPostProcessor()->processColumns(
             $this->connection->selectFromWriteConnection($this->grammar->compileColumns($schema, $table))
-        );
-    }
-
-    /**
-     * Get the foreign keys for a given table.
-     *
-     * @param  string  $table
-     * @return array
-     */
-    public function getForeignKeys($table)
-    {
-        [$schema, $table] = $this->parseSchemaAndTable($table);
-
-        $table = $this->connection->getTablePrefix().$table;
-
-        return $this->connection->getPostProcessor()->processForeignKeys(
-            $this->connection->selectFromWriteConnection($this->grammar->compileForeignKeys($schema, $table))
         );
     }
 

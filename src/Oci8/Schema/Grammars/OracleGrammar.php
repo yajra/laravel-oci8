@@ -193,7 +193,7 @@ class OracleGrammar extends Grammar
     public function compileTableExists($schema, $table)
     {
         return sprintf(
-            'select * from all_tables where upper(owner) = upper(%s) and upper(table_name) = upper(%s)',
+            'select count(*) from all_tables where upper(owner) = upper(%s) and upper(table_name) = upper(%s)',
             $this->quoteString($schema),
             $this->quoteString($table)
         );
@@ -245,7 +245,7 @@ class OracleGrammar extends Grammar
 
     public function compileForeignKeys($schema, $table)
     {
-        return "
+        return sprintf("
             select
                 kc.constraint_name as name,
                 LISTAGG(kc.column_name, ',') WITHIN GROUP (ORDER BY kc.position) as columns,
@@ -257,12 +257,12 @@ class OracleGrammar extends Grammar
             from all_cons_columns kc
             inner join all_constraints rc ON kc.constraint_name = rc.constraint_name
             inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name
-            where kc.table_name = upper('{$table}')
-                and kc.owner = upper('{$schema}')
+            where kc.table_name = upper(%s)
+                and rc.r_owner = upper(%s)
                 and rc.constraint_type = 'R'
             group by
                 kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
-        ";
+        ", $this->quoteString($table), $this->quoteString($schema));
     }
 
     /**
@@ -403,11 +403,19 @@ class OracleGrammar extends Grammar
     public function compileDropIfExists(Blueprint $blueprint, Fluent $command)
     {
         $table = $this->wrapTable($blueprint);
-        $search = str_replace('"', '', $table);
+        $schema = $this->connection->getConfig('username');
+
+        if (str_contains($table, '.')) {
+            [$schema, $table] = explode('.', $table);
+        }
+
+        $tableName = str_replace('"', '', $table);
+        $schema = str_replace('"', '', $schema);
 
         return "declare c int;
             begin
-               select count(*) into c from user_tables where upper(table_name) = upper('$search');
+               select count(*) into c from user_tables
+               where upper(table_name) = upper('$tableName') and upper(tablespace_name) = upper('".$schema."');
                if c = 1 then
                   execute immediate 'drop table $table';
                end if;

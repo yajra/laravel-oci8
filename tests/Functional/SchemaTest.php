@@ -96,8 +96,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_get_columns_with_schema()
     {
-        if (Schema::hasTable('foo')) {
-            Schema::drop('foo');
+        if (Schema::hasTable('system.foo')) {
+            Schema::drop('system.foo');
         }
 
         Schema::create('system.foo', function (Blueprint $table) {
@@ -204,11 +204,11 @@ class SchemaTest extends TestCase
             $table->foreign('foo_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-        $foreignKeys = Schema::getForeignKeys('system.foo');
+        $foreignKeys = Schema::getForeignKeys('foo');
 
         $this->assertCount(1, $foreignKeys);
         $this->assertTrue(collect($foreignKeys)->contains(
-            fn ($key) => $key['foreign_schema'] === 'system'
+            fn ($key) => $key['foreign_schema'] === Schema::getConnection()->getConfig('username')
                 && $key['foreign_table'] === 'orders'
                 && in_array('id', $key['foreign_columns'])
                 && in_array('foo_id', $key['columns'])

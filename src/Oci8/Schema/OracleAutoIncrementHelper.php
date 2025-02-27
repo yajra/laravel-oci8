@@ -134,15 +134,22 @@ class OracleAutoIncrementHelper
             return '';
         }
 
+        $owner = $this->connection->getConfig('username');
+        if (str_contains($table, '.'))  {
+            [$owner, $table] = explode('.', $table);
+        }
+
         $sql = "SELECT cols.column_name
             FROM all_constraints cons, all_cons_columns cols
             WHERE upper(cols.table_name) = upper('{$table}')
+                AND upper(cons.owner) = upper('{$owner}')
                 AND cons.constraint_type = 'P'
                 AND cons.constraint_name = cols.constraint_name
                 AND cons.owner = cols.owner
                 AND cols.position = 1
                 AND cons.owner = (select user from dual)
             ORDER BY cols.table_name, cols.position";
+
         $data = $this->connection->selectOne($sql);
 
         if ($data) {

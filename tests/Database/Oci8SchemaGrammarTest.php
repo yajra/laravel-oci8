@@ -420,7 +420,7 @@ class Oci8SchemaGrammarTest extends TestCase
     public function testCompileTableExistsMethod()
     {
         $grammar = $this->getGrammar();
-        $expected = "select * from all_tables where upper(owner) = upper('schema') and upper(table_name) = upper('test_table')";
+        $expected = "select count(*) from all_tables where upper(owner) = upper('schema') and upper(table_name) = upper('test_table')";
         $sql = $grammar->compileTableExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
     }
@@ -477,7 +477,7 @@ class Oci8SchemaGrammarTest extends TestCase
             inner join all_constraints rc ON kc.constraint_name = rc.constraint_name
             inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name
             where kc.table_name = upper(\'test_table\')
-                and kc.owner = upper(\'schema\')
+                and rc.r_owner = upper(\'schema\')
                 and rc.constraint_type = \'R\'
             group by
                 kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
@@ -490,17 +490,18 @@ class Oci8SchemaGrammarTest extends TestCase
     public function testDropTableIfExists()
     {
         $conn = $this->getConnection();
+        $conn->shouldReceive('getConfig')->with('username')->andReturn('system');
+
         $blueprint = new Blueprint($conn,'users');
         $blueprint->dropIfExists();
 
-        $grammar = $this->getGrammar();
-
-        $statements = $blueprint->toSql($this->getConnection(), $grammar);
+        $statements = $blueprint->toSql();
 
         $this->assertEquals(1, count($statements));
         $this->assertEquals("declare c int;
             begin
-               select count(*) into c from user_tables where upper(table_name) = upper('USERS');
+               select count(*) into c from user_tables
+               where upper(table_name) = upper('USERS') and upper(tablespace_name) = upper('system');
                if c = 1 then
                   execute immediate 'drop table \"USERS\"';
                end if;
