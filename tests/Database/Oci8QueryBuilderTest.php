@@ -3220,7 +3220,9 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('getDatabaseName')->andReturn('database');
         $connection->shouldReceive('getTablePrefix')->andReturn($prefix);
         $connection->shouldReceive('getSchemaPrefix')->andReturn($prefix);
+        $connection->shouldReceive('setSchemaPrefix');
         $connection->shouldReceive('getMaxLength')->andReturn(30);
+        $connection->shouldReceive('setMaxLength');
         $connection->shouldReceive('getConfig')->andReturn([]);
 
         return $connection;

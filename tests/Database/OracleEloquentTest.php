@@ -50,7 +50,9 @@ class OracleEloquentTest extends TestCase
 
             $oci8Connection = m::mock(Oci8Connection::class);
             $oci8Connection->shouldReceive('getSchemaPrefix')->andReturn('');
+            $oci8Connection->shouldReceive('setSchemaPrefix');
             $oci8Connection->shouldReceive('getMaxLength')->andReturn(30);
+            $oci8Connection->shouldReceive('setMaxLength');
 
             $grammar = new $grammarClass($oci8Connection);
             $processor = new $processorClass;
