@@ -35,26 +35,28 @@ class OracleEloquent extends Model
     /**
      * Get next value of the model sequence.
      *
-     * @param  null|string  $sequence
+     * @param  string|null  $sequence
      * @return int
      */
-    public static function nextValue($sequence = null)
+    public static function nextValue(?string $sequence = null): int
     {
         $instance = new static;
+        $connection = $instance->getConnection();
+
+        if (! $connection instanceof Oci8Connection) {
+            return 0;
+        }
 
         $sequence = $sequence ?? $instance->getSequenceName();
 
-        return $instance->getConnection()
-                        ->getSequence()
-                        ->nextValue($sequence);
+
+        return $connection->getSequence()->nextValue($sequence);
     }
 
     /**
-     * Get model's sequence name.
-     *
-     * @return string
+     * Get model's auto-generated sequence name.
      */
-    public function getSequenceName()
+    public function getSequenceName(): string
     {
         if ($this->sequence) {
             return $this->sequence;
@@ -64,12 +66,9 @@ class OracleEloquent extends Model
     }
 
     /**
-     * Set sequence name.
-     *
-     * @param  string  $name
-     * @return $this
+     * Set the model's sequence name.
      */
-    public function setSequenceName($name)
+    public function setSequenceName(string $name): static
     {
         $this->sequence = $name;
 
@@ -83,7 +82,7 @@ class OracleEloquent extends Model
      * @param  array  $options
      * @return bool|int
      */
-    public function update(array $attributes = [], array $options = [])
+    public function update(array $attributes = [], array $options = []): bool|int
     {
         if (! $this->exists) {
             return false;
@@ -100,11 +99,8 @@ class OracleEloquent extends Model
 
     /**
      * Extract binary fields from given attributes.
-     *
-     * @param  array  $attributes
-     * @return array
      */
-    protected function extractBinaries(&$attributes)
+    protected function extractBinaries(array &$attributes): array
     {
         // If attributes contains binary field
         // extract binary fields to new array
@@ -123,11 +119,8 @@ class OracleEloquent extends Model
 
     /**
      * Check if attributes contains binary field.
-     *
-     * @param  array  $attributes
-     * @return bool
      */
-    protected function checkBinary(array $attributes)
+    protected function checkBinary(array $attributes): bool
     {
         foreach ($attributes as $key => $value) {
             // if attribute is in binary field list
@@ -141,15 +134,13 @@ class OracleEloquent extends Model
 
     /**
      * Get the table qualified key name.
-     *
-     * @return string
      */
-    public function getQualifiedKeyName()
+    public function getQualifiedKeyName(): string
     {
         $pos = strpos($this->getTable(), '@');
 
         if ($pos === false) {
-            return $this->getTable().'.'.$this->getKeyName();
+            return parent::getQualifiedKeyName();
         }
 
         $table = mb_substr($this->getTable(), 0, $pos);
@@ -160,10 +151,8 @@ class OracleEloquent extends Model
 
     /**
      * Get a new query builder instance for the connection.
-     *
-     * @return \Illuminate\Database\Query\Builder|\Yajra\Oci8\Query\OracleBuilder
      */
-    protected function newBaseQueryBuilder()
+    protected function newBaseQueryBuilder(): QueryBuilder|IlluminateQueryBuilder
     {
         $conn = $this->getConnection();
         $grammar = $conn->getQueryGrammar();
@@ -177,11 +166,8 @@ class OracleEloquent extends Model
 
     /**
      * Perform a model update operation.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return bool
      */
-    protected function performUpdate(Builder $query)
+    protected function performUpdate(Builder $query): bool
     {
         // If the updating event returns false, we will cancel the update operation so
         // developers can hook Validation systems into their models and cancel this
@@ -215,11 +201,8 @@ class OracleEloquent extends Model
 
     /**
      * Update model with binary (blob) fields.
-     *
-     * @param  Builder  $query
-     * @param  array  $dirty
      */
-    protected function updateBinary(Builder $query, $dirty)
+    protected function updateBinary(Builder $query, array $dirty): void
     {
         $builder = $this->setKeysForSaveQuery($query);
 
@@ -232,11 +215,8 @@ class OracleEloquent extends Model
 
     /**
      * Perform a model insert operation.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return bool
      */
-    protected function performInsert(Builder $query)
+    protected function performInsert(Builder $query): bool
     {
         if ($this->fireModelEvent('creating') === false) {
             return false;
@@ -290,11 +270,9 @@ class OracleEloquent extends Model
     /**
      * Insert the given attributes and set the ID on the model.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  array  $attributes
-     * @return int|void
      */
-    protected function insertAndSetId(Builder $query, $attributes)
+    protected function insertAndSetId(Builder $query, $attributes): void
     {
         $id = ($binaries = $this->extractBinaries($attributes)) ?
             $query->getQuery()->insertLob($attributes, $binaries, $keyName = $this->getKeyName()) :
