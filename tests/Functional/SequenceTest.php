@@ -43,11 +43,10 @@ class SequenceTest extends TestCase
 
         try {
             $connection->statement('alter session set "_oracle_script"=true');
+            $connection->statement('grant all privileges to demo identified by oracle container=ALL');
         } catch (\Exception $e) {
-            // ignore
+            $connection->statement('grant all privileges to demo identified by oracle');
         }
-
-        $connection->statement('grant all privileges to demo identified by oracle container=ALL');
 
         $sequence = $connection->getSequence();
 
