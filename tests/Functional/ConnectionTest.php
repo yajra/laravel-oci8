@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
@@ -20,6 +21,18 @@ class ConnectionTest extends TestCase
         $first = $connection->table('users')->first();
 
         $this->assertSame('Record-1', $first->name);
+    }
+
+    public function testSetDateFormat()
+    {
+        $connection = $this->getConnection();
+
+        $connection->setDateFormat('YYYY-MM-DD');
+
+        $date = $connection->select('select sysdate from dual');
+        $format = Carbon::now()->format('Y-m-d');
+
+        $this->assertSame($format, $date[0]->sysdate);
     }
 
     /**
