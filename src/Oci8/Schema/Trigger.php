@@ -15,10 +15,10 @@ class Trigger
 
     public function autoIncrement(string $table, string $column, string $triggerName, string $sequenceName): bool
     {
-        if ($this->connection->getConfig('prefix_schema')) {
-            $table = $this->connection->getConfig('prefix_schema').'.'.$table;
-            $triggerName = $this->connection->getConfig('prefix_schema').'.'.$triggerName;
-            $sequenceName = $this->connection->getConfig('prefix_schema').'.'.$sequenceName;
+        if ($this->connection->getSchemaPrefix()) {
+            $table = $this->connection->withSchemaPrefix($table);
+            $triggerName = $this->connection->withSchemaPrefix($sequenceName);
+            $sequenceName = $this->connection->withSchemaPrefix($sequenceName);
         }
 
         $grammar = $this->connection->getQueryGrammar();

@@ -19,7 +19,7 @@ class Sequence
         int $max = 0,
         int $increment = 1
     ): bool {
-        $name = $this->wrapSchema($name);
+        $name = $this->withSchemaPrefix($name);
 
         $nocache = $nocache ? 'nocache' : '';
 
@@ -30,13 +30,9 @@ class Sequence
         return $this->connection->statement(trim($sql));
     }
 
-    public function wrapSchema(string $name): string
+    public function withSchemaPrefix(string $name): string
     {
-        if ($this->connection->getSchemaPrefix()) {
-            return $this->connection->getSchemaPrefix().'.'.$name;
-        }
-
-        return $name;
+        return $this->connection->withSchemaPrefix($name);
     }
 
     public function drop(string $name): bool
@@ -45,7 +41,7 @@ class Sequence
             return true;
         }
 
-        $name = $this->wrapSchema($name);
+        $name = $this->withSchemaPrefix($name);
 
         return $this->connection->statement("
             declare
@@ -78,7 +74,7 @@ class Sequence
 
     public function nextValue(string $name): int
     {
-        $name = $this->wrapSchema($name);
+        $name = $this->withSchemaPrefix($name);
 
         return $this->connection->selectOne("SELECT $name.NEXTVAL as \"id\" FROM DUAL")->id;
     }
@@ -95,7 +91,7 @@ class Sequence
         }
 
         try {
-            $name = $this->wrapSchema($name);
+            $name = $this->withSchemaPrefix($name);
 
             return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
         } catch (QueryException $e) {
