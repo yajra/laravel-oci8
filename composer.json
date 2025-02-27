@@ -31,9 +31,6 @@
         "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1"
     },
     "autoload": {
-        "files": [
-            "src/helper.php"
-        ],
         "psr-4": {
             "Yajra\\": "src/"
         }
