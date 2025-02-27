@@ -7,7 +7,7 @@ use Yajra\Oci8\Validation\Oci8DatabasePresenceVerifier;
 
 class Oci8ValidationServiceProvider extends ValidationServiceProvider
 {
-    protected function registerPresenceVerifier()
+    protected function registerPresenceVerifier(): void
     {
         $this->app->singleton('validation.presence', function ($app) {
             return new Oci8DatabasePresenceVerifier($app['db']);
