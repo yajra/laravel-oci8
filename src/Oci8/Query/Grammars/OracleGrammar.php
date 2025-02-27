@@ -18,19 +18,11 @@ class OracleGrammar extends Grammar
 
     /**
      * The keyword identifier wrapper format.
-     *
-     * @var string
      */
     protected string $wrapper = '%s';
 
-    /**
-     * @var string
-     */
     protected string $schemaPrefix = '';
 
-    /**
-     * @var int
-     */
     protected int $maxLength;
 
     public function __construct(Oci8Connection $connection)
@@ -183,7 +175,6 @@ class OracleGrammar extends Grammar
 
     /**
      * @param  string  $value
-     * @return string
      */
     protected function wrapJsonSelector($value): string
     {
@@ -229,8 +220,6 @@ class OracleGrammar extends Grammar
 
     /**
      * Return the schema prefix.
-     *
-     * @return string
      */
     public function getSchemaPrefix(): string
     {
@@ -239,8 +228,6 @@ class OracleGrammar extends Grammar
 
     /**
      * Get max length.
-     *
-     * @return int
      */
     public function getMaxLength(): int
     {
@@ -659,10 +646,6 @@ class OracleGrammar extends Grammar
         return 'ROLLBACK TO '.$name;
     }
 
-    /**
-     * @param  array  $values
-     * @return string
-     */
     protected function compileUnionSelectFromDual(array $values): string
     {
         return collect($values)->map(function ($record) {

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
 
 class QueryBuilderWhereLikeTest extends DatabaseTestCase
 {
-    public function testWhereLike()
+    public function test_where_like()
     {
         $users = DB::table('users')->whereLike('email', 'john.doe@example.com')->get();
         $this->assertCount(1, $users);
@@ -19,7 +19,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         $this->assertSame(4, DB::table('users')->whereNotLike('email', 'john.doe@example.com')->count());
     }
 
-    public function testWhereLikeWithPercentWildcard()
+    public function test_where_like_with_percent_wildcard()
     {
         $this->assertSame(5, DB::table('users')->whereLike('email', '%@example.com')->count());
         $this->assertSame(2, DB::table('users')->whereNotLike('email', '%Doe%')->count());
@@ -29,7 +29,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         $this->assertSame('John.Doe@example.com', $users[0]->email);
     }
 
-    public function testWhereLikeWithUnderscoreWildcard()
+    public function test_where_like_with_underscore_wildcard()
     {
         $users = DB::table('users')->whereLike('email', '_a_e_%@example.com')->get();
         $this->assertCount(2, $users);
@@ -37,7 +37,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         $this->assertSame('Dale.Doe@example.com', $users[1]->email);
     }
 
-    public function testWhereLikeCaseSensitive()
+    public function test_where_like_case_sensitive()
     {
         $users = DB::table('users')->whereLike('email', 'john.doe@example.com', true)->get();
         $this->assertCount(0, $users);
@@ -48,7 +48,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         $this->assertSame(5, DB::table('users')->whereNotLike('email', 'john.doe@example.com', true)->count());
     }
 
-    public function testWhereLikeWithPercentWildcardCaseSensitive()
+    public function test_where_like_with_percent_wildcard_case_sensitive()
     {
         $this->assertSame(2, DB::table('users')->whereLike('email', '%Doe@example.com', true)->count());
         $this->assertSame(4, DB::table('users')->whereNotLike('email', '%smith%', true)->count());
@@ -59,7 +59,7 @@ class QueryBuilderWhereLikeTest extends DatabaseTestCase
         $this->assertSame('Dale.Doe@example.com', $users[1]->email);
     }
 
-    public function testWhereLikeWithUnderscoreWildcardCaseSensitive()
+    public function test_where_like_with_underscore_wildcard_case_sensitive()
     {
         $users = DB::table('users')->whereLike('email', 'j__edoe@example.com', true)->get();
         $this->assertCount(1, $users);

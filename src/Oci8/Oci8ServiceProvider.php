@@ -39,7 +39,7 @@ class Oci8ServiceProvider extends ServiceProvider
                 call_user_func_array($config['dynamic'], [&$config]);
             }
 
-            $connector = new Connector();
+            $connector = new Connector;
             $connection = $connector->connect($config);
             $db = new Oci8Connection($connection, $database, $prefix, $config);
 

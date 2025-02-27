@@ -34,7 +34,6 @@ class Oci8Connection extends Connection
      * @param  PDO|\Closure  $pdo
      * @param  string  $database
      * @param  string  $tablePrefix
-     * @param  array  $config
      */
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
@@ -302,6 +301,7 @@ class Oci8Connection extends Connection
 
         return $this;
     }
+
     /**
      * Get the default schema grammar instance.
      */
@@ -315,15 +315,11 @@ class Oci8Connection extends Connection
      */
     protected function getDefaultPostProcessor(): Processor
     {
-        return new Processor();
+        return new Processor;
     }
 
     /**
      * Add bindings to statement.
-     *
-     * @param  array  $bindings
-     * @param  PDOStatement  $stmt
-     * @return PDOStatement
      */
     public function addBindingsToStatement(PDOStatement $stmt, array $bindings): PDOStatement
     {
@@ -350,7 +346,6 @@ class Oci8Connection extends Connection
      * Determine if the given exception was caused by a lost connection.
      *
      * @param  \Exception  $e
-     * @return bool
      */
     protected function causedByLostConnection(Throwable $e): bool
     {
@@ -359,14 +354,14 @@ class Oci8Connection extends Connection
         }
 
         $lostConnectionErrors = [
-            'ORA-03113',    //End-of-file on communication channel
-            'ORA-03114',    //Not Connected to Oracle
-            'ORA-03135',    //Connection lost contact
-            'ORA-12170',    //Connect timeout occurred
-            'ORA-12537',    //Connection closed
-            'ORA-27146',    //Post/wait initialization failed
-            'ORA-25408',    //Can not safely replay call
-            'ORA-56600',    //Illegal Call
+            'ORA-03113',    // End-of-file on communication channel
+            'ORA-03114',    // Not Connected to Oracle
+            'ORA-03135',    // Connection lost contact
+            'ORA-12170',    // Connect timeout occurred
+            'ORA-12537',    // Connection closed
+            'ORA-27146',    // Post/wait initialization failed
+            'ORA-25408',    // Can not safely replay call
+            'ORA-56600',    // Illegal Call
         ];
 
         $additionalErrors = null;
@@ -405,7 +400,6 @@ class Oci8Connection extends Connection
      *
      * @param  \Yajra\Pdo\Oci8\Statement  $statement
      * @param  array  $bindings
-     * @return void
      */
     public function bindValues($statement, $bindings): void
     {

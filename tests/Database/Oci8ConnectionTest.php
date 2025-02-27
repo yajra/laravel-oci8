@@ -11,12 +11,12 @@ use Yajra\Oci8\Schema\Trigger;
 
 class Oci8ConnectionTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testGetSchema()
+    public function test_get_schema()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('getConfig')->with('username')->andReturn('demo');
@@ -25,7 +25,7 @@ class Oci8ConnectionTest extends TestCase
         $this->assertSame('demo', $connection->getConfig('username'));
     }
 
-    public function testSetSchema()
+    public function test_set_schema()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('setSchema')->with('demo')->once()->andReturn($connection);
@@ -35,7 +35,7 @@ class Oci8ConnectionTest extends TestCase
         $this->assertSame('demo', $connection->getSchema());
     }
 
-    public function testGetSchemaPrefix()
+    public function test_get_schema_prefix()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('getSchemaPrefix')->andReturn('schema_prefix');
@@ -43,7 +43,7 @@ class Oci8ConnectionTest extends TestCase
         $this->assertSame('schema_prefix', $connection->getSchemaPrefix());
     }
 
-    public function testSetSchemaPrefix()
+    public function test_set_schema_prefix()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('setSchemaPrefix')->with('schema_prefix')->once()->andReturn($connection);
@@ -53,7 +53,7 @@ class Oci8ConnectionTest extends TestCase
         $this->assertSame('schema_prefix', $connection->getSchemaPrefix());
     }
 
-    public function testGetTrigger()
+    public function test_get_trigger()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('getTrigger')->once()->andReturn(new Trigger($connection));
@@ -61,7 +61,7 @@ class Oci8ConnectionTest extends TestCase
         $this->assertInstanceOf(Trigger::class, $connection->getTrigger());
     }
 
-    public function testGetSequence()
+    public function test_get_sequence()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('getSequence')->once()->andReturn(new Sequence($connection));
@@ -69,21 +69,21 @@ class Oci8ConnectionTest extends TestCase
         $this->assertInstanceOf(Sequence::class, $connection->getSequence());
     }
 
-    public function testCreateSequence()
+    public function test_create_sequence()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('createSequence')->with('posts_id_seq')->once()->andReturn(true);
         $this->assertTrue($connection->createSequence('posts_id_seq'));
     }
 
-    public function testCreateSequenceInvalidName()
+    public function test_create_sequence_invalid_name()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('createSequence')->with(null)->once()->andReturn(false);
         $this->assertFalse($connection->createSequence(null));
     }
 
-    public function testDropSequence()
+    public function test_drop_sequence()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('dropSequence')->with('posts_id_seq')->once()->andReturn(true);
@@ -92,7 +92,7 @@ class Oci8ConnectionTest extends TestCase
         $this->assertTrue($connection->dropSequence('posts_id_seq'));
     }
 
-    public function testDropSequenceInvalidName()
+    public function test_drop_sequence_invalid_name()
     {
         $connection = m::mock(Oci8Connection::class);
         $connection->shouldReceive('dropSequence')->with(null)->once()->andReturn(false);
@@ -106,9 +106,9 @@ class Oci8ConnectionTest extends TestCase
         $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;
         $defaults = ['getDefaultQueryGrammar', 'getDefaultPostProcessor', 'getDefaultSchemaGrammar'];
         $connection = $this->getMockBuilder('Illuminate\Database\Connection')
-                           ->onlyMethods(array_merge($defaults, $methods))
-                           ->setConstructorArgs([$pdo])
-                           ->getMock();
+            ->onlyMethods(array_merge($defaults, $methods))
+            ->setConstructorArgs([$pdo])
+            ->getMock();
         $connection->enableQueryLog();
 
         return $connection;
@@ -117,7 +117,5 @@ class Oci8ConnectionTest extends TestCase
 
 class DatabaseConnectionTestMockPDO extends PDO
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 }

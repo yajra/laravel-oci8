@@ -40,8 +40,6 @@ class OracleBlueprint extends Blueprint
      * Create a default index name for the table.
      *
      * @param  string  $type
-     * @param  array  $columns
-     * @return string
      */
     protected function createIndexName($type, array $columns): string
     {

@@ -23,7 +23,7 @@ class ConnectionTest extends TestCase
         $this->assertSame('Record-1', $first->name);
     }
 
-    public function testSetDateFormat()
+    public function test_set_date_format()
     {
         $connection = $this->getConnection();
 

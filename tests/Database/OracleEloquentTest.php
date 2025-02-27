@@ -20,12 +20,12 @@ use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleEloquentTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testNewBaseQueryBuilderReturnsOracleBuilderForOracleGrammar()
+    public function test_new_base_query_builder_returns_oracle_builder_for_oracle_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'Oracle');
@@ -38,10 +38,6 @@ class OracleEloquentTest extends TestCase
         $this->assertInstanceOf(OracleProcessor::class, $builder->getProcessor());
     }
 
-    /**
-     * @param  $model
-     * @param  $database
-     */
     protected function mockConnectionForModel($model, $database)
     {
         if ($database == 'Oracle') {
@@ -82,7 +78,7 @@ class OracleEloquentTest extends TestCase
         $class::setConnectionResolver($resolver);
     }
 
-    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForSQLiteGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_sq_lite_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'SQLite');
@@ -94,7 +90,7 @@ class OracleEloquentTest extends TestCase
         $this->assertInstanceOf(SQLiteProcessor::class, $builder->getProcessor());
     }
 
-    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForMysSqlGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_mys_sql_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'MySql');
@@ -106,7 +102,7 @@ class OracleEloquentTest extends TestCase
             $builder->getProcessor());
     }
 
-    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForPostgresGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_postgres_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'Postgres');
@@ -123,7 +119,7 @@ class OracleEloquentTest extends TestCase
     // HELPER FUNCTIONS
     // #########################################################################
 
-    public function testNewBaseQueryBuilderReturnsIlluminateBuilderForSqlServerGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_sql_server_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'SqlServer');
@@ -138,6 +134,4 @@ class OracleEloquentTest extends TestCase
     }
 }
 
-class OracleEloquentStub extends \Yajra\Oci8\Eloquent\OracleEloquent
-{
-}
+class OracleEloquentStub extends \Yajra\Oci8\Eloquent\OracleEloquent {}

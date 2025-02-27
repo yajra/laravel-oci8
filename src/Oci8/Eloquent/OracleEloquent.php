@@ -34,9 +34,6 @@ class OracleEloquent extends Model
 
     /**
      * Get next value of the model sequence.
-     *
-     * @param  string|null  $sequence
-     * @return int
      */
     public static function nextValue(?string $sequence = null): int
     {
@@ -48,7 +45,6 @@ class OracleEloquent extends Model
         }
 
         $sequence = $sequence ?? $instance->getSequenceName();
-
 
         return $connection->getSequence()->nextValue($sequence);
     }
@@ -77,10 +73,6 @@ class OracleEloquent extends Model
 
     /**
      * Update the model in the database.
-     *
-     * @param  array  $attributes
-     * @param  array  $options
-     * @return bool|int
      */
     public function update(array $attributes = [], array $options = []): bool|int
     {

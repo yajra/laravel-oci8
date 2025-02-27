@@ -19,19 +19,19 @@ use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class Oci8QueryBuilderTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testBasicSelect()
+    public function test_basic_select()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users');
         $this->assertEquals('select * from "USERS"', $builder->toSql());
     }
 
-    public function testBasicSelectWithGetColumns()
+    public function test_basic_select_with_get_columns()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()->shouldReceive('processSelect');
@@ -58,14 +58,14 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertNull($builder->columns);
     }
 
-    public function testBasicSelectWithReservedWords()
+    public function test_basic_select_with_reserved_words()
     {
         $builder = $this->getBuilder();
         $builder->select('exists', 'drop', 'group')->from('users');
         $this->assertEquals('select "EXISTS", "DROP", "GROUP" from "USERS"', $builder->toSql());
     }
 
-    public function testBasicSelectUseWritePdo()
+    public function test_basic_select_use_write_pdo()
     {
         $builder = $this->getBuilderWithProcessor();
         $builder->getConnection()->shouldReceive('select')->once()
@@ -78,14 +78,14 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->get();
     }
 
-    public function testBasicTableWrappingProtectsQuotationMarks()
+    public function test_basic_table_wrapping_protects_quotation_marks()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('some"table');
         $this->assertSame('select * from "SOME""TABLE"', $builder->toSql());
     }
 
-    public function testAliasWrappingAsWholeConstant()
+    public function test_alias_wrapping_as_whole_constant()
     {
         $builder = $this->getBuilder();
         $builder->select('x.y as foo.bar')->from('baz');
@@ -96,70 +96,70 @@ class Oci8QueryBuilderTest extends TestCase
      * @TODO: Correct output should also wrap x.
      *          select "W" "X"."Y"."Z" as "FOO.BAR" from "BAZ"
      */
-    public function testAliasWrappingWithSpacesInDatabaseName()
+    public function test_alias_wrapping_with_spaces_in_database_name()
     {
         $builder = $this->getBuilder();
         $builder->select('w x.y.z as foo.bar')->from('baz');
         $this->assertSame('select "W" x."Y"."Z" as "FOO.BAR" from "BAZ"', $builder->toSql());
     }
 
-    public function testAddingSelects()
+    public function test_adding_selects()
     {
         $builder = $this->getBuilder();
         $builder->select('foo')->addSelect('bar')->addSelect(['baz', 'boom'])->from('users');
         $this->assertEquals('select "FOO", "BAR", "BAZ", "BOOM" from "USERS"', $builder->toSql());
     }
 
-    public function testBasicSelectWithPrefix()
+    public function test_basic_select_with_prefix()
     {
         $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('users');
         $this->assertEquals('select * from "PREFIX_USERS"', $builder->toSql());
     }
 
-    public function testBasicSelectDistinct()
+    public function test_basic_select_distinct()
     {
         $builder = $this->getBuilder();
         $builder->distinct()->select('foo', 'bar')->from('users');
         $this->assertEquals('select distinct "FOO", "BAR" from "USERS"', $builder->toSql());
     }
 
-    public function testBasicSelectDistinctOnColumns()
+    public function test_basic_select_distinct_on_columns()
     {
         $builder = $this->getBuilder();
         $builder->distinct('foo')->select('foo', 'bar')->from('users');
         $this->assertSame('select distinct "FOO", "BAR" from "USERS"', $builder->toSql());
     }
 
-    public function testBasicAlias()
+    public function test_basic_alias()
     {
         $builder = $this->getBuilder();
         $builder->select('foo as bar')->from('users');
         $this->assertEquals('select "FOO" as "BAR" from "USERS"', $builder->toSql());
     }
 
-    public function testAliasWithPrefix()
+    public function test_alias_with_prefix()
     {
         $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('users as people');
         $this->assertSame('select * from "PREFIX_USERS" "PREFIX_PEOPLE"', $builder->toSql());
     }
 
-    public function testJoinAliasesWithPrefix()
+    public function test_join_aliases_with_prefix()
     {
         $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('services')->join('translations AS t', 't.item_id', '=', 'services.id');
         $this->assertSame('select * from "PREFIX_SERVICES" inner join "PREFIX_TRANSLATIONS" "PREFIX_T" on "PREFIX_T"."ITEM_ID" = "PREFIX_SERVICES"."ID"', $builder->toSql());
     }
 
-    public function testBasicTableWrapping()
+    public function test_basic_table_wrapping()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('public.users');
         $this->assertSame('select * from "PUBLIC"."USERS"', $builder->toSql());
     }
 
-    public function testWhenCallback()
+    public function test_when_callback()
     {
         $callback = function ($query, $condition) {
             $this->assertTrue($condition);
@@ -176,7 +176,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "EMAIL" = ?', $builder->toSql());
     }
 
-    public function testWhenCallbackWithReturn()
+    public function test_when_callback_with_return()
     {
         $callback = function ($query, $condition) {
             $this->assertTrue($condition);
@@ -193,7 +193,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "EMAIL" = ?', $builder->toSql());
     }
 
-    public function testWhenCallbackWithDefault()
+    public function test_when_callback_with_default()
     {
         $callback = function ($query, $condition) {
             $this->assertEquals('truthy', $condition);
@@ -218,7 +218,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 2, 1 => 'foo'], $builder->getBindings());
     }
 
-    public function testUnlessCallback()
+    public function test_unless_callback()
     {
         $callback = function ($query, $condition) {
             $this->assertFalse($condition);
@@ -235,7 +235,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "EMAIL" = ?', $builder->toSql());
     }
 
-    public function testUnlessCallbackWithReturn()
+    public function test_unless_callback_with_return()
     {
         $callback = function ($query, $condition) {
             $this->assertFalse($condition);
@@ -252,7 +252,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "EMAIL" = ?', $builder->toSql());
     }
 
-    public function testUnlessCallbackWithDefault()
+    public function test_unless_callback_with_default()
     {
         $callback = function ($query, $condition) {
             $this->assertEquals(0, $condition);
@@ -277,7 +277,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 2, 1 => 'foo'], $builder->getBindings());
     }
 
-    public function testTapCallback()
+    public function test_tap_callback()
     {
         $callback = function ($query) {
             return $query->where('id', '=', 1);
@@ -288,28 +288,28 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "ID" = ? and "EMAIL" = ?', $builder->toSql());
     }
 
-    public function testBasicSchemaWrapping()
+    public function test_basic_schema_wrapping()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('acme.users');
         $this->assertEquals('select * from "ACME"."USERS"', $builder->toSql());
     }
 
-    public function testBasicSchemaWrappingReservedWords()
+    public function test_basic_schema_wrapping_reserved_words()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('schema.users');
         $this->assertEquals('select * from "SCHEMA"."USERS"', $builder->toSql());
     }
 
-    public function testBasicColumnWrappingReservedWords()
+    public function test_basic_column_wrapping_reserved_words()
     {
         $builder = $this->getBuilder();
         $builder->select('order')->from('users');
         $this->assertEquals('select "ORDER" from "USERS"', $builder->toSql());
     }
 
-    public function testBasicWheres()
+    public function test_basic_wheres()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
@@ -317,7 +317,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testBasicWheresWithReservedWords()
+    public function test_basic_wheres_with_reserved_words()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('blob', '=', 1);
@@ -325,7 +325,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testWheresWithArrayValue()
+    public function test_wheres_with_array_value()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', [12, 30]);
@@ -348,7 +348,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 12], $builder->getBindings());
     }
 
-    public function testDateBasedWheresAcceptsTwoArguments()
+    public function test_date_based_wheres_accepts_two_arguments()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', 1);
@@ -367,7 +367,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where extract (year from "CREATED_AT") = ?', $builder->toSql());
     }
 
-    public function testDateBasedOrWheresAcceptsTwoArguments()
+    public function test_date_based_or_wheres_accepts_two_arguments()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhereDate('created_at', 1);
@@ -386,7 +386,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "ID" = ? or extract (year from "CREATED_AT") = ?', $builder->toSql());
     }
 
-    public function testDateBasedWheresExpressionIsNotBound()
+    public function test_date_based_wheres_expression_is_not_bound()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', new Raw('NOW()'))->where('admin', true);
@@ -405,7 +405,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testWhereDate()
+    public function test_where_date()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', '=', '2015-12-21');
@@ -417,7 +417,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = NOW()', $builder->toSql());
     }
 
-    public function testWhereDay()
+    public function test_where_day()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDay('created_at', '=', 20);
@@ -425,7 +425,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 20], $builder->getBindings());
     }
 
-    public function testOrWhereDay()
+    public function test_or_where_day()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDay('created_at', '=', 1)->orWhereDay('created_at', '=', 2);
@@ -433,7 +433,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
 
-    public function testWhereMonth()
+    public function test_where_month()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereMonth('created_at', '=', 12);
@@ -441,7 +441,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 12], $builder->getBindings());
     }
 
-    public function testOrWhereMonth()
+    public function test_or_where_month()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereMonth('created_at', '=', 5)->orWhereMonth('created_at', '=', 6);
@@ -449,7 +449,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 5, 1 => 6], $builder->getBindings());
     }
 
-    public function testWhereYear()
+    public function test_where_year()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereYear('created_at', '=', 2015);
@@ -457,7 +457,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 2015], $builder->getBindings());
     }
 
-    public function testOrWhereYear()
+    public function test_or_where_year()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereYear('created_at', '=', 2014)->orWhereYear('created_at', '=', 2015);
@@ -465,7 +465,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 2014, 1 => 2015], $builder->getBindings());
     }
 
-    public function testWhereTime()
+    public function test_where_time()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereTime('created_at', '>=', '22:00');
@@ -473,7 +473,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => '22:00'], $builder->getBindings());
     }
 
-    public function testWhereTimeOperatorOptional()
+    public function test_where_time_operator_optional()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereTime('created_at', '22:00');
@@ -481,7 +481,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => '22:00'], $builder->getBindings());
     }
 
-    public function testWhereLike()
+    public function test_where_like()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 'like', '1');
@@ -509,7 +509,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => '1'], $builder->getBindings());
     }
 
-    public function testWhereBetweens()
+    public function test_where_betweens()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereBetween('id', [1, 2]);
@@ -527,7 +527,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testWhereBetweenColumns()
+    public function test_where_between_columns()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereBetweenColumns('id', ['users.created_at', 'users.updated_at']);
@@ -545,7 +545,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testBasicOrWheres()
+    public function test_basic_or_wheres()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhere('email', '=', 'foo');
@@ -553,7 +553,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
-    public function testRawWheres()
+    public function test_raw_wheres()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereRaw('id = ? or email = ?', [1, 'foo']);
@@ -561,7 +561,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
-    public function testRawOrWheres()
+    public function test_raw_or_wheres()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereRaw('email = ?', ['foo']);
@@ -569,7 +569,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
-    public function testBasicWhereIns()
+    public function test_basic_where_ins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', [1, 2, 3]);
@@ -582,7 +582,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 1, 2 => 2, 3 => 3], $builder->getBindings());
     }
 
-    public function testBasicWhereNotIns()
+    public function test_basic_where_not_ins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotIn('id', [1, 2, 3]);
@@ -595,7 +595,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 1, 2 => 2, 3 => 3], $builder->getBindings());
     }
 
-    public function testRawWhereIns()
+    public function test_raw_where_ins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', [new Raw(1)]);
@@ -607,7 +607,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testEmptyWhereIns()
+    public function test_empty_where_ins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', []);
@@ -620,7 +620,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testEmptyWhereNotIns()
+    public function test_empty_where_not_ins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotIn('id', []);
@@ -633,7 +633,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testWhereIntegerInRaw()
+    public function test_where_integer_in_raw()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIntegerInRaw('id', ['1a', 2]);
@@ -641,7 +641,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testOrWhereIntegerInRaw()
+    public function test_or_where_integer_in_raw()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereIntegerInRaw('id', ['1a', 2]);
@@ -649,7 +649,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testWhereIntegerNotInRaw()
+    public function test_where_integer_not_in_raw()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIntegerNotInRaw('id', ['1a', 2]);
@@ -657,7 +657,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testOrWhereIntegerNotInRaw()
+    public function test_or_where_integer_not_in_raw()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereIntegerNotInRaw('id', ['1a', 2]);
@@ -665,7 +665,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testEmptyWhereIntegerInRaw()
+    public function test_empty_where_integer_in_raw()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIntegerInRaw('id', []);
@@ -673,7 +673,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testEmptyWhereIntegerNotInRaw()
+    public function test_empty_where_integer_not_in_raw()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIntegerNotInRaw('id', []);
@@ -681,7 +681,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testBasicWhereColumn()
+    public function test_basic_where_column()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereColumn('first_name', 'last_name')->orWhereColumn('first_name', 'middle_name');
@@ -694,7 +694,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testArrayWhereColumn()
+    public function test_array_where_column()
     {
         $conditions = [
             ['first_name', 'last_name'],
@@ -707,7 +707,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testUnions()
+    public function test_unions()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
@@ -717,7 +717,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
 
-    public function testUnionAlls()
+    public function test_union_alls()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
@@ -727,7 +727,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
 
-    public function testMultipleUnions()
+    public function test_multiple_unions()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
@@ -738,7 +738,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
     }
 
-    public function testMultipleUnionAlls()
+    public function test_multiple_union_alls()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
@@ -749,7 +749,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2, 2 => 3], $builder->getBindings());
     }
 
-    public function testUnionOrderBys()
+    public function test_union_order_bys()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', '=', 1);
@@ -763,7 +763,7 @@ class Oci8QueryBuilderTest extends TestCase
     /**
      * @TODO: Fix union sql with limit
      */
-    public function testUnionLimitsAndOffsets()
+    public function test_union_limits_and_offsets()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users');
@@ -781,7 +781,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 10, 1 => 1, 2 => 11, 3 => 2], $builder->getBindings());
     }
 
-    public function testUnionWithJoin()
+    public function test_union_with_join()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users');
@@ -793,7 +793,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testUnionAggregate()
+    public function test_union_aggregate()
     {
         $expected = 'select count(*) as aggregate from ((select * from "POSTS") union (select * from "VIDEOS")) "TEMP_TABLE"';
         $builder = $this->getBuilder();
@@ -802,7 +802,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('posts')->union($this->getBuilder()->from('videos'))->count();
     }
 
-    public function testBasicWhereInThousands()
+    public function test_basic_where_in_thousands()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', range(1, 1001));
@@ -824,7 +824,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $builder->toSql());
     }
 
-    public function testBasicWhereNotInThousands()
+    public function test_basic_where_not_in_thousands()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotIn('id', range(1, 1001));
@@ -846,7 +846,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $builder->toSql());
     }
 
-    public function testSubSelectWhereIns()
+    public function test_sub_select_where_ins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
@@ -869,7 +869,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([25], $builder->getBindings());
     }
 
-    public function testBasicWhereNulls()
+    public function test_basic_where_nulls()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNull('id');
@@ -882,7 +882,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testArrayWhereNulls()
+    public function test_array_where_nulls()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNull(['id', 'expires_at']);
@@ -895,7 +895,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testBasicWhereNotNulls()
+    public function test_basic_where_not_nulls()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotNull('id');
@@ -908,7 +908,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testArrayWhereNotNulls()
+    public function test_array_where_not_nulls()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotNull(['id', 'expires_at']);
@@ -921,7 +921,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
-    public function testGroupBys()
+    public function test_group_bys()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->groupBy('email');
@@ -949,7 +949,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['whereRawBinding', 'groupByRawBinding', 'havingRawBinding'], $builder->getBindings());
     }
 
-    public function testOrderBys()
+    public function test_order_bys()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orderBy('email')->orderBy('age', 'desc');
@@ -978,7 +978,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1, 1, 'news', 'opinion'], $builder->getBindings());
     }
 
-    public function testReorder()
+    public function test_reorder()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orderBy('name');
@@ -1007,7 +1007,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testOrderBySubQueries()
+    public function test_order_by_sub_queries()
     {
         $expected = 'select * from "USERS" order by (select * from (select "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID") where rownum = 1)';
         $subQuery = function ($query) {
@@ -1031,7 +1031,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1, 1, 'news', 'opinion'], $builder->getBindings());
     }
 
-    public function testOrderByInvalidDirectionParam()
+    public function test_order_by_invalid_direction_param()
     {
         $this->expectException(InvalidArgumentException::class);
 
@@ -1039,7 +1039,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->orderBy('age', 'asec');
     }
 
-    public function testHavings()
+    public function test_havings()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->having('email', '>', 1);
@@ -1054,14 +1054,14 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select "EMAIL" as "FOO_EMAIL" from "USERS" having "FOO_EMAIL" > ?', $builder->toSql());
     }
 
-    public function testHavingShortcut()
+    public function test_having_shortcut()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->having('email', 1)->orHaving('email', 2);
         $this->assertSame('select * from "USERS" having "EMAIL" = ? or "EMAIL" = ?', $builder->toSql());
     }
 
-    public function testHavingFollowedBySelectGet()
+    public function test_having_followed_by_select_get()
     {
         $builder = $this->getBuilder();
         $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > ?';
@@ -1085,7 +1085,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([['category' => 'rock', 'total' => 5]], $result->all());
     }
 
-    public function testRawHavings()
+    public function test_raw_havings()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->havingRaw('user_foo < user_bar');
@@ -1096,7 +1096,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select * from "USERS" having "BAZ" = ? or user_foo < user_bar', $builder->toSql());
     }
 
-    public function testOffset()
+    public function test_offset()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(10);
@@ -1106,7 +1106,7 @@ class Oci8QueryBuilderTest extends TestCase
         );
     }
 
-    public function testLimitsAndOffsets()
+    public function test_limits_and_offsets()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(5)->limit(10);
@@ -1144,7 +1144,7 @@ class Oci8QueryBuilderTest extends TestCase
         );
     }
 
-    public function testLimitAndOffsetToPaginateOne()
+    public function test_limit_and_offset_to_paginate_one()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(0)->limit(1);
@@ -1161,7 +1161,7 @@ class Oci8QueryBuilderTest extends TestCase
         );
     }
 
-    public function testForPage()
+    public function test_for_page()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
@@ -1200,7 +1200,7 @@ class Oci8QueryBuilderTest extends TestCase
             $builder->toSql());
     }
 
-    public function testGetCountForPaginationWithBindings()
+    public function test_get_count_for_pagination_with_bindings()
     {
         $builder = $this->getBuilder();
         $builder->from('users')->selectSub(function ($q) {
@@ -1217,7 +1217,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([4], $builder->getBindings());
     }
 
-    public function testGetCountForPaginationWithColumnAliases()
+    public function test_get_count_for_pagination_with_column_aliases()
     {
         $builder = $this->getBuilder();
         $columns = ['body as post_body', 'teaser', 'posts.created as published'];
@@ -1232,7 +1232,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $count);
     }
 
-    public function testGetCountForPaginationWithUnion()
+    public function test_get_count_for_pagination_with_union()
     {
         $builder = $this->getBuilder();
         $builder->from('posts')->select('id')->union($this->getBuilder()->from('videos')->select('id'));
@@ -1246,7 +1246,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $count);
     }
 
-    public function testWhereShortcut()
+    public function test_where_shortcut()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhere('name', 'foo');
@@ -1254,7 +1254,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 'foo'], $builder->getBindings());
     }
 
-    public function testWhereWithArrayConditions()
+    public function test_where_with_array_conditions()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where([['foo', 1], ['bar', 2]]);
@@ -1272,7 +1272,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
 
-    public function testNestedWheres()
+    public function test_nested_wheres()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('email', '=', 'foo')->orWhere(function ($q) {
@@ -1282,7 +1282,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 'foo', 1 => 'bar', 2 => 25], $builder->getBindings());
     }
 
-    public function testNestedWhereBindings()
+    public function test_nested_where_bindings()
     {
         $builder = $this->getBuilder();
         $builder->where('email', '=', 'foo')->where(function ($q) {
@@ -1291,7 +1291,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 'foo', 1 => 'bar'], $builder->getBindings());
     }
 
-    public function testFullSubSelects()
+    public function test_full_sub_selects()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('email', '=', 'foo')->orWhere('id', '=', function ($q) {
@@ -1303,7 +1303,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 'foo', 1 => 'bar'], $builder->getBindings());
     }
 
-    public function testWhereExists()
+    public function test_where_exists()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->whereExists(function ($q) {
@@ -1334,7 +1334,7 @@ class Oci8QueryBuilderTest extends TestCase
             $builder->toSql());
     }
 
-    public function testBasicJoins()
+    public function test_basic_joins()
     {
         $builder = $this->getBuilder();
         $builder->select('*')
@@ -1354,14 +1354,14 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['bar', 'foo'], $builder->getBindings());
     }
 
-    public function testCrossJoinSubs()
+    public function test_cross_join_subs()
     {
         $builder = $this->getBuilder();
         $builder->selectRaw('(sale / overall.sales) * 100 AS percent_of_total')->from('sales')->crossJoinSub($this->getBuilder()->selectRaw('SUM(sale) AS sales')->from('sales'), 'overall');
         $this->assertSame('select (sale / overall.sales) * 100 AS percent_of_total from "SALES" cross join (select SUM(sale) AS sales from "SALES") "OVERALL"', $builder->toSql());
     }
 
-    public function testComplexJoin()
+    public function test_complex_join()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
@@ -1379,7 +1379,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo', 'bar'], $builder->getBindings());
     }
 
-    public function testJoinWhereNull()
+    public function test_join_where_null()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
@@ -1394,7 +1394,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" or "CONTACTS"."DELETED_AT" is null', $builder->toSql());
     }
 
-    public function testJoinWhereNotNull()
+    public function test_join_where_not_null()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
@@ -1409,7 +1409,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" or "CONTACTS"."DELETED_AT" is not null', $builder->toSql());
     }
 
-    public function testJoinWhereIn()
+    public function test_join_where_in()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
@@ -1426,7 +1426,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([48, 'baz', null], $builder->getBindings());
     }
 
-    public function testJoinWhereInSubquery()
+    public function test_join_where_in_subquery()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
@@ -1447,7 +1447,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['baz'], $builder->getBindings());
     }
 
-    public function testJoinWhereNotIn()
+    public function test_join_where_not_in()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->join('contacts', function ($j) {
@@ -1464,7 +1464,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([48, 'baz', null], $builder->getBindings());
     }
 
-    public function testJoinsWithNestedConditions()
+    public function test_joins_with_nested_conditions()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->leftJoin('contacts', function ($j) {
@@ -1489,7 +1489,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1, 'UK', 'US'], $builder->getBindings());
     }
 
-    public function testJoinsWithAdvancedConditions()
+    public function test_joins_with_advanced_conditions()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->leftJoin('contacts', function ($j) {
@@ -1503,7 +1503,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['admin'], $builder->getBindings());
     }
 
-    public function testJoinsWithSubqueryCondition()
+    public function test_joins_with_subquery_condition()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->leftJoin('contacts', function ($j) {
@@ -1529,7 +1529,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['1'], $builder->getBindings());
     }
 
-    public function testJoinsWithAdvancedSubqueryCondition()
+    public function test_joins_with_advanced_subquery_condition()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->leftJoin('contacts', function ($j) {
@@ -1548,7 +1548,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['1', true], $builder->getBindings());
     }
 
-    public function testJoinsWithNestedJoins()
+    public function test_joins_with_nested_joins()
     {
         $builder = $this->getBuilder();
         $builder->select('users.id', 'contacts.id', 'contact_types.id')->from('users')->leftJoin('contacts', function ($j) {
@@ -1557,7 +1557,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select "USERS"."ID", "CONTACTS"."ID", "CONTACT_TYPES"."ID" from "USERS" left join ("CONTACTS" inner join "CONTACT_TYPES" on "CONTACTS"."CONTACT_TYPE_ID" = "CONTACT_TYPES"."ID") on "USERS"."ID" = "CONTACTS"."ID"', $builder->toSql());
     }
 
-    public function testJoinsWithMultipleNestedJoins()
+    public function test_joins_with_multiple_nested_joins()
     {
         $builder = $this->getBuilder();
         $builder->select('users.id', 'contacts.id', 'contact_types.id', 'countrys.id', 'planets.id')->from('users')->leftJoin('contacts', function ($j) {
@@ -1576,7 +1576,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['1', 10000], $builder->getBindings());
     }
 
-    public function testJoinsWithNestedJoinWithAdvancedSubqueryCondition()
+    public function test_joins_with_nested_join_with_advanced_subquery_condition()
     {
         $builder = $this->getBuilder();
         $builder->select('users.id', 'contacts.id', 'contact_types.id')->from('users')->leftJoin('contacts', function ($j) {
@@ -1596,7 +1596,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['1', 10000], $builder->getBindings());
     }
 
-    public function testJoinSub()
+    public function test_join_sub()
     {
         $builder = $this->getBuilder();
         $builder->from('users')->joinSub('select * from "CONTACTS"', 'sub', 'users.id', '=', 'sub.id');
@@ -1636,14 +1636,14 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('users')->joinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
-    public function testJoinSubWithPrefix()
+    public function test_join_sub_with_prefix()
     {
         $builder = $this->getBuilder('prefix_');
         $builder->from('users')->joinSub('select * from "CONTACTS"', 'sub', 'users.id', '=', 'sub.id');
         $this->assertSame('select * from "PREFIX_USERS" inner join (select * from "CONTACTS") "PREFIX_SUB" on "PREFIX_USERS"."ID" = "PREFIX_SUB"."ID"', $builder->toSql());
     }
 
-    public function testLeftJoinSub()
+    public function test_left_join_sub()
     {
         $builder = $this->getBuilder();
         $sub = $this->getBuilder()->from('contacts');
@@ -1657,7 +1657,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('users')->leftJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
-    public function testRightJoinSub()
+    public function test_right_join_sub()
     {
         $builder = $this->getBuilder();
         $sub = $this->getBuilder()->from('contacts');
@@ -1671,14 +1671,14 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('users')->rightJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
-    public function testRawExpressionsInSelect()
+    public function test_raw_expressions_in_select()
     {
         $builder = $this->getBuilder();
         $builder->select(new Raw('substr(foo, 6)'))->from('users');
         $this->assertEquals('select substr(foo, 6) from "USERS"', $builder->toSql());
     }
 
-    public function testFindReturnsFirstResultByID()
+    public function test_find_returns_first_result_by_id()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -1698,7 +1698,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo' => 'bar'], $results);
     }
 
-    public function testFirstMethodReturnsFirstResult()
+    public function test_first_method_returns_first_result()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
@@ -1717,7 +1717,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo' => 'bar'], $results);
     }
 
-    public function testPluckMethodGetsCollectionOfColumnValues()
+    public function test_pluck_method_gets_collection_of_column_values()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
@@ -1736,7 +1736,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results->all());
     }
 
-    public function testImplode()
+    public function test_implode()
     {
         // Test without glue.
         $builder = $this->getBuilder();
@@ -1757,7 +1757,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('bar,baz', $results);
     }
 
-    public function testValueMethodReturnsSingleColumn()
+    public function test_value_method_returns_single_column()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with('select * from (select "FOO" from "USERS" where "ID" = ?) where rownum = 1', [1], true)->andReturn([['foo' => 'bar']]);
@@ -1766,7 +1766,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('bar', $results);
     }
 
-    public function testListMethodsGetsArrayOfColumnValues()
+    public function test_list_methods_gets_array_of_column_values()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
@@ -1796,7 +1796,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results->all());
     }
 
-    public function testAggregateFunctions()
+    public function test_aggregate_functions()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
@@ -1841,7 +1841,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $results);
     }
 
-    public function testExistsOr()
+    public function test_exists_or()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 1]]);
@@ -1852,12 +1852,12 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 0]]);
         $results = $builder->from('users')->doesntExistOr(function () {
-            throw new RuntimeException();
+            throw new RuntimeException;
         });
         $this->assertTrue($results);
     }
 
-    public function testDoesntExistsOr()
+    public function test_doesnt_exists_or()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 0]]);
@@ -1868,12 +1868,12 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 1]]);
         $results = $builder->from('users')->existsOr(function () {
-            throw new RuntimeException();
+            throw new RuntimeException;
         });
         $this->assertTrue($results);
     }
 
-    public function testAggregateResetFollowedByGet()
+    public function test_aggregate_reset_followed_by_get()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -1903,7 +1903,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([['column1' => 'foo', 'column2' => 'bar']], $result->all());
     }
 
-    public function testAggregateResetFollowedBySelectGet()
+    public function test_aggregate_reset_followed_by_select_get()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -1926,7 +1926,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([['column2' => 'foo', 'column3' => 'bar']], $result->all());
     }
 
-    public function testAggregateResetFollowedByGetWithColumns()
+    public function test_aggregate_reset_followed_by_get_with_columns()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -1949,7 +1949,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([['column2' => 'foo', 'column3' => 'bar']], $result->all());
     }
 
-    public function testAggregateWithSubSelect()
+    public function test_aggregate_with_sub_select()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -1968,7 +1968,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo'], $builder->getBindings());
     }
 
-    public function testSubQueriesBindings()
+    public function test_sub_queries_bindings()
     {
         $builder = $this->getBuilder();
         $second = $this->getBuilder()->select('*')->from('users')->orderByRaw('id = ?', 2);
@@ -1990,7 +1990,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 'bar', 1 => 4, 2 => '%.com', 3 => 'foo', 4 => 5], $builder->getBindings());
     }
 
-    public function testAggregateCountFunction()
+    public function test_aggregate_count_function()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2005,7 +2005,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $results);
     }
 
-    public function testAggregateExistsFunction()
+    public function test_aggregate_exists_function()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
@@ -2016,7 +2016,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertTrue($results);
     }
 
-    public function testAggregateMaxFunction()
+    public function test_aggregate_max_function()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2031,7 +2031,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $results);
     }
 
-    public function testAggregateMinFunction()
+    public function test_aggregate_min_function()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2046,7 +2046,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $results);
     }
 
-    public function testAggregateSumFunction()
+    public function test_aggregate_sum_function()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2061,7 +2061,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $results);
     }
 
-    public function testInsertMethod()
+    public function test_insert_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2073,7 +2073,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testInsertUsingMethod()
+    public function test_insert_using_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('affectingStatement')->once()->with('insert into "TABLE1" ("FOO") select "BAR" from "TABLE2" where "FOREIGN_ID" = ?', [5])->andReturn(1);
@@ -2088,14 +2088,14 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testInsertUsingInvalidSubquery()
+    public function test_insert_using_invalid_subquery()
     {
         $this->expectException(InvalidArgumentException::class);
         $builder = $this->getBuilder();
         $builder->from('table1')->insertUsing(['foo'], ['bar']);
     }
 
-    public function testInsertOrIgnoreMethod()
+    public function test_insert_or_ignore_method()
     {
         $expected = 'merge into "USERS" using (select ? as "EMAIL" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL") values ("LARAVEL_SOURCE"."EMAIL")';
         $builder = $this->getBuilder();
@@ -2111,7 +2111,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [['email' => 'foo']]));
     }
 
-    public function testInsertOrIgnoreMethodOnCacheStore()
+    public function test_insert_or_ignore_method_on_cache_store()
     {
         $expected = 'merge into "CACHE" using (select ? as "KEY", ? as "VALUES", ? as "EXPIRATION" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."KEY" = "CACHE"."KEY") when not matched then insert ("KEY", "VALUES", "EXPIRATION") values ("LARAVEL_SOURCE"."KEY", "LARAVEL_SOURCE"."VALUES", "LARAVEL_SOURCE"."EXPIRATION")';
         $builder = $this->getBuilder();
@@ -2128,7 +2128,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [$values]));
     }
 
-    public function testMultipleInsertMethod()
+    public function test_multiple_insert_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2142,7 +2142,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testInsertGetIdMethod()
+    public function test_insert_get_id_method()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
@@ -2154,7 +2154,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testInsertGetIdMethodRemovesExpressions()
+    public function test_insert_get_id_method_removes_expressions()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
@@ -2174,14 +2174,14 @@ class Oci8QueryBuilderTest extends TestCase
      *
      * @link https://github.com/yajra/laravel-oci8/issues/586
      */
-    public function testInsertGetIdWithEmptyValues()
+    public function test_insert_get_id_with_empty_values()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into "USERS" () values () returning "ID" into ?', [], null);
         $builder->from('users')->insertGetId([]);
     }
 
-    public function testInsertMethodRespectsRawBindings()
+    public function test_insert_method_respects_raw_bindings()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2197,7 +2197,7 @@ class Oci8QueryBuilderTest extends TestCase
      * @TODO: Fix raw expressions value.
      *      insert into "USERS" ("EMAIL") select UPPER('Foo') from dual union all select LOWER('Foo') from dual
      */
-    public function testMultipleInsertsWithExpressionValues()
+    public function test_multiple_inserts_with_expression_values()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('insert')->once()->with('insert into "USERS" ("EMAIL") select UPPER\'Foo\' from dual union all select UPPER\'Foo\' from dual ', [])->andReturn(true);
@@ -2205,7 +2205,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testInsertLobMethod()
+    public function test_insert_lob_method()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
@@ -2219,7 +2219,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testInsertOnlyLobMethod()
+    public function test_insert_only_lob_method()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
@@ -2233,7 +2233,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testUpdateMethod()
+    public function test_update_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2245,7 +2245,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testUpsertMethod()
+    public function test_upsert_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2257,7 +2257,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(2, $result);
     }
 
-    public function testUpsertMethodWithUpdateColumns()
+    public function test_upsert_method_with_update_columns()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2269,7 +2269,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(2, $result);
     }
 
-    public function testUpdateLobMethod()
+    public function test_update_lob_method()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
@@ -2286,7 +2286,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testUpdateOnlyLobMethod()
+    public function test_update_only_lob_method()
     {
         $builder = $this->getBuilder();
         $builder->getProcessor()
@@ -2303,7 +2303,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testUpdateMethodWithJoins()
+    public function test_update_method_with_joins()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2319,7 +2319,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testUpdateMethodRespectsRaw()
+    public function test_update_method_respects_raw()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2331,7 +2331,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testUpdateOrInsertMethod()
+    public function test_update_or_insert_method()
     {
         $builder = m::mock(Builder::class.'[where,exists,insert]', [
             m::mock(ConnectionInterface::class),
@@ -2359,7 +2359,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertTrue($builder->updateOrInsert(['email' => 'foo'], ['name' => 'bar']));
     }
 
-    public function testUpdateOrInsertMethodWorksWithEmptyUpdateValues()
+    public function test_update_or_insert_method_works_with_empty_update_values()
     {
         $builder = m::spy(Builder::class.'[where,exists,update]', [
             m::mock(ConnectionInterface::class),
@@ -2374,7 +2374,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->shouldNotHaveReceived('update');
     }
 
-    public function testDeleteMethod()
+    public function test_delete_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2395,10 +2395,6 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    /**
-     * @param  string  $prefix
-     * @return \Yajra\Oci8\Query\Grammars\OracleGrammar
-     */
     public function getGrammar(string $prefix = ''): OracleGrammar
     {
         return new OracleGrammar($this->getConnection(prefix: $prefix));
@@ -2407,7 +2403,7 @@ class Oci8QueryBuilderTest extends TestCase
     /**
      * @TODO: fix delete with join sql.
      */
-    protected function testDeleteWithJoinMethod()
+    protected function test_delete_with_join_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where "CTID" in (select "USERS"."CTID" from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" where "USERS"."EMAIL" = ?)', ['foo'])->andReturn(1);
@@ -2440,14 +2436,14 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    public function testTruncateMethod()
+    public function test_truncate_method()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('statement')->once()->with('truncate table "USERS"', []);
         $builder->from('users')->truncate();
     }
 
-    public function testMergeWheresCanMergeWheresAndBindings()
+    public function test_merge_wheres_can_merge_wheres_and_bindings()
     {
         $builder = $this->getBuilder();
         $builder->wheres = ['foo'];
@@ -2456,7 +2452,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo', 'bar'], $builder->getBindings());
     }
 
-    public function testProvidingNullWithOperatorsBuildsCorrectly()
+    public function test_providing_null_with_operators_builds_correctly()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('foo', null);
@@ -2475,14 +2471,14 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "FOO" is not null', $builder->toSql());
     }
 
-    public function testProvidingNullOrFalseAsSecondParameterBuildsCorrectly()
+    public function test_providing_null_or_false_as_second_parameter_builds_correctly()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('foo', null);
         $this->assertEquals('select * from "USERS" where "FOO" is null', $builder->toSql());
     }
 
-    public function testDynamicWhere()
+    public function test_dynamic_where()
     {
         $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
@@ -2498,7 +2494,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals($builder, $builder->dynamicWhere($method, $parameters));
     }
 
-    public function testDynamicWhereIsNotGreedy()
+    public function test_dynamic_where_is_not_greedy()
     {
         $method = 'whereIosVersionAndAndroidVersionOrOrientation';
         $parameters = ['6.1', '4.2', 'Vertical'];
@@ -2511,7 +2507,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->dynamicWhere($method, $parameters);
     }
 
-    public function testCallTriggersDynamicWhere()
+    public function test_call_triggers_dynamic_where()
     {
         $builder = $this->getBuilder();
 
@@ -2519,7 +2515,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertCount(2, $builder->wheres);
     }
 
-    public function testBuilderThrowsExpectedExceptionWithUndefinedMethod()
+    public function test_builder_throws_expected_exception_with_undefined_method()
     {
         $this->expectException(BadMethodCallException::class);
 
@@ -2530,7 +2526,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->noValidMethodHere();
     }
 
-    public function testOracleLock()
+    public function test_oracle_lock()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2560,7 +2556,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['baz'], $builder->getBindings());
     }
 
-    public function testOracleLockWithOrder()
+    public function test_oracle_lock_with_order()
     {
         $builder = $this->getBuilder();
         $builder->getConnection()
@@ -2585,7 +2581,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['baz'], $builder->getBindings());
     }
 
-    public function testBindingOrder()
+    public function test_binding_order()
     {
         $expectedSql = 'select * from "USERS" inner join "OTHERTABLE" on "BAR" = ? where "REGISTERED" = ? group by "CITY" having "POPULATION" > ? order by match ("FOO") against(?)';
         $expectedBindings = ['foo', 1, 3, 'bar'];
@@ -2606,7 +2602,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals($expectedBindings, $builder->getBindings());
     }
 
-    public function testAddBindingWithArrayMergesBindings()
+    public function test_add_binding_with_array_merges_bindings()
     {
         $builder = $this->getBuilder();
         $builder->addBinding(['foo', 'bar']);
@@ -2614,7 +2610,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo', 'bar', 'baz'], $builder->getBindings());
     }
 
-    public function testAddBindingWithArrayMergesBindingsInCorrectOrder()
+    public function test_add_binding_with_array_merges_bindings_in_correct_order()
     {
         $builder = $this->getBuilder();
         $builder->addBinding(['bar', 'baz'], 'having');
@@ -2622,7 +2618,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo', 'bar', 'baz'], $builder->getBindings());
     }
 
-    public function testMergeBuilders()
+    public function test_merge_builders()
     {
         $builder = $this->getBuilder();
         $builder->addBinding(['foo', 'bar']);
@@ -2632,7 +2628,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo', 'bar', 'baz'], $builder->getBindings());
     }
 
-    public function testMergeBuildersBindingOrder()
+    public function test_merge_builders_binding_order()
     {
         $builder = $this->getBuilder();
         $builder->addBinding('foo', 'where');
@@ -2643,7 +2639,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['foo', 'bar', 'baz'], $builder->getBindings());
     }
 
-    public function testSubSelect()
+    public function test_sub_select()
     {
         $expectedSql = 'select "FOO", "BAR", (select "BAZ" from "TWO" where "SUBKEY" = ?) as "SUB" from "ONE" where "KEY" = ?';
         $expectedBindings = ['subval', 'val'];
@@ -2669,7 +2665,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->selectSub(['foo'], 'sub');
     }
 
-    public function testSubSelectResetBindings()
+    public function test_sub_select_reset_bindings()
     {
         $builder = $this->getBuilder();
         $builder->from('one')->selectSub(function ($query) {
@@ -2685,28 +2681,28 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testUppercaseLeadingBooleansAreRemoved()
+    public function test_uppercase_leading_booleans_are_removed()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('name', '=', 'Taylor', 'AND');
         $this->assertSame('select * from "USERS" where "NAME" = ?', $builder->toSql());
     }
 
-    public function testLowercaseLeadingBooleansAreRemoved()
+    public function test_lowercase_leading_booleans_are_removed()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('name', '=', 'Taylor', 'and');
         $this->assertSame('select * from "USERS" where "NAME" = ?', $builder->toSql());
     }
 
-    public function testCaseInsensitiveLeadingBooleansAreRemoved()
+    public function test_case_insensitive_leading_booleans_are_removed()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('name', '=', 'Taylor', 'And');
         $this->assertSame('select * from "USERS" where "NAME" = ?', $builder->toSql());
     }
 
-    public function testChunkWithLastChunkComplete()
+    public function test_chunk_with_last_chunk_complete()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2733,7 +2729,7 @@ class Oci8QueryBuilderTest extends TestCase
         });
     }
 
-    public function testChunkWithLastChunkPartial()
+    public function test_chunk_with_last_chunk_partial()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2757,7 +2753,7 @@ class Oci8QueryBuilderTest extends TestCase
         });
     }
 
-    public function testChunkCanBeStoppedByReturningFalse()
+    public function test_chunk_can_be_stopped_by_returning_false()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2781,7 +2777,7 @@ class Oci8QueryBuilderTest extends TestCase
         });
     }
 
-    public function testChunkWithCountZero()
+    public function test_chunk_with_count_zero()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2797,7 +2793,7 @@ class Oci8QueryBuilderTest extends TestCase
         });
     }
 
-    public function testChunkByIdOnArrays()
+    public function test_chunk_by_id_on_arrays()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2820,7 +2816,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'someIdField');
     }
 
-    public function testChunkPaginatesUsingIdWithLastChunkComplete()
+    public function test_chunk_paginates_using_id_with_last_chunk_complete()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2843,7 +2839,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'someIdField');
     }
 
-    public function testChunkPaginatesUsingIdWithLastChunkPartial()
+    public function test_chunk_paginates_using_id_with_last_chunk_partial()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2863,7 +2859,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'someIdField');
     }
 
-    public function testChunkPaginatesUsingIdWithCountZero()
+    public function test_chunk_paginates_using_id_with_count_zero()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2876,7 +2872,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'someIdField');
     }
 
-    public function testChunkPaginatesUsingIdWithAlias()
+    public function test_chunk_paginates_using_id_with_alias()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'asc'];
@@ -2896,7 +2892,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'table.id', 'table_id');
     }
 
-    public function testChunkPaginatesUsingIdDesc()
+    public function test_chunk_paginates_using_id_desc()
     {
         $builder = $this->getMockQueryBuilder();
         $builder->orders[] = ['column' => 'foobar', 'direction' => 'desc'];
@@ -2916,7 +2912,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'someIdField');
     }
 
-    public function testPaginate()
+    public function test_paginate()
     {
         $perPage = 16;
         $columns = ['test'];
@@ -2943,7 +2939,7 @@ class Oci8QueryBuilderTest extends TestCase
         ]), $result);
     }
 
-    public function testPaginateWithDefaultArguments()
+    public function test_paginate_with_default_arguments()
     {
         $perPage = 15;
         $pageName = 'page';
@@ -2973,7 +2969,7 @@ class Oci8QueryBuilderTest extends TestCase
         ]), $result);
     }
 
-    public function testPaginateWhenNoResults()
+    public function test_paginate_when_no_results()
     {
         $perPage = 15;
         $pageName = 'page';
@@ -3003,7 +2999,7 @@ class Oci8QueryBuilderTest extends TestCase
         ]), $result);
     }
 
-    public function testPaginateWithSpecificColumns()
+    public function test_paginate_with_specific_columns()
     {
         $perPage = 16;
         $columns = ['id', 'name'];
@@ -3030,7 +3026,7 @@ class Oci8QueryBuilderTest extends TestCase
         ]), $result);
     }
 
-    public function testWhereRowValues()
+    public function test_where_row_values()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->whereRowValues(['last_update', 'order_number'], '<', [1, 2]);
@@ -3046,7 +3042,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1], $builder->getBindings());
     }
 
-    public function testWhereRowValuesArityMismatch()
+    public function test_where_row_values_arity_mismatch()
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The number of columns must match the number of values');
@@ -3055,7 +3051,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('orders')->whereRowValues(['last_update'], '<', [1, 2]);
     }
 
-    public function testFromAs()
+    public function test_from_as()
     {
         $builder = $this->getBuilder();
         $builder->from('sessions', 'as_session')->where('bar', '<', '10');
@@ -3066,7 +3062,7 @@ class Oci8QueryBuilderTest extends TestCase
     /**
      * @TODO: add json support?
      */
-    public function testWhereJsonContains()
+    public function test_where_json_contains()
     {
         $this->expectExceptionMessage('This database engine does not support JSON contains operations.');
 
@@ -3086,7 +3082,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1], $builder->getBindings());
     }
 
-    public function testFromSub()
+    public function test_from_sub()
     {
         $builder = $this->getBuilder();
         $builder->fromSub(function ($query) {
@@ -3100,7 +3096,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->fromSub(['invalid'], 'sessions')->where('bar', '<', '10');
     }
 
-    public function testFromSubWithPrefix()
+    public function test_from_sub_with_prefix()
     {
         $builder = $this->getBuilder('prefix_');
         $builder->fromSub(function ($query) {
@@ -3110,7 +3106,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['1', '10'], $builder->getBindings());
     }
 
-    public function testFromSubWithoutBindings()
+    public function test_from_sub_without_bindings()
     {
         $builder = $this->getBuilder();
         $builder->fromSub(function ($query) {
@@ -3123,14 +3119,14 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->fromSub(['invalid'], 'sessions');
     }
 
-    public function testFromRaw()
+    public function test_from_raw()
     {
         $builder = $this->getBuilder();
         $builder->fromRaw(new Raw('(select max(last_seen_at) as last_seen_at from "user_sessions") as "sessions"'));
         $this->assertSame('select * from (select max(last_seen_at) as last_seen_at from "user_sessions") as "sessions"', $builder->toSql());
     }
 
-    public function testFromRawWithWhereOnTheMainQuery()
+    public function test_from_raw_with_where_on_the_main_query()
     {
         $builder = $this->getBuilder();
         $builder->fromRaw(new Raw('(select max(last_seen_at) as last_seen_at from "sessions") as "last_seen_at"'))->where('last_seen_at', '>', '1520652582');
@@ -3138,7 +3134,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['1520652582'], $builder->getBindings());
     }
 
-    public function testClone()
+    public function test_clone()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users');
@@ -3149,7 +3145,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "EMAIL" = ?', $clone->toSql());
     }
 
-    public function testCloneWithout()
+    public function test_clone_without()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('email', 'foo')->orderBy('email');
@@ -3159,7 +3155,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" where "EMAIL" = ?', $clone->toSql());
     }
 
-    public function testCloneWithoutBindings()
+    public function test_clone_without_bindings()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('email', 'foo')->orderBy('email');
@@ -3172,7 +3168,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $clone->getBindings());
     }
 
-    public function testRandomOrder()
+    public function test_random_order()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('email', 'foo')->inRandomOrder();
@@ -3181,7 +3177,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 'foo'], $builder->getBindings());
     }
 
-    public function testWhereLikeClause()
+    public function test_where_like_clause()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereLike('id', '1', true);

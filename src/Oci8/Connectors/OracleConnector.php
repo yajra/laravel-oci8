@@ -25,8 +25,6 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Establish a database connection.
      *
-     * @param  array  $config
-     * @return PDO
      * @throws \Exception
      */
     public function connect(array $config): PDO
@@ -169,9 +167,6 @@ class OracleConnector extends Connector implements ConnectorInterface
      * Create a new PDO connection.
      *
      * @param  string  $dsn
-     * @param  array  $config
-     * @param  array  $options
-     * @return PDO|Oci8
      *
      * @throws \Exception
      */
@@ -195,7 +190,6 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @param  string  $username
      * @param  string  $password
      * @param  array  $options
-     * @return Oci8
      */
     protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options): Oci8
     {

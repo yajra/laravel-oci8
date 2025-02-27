@@ -16,8 +16,6 @@ class Comment extends Grammar
 
     /**
      * Set table and column comments.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     public function setComments(OracleBlueprint $blueprint): void
     {
@@ -31,8 +29,6 @@ class Comment extends Grammar
     /**
      * Run the comment on table statement.
      * Comment set by $table->comment = 'comment';.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     private function commentTable(OracleBlueprint $blueprint): void
     {
@@ -47,7 +43,6 @@ class Comment extends Grammar
      * Wrap reserved words.
      *
      * @param  string  $value
-     * @return string
      */
     protected function wrapValue($value): string
     {
@@ -57,8 +52,6 @@ class Comment extends Grammar
     /**
      * Add comments set via fluent setter.
      * Comments set by $table->string('column')->comment('comment');.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
     private function fluentComments(OracleBlueprint $blueprint): void
     {

@@ -11,7 +11,7 @@ use Yajra\Pdo\Oci8;
 
 class Oci8ConnectorTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
@@ -19,7 +19,7 @@ class Oci8ConnectorTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testCreateConnection()
+    public function test_create_connection()
     {
         $connector = new OracleConnectorStub;
         $tns = 'Connection String';
@@ -37,7 +37,7 @@ class Oci8ConnectorTest extends TestCase
         $this->assertInstanceOf(Oci8::class, $oci8);
     }
 
-    public function testOptionResolution()
+    public function test_option_resolution()
     {
         $connector = new Connector;
         $connector->setDefaultOptions([0 => 'foo', 1 => 'bar']);
@@ -48,20 +48,20 @@ class Oci8ConnectorTest extends TestCase
     }
 
     #[DataProvider('tnsDataProvider')]
-    public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
+    public function test_oracle_connect_calls_create_connection_with_proper_arguments($dsn, $config)
     {
         $connector = $this->getMockBuilder(OracleConnector::class)
-                           ->onlyMethods(['createConnection', 'getOptions'])
-                           ->getMock();
+            ->onlyMethods(['createConnection', 'getOptions'])
+            ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
-                  ->method('getOptions')
-                  ->with($this->equalTo($config))
-                  ->willReturn(['options']);
+            ->method('getOptions')
+            ->with($this->equalTo($config))
+            ->willReturn(['options']);
         $connector->expects($this->once())
-                  ->method('createConnection')
-                  ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
-                  ->willReturn($connection);
+            ->method('createConnection')
+            ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
+            ->willReturn($connection);
 
         if (isset($config['schema'])) {
             $connection->shouldReceive('setSchema')->andReturnSelf();

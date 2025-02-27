@@ -13,13 +13,11 @@ class OracleProcessor extends Processor
     /**
      * Process an "insert get ID" query.
      *
-     * @param  Builder  $query
      * @param  string  $sql
      * @param  array  $values
      * @param  string  $sequence
-     * @return int
      */
-    public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
+    public function processInsertGetId(Builder $query, $sql, $values, $sequence = null): int
     {
         $connection = $query->getConnection();
 
@@ -42,7 +40,6 @@ class OracleProcessor extends Processor
     /**
      * Get prepared statement.
      *
-     * @param  Builder  $query
      * @param  string  $sql
      * @return \PDOStatement|\Yajra\Pdo\Oci8
      */
@@ -58,7 +55,6 @@ class OracleProcessor extends Processor
     /**
      * Insert a new record and get the value of the primary key.
      *
-     * @param  array  $values
      * @param  string  $sequence
      * @return array
      */
@@ -135,10 +131,7 @@ class OracleProcessor extends Processor
     /**
      * Save Query with Blob returning primary key value.
      *
-     * @param  Builder  $query
      * @param  string  $sql
-     * @param  array  $values
-     * @param  array  $binaries
      * @return int
      */
     public function saveLob(Builder $query, $sql, array $values, array $binaries)

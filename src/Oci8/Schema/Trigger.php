@@ -9,9 +9,7 @@ class Trigger
 {
     use OracleReservedWords;
 
-    public function __construct(protected Oci8Connection $connection)
-    {
-    }
+    public function __construct(protected Oci8Connection $connection) {}
 
     public function autoIncrement(string $table, string $column, string $triggerName, string $sequenceName): bool
     {

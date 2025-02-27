@@ -7,9 +7,7 @@ use Yajra\Oci8\Oci8Connection;
 
 class Sequence
 {
-    public function __construct(protected Oci8Connection $connection)
-    {
-    }
+    public function __construct(protected Oci8Connection $connection) {}
 
     public function create(
         string $name,

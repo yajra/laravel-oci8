@@ -28,7 +28,6 @@ class OracleBuilder extends Builder
      * Create a new table on the schema.
      *
      * @param  string  $table
-     * @param  Closure  $callback
      */
     public function create($table, Closure $callback): void
     {
@@ -50,7 +49,7 @@ class OracleBuilder extends Builder
      *
      * @param  string  $table
      */
-    protected function createBlueprint($table, Closure $callback = null): OracleBlueprint
+    protected function createBlueprint($table, ?Closure $callback = null): OracleBlueprint
     {
         return new OracleBlueprint($this->connection, $table, $callback);
     }
@@ -111,7 +110,6 @@ class OracleBuilder extends Builder
      * Get the column listing for a given table.
      *
      * @param  string  $table
-     * @return array
      */
     public function getColumnListing($table): array
     {

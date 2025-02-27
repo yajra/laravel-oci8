@@ -2,7 +2,6 @@
 
 namespace Yajra\Oci8\Schema\Grammars;
 
-use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
@@ -298,7 +297,7 @@ class OracleGrammar extends Grammar
             return $sql;
         }
 
-//        return '';
+        //        return '';
     }
 
     /**
@@ -476,9 +475,6 @@ class OracleGrammar extends Grammar
 
     /**
      * Create the column definition for a text type.
-     *
-     * @param  \Illuminate\Support\Fluent  $column
-     * @return string
      */
     protected function typeText(Fluent $column): string
     {
