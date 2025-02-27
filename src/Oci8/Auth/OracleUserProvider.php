@@ -13,7 +13,7 @@ class OracleUserProvider extends EloquentUserProvider
      * @param  array  $credentials
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
-    public function retrieveByCredentials(array $credentials)
+    public function retrieveByCredentials(#[\SensitiveParameter] array $credentials)
     {
         if (empty($credentials)) {
             return;
