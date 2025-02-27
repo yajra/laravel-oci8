@@ -61,8 +61,11 @@ class Sequence
 
     public function exists(string $name): bool
     {
-        $name = $this->wrapSchema($name);
         $owner = $this->connection->getConfig('username');
+
+        if (str_contains($name, '.')) {
+            [$owner, $name] = explode('.', $name);
+        }
 
         return (bool) $this->connection->scalar(
             "select count(*) from all_sequences where sequence_name=upper('{$name}') and sequence_owner=upper('{$owner}')"
