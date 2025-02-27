@@ -91,9 +91,9 @@ class OracleAutoIncrementHelper
      * @param  string  $type
      * @return string
      */
-    private function createObjectName($prefix, $table, $col, $type)
+    private function createObjectName(string $prefix, string $table, string $col, string $type): string
     {
-        $maxLength = $this->connection->getSchemaGrammar()->getMaxLength();
+        $maxLength = $this->connection->getMaxLength();
 
         return mb_substr($prefix.$table.'_'.$col.'_'.$type, 0, $maxLength);
     }
@@ -102,16 +102,17 @@ class OracleAutoIncrementHelper
      * Drop sequence and triggers if exists, autoincrement objects.
      *
      * @param  string  $table
-     * @return null
      */
-    public function dropAutoIncrementObjects($table)
+    public function dropAutoIncrementObjects(string $table): void
     {
         // drop sequence and trigger object
         $prefix = $this->connection->getTablePrefix();
+
         // get the actual primary column name from table
         $col = $this->getPrimaryKey($prefix.$table);
+
         // if primary key col is set, drop auto increment objects
-        if (isset($col) && ! empty($col)) {
+        if (! empty($col)) {
             // drop sequence for auto increment
             $sequenceName = $this->createObjectName($prefix, $table, $col, 'seq');
             $this->sequence->drop($sequenceName);
@@ -123,18 +124,12 @@ class OracleAutoIncrementHelper
     }
 
     /**
-     * Get table's primary key.
-     *
-     * @param  string  $table
-     * @return string
+     * Get the table's primary key column name.
      */
-    public function getPrimaryKey($table)
+    public function getPrimaryKey(string $table): string
     {
-        if (! $table) {
-            return '';
-        }
-
         $owner = $this->connection->getConfig('username');
+
         if (str_contains($table, '.'))  {
             [$owner, $table] = explode('.', $table);
         }
@@ -147,7 +142,6 @@ class OracleAutoIncrementHelper
                 AND cons.constraint_name = cols.constraint_name
                 AND cons.owner = cols.owner
                 AND cols.position = 1
-                AND cons.owner = (select user from dual)
             ORDER BY cols.table_name, cols.position";
 
         $data = $this->connection->selectOne($sql);
@@ -161,40 +155,32 @@ class OracleAutoIncrementHelper
 
     /**
      * Get sequence instance.
-     *
-     * @return Sequence
      */
-    public function getSequence()
+    public function getSequence(): Sequence
     {
         return $this->sequence;
     }
 
     /**
-     * Set sequence instance.
-     *
-     * @param  Sequence  $sequence
+     * Set the sequence instance.
      */
-    public function setSequence($sequence)
+    public function setSequence(Sequence $sequence): void
     {
         $this->sequence = $sequence;
     }
 
     /**
-     * Get trigger instance.
-     *
-     * @return Trigger
+     * Get the trigger instance.
      */
-    public function getTrigger()
+    public function getTrigger(): Trigger
     {
         return $this->trigger;
     }
 
     /**
      * Set the trigger instance.
-     *
-     * @param  Trigger  $trigger
      */
-    public function setTrigger($trigger)
+    public function setTrigger(Trigger $trigger): void
     {
         $this->trigger = $trigger;
     }

@@ -324,19 +324,19 @@ class Oci8Connection extends Connection
      *
      * @return string
      */
-    public function getSchemaPrefix()
+    public function getSchemaPrefix(): string
     {
-        return isset($this->config['prefix_schema']) ? $this->config['prefix_schema'] : '';
+        return $this->config['prefix_schema'] ?? '';
     }
 
     /**
      * Get config max length.
      *
-     * @return string
+     * @return int
      */
-    public function getMaxLength()
+    public function getMaxLength(): int
     {
-        return isset($this->config['max_name_len']) ? $this->config['max_name_len'] : 30;
+        return intval($this->config['max_name_len'] ?? 30);
     }
 
     /**
