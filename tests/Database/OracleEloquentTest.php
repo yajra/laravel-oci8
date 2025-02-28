@@ -13,24 +13,19 @@ use Illuminate\Database\Query\Processors\SQLiteProcessor;
 use Illuminate\Database\Query\Processors\SqlServerProcessor;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
-/**
- * {@inheritdoc}
- */
 class OracleEloquentTest extends TestCase
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testNewBaseQueryBuilderReturnsOracleBuilderForOracleGrammar()
+    public function test_new_base_query_builder_returns_oracle_builder_for_oracle_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'Oracle');
@@ -40,28 +35,30 @@ class OracleEloquentTest extends TestCase
 
         $this->assertInstanceOf(OracleBuilder::class, $builder);
         $this->assertInstanceOf(OracleGrammar::class, $builder->getGrammar());
-        $this->assertInstanceOf(OracleProcessor::class,
-            $builder->getProcessor());
+        $this->assertInstanceOf(OracleProcessor::class, $builder->getProcessor());
     }
 
-    /**
-     * @param  $model
-     * @param  $database
-     */
     protected function mockConnectionForModel($model, $database)
     {
         if ($database == 'Oracle') {
             $grammarClass = OracleGrammar::class;
             $processorClass = OracleProcessor::class;
-            $grammar = new $grammarClass;
+
+            $oci8Connection = m::mock(Oci8Connection::class);
+            $oci8Connection->shouldReceive('getSchemaPrefix')->andReturn('');
+            $oci8Connection->shouldReceive('setSchemaPrefix');
+            $oci8Connection->shouldReceive('getMaxLength')->andReturn(30);
+            $oci8Connection->shouldReceive('setMaxLength');
+
+            $grammar = new $grammarClass($oci8Connection);
             $processor = new $processorClass;
-            $connection = m::mock('Illuminate\Database\ConnectionInterface', [
+            $connection = m::mock(\Illuminate\Database\ConnectionInterface::class, [
                 'getQueryGrammar' => $grammar,
                 'getPostProcessor' => $processor,
             ]);
-            $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
+            $resolver = m::mock(\Illuminate\Database\ConnectionResolverInterface::class,
                 ['connection' => $connection]);
-            $class = get_class($model);
+            $class = $model::class;
             $class::setConnectionResolver($resolver);
 
             return;
@@ -69,19 +66,19 @@ class OracleEloquentTest extends TestCase
 
         $grammarClass = 'Illuminate\Database\Query\Grammars\\'.$database.'Grammar';
         $processorClass = 'Illuminate\Database\Query\Processors\\'.$database.'Processor';
-        $grammar = new $grammarClass;
+        $grammar = new $grammarClass(m::mock(\Illuminate\Database\Connection::class));
         $processor = new $processorClass;
-        $connection = m::mock('Illuminate\Database\ConnectionInterface', [
+        $connection = m::mock(\Illuminate\Database\ConnectionInterface::class, [
             'getQueryGrammar' => $grammar,
             'getPostProcessor' => $processor,
         ]);
-        $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
+        $resolver = m::mock(\Illuminate\Database\ConnectionResolverInterface::class,
             ['connection' => $connection]);
-        $class = get_class($model);
+        $class = $model::class;
         $class::setConnectionResolver($resolver);
     }
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForSQLiteGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_sq_lite_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'SQLite');
@@ -90,11 +87,10 @@ class OracleEloquentTest extends TestCase
 
         $this->assertInstanceOf(Builder::class, $builder);
         $this->assertInstanceOf(SQLiteGrammar::class, $builder->getGrammar());
-        $this->assertInstanceOf(SQLiteProcessor::class,
-            $builder->getProcessor());
+        $this->assertInstanceOf(SQLiteProcessor::class, $builder->getProcessor());
     }
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForMysSqlGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_mys_sql_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'MySql');
@@ -106,7 +102,7 @@ class OracleEloquentTest extends TestCase
             $builder->getProcessor());
     }
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForPostgresGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_postgres_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'Postgres');
@@ -123,7 +119,7 @@ class OracleEloquentTest extends TestCase
     // HELPER FUNCTIONS
     // #########################################################################
 
-    public function testNewBaseQueryBuilderReturnsIlliminateBuilderForSqlServerGrammar()
+    public function test_new_base_query_builder_returns_illuminate_builder_for_sql_server_grammar()
     {
         $model = new OracleEloquentStub;
         $this->mockConnectionForModel($model, 'SqlServer');
@@ -138,6 +134,4 @@ class OracleEloquentTest extends TestCase
     }
 }
 
-class OracleEloquentStub extends \Yajra\Oci8\Eloquent\OracleEloquent
-{
-}
+class OracleEloquentStub extends \Yajra\Oci8\Eloquent\OracleEloquent {}

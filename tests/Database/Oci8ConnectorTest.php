@@ -11,12 +11,15 @@ use Yajra\Pdo\Oci8;
 
 class Oci8ConnectorTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testCreateConnection()
+    /**
+     * @throws \Exception
+     */
+    public function test_create_connection()
     {
         $connector = new OracleConnectorStub;
         $tns = 'Connection String';
@@ -34,29 +37,31 @@ class Oci8ConnectorTest extends TestCase
         $this->assertInstanceOf(Oci8::class, $oci8);
     }
 
-    public function testOptionResolution()
+    public function test_option_resolution()
     {
         $connector = new Connector;
         $connector->setDefaultOptions([0 => 'foo', 1 => 'bar']);
-        $this->assertEquals([0 => 'baz', 1 => 'bar', 2 => 'boom'],
-            $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']]));
+        $this->assertEquals(
+            [0 => 'baz', 1 => 'bar', 2 => 'boom'],
+            $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']])
+        );
     }
 
     #[DataProvider('tnsDataProvider')]
-    public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
+    public function test_oracle_connect_calls_create_connection_with_proper_arguments($dsn, $config)
     {
         $connector = $this->getMockBuilder(OracleConnector::class)
-                           ->onlyMethods(['createConnection', 'getOptions'])
-                           ->getMock();
+            ->onlyMethods(['createConnection', 'getOptions'])
+            ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
-                  ->method('getOptions')
-                  ->with($this->equalTo($config))
-                  ->willReturn(['options']);
+            ->method('getOptions')
+            ->with($this->equalTo($config))
+            ->willReturn(['options']);
         $connector->expects($this->once())
-                  ->method('createConnection')
-                  ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
-                  ->willReturn($connection);
+            ->method('createConnection')
+            ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
+            ->willReturn($connection);
 
         if (isset($config['schema'])) {
             $connection->shouldReceive('setSchema')->andReturnSelf();
@@ -235,15 +240,15 @@ class Oci8ConnectorTest extends TestCase
 
 class OracleConnectorStub extends OracleConnector
 {
-    public function createConnection($dsn, array $config, array $options)
+    protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options): Oci8
     {
-        return new Oci8Stub($dsn, $config['username'], $config['password'], $config['options']);
+        return new Oci8Stub($dsn, $username, $password, $options);
     }
 }
 
 class Oci8Stub extends Oci8
 {
-    public function __construct($dsn, $username, $password, array $options = [])
+    public function __construct(string $dsn, ?string $username, ?string $password, ?array $options = [])
     {
         return true;
     }

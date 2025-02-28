@@ -52,19 +52,18 @@ class QueryBuilderTest extends TestCase
     }
 
     #[Test]
-    public function it_can_insert_get_id_with_empty_values()
+    public function it_can_insert_and_get_id()
     {
-        $this->expectExceptionCode(928);
-        $id = $this->getBuilder()->from('users')->insertGetId([]);
-        // @TODO: insert id should be returned.
+        $lastId = $this->getConnection()->table('users')->max('id');
+        $id = $this->getBuilder()->from('users')->insertGetId(['name' => 'foo', 'email' => 'bar']);
+        $this->assertSame($lastId + 1, $id);
     }
 
     protected function getBuilder(): Builder
     {
-        $grammar = new OracleGrammar;
+        $grammar = new OracleGrammar($this->getConnection());
         $processor = new OracleProcessor;
-        $builder = new Builder($this->getConnection(), $grammar, $processor);
 
-        return $builder;
+        return new Builder($this->getConnection(), $grammar, $processor);
     }
 }

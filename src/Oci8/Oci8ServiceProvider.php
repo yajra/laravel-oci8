@@ -10,17 +10,7 @@ use Yajra\Oci8\Connectors\OracleConnector as Connector;
 
 class Oci8ServiceProvider extends ServiceProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
-
-    /**
-     * Boot Oci8 Provider.
-     */
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../config/oracle.php' => config_path('oracle.php'),
@@ -29,19 +19,12 @@ class Oci8ServiceProvider extends ServiceProvider
         // Testing for existence of AuthServiceProvider before invoking it
         // prevents errors when used with laravel-zero micro-framework which
         // doesn't need auth.
-        if (class_exists('\Illuminate\Auth\AuthServiceProvider')) {
-            Auth::provider('oracle', function ($app, array $config) {
-                return new OracleUserProvider($app['hash'], $config['model']);
-            });
+        if (class_exists(\Illuminate\Auth\AuthServiceProvider::class)) {
+            Auth::provider('oracle', fn ($app, array $config) => new OracleUserProvider($app['hash'], $config['model']));
         }
     }
 
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
         if (file_exists(config_path('oracle.php'))) {
             $this->mergeConfigFrom(config_path('oracle.php'), 'database.connections');
@@ -50,11 +33,11 @@ class Oci8ServiceProvider extends ServiceProvider
         }
 
         Connection::resolverFor('oracle', function ($connection, $database, $prefix, $config) {
-            if (isset($config['dynamic']) && ! empty($config['dynamic'])) {
+            if (! empty($config['dynamic'])) {
                 call_user_func_array($config['dynamic'], [&$config]);
             }
 
-            $connector = new Connector();
+            $connector = new Connector;
             $connection = $connector->connect($config);
             $db = new Oci8Connection($connection, $database, $prefix, $config);
 
@@ -92,15 +75,5 @@ class Oci8ServiceProvider extends ServiceProvider
 
             return $db;
         });
-    }
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return string[]
-     */
-    public function provides()
-    {
-        return [];
     }
 }

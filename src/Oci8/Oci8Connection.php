@@ -3,7 +3,6 @@
 namespace Yajra\Oci8;
 
 use Illuminate\Database\Connection;
-use Illuminate\Database\Grammar;
 use Illuminate\Support\Str;
 use PDO;
 use PDOStatement;
@@ -21,51 +20,44 @@ class Oci8Connection extends Connection
 {
     const RECONNECT_ERRORS = 'reconnect_errors';
 
-    /**
-     * @var string
-     */
-    protected $schema;
+    protected string $schema;
 
-    /**
-     * @var \Yajra\Oci8\Schema\Sequence
-     */
-    protected $sequence;
+    protected Sequence $sequence;
 
-    /**
-     * @var \Yajra\Oci8\Schema\Trigger
-     */
-    protected $trigger;
+    protected Trigger $trigger;
+
+    protected int $maxLength = 30;
+
+    protected string $schemaPrefix = '';
 
     /**
      * @param  PDO|\Closure  $pdo
      * @param  string  $database
      * @param  string  $tablePrefix
-     * @param  array  $config
      */
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
+
         $this->sequence = new Sequence($this);
         $this->trigger = new Trigger($this);
+        $this->schema = $config['username'] ?? '';
+        $this->maxLength = intval($config['max_name_len'] ?? 30);
+        $this->schemaPrefix = $config['prefix_schema'] ?? '';
     }
 
     /**
-     * Get current schema.
-     *
-     * @return string
+     * Get the current schema.
      */
-    public function getSchema()
+    public function getSchema(): string
     {
         return $this->schema;
     }
 
     /**
      * Set current schema.
-     *
-     * @param  string  $schema
-     * @return $this
      */
-    public function setSchema($schema)
+    public function setSchema(string $schema): static
     {
         $this->schema = $schema;
         $sessionVars = [
@@ -77,11 +69,8 @@ class Oci8Connection extends Connection
 
     /**
      * Update oracle session variables.
-     *
-     * @param  array  $sessionVars
-     * @return $this
      */
-    public function setSessionVars(array $sessionVars)
+    public function setSessionVars(array $sessionVars): static
     {
         $vars = [];
         foreach ($sessionVars as $option => $value) {
@@ -101,53 +90,25 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Get sequence class.
-     *
-     * @return \Yajra\Oci8\Schema\Sequence
+     * Get the oracle sequence class.
      */
-    public function getSequence()
+    public function getSequence(): Sequence
     {
         return $this->sequence;
     }
 
     /**
-     * Set sequence class.
-     *
-     * @param  \Yajra\Oci8\Schema\Sequence  $sequence
-     * @return \Yajra\Oci8\Schema\Sequence
+     * Get the oracle trigger class.
      */
-    public function setSequence(Sequence $sequence)
-    {
-        return $this->sequence = $sequence;
-    }
-
-    /**
-     * Get oracle trigger class.
-     *
-     * @return \Yajra\Oci8\Schema\Trigger
-     */
-    public function getTrigger()
+    public function getTrigger(): Trigger
     {
         return $this->trigger;
     }
 
     /**
-     * Set oracle trigger class.
-     *
-     * @param  \Yajra\Oci8\Schema\Trigger  $trigger
-     * @return \Yajra\Oci8\Schema\Trigger
-     */
-    public function setTrigger(Trigger $trigger)
-    {
-        return $this->trigger = $trigger;
-    }
-
-    /**
      * Get a schema builder instance for the connection.
-     *
-     * @return \Yajra\Oci8\Schema\OracleBuilder
      */
-    public function getSchemaBuilder()
+    public function getSchemaBuilder(): SchemaBuilder
     {
         if (is_null($this->schemaGrammar)) {
             $this->useDefaultSchemaGrammar();
@@ -158,10 +119,8 @@ class Oci8Connection extends Connection
 
     /**
      * Get a new query builder instance.
-     *
-     * @return \Illuminate\Database\Query\Builder
      */
-    public function query()
+    public function query(): QueryBuilder
     {
         return new QueryBuilder(
             $this, $this->getQueryGrammar(), $this->getPostProcessor()
@@ -170,11 +129,8 @@ class Oci8Connection extends Connection
 
     /**
      * Set oracle session date format.
-     *
-     * @param  string  $format
-     * @return $this
      */
-    public function setDateFormat($format = 'YYYY-MM-DD HH24:MI:SS')
+    public function setDateFormat(string $format = 'YYYY-MM-DD HH24:MI:SS'): static
     {
         $sessionVars = [
             'NLS_DATE_FORMAT' => $format,
@@ -188,15 +144,13 @@ class Oci8Connection extends Connection
      * Execute a PL/SQL Function and return its value.
      * Usage: DB::executeFunction('function_name', ['binding_1' => 'hi', 'binding_n' =>
      * 'bye'], PDO::PARAM_LOB).
-     *
-     * @param  string  $functionName
-     * @param  array  $bindings  (kvp array)
-     * @param  int  $returnType  (PDO::PARAM_*)
-     * @param  int  $length
-     * @return mixed $returnType
      */
-    public function executeFunction($functionName, array $bindings = [], $returnType = PDO::PARAM_STR, $length = null)
-    {
+    public function executeFunction(
+        string $functionName,
+        array $bindings = [],
+        int $returnType = PDO::PARAM_STR,
+        ?int $length = null
+    ): mixed {
         $stmt = $this->createStatementFromFunction($functionName, $bindings);
 
         $stmt = $this->addBindingsToStatement($stmt, $bindings);
@@ -215,12 +169,8 @@ class Oci8Connection extends Connection
      *         $bindings = [
      *                  'p_userid'  => $id
      *         ];
-     *
-     * @param  string  $procedureName
-     * @param  array  $bindings
-     * @return bool
      */
-    public function executeProcedure($procedureName, array $bindings = [])
+    public function executeProcedure(string $procedureName, array $bindings = []): bool
     {
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings);
 
@@ -234,14 +184,12 @@ class Oci8Connection extends Connection
      * Usage: DB::executeProcedureWithCursor($procedureName, $bindings).
      *
      * https://docs.oracle.com/cd/E17781_01/appdev.112/e18555/ch_six_ref_cur.htm#TDPPH218
-     *
-     * @param  string  $procedureName
-     * @param  array  $bindings
-     * @param  string  $cursorName
-     * @return array
      */
-    public function executeProcedureWithCursor($procedureName, array $bindings = [], $cursorName = ':cursor')
-    {
+    public function executeProcedureWithCursor(
+        $procedureName,
+        array $bindings = [],
+        string $cursorName = ':cursor'
+    ): array {
         $stmt = $this->createStatementFromProcedure($procedureName, $bindings, $cursorName);
 
         $stmt = $this->addBindingsToStatement($stmt, $bindings);
@@ -260,17 +208,10 @@ class Oci8Connection extends Connection
 
     /**
      * Creates sql command to run a procedure with bindings.
-     *
-     * @param  string  $procedureName
-     * @param  array  $bindings
-     * @param  string|bool  $cursor
-     * @return string
      */
-    public function createSqlFromProcedure($procedureName, array $bindings, $cursor = false)
+    public function createSqlFromProcedure(string $procedureName, array $bindings, bool|string $cursor = false): string
     {
-        $paramsString = implode(',', array_map(function ($param) {
-            return ':'.$param;
-        }, array_keys($bindings)));
+        $paramsString = implode(',', array_map(fn ($param) => ':'.$param, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
         $cursor = $cursor ? $prefix.$cursor : null;
@@ -280,14 +221,12 @@ class Oci8Connection extends Connection
 
     /**
      * Creates statement from procedure.
-     *
-     * @param  string  $procedureName
-     * @param  array  $bindings
-     * @param  string|bool  $cursorName
-     * @return PDOStatement
      */
-    public function createStatementFromProcedure($procedureName, array $bindings, $cursorName = false)
-    {
+    public function createStatementFromProcedure(
+        $procedureName,
+        array $bindings,
+        bool|string $cursorName = false
+    ): PDOStatement {
         $sql = $this->createSqlFromProcedure($procedureName, $bindings, $cursorName);
 
         return $this->getPdo()->prepare($sql);
@@ -295,12 +234,8 @@ class Oci8Connection extends Connection
 
     /**
      * Create statement from function.
-     *
-     * @param  string  $functionName
-     * @param  array  $bindings
-     * @return PDOStatement
      */
-    public function createStatementFromFunction($functionName, array $bindings)
+    public function createStatementFromFunction(string $functionName, array $bindings): PDOStatement
     {
         $bindings = $bindings ? ':'.implode(', :', array_keys($bindings)) : '';
 
@@ -310,92 +245,81 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Wrap object name with schema prefix.
+     */
+    public function withSchemaPrefix(string $name): string
+    {
+        if ($this->getSchemaPrefix()) {
+            return $this->getSchemaPrefix().'.'.$name;
+        }
+
+        return $name;
+    }
+
+    /**
      * Get the default query grammar instance.
-     *
-     * @return \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar
      */
-    protected function getDefaultQueryGrammar()
+    protected function getDefaultQueryGrammar(): QueryGrammar
     {
-        ($grammar = new QueryGrammar)->setConnection($this);
-
-        return $this->withTablePrefix($grammar);
+        return new QueryGrammar($this);
     }
 
     /**
-     * Set the table prefix and return the grammar.
-     *
-     * @param  \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar  $grammar
-     * @return \Illuminate\Database\Grammar
+     * Get the schema prefix.
      */
-    public function withTablePrefix(Grammar $grammar)
+    public function getSchemaPrefix(): string
     {
-        return $this->withSchemaPrefix(parent::withTablePrefix($grammar));
+        return $this->schemaPrefix;
     }
 
     /**
-     * Set the schema prefix and return the grammar.
-     *
-     * @param  \Illuminate\Database\Grammar|\Yajra\Oci8\Query\Grammars\OracleGrammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar  $grammar
-     * @return \Illuminate\Database\Grammar
+     * Set the schema prefix.
      */
-    public function withSchemaPrefix(Grammar $grammar)
+    public function setSchemaPrefix(string $prefix): static
     {
-        $grammar->setSchemaPrefix($this->getConfigSchemaPrefix());
-        $grammar->setMaxLength($this->getConfigMaxLength());
+        $this->schemaPrefix = $prefix;
 
-        return $grammar;
+        return $this;
     }
 
     /**
-     * Get config schema prefix.
-     *
-     * @return string
+     * Get the max object name length.
      */
-    protected function getConfigSchemaPrefix()
+    public function getMaxLength(): int
     {
-        return isset($this->config['prefix_schema']) ? $this->config['prefix_schema'] : '';
+        return $this->maxLength;
     }
 
     /**
-     * Get config max length.
-     *
-     * @return string
+     * Set the object max length name settings.
      */
-    protected function getConfigMaxLength()
+    public function setMaxLength(int $maxLength = 30): static
     {
-        return isset($this->config['max_name_len']) ? $this->config['max_name_len'] : 30;
+        $this->maxLength = $maxLength;
+
+        return $this;
     }
 
     /**
      * Get the default schema grammar instance.
-     *
-     * @return \Illuminate\Database\Grammar|\Yajra\Oci8\Schema\Grammars\OracleGrammar
      */
-    protected function getDefaultSchemaGrammar()
+    protected function getDefaultSchemaGrammar(): SchemaGrammar
     {
-        ($grammar = new SchemaGrammar)->setConnection($this);
-
-        return $this->withTablePrefix($grammar);
+        return new SchemaGrammar($this);
     }
 
     /**
      * Get the default post processor instance.
-     *
-     * @return \Yajra\Oci8\Query\Processors\OracleProcessor
      */
-    protected function getDefaultPostProcessor()
+    protected function getDefaultPostProcessor(): Processor
     {
-        return new Processor();
+        return new Processor;
     }
 
     /**
      * Add bindings to statement.
-     *
-     * @param  array  $bindings
-     * @param  PDOStatement  $stmt
-     * @return PDOStatement
      */
-    public function addBindingsToStatement(PDOStatement $stmt, array $bindings)
+    public function addBindingsToStatement(PDOStatement $stmt, array $bindings): PDOStatement
     {
         foreach ($bindings as $key => &$binding) {
             $value = &$binding;
@@ -420,28 +344,27 @@ class Oci8Connection extends Connection
      * Determine if the given exception was caused by a lost connection.
      *
      * @param  \Exception  $e
-     * @return bool
      */
-    protected function causedByLostConnection(Throwable $e)
+    protected function causedByLostConnection(Throwable $e): bool
     {
         if (parent::causedByLostConnection($e)) {
             return true;
         }
 
         $lostConnectionErrors = [
-            'ORA-03113',    //End-of-file on communication channel
-            'ORA-03114',    //Not Connected to Oracle
-            'ORA-03135',    //Connection lost contact
-            'ORA-12170',    //Connect timeout occurred
-            'ORA-12537',    //Connection closed
-            'ORA-27146',    //Post/wait initialization failed
-            'ORA-25408',    //Can not safely replay call
-            'ORA-56600',    //Illegal Call
+            'ORA-03113',    // End-of-file on communication channel
+            'ORA-03114',    // Not Connected to Oracle
+            'ORA-03135',    // Connection lost contact
+            'ORA-12170',    // Connect timeout occurred
+            'ORA-12537',    // Connection closed
+            'ORA-27146',    // Post/wait initialization failed
+            'ORA-25408',    // Can not safely replay call
+            'ORA-56600',    // Illegal Call
         ];
 
         $additionalErrors = null;
 
-        $options = isset($this->config['options']) ? $this->config['options'] : [];
+        $options = $this->config['options'] ?? [];
         if (array_key_exists(static::RECONNECT_ERRORS, $options)) {
             $additionalErrors = $this->config['options'][static::RECONNECT_ERRORS];
         }
@@ -456,20 +379,16 @@ class Oci8Connection extends Connection
 
     /**
      * Set oracle NLS session to case insensitive search & sort.
-     *
-     * @return $this
      */
-    public function useCaseInsensitiveSession()
+    public function useCaseInsensitiveSession(): static
     {
         return $this->setSessionVars(['NLS_COMP' => 'LINGUISTIC', 'NLS_SORT' => 'BINARY_CI']);
     }
 
     /**
-     * Set oracle NLS session to case sensitive search & sort.
-     *
-     * @return $this
+     * Set oracle NLS session to case-sensitive search & sort.
      */
-    public function useCaseSensitiveSession()
+    public function useCaseSensitiveSession(): static
     {
         return $this->setSessionVars(['NLS_COMP' => 'BINARY', 'NLS_SORT' => 'BINARY']);
     }
@@ -479,9 +398,8 @@ class Oci8Connection extends Connection
      *
      * @param  \Yajra\Pdo\Oci8\Statement  $statement
      * @param  array  $bindings
-     * @return void
      */
-    public function bindValues($statement, $bindings)
+    public function bindValues($statement, $bindings): void
     {
         foreach ($bindings as $key => $value) {
             $statement->bindValue(is_string($key) ? $key : $key + 1, $value);

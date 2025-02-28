@@ -1,7 +1,10 @@
-name: tests
+name: Continuous Integration
 
 on:
   push:
+    branches:
+      - master
+      - '*.x'
   pull_request:
   schedule:
     - cron: '0 0 * * *'

@@ -498,11 +498,8 @@ trait OracleReservedWords
 
     /**
      * Check if value is an Oracle reserved word.
-     *
-     * @param  string  $value
-     * @return bool
      */
-    public function isReserved($value)
+    public function isReserved(string $value): bool
     {
         return in_array(Str::upper(trim($value)), $this->reserves, true);
     }

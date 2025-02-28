@@ -2,50 +2,27 @@
 
 namespace Yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
-use Illuminate\Support\Str;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
 class Trigger
 {
     use OracleReservedWords;
 
-    /**
-     * @var \Illuminate\Database\Connection|\Yajra\Oci8\Oci8Connection
-     */
-    protected $connection;
+    public function __construct(protected Oci8Connection $connection) {}
 
-    /**
-     * @param  Connection  $connection
-     */
-    public function __construct(Connection $connection)
+    public function autoIncrement(string $table, string $column, string $triggerName, string $sequenceName): bool
     {
-        $this->connection = $connection;
-    }
-
-    /**
-     * Function to create auto increment trigger for a table.
-     *
-     * @param  string  $table
-     * @param  string  $column
-     * @param  string  $triggerName
-     * @param  string  $sequenceName
-     * @return bool
-     */
-    public function autoIncrement($table, $column, $triggerName, $sequenceName)
-    {
-        if (! $table || ! $column || ! $triggerName || ! $sequenceName) {
-            return false;
+        if ($this->connection->getSchemaPrefix()) {
+            $table = $this->connection->withSchemaPrefix($table);
+            $triggerName = $this->connection->withSchemaPrefix($sequenceName);
+            $sequenceName = $this->connection->withSchemaPrefix($sequenceName);
         }
 
-        if ($this->connection->getConfig('prefix_schema')) {
-            $table = $this->connection->getConfig('prefix_schema').'.'.$table;
-            $triggerName = $this->connection->getConfig('prefix_schema').'.'.$triggerName;
-            $sequenceName = $this->connection->getConfig('prefix_schema').'.'.$sequenceName;
-        }
+        $grammar = $this->connection->getQueryGrammar();
 
-        $table = $this->wrapValue($table);
-        $column = $this->wrapValue($column);
+        $table = $grammar->wrapTable($table);
+        $column = $grammar->wrap($column);
 
         return $this->connection->statement("
             create trigger $triggerName
@@ -58,26 +35,7 @@ class Trigger
             end;");
     }
 
-    /**
-     * Wrap value if reserved word.
-     *
-     * @param  string  $value
-     * @return string
-     */
-    protected function wrapValue($value)
-    {
-        $value = Str::upper($value);
-
-        return $this->isReserved($value) ? '"'.$value.'"' : $value;
-    }
-
-    /**
-     * Function to safely drop trigger db object.
-     *
-     * @param  string  $name
-     * @return bool
-     */
-    public function drop($name)
+    public function drop(string $name): bool
     {
         if (! $name) {
             return false;

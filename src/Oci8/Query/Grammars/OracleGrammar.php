@@ -6,37 +6,40 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
+/**
+ * @property \Yajra\Oci8\Oci8Connection $connection
+ */
 class OracleGrammar extends Grammar
 {
     use OracleReservedWords;
 
     /**
      * The keyword identifier wrapper format.
-     *
-     * @var string
      */
-    protected $wrapper = '%s';
+    protected string $wrapper = '%s';
 
-    /**
-     * @var string
-     */
-    protected $schemaPrefix = '';
+    protected string $schemaPrefix = '';
 
-    /**
-     * @var int
-     */
-    protected $maxLength;
+    protected int $maxLength;
+
+    public function __construct(Oci8Connection $connection)
+    {
+        parent::__construct($connection);
+
+        $this->setSchemaPrefix($connection->getSchemaPrefix());
+        $this->setMaxLength($connection->getMaxLength());
+    }
 
     /**
      * Compile a delete statement with joins into SQL.
      *
      * @param  string  $table
      * @param  string  $where
-     * @return string
      */
-    protected function compileDeleteWithJoins(Builder $query, $table, $where)
+    protected function compileDeleteWithJoins(Builder $query, $table, $where): string
     {
         $alias = last(explode(' as ', $table));
 
@@ -47,10 +50,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile an exists statement into SQL.
-     *
-     * @return string
      */
-    public function compileExists(Builder $query)
+    public function compileExists(Builder $query): string
     {
         $q = clone $query;
         $q->columns = [];
@@ -62,11 +63,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile a select query into SQL.
-     *
-     * @param  \Illuminate\Database\Query\Builder
-     * @return string
      */
-    public function compileSelect(Builder $query)
+    public function compileSelect(Builder $query): string
     {
         if (($query->unions || $query->havings) && $query->aggregate) {
             return $this->compileUnionAggregate($query);
@@ -112,15 +110,13 @@ class OracleGrammar extends Grammar
 
     /**
      * Create a full ANSI offset clause for the query.
-     *
-     * @param  array  $components
-     * @return string
      */
-    protected function compileAnsiOffset(Builder $query, $components)
+    protected function compileAnsiOffset(Builder $query, array $components): string
     {
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries
         if ($query->getConnection()->getConfig('server_version') == '12c') {
-            $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns']);
+            $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */",
+                $components['columns']);
             $offset = $query->offset ?: 0;
             $limit = $query->limit;
             $components['limit'] = "offset $offset rows fetch next $limit rows only";
@@ -140,11 +136,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile the limit / offset row constraint for a query.
-     *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @return string
      */
-    protected function compileRowConstraint($query)
+    protected function compileRowConstraint(Builder $query): string
     {
         $start = $query->offset + 1;
         $finish = $query->offset + $query->limit;
@@ -162,13 +155,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile a common table expression for a query.
-     *
-     * @param  string  $sql
-     * @param  string  $constraint
-     * @param  Builder  $query
-     * @return string
      */
-    protected function compileTableExpression($sql, $constraint, $query)
+    protected function compileTableExpression(string $sql, string $constraint, Builder $query): string
     {
         if ($query->limit == 1 && is_null($query->offset)) {
             return "select * from ({$sql}) where rownum {$constraint}";
@@ -179,37 +167,16 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile a truncate table statement into SQL.
-     *
-     * @return array
      */
-    public function compileTruncate(Builder $query)
+    public function compileTruncate(Builder $query): array
     {
         return ['truncate table '.$this->wrapTable($query->from) => []];
     }
 
     /**
-     * Wrap a value in keyword identifiers.
-     *
-     * Override due to laravel's stringify integers.
-     *
-     * @param  \Illuminate\Database\Query\Expression|string  $value
-     * @param  bool  $prefixAlias
-     * @return string
-     */
-    public function wrap($value, $prefixAlias = false)
-    {
-        if (is_int($value) || is_float($value)) {
-            return $value;
-        }
-
-        return parent::wrap($value, $prefixAlias);
-    }
-
-    /**
      * @param  string  $value
-     * @return string
      */
-    protected function wrapJsonSelector($value)
+    protected function wrapJsonSelector($value): string
     {
         [$field, $path] = $this->wrapJsonFieldAndPath($value);
 
@@ -220,55 +187,57 @@ class OracleGrammar extends Grammar
      * Wrap a table in keyword identifiers.
      *
      * @param  \Illuminate\Database\Query\Expression|string  $table
-     * @return string
      */
-    public function wrapTable($table)
+    public function wrapTable($table, $prefix = null): string
     {
         if ($this->isExpression($table)) {
             return $this->getValue($table);
         }
 
-        if (strpos(strtolower($table), ' as ') !== false) {
-            $table = str_replace(' as ', ' ', strtolower($table));
+        $prefix ??= $this->connection->getTablePrefix();
+
+        if (str_contains(strtolower($table), ' as ')) {
+            return $this->wrapAliasedTable($table, $prefix);
         }
 
-        $tableName = $this->wrap($this->tablePrefix.$table, true);
+        $tableName = $this->wrap($prefix.$table);
         $segments = explode(' ', $table);
         if (count($segments) > 1) {
-            $tableName = $this->wrap($this->tablePrefix.$segments[0]).' '.$this->tablePrefix.$segments[1];
+            $tableName = $this->wrap($prefix.$segments[0]).' '.$prefix.$segments[1];
         }
 
-        return $this->getSchemaPrefix().$tableName;
+        return $tableName;
+    }
+
+    protected function wrapAliasedTable($value, $prefix = null): string
+    {
+        $segments = preg_split('/\s+as\s+/i', $value);
+
+        $prefix ??= $this->connection->getTablePrefix();
+
+        return $this->wrapTable($segments[0], $prefix).' '.$this->wrapValue($prefix.$segments[1]);
     }
 
     /**
      * Return the schema prefix.
-     *
-     * @return string
      */
-    public function getSchemaPrefix()
+    public function getSchemaPrefix(): string
     {
-        return ! empty($this->schemaPrefix) ? $this->wrapValue($this->schemaPrefix).'.' : '';
+        return $this->connection->getSchemaPrefix();
     }
 
     /**
      * Get max length.
-     *
-     * @return int
      */
-    public function getMaxLength()
+    public function getMaxLength(): int
     {
-        return ! empty($this->maxLength) ? $this->maxLength : 30;
+        return $this->connection->getMaxLength();
     }
 
     /**
      * Compile an insert ignore statement into SQL.
-     *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $values
-     * @return string
      */
-    public function compileInsertOrIgnore(Builder $query, array $values)
+    public function compileInsertOrIgnore(Builder $query, array $values): string
     {
         $keys = array_keys(reset($values));
         $columns = $this->columnize($keys);
@@ -285,15 +254,11 @@ class OracleGrammar extends Grammar
             $uniqueBy = ['key'];
         }
 
-        $on = collect($uniqueBy)->map(function ($column) use ($query) {
-            return $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column);
-        })->implode(' and ');
+        $on = collect($uniqueBy)->map(fn ($column) => $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column))->implode(' and ');
 
         $sql .= ' on ('.$on.') ';
 
-        $columnValues = collect(explode(', ', $columns))->map(function ($column) use ($source) {
-            return $source.'.'.$column;
-        })->implode(', ');
+        $columnValues = collect(explode(', ', $columns))->map(fn ($column) => $source.'.'.$column)->implode(', ');
 
         $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
 
@@ -302,31 +267,26 @@ class OracleGrammar extends Grammar
 
     /**
      * Set the schema prefix.
-     *
-     * @param  string  $prefix
      */
-    public function setSchemaPrefix($prefix)
+    public function setSchemaPrefix(string $prefix): void
     {
-        $this->schemaPrefix = $prefix;
+        $this->connection->setSchemaPrefix($prefix);
     }
 
     /**
      * Set max length.
-     *
-     * @param  int  $length
      */
-    public function setMaxLength($length)
+    public function setMaxLength(int $length): void
     {
-        $this->maxLength = $length;
+        $this->connection->setMaxLength($length);
     }
 
     /**
      * Wrap a single string in keyword identifiers.
      *
      * @param  string  $value
-     * @return string
      */
-    protected function wrapValue($value)
+    protected function wrapValue($value): string
     {
         if ($value === '*') {
             return $value;
@@ -342,9 +302,8 @@ class OracleGrammar extends Grammar
      *
      * @param  array  $values
      * @param  string  $sequence
-     * @return string
      */
-    public function compileInsertGetId(Builder $query, $values, $sequence = 'id')
+    public function compileInsertGetId(Builder $query, $values, $sequence = 'id'): string
     {
         if (empty($sequence)) {
             $sequence = 'id';
@@ -364,10 +323,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile an insert statement into SQL.
-     *
-     * @return string
      */
-    public function compileInsert(Builder $query, array $values)
+    public function compileInsert(Builder $query, array $values): string
     {
         // Essentially we will force every insert to be treated as a batch insert which
         // simply makes creating the SQL easier for us since we can utilize the same
@@ -404,13 +361,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile an insert with blob field statement into SQL.
-     *
-     * @param  array  $values
-     * @param  array  $binaries
-     * @param  string  $sequence
-     * @return string
      */
-    public function compileInsertLob(Builder $query, $values, $binaries, $sequence = 'id')
+    public function compileInsertLob(Builder $query, array $values, array $binaries, string $sequence = 'id'): string
     {
         if (empty($sequence)) {
             $sequence = 'id';
@@ -444,11 +396,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile an update statement into SQL.
-     *
-     * @param  string  $sequence
-     * @return string
      */
-    public function compileUpdateLob(Builder $query, array $values, array $binaries, $sequence = 'id')
+    public function compileUpdateLob(Builder $query, array $values, array $binaries, string $sequence = 'id'): string
     {
         $table = $this->wrapTable($query->from);
 
@@ -501,9 +450,8 @@ class OracleGrammar extends Grammar
      * Compile the lock into SQL.
      *
      * @param  bool|string  $value
-     * @return string
      */
-    protected function compileLock(Builder $query, $value)
+    protected function compileLock(Builder $query, $value): string
     {
         if (is_string($value)) {
             return $value;
@@ -520,9 +468,8 @@ class OracleGrammar extends Grammar
      * Compile the "limit" portions of the query.
      *
      * @param  int  $limit
-     * @return string
      */
-    protected function compileLimit(Builder $query, $limit)
+    protected function compileLimit(Builder $query, $limit): string
     {
         return '';
     }
@@ -531,9 +478,8 @@ class OracleGrammar extends Grammar
      * Compile the "offset" portions of the query.
      *
      * @param  int  $offset
-     * @return string
      */
-    protected function compileOffset(Builder $query, $offset)
+    protected function compileOffset(Builder $query, $offset): string
     {
         return '';
     }
@@ -542,9 +488,8 @@ class OracleGrammar extends Grammar
      * Compile a "where date" clause.
      *
      * @param  array  $where
-     * @return string
      */
-    protected function whereDate(Builder $query, $where)
+    protected function whereDate(Builder $query, $where): string
     {
         $value = $this->parameter($where['value']);
 
@@ -556,9 +501,8 @@ class OracleGrammar extends Grammar
      *
      * @param  string  $type
      * @param  array  $where
-     * @return string
      */
-    protected function dateBasedWhere($type, Builder $query, $where)
+    protected function dateBasedWhere($type, Builder $query, $where): string
     {
         $value = $this->parameter($where['value']);
 
@@ -571,9 +515,8 @@ class OracleGrammar extends Grammar
      * For safety, whereIntegerInRaw ensures this method is only used with integer values.
      *
      * @param  array  $where
-     * @return string
      */
-    protected function whereNotInRaw(Builder $query, $where)
+    protected function whereNotInRaw(Builder $query, $where): string
     {
         if (! empty($where['values'])) {
             if (is_array($where['values']) && count($where['values']) > 1000) {
@@ -592,9 +535,8 @@ class OracleGrammar extends Grammar
      * For safety, whereIntegerInRaw ensures this method is only used with integer values.
      *
      * @param  array  $where
-     * @return string
      */
-    protected function whereInRaw(Builder $query, $where)
+    protected function whereInRaw(Builder $query, $where): string
     {
         if (! empty($where['values'])) {
             if (is_array($where['values']) && count($where['values']) > 1000) {
@@ -607,7 +549,7 @@ class OracleGrammar extends Grammar
         return '0 = 1';
     }
 
-    private function resolveClause($column, $values, $type)
+    private function resolveClause($column, $values, $type): string
     {
         $chunks = array_chunk($values, 1000);
         $whereClause = '';
@@ -627,10 +569,8 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile a union aggregate query into SQL.
-     *
-     * @return string
      */
-    protected function compileUnionAggregate(Builder $query)
+    protected function compileUnionAggregate(Builder $query): string
     {
         $sql = $this->compileAggregate($query, $query->aggregate);
 
@@ -643,19 +583,16 @@ class OracleGrammar extends Grammar
      * Compile the random statement into SQL.
      *
      * @param  string  $seed
-     * @return string
      */
-    public function compileRandom($seed)
+    public function compileRandom($seed): string
     {
         return 'DBMS_RANDOM.RANDOM';
     }
 
     /**
      * Compile an "upsert" statement into SQL.
-     *
-     * @return string
      */
-    public function compileUpsert(Builder $query, array $values, array $uniqueBy, array $update)
+    public function compileUpsert(Builder $query, array $values, array $uniqueBy, array $update): string
     {
         $columns = $this->columnize(array_keys(reset($values)));
         $parameters = $this->compileUnionSelectFromDual($values);
@@ -665,30 +602,22 @@ class OracleGrammar extends Grammar
         $sql = 'merge into '.$this->wrapTable($query->from).' ';
         $sql .= 'using ('.$parameters.') '.$source;
 
-        $on = collect($uniqueBy)->map(function ($column) use ($query) {
-            return $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column);
-        })->implode(' and ');
+        $on = collect($uniqueBy)->map(fn ($column) => $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column))->implode(' and ');
 
         $sql .= ' on ('.$on.') ';
 
         if ($update) {
             $update = collect($update)
-                ->reject(function ($value, $key) use ($uniqueBy) {
-                    return in_array($value, $uniqueBy);
-                })
-                ->map(function ($value, $key) {
-                    return is_numeric($key)
-                        ? $this->wrap($value).' = '.$this->wrap('laravel_source.'.$value)
-                        : $this->wrap($key).' = '.$this->parameter($value);
-                })
+                ->reject(fn ($value, $key) => in_array($value, $uniqueBy))
+                ->map(fn ($value, $key) => is_numeric($key)
+                    ? $this->wrap($value).' = '.$this->wrap('laravel_source.'.$value)
+                    : $this->wrap($key).' = '.$this->parameter($value))
                 ->implode(', ');
 
             $sql .= 'when matched then update set '.$update.' ';
         }
 
-        $columnValues = collect(explode(', ', $columns))->map(function ($column) use ($source) {
-            return $source.'.'.$column;
-        })->implode(', ');
+        $columnValues = collect(explode(', ', $columns))->map(fn ($column) => $source.'.'.$column)->implode(', ');
 
         $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
 
@@ -699,23 +628,16 @@ class OracleGrammar extends Grammar
      * Compile the SQL statement to execute a savepoint rollback.
      *
      * @param  string  $name
-     * @return string
      */
-    public function compileSavepointRollBack($name)
+    public function compileSavepointRollBack($name): string
     {
         return 'ROLLBACK TO '.$name;
     }
 
-    /**
-     * @param  array  $values
-     * @return string
-     */
     protected function compileUnionSelectFromDual(array $values): string
     {
         return collect($values)->map(function ($record) {
-            $values = collect($record)->map(function ($value, $key) {
-                return '? as '.$this->wrap($key);
-            })->implode(', ');
+            $values = collect($record)->map(fn ($value, $key) => '? as '.$this->wrap($key))->implode(', ');
 
             return 'select '.$values.' from dual';
         })->implode(' union all ');
@@ -724,11 +646,9 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where like" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
-     * @return string
      */
-    protected function whereLike(Builder $query, $where)
+    protected function whereLike(Builder $query, $where): string
     {
         $where['operator'] = $where['not'] ? 'not like' : 'like';
 

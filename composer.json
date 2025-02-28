@@ -19,21 +19,21 @@
         "php": "^8.2",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
-        "illuminate/database": "^11.15.0",
-        "illuminate/pagination": "^11.15.0",
-        "illuminate/support": "^11.15.0",
-        "illuminate/validation": "^11.15.0",
-        "yajra/laravel-pdo-via-oci8": "^3.4.4"
+        "illuminate/database": "^12",
+        "illuminate/pagination": "^12",
+        "illuminate/support": "^12",
+        "illuminate/validation": "^12",
+        "yajra/laravel-pdo-via-oci8": "^3.7.1"
     },
     "require-dev": {
+        "larastan/larastan": "^3.1.0",
+        "laravel/pint": "^1.21",
         "mockery/mockery": "^1.6.12",
-        "orchestra/testbench": "^9.1.2",
-        "phpunit/phpunit": "^10.5|^11.2.7"
+        "orchestra/testbench": "^10",
+        "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1",
+        "rector/rector": "^2.0.9"
     },
     "autoload": {
-        "files": [
-            "src/helper.php"
-        ],
         "psr-4": {
             "Yajra\\": "src/"
         }
@@ -45,7 +45,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "11.x-dev"
+            "dev-master": "12.x-dev"
         },
         "laravel": {
             "providers": [
@@ -55,7 +55,17 @@
         }
     },
     "scripts": {
-        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g"
+        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g",
+        "test": "./vendor/bin/phpunit",
+        "pint": "./vendor/bin/pint",
+        "rector": "./vendor/bin/rector",
+        "stan": "./vendor/bin/phpstan analyse --memory-limit=2G --ansi --no-progress --no-interaction --configuration=phpstan.neon.dist",
+        "pr": [
+            "@rector",
+            "@pint",
+            "@stan",
+            "@test"
+        ]
     },
     "config": {
         "sort-packages": true

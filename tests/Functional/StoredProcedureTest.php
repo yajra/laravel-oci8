@@ -84,7 +84,7 @@ class StoredProcedureTest extends TestCase
         $first = 'hello';
         $last = 'world';
 
-        //this needs to be large enough to hold the plsql return value
+        // this needs to be large enough to hold the plsql return value
         $output = str_repeat(' ', 1000);
 
         $bindings = [

@@ -2,15 +2,15 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
-use Illuminate\Database\Connection;
 use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Schema\Sequence;
 
 class SequenceTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
@@ -22,25 +22,28 @@ class SequenceTest extends TestCase
         $sequence = new Sequence($connection);
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('statement')->andReturn(true);
+        $connection->shouldReceive('getSchemaPrefix');
+        $connection->shouldReceive('withSchemaPrefix');
 
         $success = $sequence->create('users_id_seq');
-        $this->assertEquals(true, $success);
+        $this->assertTrue($success);
     }
 
     #[Test]
-    public function it_can_wrap_sequence_name_with_schema_prefix()
+    public function it_can_set_sequence_name_with_schema_prefix()
     {
         $connection = $this->getConnection();
-        $connection->shouldReceive('getConfig')->andReturn('schema_prefix');
+        $connection->shouldReceive('getSchemaPrefix')->andReturn('schema_prefix');
+        $connection->shouldReceive('withSchemaPrefix')->andReturn('schema_prefix.users_id_seq');
 
         $sequence = new Sequence($connection);
-        $name = $sequence->wrap('users_id_seq');
-        $this->assertEquals($name, 'schema_prefix.users_id_seq');
+        $name = $sequence->withSchemaPrefix('users_id_seq');
+        $this->assertSame($name, 'schema_prefix.users_id_seq');
     }
 
     protected function getConnection()
     {
-        return m::mock(Connection::class);
+        return m::mock(Oci8Connection::class);
     }
 
     #[Test]
@@ -50,6 +53,6 @@ class SequenceTest extends TestCase
         $sequence->shouldReceive('drop')->andReturn(true);
         $sequence->shouldReceive('exists')->andReturn(false);
         $success = $sequence->drop('users_id_seq');
-        $this->assertEquals(true, $success);
+        $this->assertTrue($success);
     }
 }

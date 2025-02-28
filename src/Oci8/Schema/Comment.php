@@ -2,7 +2,6 @@
 
 namespace Yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -16,19 +15,9 @@ class Comment extends Grammar
     protected $connection;
 
     /**
-     * @param  Connection  $connection
-     */
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
      * Set table and column comments.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
-    public function setComments(OracleBlueprint $blueprint)
+    public function setComments(OracleBlueprint $blueprint): void
     {
         $this->commentTable($blueprint);
 
@@ -40,10 +29,8 @@ class Comment extends Grammar
     /**
      * Run the comment on table statement.
      * Comment set by $table->comment = 'comment';.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
-    private function commentTable(OracleBlueprint $blueprint)
+    private function commentTable(OracleBlueprint $blueprint): void
     {
         $table = $this->wrapValue($blueprint->getTable());
 
@@ -56,9 +43,8 @@ class Comment extends Grammar
      * Wrap reserved words.
      *
      * @param  string  $value
-     * @return string
      */
-    protected function wrapValue($value)
+    protected function wrapValue($value): string
     {
         return $this->isReserved($value) ? parent::wrapValue($value) : $value;
     }
@@ -66,10 +52,8 @@ class Comment extends Grammar
     /**
      * Add comments set via fluent setter.
      * Comments set by $table->string('column')->comment('comment');.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
-    private function fluentComments(OracleBlueprint $blueprint)
+    private function fluentComments(OracleBlueprint $blueprint): void
     {
         foreach ($blueprint->getColumns() as $column) {
             if (isset($column['comment'])) {
@@ -80,12 +64,8 @@ class Comment extends Grammar
 
     /**
      * Run the comment on column statement.
-     *
-     * @param  string  $table
-     * @param  string  $column
-     * @param  string  $comment
      */
-    private function commentColumn($table, $column, $comment)
+    private function commentColumn(string $table, string $column, string $comment): void
     {
         $table = $this->wrapValue($table);
         $table = $this->connection->getTablePrefix().$table;
@@ -97,10 +77,8 @@ class Comment extends Grammar
     /**
      * Add comments on columns.
      * Comments set by $table->commentColumns = ['column' => 'comment'];.
-     *
-     * @param  \Yajra\Oci8\Schema\OracleBlueprint  $blueprint
      */
-    private function commentColumns(OracleBlueprint $blueprint)
+    private function commentColumns(OracleBlueprint $blueprint): void
     {
         foreach ($blueprint->commentColumns as $column => $comment) {
             $this->commentColumn($blueprint->getTable(), $column, $comment);

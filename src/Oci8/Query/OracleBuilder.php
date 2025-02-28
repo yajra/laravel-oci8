@@ -9,66 +9,9 @@ use Illuminate\Database\Query\Expression;
 class OracleBuilder extends Builder
 {
     /**
-     * Run a pagination count query.
-     *
-     * @param  array  $columns
-     * @return array
-     */
-    protected function runPaginationCountQuery($columns = ['*'])
-    {
-        if ($this->groups || $this->havings) {
-            $clone = $this->cloneForPaginationCount();
-
-            if (is_null($clone->columns) && ! empty($this->joins)) {
-                $clone->select($this->from.'.*');
-            }
-
-            return $this->newQuery()
-                ->from(new Expression('('.$clone->toSql().')'))
-                ->mergeBindings($clone)
-                ->setAggregate('count', $this->withoutSelectAliases($columns))
-                ->get()->all();
-        }
-
-        $without = $this->unions ? ['orders', 'limit', 'offset'] : ['columns', 'orders', 'limit', 'offset'];
-
-        return $this->cloneWithout($without)
-            ->cloneWithoutBindings($this->unions ? ['order'] : ['select', 'order'])
-            ->setAggregate('count', $this->withoutSelectAliases($columns))
-            ->get()->all();
-    }
-
-    /**
-     * Get the count of the total records for the paginator.
-     *
-     * @param  array  $columns
-     * @return int
-     */
-    public function getCountForPagination($columns = ['*'])
-    {
-        $results = $this->runPaginationCountQuery($columns);
-
-        // Once we have run the pagination count query, we will get the resulting count and
-        // take into account what type of query it was. When there is a group by we will
-        // just return the count of the entire results set since that will be correct.
-        if (! isset($results[0])) {
-            return 0;
-        } elseif (is_object($results[0])) {
-            return (int) (property_exists($results[0], 'AGGREGATE') ? $results[0]->AGGREGATE : $results[0]->aggregate);   // to solve the Oracle issue: auto-convert field to uppercase
-        }
-
-        return (int) array_change_key_case((array) $results[0])['aggregate'];
-    }
-
-    /**
      * Insert a new record and get the value of the primary key.
-     *
-     * @param  array  $values
-     * @param  array  $binaries
-     * @param  string  $sequence
-     * @return int
      */
-    public function insertLob(array $values, array $binaries, $sequence = 'id')
+    public function insertLob(array $values, array $binaries, string $sequence = 'id'): int
     {
         /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
@@ -85,13 +28,8 @@ class OracleBuilder extends Builder
 
     /**
      * Update a new record with blob field.
-     *
-     * @param  array  $values
-     * @param  array  $binaries
-     * @param  string  $sequence
-     * @return bool
      */
-    public function updateLob(array $values, array $binaries, $sequence = 'id')
+    public function updateLob(array $values, array $binaries, string $sequence = 'id'): bool
     {
         $bindings = array_values(array_merge($values, $this->getBindings()));
 
@@ -117,9 +55,8 @@ class OracleBuilder extends Builder
      * @param  mixed  $values
      * @param  string  $boolean
      * @param  bool  $not
-     * @return \Illuminate\Database\Query\Builder|\Yajra\Oci8\Query\OracleBuilder
      */
-    public function whereIn($column, $values, $boolean = 'and', $not = false)
+    public function whereIn($column, $values, $boolean = 'and', $not = false): OracleBuilder
     {
         $type = $not ? 'NotIn' : 'In';
 
@@ -142,31 +79,13 @@ class OracleBuilder extends Builder
     }
 
     /**
-     * Run the query as a "select" statement against the connection.
-     *
-     * @return array
-     */
-    protected function runSelect()
-    {
-        if (isset($this->lock)) {
-            $this->connection->beginTransaction();
-            $result = $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
-            $this->connection->commit();
-
-            return $result;
-        }
-
-        return $this->connection->select($this->toSql(), $this->getBindings(), ! $this->useWritePdo);
-    }
-
-    /**
      * Set the table which the query is targeting.
      *
      * @param  \Closure|\Illuminate\Database\Query\Builder|string  $table
      * @param  string|null  $as
      * @return $this
      */
-    public function from($table, $as = null)
+    public function from($table, $as = null): static
     {
         if ($this->isQueryable($table)) {
             return $this->fromSub($table, $as);
@@ -182,11 +101,8 @@ class OracleBuilder extends Builder
      *
      * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
      * @param  string  $as
-     * @return \Illuminate\Database\Query\Builder|static
-     *
-     * @throws \InvalidArgumentException
      */
-    public function fromSub($query, $as)
+    public function fromSub($query, $as): static
     {
         [$query, $bindings] = $this->createSub($query);
 
@@ -203,11 +119,8 @@ class OracleBuilder extends Builder
      * @param  string|null  $second
      * @param  string  $type
      * @param  bool  $where
-     * @return \Illuminate\Database\Query\Builder|static
-     *
-     * @throws \InvalidArgumentException
      */
-    public function joinSub($query, $as, $first, $operator = null, $second = null, $type = 'inner', $where = false)
+    public function joinSub($query, $as, $first, $operator = null, $second = null, $type = 'inner', $where = false): static
     {
         [$query, $bindings] = $this->createSub($query);
 
@@ -223,9 +136,8 @@ class OracleBuilder extends Builder
      *
      * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
      * @param  string  $as
-     * @return $this
      */
-    public function crossJoinSub($query, $as)
+    public function crossJoinSub($query, $as): static
     {
         [$query, $bindings] = $this->createSub($query);
 
@@ -236,15 +148,5 @@ class OracleBuilder extends Builder
         $this->joins[] = $this->newJoinClause($this, 'cross', new Expression($expression));
 
         return $this;
-    }
-
-    /**
-     * Clone the query.
-     *
-     * @return static
-     */
-    public function clone()
-    {
-        return clone $this;
     }
 }
