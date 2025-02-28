@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
 use PDO;
+use PDOStatement;
 
 class OracleProcessor extends Processor
 {
@@ -15,7 +16,7 @@ class OracleProcessor extends Processor
      *
      * @param  string  $sql
      * @param  array  $values
-     * @param  string  $sequence
+     * @param  null|string  $sequence
      */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null): int
     {
@@ -34,16 +35,13 @@ class OracleProcessor extends Processor
 
         $connection->logQuery($sql, $values, $start);
 
-        return (int) $id;
+        return $id;
     }
 
     /**
      * Get prepared statement.
-     *
-     * @param  string  $sql
-     * @return \PDOStatement|\Yajra\Pdo\Oci8
      */
-    private function prepareStatement(Builder $query, $sql)
+    private function prepareStatement(Builder $query, string $sql): PDOStatement|false
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
         $connection = $query->getConnection();
@@ -54,23 +52,21 @@ class OracleProcessor extends Processor
 
     /**
      * Insert a new record and get the value of the primary key.
-     *
-     * @param  string  $sequence
-     * @return array
      */
-    protected function incrementBySequence(array $values, $sequence)
+    protected function incrementBySequence(array $values, ?string $sequence = null): array
     {
         $builder = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[3]['object'];
         $builderArgs = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 5)[2]['args'];
 
         if (! isset($builderArgs[1][0][$sequence])) {
             if ($builder instanceof EloquentBuilder) {
-                /** @var \Yajra\Oci8\Eloquent\OracleEloquent $model */
+                /** @var \Illuminate\Database\Eloquent\Model $model */
                 $model = $builder->getModel();
+
                 /** @var \Yajra\Oci8\Oci8Connection $connection */
                 $connection = $model->getConnection();
-                if ($model->sequence && $model->incrementing) {
-                    $values[] = (int) $connection->getSequence()->nextValue($model->sequence);
+                if (isset($model->sequence) && $model->incrementing) {
+                    $values[] = $connection->getSequence()->nextValue($model->sequence);
                 }
             }
         }
@@ -80,13 +76,8 @@ class OracleProcessor extends Processor
 
     /**
      * Bind values to PDO statement.
-     *
-     * @param  array  $values
-     * @param  \PDOStatement  $statement
-     * @param  int  $parameter
-     * @return int
      */
-    private function bindValues(&$values, $statement, $parameter)
+    private function bindValues(array &$values, PDOStatement $statement, int $parameter): int
     {
         $count = count($values);
         for ($i = 0; $i < $count; $i++) {
@@ -107,11 +98,8 @@ class OracleProcessor extends Processor
 
     /**
      * Get PDO Type depending on value.
-     *
-     * @param  mixed  $value
-     * @return int
      */
-    private function getPdoType($value)
+    private function getPdoType(mixed $value): int
     {
         if (is_int($value)) {
             return PDO::PARAM_INT;
@@ -130,11 +118,8 @@ class OracleProcessor extends Processor
 
     /**
      * Save Query with Blob returning primary key value.
-     *
-     * @param  string  $sql
-     * @return int
      */
-    public function saveLob(Builder $query, $sql, array $values, array $binaries)
+    public function saveLob(Builder $query, string $sql, array $values, array $binaries): int
     {
         $connection = $query->getConnection();
 
@@ -157,21 +142,18 @@ class OracleProcessor extends Processor
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
 
         if (! $statement->execute()) {
-            return false;
+            return 0;
         }
 
         $connection->logQuery($sql, $values, $start);
 
-        return (int) $id;
+        return $id;
     }
 
     /**
      * Process the results of a column listing query.
-     *
-     * @param  array  $results
-     * @return array
      */
-    public function processColumnListing($results)
+    public function processColumnListing(array $results): array
     {
         $mapping = function ($r) {
             $r = (object) $r;
@@ -186,9 +168,8 @@ class OracleProcessor extends Processor
      * Process the results of a columns query.
      *
      * @param  array  $results
-     * @return array
      */
-    public function processColumns($results)
+    public function processColumns($results): array
     {
         return array_map(function ($result) {
             $result = (object) $result;
@@ -243,9 +224,8 @@ class OracleProcessor extends Processor
      * Process the results of a columns query.
      *
      * @param  array  $results
-     * @return array
      */
-    public function processForeignKeys($results)
+    public function processForeignKeys($results): array
     {
         return array_map(function ($result) {
             $result = (object) $result;
@@ -266,9 +246,8 @@ class OracleProcessor extends Processor
      * Process the results of an indexes query.
      *
      * @param  array  $results
-     * @return array
      */
-    public function processIndexes($results)
+    public function processIndexes($results): array
     {
         $collection = array_map(function ($result) {
             $result = (object) $result;
@@ -285,7 +264,7 @@ class OracleProcessor extends Processor
         return collect($collection)->groupBy('name')->map(function ($items) {
             return [
                 'name' => $items->first()['name'],
-                'columns' => $items->pluck('columns')->map(fn ($item) => strtolower($item))->all(),
+                'columns' => $items->pluck('columns')->map(fn($item) => strtolower($item))->all(),
                 'type' => $items->first()['type'],
                 'unique' => $items->first()['unique'],
                 'primary' => $items->first()['primary'],
