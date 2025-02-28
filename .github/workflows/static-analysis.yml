@@ -26,7 +26,7 @@ on:
 jobs:
   static-analysis-phpstan:
 
-    name: "Static Analysis with PHPStan"
+    name: "phpstan"
     runs-on: ubuntu-latest
 
     strategy:
@@ -43,6 +43,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd, memcached, oci8
           tools: composer:v2
           coverage: none
 
