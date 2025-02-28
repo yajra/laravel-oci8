@@ -6,7 +6,9 @@ on:
       - master
       - 12.x
 jobs:
-  phplint:
+  pint:
+    name: "Pint"
+
     runs-on: ubuntu-latest
 
     permissions:
@@ -26,4 +28,4 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "fix: pint"
+          commit_message: "fix: pint :robot:"

@@ -26,7 +26,7 @@ on:
 jobs:
   static-analysis-phpstan:
 
-    name: "phpstan"
+    name: PHP ${{ matrix.php }} - STABILITY ${{ matrix.stability }}
     runs-on: ubuntu-latest
 
     strategy:
