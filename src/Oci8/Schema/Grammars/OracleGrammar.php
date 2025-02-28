@@ -6,8 +6,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
+/**
+ * @property Oci8Connection $connection
+ */
 class OracleGrammar extends Grammar
 {
     use OracleReservedWords;
@@ -28,10 +32,6 @@ class OracleGrammar extends Grammar
      * The possible column serials.
      */
     protected array $serials = ['bigInteger', 'integer', 'mediumInteger', 'smallInteger', 'tinyInteger'];
-
-    protected string $schemaPrefix = '';
-
-    protected int $maxLength = 30;
 
     /**
      * If this Grammar supports schema changes wrapped in a transaction.
@@ -70,7 +70,11 @@ class OracleGrammar extends Grammar
      */
     public function wrapTable($table, $prefix = null): string
     {
-        return $this->getSchemaPrefix().parent::wrapTable($table);
+        if ($this->getSchemaPrefix()) {
+            return $this->getSchemaPrefix().'.'.parent::wrapTable($table);
+        }
+
+        return parent::wrapTable($table);
     }
 
     /**
@@ -78,7 +82,11 @@ class OracleGrammar extends Grammar
      */
     public function getSchemaPrefix(): string
     {
-        return ! empty($this->schemaPrefix) ? $this->schemaPrefix.'.' : '';
+        if ($this->connection->getSchemaPrefix()) {
+            return $this->wrap($this->connection->getSchemaPrefix());
+        }
+
+        return '';
     }
 
     /**
@@ -86,7 +94,7 @@ class OracleGrammar extends Grammar
      */
     public function getMaxLength(): int
     {
-        return ! empty($this->maxLength) ? $this->maxLength : 30;
+        return $this->connection->getMaxLength();
     }
 
     /**
@@ -94,7 +102,7 @@ class OracleGrammar extends Grammar
      */
     public function setSchemaPrefix(string $prefix): void
     {
-        $this->schemaPrefix = $prefix;
+        $this->connection->setSchemaPrefix($prefix);
     }
 
     /**
@@ -102,7 +110,7 @@ class OracleGrammar extends Grammar
      */
     public function setMaxLength(int $length): void
     {
-        $this->maxLength = $length;
+        $this->connection->setMaxLength($length);
     }
 
     /**

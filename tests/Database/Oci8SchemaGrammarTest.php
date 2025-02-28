@@ -39,12 +39,14 @@ class Oci8SchemaGrammarTest extends TestCase
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,
         string $prefix = '',
-        int $maxLength = 30
+        int $maxLength = 30,
+        string $schemaPrefix = ''
     ) {
         $connection = m::mock(Connection::class)
-            ->shouldReceive('getMaxLength')->andReturn($maxLength)
-            ->shouldReceive('getTablePrefix')->andReturn($prefix)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getTablePrefix')->andReturn($prefix)
+            ->shouldReceive('getMaxLength')->andReturn($maxLength)
+            ->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix)
             ->shouldReceive('isMaria')->andReturn(false)
             ->getMock();
 
@@ -57,7 +59,7 @@ class Oci8SchemaGrammarTest extends TestCase
             ->getMock();
     }
 
-    public function getGrammar(?Connection $connection = null)
+    public function getGrammar(?Connection $connection = null): OracleGrammar
     {
         return new OracleGrammar($connection ?? $this->getConnection());
     }
@@ -79,6 +81,20 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('create table "USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
+    }
+
+    public function test_set_schema_prefix()
+    {
+        $conn = $this->getConnection(schemaPrefix: 'schema');
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->create();
+        $blueprint->string('first name');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('create table "SCHEMA"."USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
     }
 
     public function test_create_index_name_using_column_with_space()
