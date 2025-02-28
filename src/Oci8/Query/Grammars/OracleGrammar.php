@@ -557,7 +557,6 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where fulltext" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
      * @return string
      */

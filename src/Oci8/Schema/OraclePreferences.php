@@ -15,14 +15,8 @@ class OraclePreferences
      */
     protected $connection;
 
-    /**
-     * @var array
-     */
     protected array $columns = [];
 
-    /**
-     * @var array
-     */
     protected array $preferenceName = [];
 
     /**
@@ -38,7 +32,6 @@ class OraclePreferences
     /**
      * Create a preferences values to use in index fullText.
      *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
      * @return null
      */
     public function createPreferences(Blueprint $blueprint): void
@@ -56,10 +49,6 @@ class OraclePreferences
 
     /**
      * Generate script sql to create preferences.
-     *
-     * @param  ?string  $objectNameOracle
-     * @param  ?string  $attributeNameOracle
-     * @return string
      */
     protected function generateSqlCreatePreferences(
         ?string $objectNameOracle = 'MULTI_COLUMN_DATASTORE',
@@ -80,9 +69,6 @@ class OraclePreferences
 
     /**
      * Set columns and preference name to class attributes.
-     *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-     * @return void
      */
     public function setPreferenceFullText(Blueprint $blueprint): void
     {
@@ -99,9 +85,6 @@ class OraclePreferences
 
     /**
      * Format with "implode" function columns to use in preferences.
-     *
-     * @param  array  $columns
-     * @return string
      */
     protected function formatMultipleCtxColumns(array $columns): string
     {
@@ -110,9 +93,6 @@ class OraclePreferences
 
     /**
      * Drop preferences by specified table.
-     *
-     * @param  string  $table
-     * @return void
      */
     public function dropPreferencesByTable(string $table): void
     {
@@ -134,8 +114,6 @@ class OraclePreferences
 
     /**
      * Drop all user preferences.
-     *
-     * @return void
      */
     public function dropAllPreferences(): void
     {

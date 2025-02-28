@@ -326,10 +326,6 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile a fulltext index key command.
-     *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-     * @param  \Illuminate\Support\Fluent  $command
-     * @return string
      */
     public function compileFullText(Blueprint $blueprint, Fluent $command): string
     {
@@ -472,10 +468,6 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile a drop fulltext index command.
-     *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
-     * @param  \Illuminate\Support\Fluent  $command
-     * @return string
      */
     public function compileDropFullText(Blueprint $blueprint, Fluent $command): string
     {

@@ -613,7 +613,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" drop ( "CREATED_AT", "UPDATED_AT" )', $statements[0]);
     }
 
-    public function testSingleDropFullTextByIndex()
+    public function test_single_drop_full_text_by_index()
     {
         $blueprint = new Blueprint('users');
         $blueprint->dropFullText('name_index');
@@ -623,7 +623,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('drop index name_index', $statements[0]);
     }
 
-    public function testMultipleDropFullTextByColumns()
+    public function test_multiple_drop_full_text_by_columns()
     {
         $blueprint = new Blueprint('users');
         $blueprint->dropFullText(['firstname', 'lastname']);
@@ -742,7 +742,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
     }
 
-    public function testAddingMSingleColumnFullTextIndex()
+    public function test_adding_m_single_column_full_text_index()
     {
         $blueprint = new Blueprint('users');
         $blueprint->fullText(['name'], 'name');
@@ -755,7 +755,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statements[0]);
     }
 
-    public function testAddingMultipleColumnsFullTextIndex()
+    public function test_adding_multiple_columns_full_text_index()
     {
         $blueprint = new Blueprint('users');
         $blueprint->fullText(['firstname', 'lastname'], 'name');

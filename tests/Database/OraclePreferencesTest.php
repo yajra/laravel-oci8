@@ -12,20 +12,20 @@ class OraclePreferencesTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testCreatePreferencesWithSingleFullText()
+    public function test_create_preferences_with_single_full_text()
     {
         $connection = $this->getConnection();
         $oraclePreferences = new OraclePreferences($connection);
 
         $connection->shouldReceive('statement')
-        ->andReturnUsing(function () {
-            $this->assertTrue(false, 'A single full-text column cannot create preferences.');
-        });
+            ->andReturnUsing(function () {
+                $this->assertTrue(false, 'A single full-text column cannot create preferences.');
+            });
 
         $blueprint = new Blueprint('users');
         $blueprint->fullText('name', 'name_search_full_text');
@@ -35,7 +35,7 @@ class OraclePreferencesTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testCreatePreferencesWithMultipleFullText()
+    public function test_create_preferences_with_multiple_full_text()
     {
         $connection = $this->getConnection();
         $oraclePreferences = new OraclePreferences($connection);
@@ -55,7 +55,7 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences->createPreferences($blueprint);
     }
 
-    public function testCreatePreferencesWithOtherMultipleFullText()
+    public function test_create_preferences_with_other_multiple_full_text()
     {
         $connection = $this->getConnection();
         $oraclePreferences = new OraclePreferences($connection);
@@ -80,7 +80,7 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences->createPreferences($blueprint);
     }
 
-    public function testDropAllPreferencesByTable()
+    public function test_drop_all_preferences_by_table()
     {
         $connection = $this->getConnection();
         $oraclePreferences = new OraclePreferences($connection);
@@ -106,7 +106,7 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences->dropPreferencesByTable('users');
     }
 
-    public function testDropAllPreferences()
+    public function test_drop_all_preferences()
     {
         $connection = $this->getConnection();
         $oraclePreferences = new OraclePreferences($connection);

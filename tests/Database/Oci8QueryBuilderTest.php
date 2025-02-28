@@ -705,7 +705,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
-    public function testWhereFullTextWithSingleParameter()
+    public function test_where_full_text_with_single_parameter()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText('name', 'johnny');
@@ -713,7 +713,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
-    public function testWhereFullTextWithMultipleParameters()
+    public function test_where_full_text_with_multiple_parameters()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny');
@@ -722,7 +722,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
-    public function testWhereFullTextWithLogicalOrOperator()
+    public function test_where_full_text_with_logical_or_operator()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny', [], 'or');
@@ -731,7 +731,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
-    public function testOrWhereFullTextWithSingleParameter()
+    public function test_or_where_full_text_with_single_parameter()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orWhereFullText('firstname', 'johnny');
@@ -739,7 +739,7 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['johnny'], $builder->getBindings());
     }
 
-    public function testOrWhereFullTextWithMultipleParameters()
+    public function test_or_where_full_text_with_multiple_parameters()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->orWhereFullText('firstname', 'johnny')->orWhereFullText('lastname', 'white');
