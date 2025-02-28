@@ -1,0 +1,17 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - src
+
+    level: 1
+
+    ignoreErrors:
+        - '#Unsafe usage of new static\(\).#'
+
+    excludePaths:
+
+    noEnvCallsOutsideOfConfig: false
+    treatPhpDocTypesAsCertain: false

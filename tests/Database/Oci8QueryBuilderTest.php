@@ -279,9 +279,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_tap_callback()
     {
-        $callback = function ($query) {
-            return $query->where('id', '=', 1);
-        };
+        $callback = (fn ($query) => $query->where('id', '=', 1));
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->tap($callback)->where('email', 'foo');
@@ -1010,9 +1008,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function test_order_by_sub_queries()
     {
         $expected = 'select * from "USERS" order by (select * from (select "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID") where rownum = 1)';
-        $subQuery = function ($query) {
-            return $query->select('created_at')->from('logins')->whereColumn('user_id', 'users.id')->limit(1);
-        };
+        $subQuery = (fn ($query) => $query->select('created_at')->from('logins')->whereColumn('user_id', 'users.id')->limit(1));
 
         $builder = $this->getBuilder()->select('*')->from('users')->orderBy($subQuery);
         $this->assertSame("$expected asc", $builder->toSql());
@@ -1066,9 +1062,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > ?';
         $builder->getConnection()->shouldReceive('select')->once()->with($query, ['popular', 3], true)->andReturn([['category' => 'rock', 'total' => 5]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(fn ($builder, $results) => $results);
         $builder->from('item');
         $result = $builder->select(['category', new Raw('count(*) as "TOTAL"')])->where('department', '=', 'popular')->groupBy('category')->having('total', '>', 3)->get();
         $this->assertEquals([['category' => 'rock', 'total' => 5]], $result->all());
@@ -1077,9 +1071,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $query = 'select "CATEGORY", count(*) as "TOTAL" from "ITEM" where "DEPARTMENT" = ? group by "CATEGORY" having "TOTAL" > 3';
         $builder->getConnection()->shouldReceive('select')->once()->with($query, ['popular'], true)->andReturn([['category' => 'rock', 'total' => 5]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(fn ($builder, $results) => $results);
         $builder->from('item');
         $result = $builder->select(['category', new Raw('count(*) as "TOTAL"')])->where('department', '=', 'popular')->groupBy('category')->having('total', '>', new Raw('3'))->get();
         $this->assertEquals([['category' => 'rock', 'total' => 5]], $result->all());
@@ -1208,9 +1200,7 @@ class Oci8QueryBuilderTest extends TestCase
         }, 'post');
 
         $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
 
         $count = $builder->getCountForPagination();
         $this->assertEquals(1, $count);
@@ -1224,9 +1214,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('posts')->select($columns);
 
         $builder->getConnection()->shouldReceive('select')->once()->with('select count("BODY", "TEASER", "POSTS"."CREATED") as aggregate from "POSTS"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
 
         $count = $builder->getCountForPagination($columns);
         $this->assertEquals(1, $count);
@@ -1238,9 +1226,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('posts')->select('id')->union($this->getBuilder()->from('videos')->select('id'));
 
         $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from ((select "ID" from "POSTS") union (select "ID" from "VIDEOS")) "TEMP_TABLE"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
 
         $count = $builder->getCountForPagination();
         $this->assertEquals(1, $count);
@@ -1691,9 +1677,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->shouldReceive('processSelect')
             ->once()
             ->with($builder, [['foo' => 'bar']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+            ->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->find(1);
         $this->assertEquals(['foo' => 'bar'], $results);
     }
@@ -1710,9 +1694,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->shouldReceive('processSelect')
             ->once()
             ->with($builder, [['foo' => 'bar']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+            ->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->first();
         $this->assertEquals(['foo' => 'bar'], $results);
     }
@@ -1721,17 +1703,13 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(function ($query, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
         $this->assertEquals(['bar', 'baz'], $results->all());
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])->andReturnUsing(function ($query, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo', 'id');
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results->all());
     }
@@ -1741,18 +1719,14 @@ class Oci8QueryBuilderTest extends TestCase
         // Test without glue.
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(function ($query, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->implode('foo');
         $this->assertSame('barbaz', $results);
 
         // Test with glue.
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->andReturn([['foo' => 'bar'], ['foo' => 'baz']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(function ($query, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->implode('foo', ',');
         $this->assertSame('bar,baz', $results);
     }
@@ -1774,9 +1748,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->shouldReceive('processSelect')
             ->once()
             ->with($builder, [['foo' => 'bar'], ['foo' => 'baz']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+            ->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo');
         $this->assertEquals(['bar', 'baz'], $results->all());
 
@@ -1789,9 +1761,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->shouldReceive('processSelect')
             ->once()
             ->with($builder, [['id' => 1, 'foo' => 'bar'], ['id' => 10, 'foo' => 'baz']])
-            ->andReturnUsing(function ($query, $results) {
-                return $results;
-            });
+            ->andReturnUsing(fn ($query, $results) => $results);
         $results = $builder->from('users')->where('id', '=', 1)->pluck('foo', 'id');
         $this->assertEquals([1 => 'bar', 10 => 'baz'], $results->all());
     }
@@ -1800,9 +1770,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with('select count(*) as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->count();
         $this->assertEquals(1, $results);
 
@@ -1818,25 +1786,19 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with('select max("ID") as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->max('id');
         $this->assertEquals(1, $results);
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with('select min("ID") as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->min('id');
         $this->assertEquals(1, $results);
 
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->once()->with('select sum("ID") as aggregate from "USERS"', [], true)->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->sum('id');
         $this->assertEquals(1, $results);
     }
@@ -1845,9 +1807,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 1]]);
-        $results = $builder->from('users')->doesntExistOr(function () {
-            return 123;
-        });
+        $results = $builder->from('users')->doesntExistOr(fn () => 123);
         $this->assertSame(123, $results);
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 0]]);
@@ -1861,9 +1821,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 0]]);
-        $results = $builder->from('users')->existsOr(function () {
-            return 123;
-        });
+        $results = $builder->from('users')->existsOr(fn () => 123);
         $this->assertSame(123, $results);
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')->andReturn([['exists' => 1]]);
@@ -1891,9 +1849,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select "COLUMN1", "COLUMN2" from "USERS"', [], true)
             ->andReturn([['column1' => 'foo', 'column2' => 'bar']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(fn ($builder, $results) => $results);
         $builder->from('users')->select('column1', 'column2');
         $count = $builder->count();
         $this->assertEquals(1, $count);
@@ -1916,9 +1872,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select "COLUMN2", "COLUMN3" from "USERS"', [], true)
             ->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(fn ($builder, $results) => $results);
         $builder->from('users');
         $count = $builder->count('column1');
         $this->assertEquals(1, $count);
@@ -1939,9 +1893,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select "COLUMN2", "COLUMN3" from "USERS"', [], true)
             ->andReturn([['column2' => 'foo', 'column3' => 'bar']]);
-        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->andReturnUsing(fn ($builder, $results) => $results);
         $builder->from('users');
         $count = $builder->count('column1');
         $this->assertEquals(1, $count);
@@ -1957,9 +1909,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select count(*) as aggregate from "USERS"', [], true)
             ->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $builder->from('users')->selectSub(function ($query) {
             $query->from('posts')->select('foo')->where('title', 'foo');
         }, 'post');
@@ -1998,9 +1948,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select count(*) as aggregate from "USERS"', [], true)
             ->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->count();
         $this->assertEquals(1, $results);
     }
@@ -2024,9 +1972,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select max("ID") as aggregate from "USERS"', [], true)
             ->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->max('id');
         $this->assertEquals(1, $results);
     }
@@ -2039,9 +1985,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select min("ID") as aggregate from "USERS"', [], true)
             ->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->min('id');
         $this->assertEquals(1, $results);
     }
@@ -2054,9 +1998,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->once()
             ->with('select sum("ID") as aggregate from "USERS"', [], true)
             ->andReturn([['aggregate' => 1]]);
-        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(function ($builder, $results) {
-            return $results;
-        });
+        $builder->getProcessor()->shouldReceive('processSelect')->once()->andReturnUsing(fn ($builder, $results) => $results);
         $results = $builder->from('users')->sum('id');
         $this->assertEquals(1, $results);
     }
@@ -2483,9 +2425,9 @@ class Oci8QueryBuilderTest extends TestCase
         $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
         $grammar = $this->getGrammar();
-        $processor = m::mock('\Yajra\Oci8\Query\Processors\OracleProcessor');
+        $processor = m::mock(\Yajra\Oci8\Query\Processors\OracleProcessor::class);
         $builder = m::mock('Illuminate\Database\Query\Builder[where]',
-            [m::mock('Illuminate\Database\ConnectionInterface'), $grammar, $processor]);
+            [m::mock(\Illuminate\Database\ConnectionInterface::class), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('foo_bar', '=', $parameters[0], 'and')->once()->andReturn($builder);
         $builder->shouldReceive('where')->with('baz', '=', $parameters[1], 'and')->once()->andReturn($builder);
@@ -2927,9 +2869,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->shouldReceive('forPage')->once()->with($page, $perPage)->andReturnSelf();
         $builder->shouldReceive('get')->once()->andReturn($results);
 
-        Paginator::currentPathResolver(function () use ($path) {
-            return $path;
-        });
+        Paginator::currentPathResolver(fn () => $path);
 
         $result = $builder->paginate($perPage, $columns, $pageName, $page);
 
@@ -2953,13 +2893,9 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->shouldReceive('forPage')->once()->with($page, $perPage)->andReturnSelf();
         $builder->shouldReceive('get')->once()->andReturn($results);
 
-        Paginator::currentPageResolver(function () {
-            return 1;
-        });
+        Paginator::currentPageResolver(fn () => 1);
 
-        Paginator::currentPathResolver(function () use ($path) {
-            return $path;
-        });
+        Paginator::currentPathResolver(fn () => $path);
 
         $result = $builder->paginate();
 
@@ -2983,13 +2919,9 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->shouldNotReceive('forPage');
         $builder->shouldNotReceive('get');
 
-        Paginator::currentPageResolver(function () {
-            return 1;
-        });
+        Paginator::currentPageResolver(fn () => 1);
 
-        Paginator::currentPathResolver(function () use ($path) {
-            return $path;
-        });
+        Paginator::currentPathResolver(fn () => $path);
 
         $result = $builder->paginate();
 
@@ -3014,9 +2946,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->shouldReceive('forPage')->once()->with($page, $perPage)->andReturnSelf();
         $builder->shouldReceive('get')->once()->andReturn($results);
 
-        Paginator::currentPathResolver(function () use ($path) {
-            return $path;
-        });
+        Paginator::currentPathResolver(fn () => $path);
 
         $result = $builder->paginate($perPage, $columns, $pageName, $page);
 

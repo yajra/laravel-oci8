@@ -211,9 +211,7 @@ class Oci8Connection extends Connection
      */
     public function createSqlFromProcedure(string $procedureName, array $bindings, bool|string $cursor = false): string
     {
-        $paramsString = implode(',', array_map(function ($param) {
-            return ':'.$param;
-        }, array_keys($bindings)));
+        $paramsString = implode(',', array_map(fn ($param) => ':'.$param, array_keys($bindings)));
 
         $prefix = count($bindings) ? ',' : '';
         $cursor = $cursor ? $prefix.$cursor : null;

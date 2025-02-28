@@ -158,7 +158,7 @@ class OracleProcessor extends Processor
         $mapping = function ($r) {
             $r = (object) $r;
 
-            return strtolower($r->column_name);
+            return strtolower((string) $r->column_name);
         };
 
         return array_map($mapping, $results);
@@ -174,12 +174,12 @@ class OracleProcessor extends Processor
         return array_map(function ($result) {
             $result = (object) $result;
 
-            $type = strtolower($result->type);
+            $type = strtolower((string) $result->type);
             $precision = (int) $result->precision;
             $places = (int) $result->places;
             $length = (int) $result->data_length;
 
-            switch ($typeName = strtolower($result->type_name)) {
+            switch ($typeName = strtolower((string) $result->type_name)) {
                 case 'number':
                     if ($precision === 19 && $places === 0) {
                         $type = 'bigint';
@@ -207,8 +207,8 @@ class OracleProcessor extends Processor
             }
 
             return [
-                'name' => strtolower($result->name),
-                'type_name' => strtolower($result->type_name),
+                'name' => strtolower((string) $result->name),
+                'type_name' => strtolower((string) $result->type_name),
                 'type' => $type,
                 'nullable' => (bool) $result->nullable,
                 'default' => $result->default,
@@ -231,12 +231,12 @@ class OracleProcessor extends Processor
             $result = (object) $result;
 
             return [
-                'name' => strtolower($result->name),
-                'columns' => explode(',', strtolower($result->columns)),
-                'foreign_schema' => strtolower($result->foreign_schema),
-                'foreign_table' => strtolower($result->foreign_table),
-                'foreign_columns' => explode(',', strtolower($result->foreign_columns)),
-                'on_update' => strtolower($result->on_update),
+                'name' => strtolower((string) $result->name),
+                'columns' => explode(',', strtolower((string) $result->columns)),
+                'foreign_schema' => strtolower((string) $result->foreign_schema),
+                'foreign_table' => strtolower((string) $result->foreign_table),
+                'foreign_columns' => explode(',', strtolower((string) $result->foreign_columns)),
+                'on_update' => strtolower((string) $result->on_update),
                 'on_delete' => $result->on_delete,
             ];
         }, $results);
@@ -253,22 +253,20 @@ class OracleProcessor extends Processor
             $result = (object) $result;
 
             return [
-                'name' => $name = strtolower($result->name),
+                'name' => $name = strtolower((string) $result->name),
                 'columns' => $result->columns,
-                'type' => strtolower($result->type),
+                'type' => strtolower((string) $result->type),
                 'unique' => (bool) $result->unique,
                 'primary' => str_contains($name, '_pk'),
             ];
         }, $results);
 
-        return collect($collection)->groupBy('name')->map(function ($items) {
-            return [
-                'name' => $items->first()['name'],
-                'columns' => $items->pluck('columns')->map(fn ($item) => strtolower($item))->all(),
-                'type' => $items->first()['type'],
-                'unique' => $items->first()['unique'],
-                'primary' => $items->first()['primary'],
-            ];
-        })->values()->all();
+        return collect($collection)->groupBy('name')->map(fn ($items) => [
+            'name' => $items->first()['name'],
+            'columns' => $items->pluck('columns')->map(fn ($item) => strtolower((string) $item))->all(),
+            'type' => $items->first()['type'],
+            'unique' => $items->first()['unique'],
+            'primary' => $items->first()['primary'],
+        ])->values()->all();
     }
 }

@@ -44,7 +44,7 @@ class OracleEloquent extends Model
             return 0;
         }
 
-        $sequence = $sequence ?? $instance->getSequenceName();
+        $sequence ??= $instance->getSequenceName();
 
         return $connection->getSequence()->nextValue($sequence);
     }

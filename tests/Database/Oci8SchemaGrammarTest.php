@@ -517,7 +517,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $grammar = $this->getGrammar();
 
-        $statements = $blueprint->toSql($this->getConnection(), $grammar);
+        $statements = $blueprint->toSql();
 
         $this->assertEquals(1, count($statements));
         $this->assertEquals('drop table "PREFIX_USERS"', $statements[0]);

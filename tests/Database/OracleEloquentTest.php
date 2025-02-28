@@ -52,13 +52,13 @@ class OracleEloquentTest extends TestCase
 
             $grammar = new $grammarClass($oci8Connection);
             $processor = new $processorClass;
-            $connection = m::mock('Illuminate\Database\ConnectionInterface', [
+            $connection = m::mock(\Illuminate\Database\ConnectionInterface::class, [
                 'getQueryGrammar' => $grammar,
                 'getPostProcessor' => $processor,
             ]);
-            $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
+            $resolver = m::mock(\Illuminate\Database\ConnectionResolverInterface::class,
                 ['connection' => $connection]);
-            $class = get_class($model);
+            $class = $model::class;
             $class::setConnectionResolver($resolver);
 
             return;
@@ -66,15 +66,15 @@ class OracleEloquentTest extends TestCase
 
         $grammarClass = 'Illuminate\Database\Query\Grammars\\'.$database.'Grammar';
         $processorClass = 'Illuminate\Database\Query\Processors\\'.$database.'Processor';
-        $grammar = new $grammarClass(m::mock('Illuminate\Database\Connection'));
+        $grammar = new $grammarClass(m::mock(\Illuminate\Database\Connection::class));
         $processor = new $processorClass;
-        $connection = m::mock('Illuminate\Database\ConnectionInterface', [
+        $connection = m::mock(\Illuminate\Database\ConnectionInterface::class, [
             'getQueryGrammar' => $grammar,
             'getPostProcessor' => $processor,
         ]);
-        $resolver = m::mock('Illuminate\Database\ConnectionResolverInterface',
+        $resolver = m::mock(\Illuminate\Database\ConnectionResolverInterface::class,
             ['connection' => $connection]);
-        $class = get_class($model);
+        $class = $model::class;
         $class::setConnectionResolver($resolver);
     }
 

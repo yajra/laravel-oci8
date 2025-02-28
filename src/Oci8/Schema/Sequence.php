@@ -92,7 +92,7 @@ class Sequence
             $name = $this->withSchemaPrefix($name);
 
             return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
-        } catch (QueryException $e) {
+        } catch (QueryException) {
             return 0;
         }
     }

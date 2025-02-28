@@ -80,7 +80,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function setHost(array $config): array
     {
-        $config['host'] = $config['host'] ?? $config['hostname'];
+        $config['host'] ??= $config['hostname'];
 
         return $config;
     }
@@ -90,7 +90,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setPort(array $config): array
     {
-        $config['port'] = $config['port'] ?? '1521';
+        $config['port'] ??= '1521';
 
         return $config;
     }
@@ -100,7 +100,7 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     private function setProtocol(array $config): array
     {
-        $config['protocol'] = $config['protocol'] ?? 'TCP';
+        $config['protocol'] ??= 'TCP';
 
         return $config;
     }
@@ -144,13 +144,13 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function checkMultipleHostDsn(array $config): array
     {
-        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
+        $host = is_array($config['host']) ? $config['host'] : explode(',', (string) $config['host']);
 
         $count = count($host);
         if ($count > 1) {
             $address = '';
             for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
+                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim((string) $host[$i]).')(PORT = '.$config['port'].'))';
             }
 
             // backwards compatibility for users dont have this field in their php config

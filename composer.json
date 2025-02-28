@@ -26,10 +26,12 @@
         "yajra/laravel-pdo-via-oci8": "^3.7.1"
     },
     "require-dev": {
+        "larastan/larastan": "^3.1.0",
         "laravel/pint": "^1.21",
         "mockery/mockery": "^1.6.12",
         "orchestra/testbench": "^10",
-        "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1"
+        "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1",
+        "rector/rector": "^2.0.9"
     },
     "autoload": {
         "psr-4": {
@@ -53,7 +55,17 @@
         }
     },
     "scripts": {
-        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g"
+        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g",
+        "test": "./vendor/bin/phpunit",
+        "pint": "./vendor/bin/pint",
+        "rector": "./vendor/bin/rector",
+        "stan": "./vendor/bin/phpstan analyse --memory-limit=2G --ansi --no-progress --no-interaction --configuration=phpstan.neon.dist",
+        "pr": [
+            "@rector",
+            "@pint",
+            "@stan",
+            "@test"
+        ]
     },
     "config": {
         "sort-packages": true

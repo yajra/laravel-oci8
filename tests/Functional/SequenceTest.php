@@ -44,7 +44,7 @@ class SequenceTest extends TestCase
         try {
             $connection->statement('alter session set "_oracle_script"=true');
             $connection->statement('grant all privileges to demo identified by oracle container=ALL');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $connection->statement('grant all privileges to demo identified by oracle');
         }
 
@@ -75,7 +75,7 @@ class SequenceTest extends TestCase
         try {
             $connection->statement('alter session set "_oracle_script"=true');
             $connection->statement('grant all privileges to demo identified by oracle container=ALL');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $connection->statement('grant all privileges to demo identified by oracle');
         }
 

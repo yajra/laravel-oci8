@@ -89,7 +89,7 @@ class SchemaTest extends TestCase
         $this->assertTrue(collect($columns)->contains(
             fn ($column) => $column['name'] === 'baz'
                 && $column['nullable'] === false
-                && str_contains($column['default'], 'test')
+                && str_contains((string) $column['default'], 'test')
         ));
     }
 

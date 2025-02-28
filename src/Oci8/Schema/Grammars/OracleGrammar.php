@@ -267,7 +267,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile a foreign key command.
      */
-    public function compileForeign(Blueprint $blueprint, Fluent $command)
+    public function compileForeign(Blueprint $blueprint, Fluent $command): ?string
     {
         $create = $this->getCommandByName($blueprint, 'create');
 
@@ -297,7 +297,7 @@ class OracleGrammar extends Grammar
             return $sql;
         }
 
-        //        return '';
+        return null;
     }
 
     /**
@@ -502,7 +502,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeInteger(Fluent $column): string
     {
-        $length = ($column->length) ? $column->length : 10;
+        $length = $column->length ?: 10;
 
         return "number({$length},0)";
     }
@@ -512,7 +512,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeBigInteger(Fluent $column): string
     {
-        $length = ($column->length) ? $column->length : 19;
+        $length = $column->length ?: 19;
 
         return "number({$length},0)";
     }
@@ -522,7 +522,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeMediumInteger(Fluent $column): string
     {
-        $length = ($column->length) ? $column->length : 7;
+        $length = $column->length ?: 7;
 
         return "number({$length},0)";
     }
@@ -532,7 +532,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeSmallInteger(Fluent $column): string
     {
-        $length = ($column->length) ? $column->length : 5;
+        $length = $column->length ?: 5;
 
         return "number({$length},0)";
     }
@@ -542,7 +542,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeTinyInteger(Fluent $column): string
     {
-        $length = ($column->length) ? $column->length : 3;
+        $length = $column->length ?: 3;
 
         return "number({$length},0)";
     }
@@ -588,7 +588,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeEnum(Fluent $column): string
     {
-        $length = ($column->length) ? $column->length : 255;
+        $length = $column->length ?: 255;
 
         return "varchar2({$length})";
     }
