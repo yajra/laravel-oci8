@@ -1,7 +1,8 @@
 {
     "name": "yajra/laravel-oci8",
-    "description": "Oracle DB driver for Laravel 4|5|6|7 via OCI8",
+    "description": "Oracle DB driver for Laravel via OCI8",
     "keywords": [
+        "yajra",
         "laravel",
         "oracle",
         "oci8",
@@ -15,25 +16,24 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
-        "illuminate/database": "^10.0",
-        "illuminate/pagination": "^10.0",
-        "illuminate/support": "^10.0",
-        "illuminate/validation": "^10.0",
-        "yajra/laravel-pdo-via-oci8": "^3.0"
+        "illuminate/database": "^12",
+        "illuminate/pagination": "^12",
+        "illuminate/support": "^12",
+        "illuminate/validation": "^12",
+        "yajra/laravel-pdo-via-oci8": "^3.7.1"
     },
     "require-dev": {
-        "doctrine/dbal": "^3.5",
-        "mockery/mockery": "^1.4.4",
-        "orchestra/testbench": "^8.0",
-        "phpunit/phpunit": "^10.0.9"
+        "larastan/larastan": "^3.1.0",
+        "laravel/pint": "^1.21",
+        "mockery/mockery": "^1.6.12",
+        "orchestra/testbench": "^10",
+        "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1",
+        "rector/rector": "^2.0.9"
     },
     "autoload": {
-        "files": [
-            "src/helper.php"
-        ],
         "psr-4": {
             "Yajra\\": "src/"
         }
@@ -45,7 +45,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "10.x-dev"
+            "dev-master": "12.x-dev"
         },
         "laravel": {
             "providers": [
@@ -55,7 +55,17 @@
         }
     },
     "scripts": {
-        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g"
+        "docker": "docker run -d -p 49160:22 -p 49161:1521 deepdiver/docker-oracle-xe-11g",
+        "test": "./vendor/bin/phpunit",
+        "pint": "./vendor/bin/pint",
+        "rector": "./vendor/bin/rector",
+        "stan": "./vendor/bin/phpstan analyse --memory-limit=2G --ansi --no-progress --no-interaction --configuration=phpstan.neon.dist",
+        "pr": [
+            "@rector",
+            "@pint",
+            "@stan",
+            "@test"
+        ]
     },
     "config": {
         "sort-packages": true

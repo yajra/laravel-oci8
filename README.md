@@ -1,4 +1,4 @@
-# Oracle DB driver for Laravel 4|5|6|7|8|9|10 via OCI8
+# Oracle DB driver for Laravel via OCI8
 
 [![Build Status](https://github.com/yajra/laravel-oci8/workflows/tests/badge.svg)](https://github.com/yajra/laravel-oci8/actions)
 [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/d/total.svg)](https://packagist.org/packages/yajra/laravel-oci8)
@@ -26,16 +26,18 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
  5.6.x    | 5.6.x
  5.7.x    | 5.7.x
  5.8.x    | 5.8.x
- 6.x.x    | 6.x.x
- 7.x.x    | 7.x.x
- 8.x.x    | 8.x.x
- 9.x.x    | 9.x.x
- 10.x.x   | 10.x.x
+ 6.x      | 6.x
+ 7.x      | 7.x
+ 8.x      | 8.x
+ 9.x      | 9.x
+ 10.x     | 10.x
+ 11.x     | 11.x
+ 12.x     | 12.x
 
 ## Quick Installation
 
 ```bash
-composer require yajra/laravel-oci8:^10
+composer require yajra/laravel-oci8:^12
 ```
 
 ## Service Provider (Optional on Laravel 5.5+)
@@ -76,6 +78,7 @@ This will copy the configuration file to `config/oracle.php`.
     'server_version' => env('DB_SERVER_VERSION', '11g'),
     'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
     'dynamic'        => [],
+    'max_name_len'   => env('ORA_MAX_NAME_LEN', 30),
 ],
 ```
 

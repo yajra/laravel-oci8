@@ -4,13 +4,14 @@ namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PDO;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class StoredProcedureTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_can_return_sys_refcursor()
     {
         $connection = $this->getConnection();
@@ -32,7 +33,7 @@ class StoredProcedureTest extends TestCase
         $this->assertSame('Record-20', $result[19]->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_work_with_numbers()
     {
         $connection = $this->getConnection();
@@ -55,7 +56,7 @@ class StoredProcedureTest extends TestCase
             'p1' => $input,
             'p2' => [
                 'value' => &$output,
-                'type'  => PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT,
+                'type' => PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT,
             ],
         ];
 
@@ -64,7 +65,7 @@ class StoredProcedureTest extends TestCase
         $this->assertSame($input * 2, $output);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_work_with_strings()
     {
         $connection = $this->getConnection();
@@ -83,7 +84,7 @@ class StoredProcedureTest extends TestCase
         $first = 'hello';
         $last = 'world';
 
-        //this needs to be large enough to hold the plsql return value
+        // this needs to be large enough to hold the plsql return value
         $output = str_repeat(' ', 1000);
 
         $bindings = [
@@ -91,7 +92,7 @@ class StoredProcedureTest extends TestCase
             'p2' => $last,
             'p3' => [
                 'value' => &$output,
-                'type'  => PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT,
+                'type' => PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT,
             ],
         ];
 

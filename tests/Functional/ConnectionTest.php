@@ -3,13 +3,15 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class ConnectionTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_works_on_connection_with_prefix()
     {
         $connection = $this->getConnection();
@@ -21,24 +23,27 @@ class ConnectionTest extends TestCase
         $this->assertSame('Record-1', $first->name);
     }
 
+    public function test_set_date_format()
+    {
+        $connection = $this->getConnection();
+
+        $connection->setDateFormat('YYYY-MM-DD');
+
+        $date = $connection->select('select sysdate from dual');
+        $format = Carbon::now()->format('Y-m-d');
+
+        $this->assertSame($format, $date[0]->sysdate);
+    }
+
     /**
      * Set up the environment.
      *
      * @param  \Illuminate\Foundation\Application  $app
      */
-    protected function getEnvironmentSetUp($app)
+    protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('app.debug', true);
-        $app['config']->set('database.default', 'oracle');
-        $app['config']->set('database.connections.oracle', [
-            'driver'       => 'oracle',
-            'host'         => 'localhost',
-            'database'     => 'xe',
-            'service_name' => 'xe',
-            'username'     => 'system',
-            'password'     => 'oracle',
-            'prefix'       => 'test_',
-            'port'         => 49161,
-        ]);
+        parent::getEnvironmentSetUp($app);
+
+        $app['config']->set('database.connections.oracle.prefix', 'test_');
     }
 }

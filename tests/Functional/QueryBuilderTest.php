@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
@@ -12,7 +13,7 @@ class QueryBuilderTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_can_perform_insert()
     {
         $data = ['name' => 'Foo', 'job_id' => null];
@@ -22,7 +23,7 @@ class QueryBuilderTest extends TestCase
         $this->assertDatabaseCount('jobs', 1);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_bulk_inserts()
     {
         $data = [
@@ -38,7 +39,7 @@ class QueryBuilderTest extends TestCase
         $this->assertDatabaseCount('jobs', 5);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_perform_union_order_query()
     {
         $builder = $this->getBuilder();
@@ -50,23 +51,19 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(2, $builder->get());
     }
 
-    /** @test */
-    public function it_can_insert_get_id_with_empty_values()
+    #[Test]
+    public function it_can_insert_and_get_id()
     {
-        $this->expectExceptionCode(928);
-        $id = $this->getBuilder()->from('users')->insertGetId([]);
-        // @TODO: insert id should be returned.
+        $lastId = $this->getConnection()->table('users')->max('id');
+        $id = $this->getBuilder()->from('users')->insertGetId(['name' => 'foo', 'email' => 'bar']);
+        $this->assertSame($lastId + 1, $id);
     }
 
-    /**
-     * @return Builder
-     */
     protected function getBuilder(): Builder
     {
-        $grammar = new OracleGrammar;
+        $grammar = new OracleGrammar($this->getConnection());
         $processor = new OracleProcessor;
-        $builder = new Builder($this->getConnection(), $grammar, $processor);
 
-        return $builder;
+        return new Builder($this->getConnection(), $grammar, $processor);
     }
 }

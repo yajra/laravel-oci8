@@ -33,6 +33,18 @@ abstract class TestCase extends BaseTestCase
             $table->timestamps();
         });
 
+        if ($schemaBuilder->hasTable('multi_blobs')) {
+            $schemaBuilder->drop('multi_blobs');
+        }
+
+        $schemaBuilder->create('multi_blobs', function (Blueprint $table) {
+            $table->increments('id');
+            $table->binary('blob_1')->nullable();
+            $table->binary('blob_2')->nullable();
+            $table->integer('status')->nullable();
+            $table->timestamps();
+        });
+
         if ($schemaBuilder->hasTable('jobs')) {
             $schemaBuilder->drop('jobs');
         }
@@ -49,7 +61,7 @@ abstract class TestCase extends BaseTestCase
         collect(range(1, 20))->each(function ($i) {
             /** @var User $user */
             User::query()->create([
-                'name'  => 'Record-'.$i,
+                'name' => 'Record-'.$i,
                 'email' => 'Email-'.$i.'@example.com',
             ]);
         });
@@ -65,13 +77,13 @@ abstract class TestCase extends BaseTestCase
         $app['config']->set('app.debug', true);
         $app['config']->set('database.default', 'oracle');
         $app['config']->set('database.connections.oracle', [
-            'driver'       => 'oracle',
-            'host'         => 'localhost',
-            'database'     => 'xe',
+            'driver' => 'oracle',
+            'host' => 'localhost',
+            'database' => 'xe',
             'service_name' => 'xe',
-            'username'     => 'system',
-            'password'     => 'oracle',
-            'port'         => 49161,
+            'username' => 'system',
+            'password' => 'oracle',
+            'port' => 1521,
         ]);
     }
 

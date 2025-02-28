@@ -5,8 +5,9 @@
 .editorconfig export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
-.styleci.yml export-ignore
 CHANGELOG.md export-ignore
 CONDUCT.md export-ignore
 phpunit.xml.dist export-ignore
-oci8.sh export-ignore
+phpstan.neon.dist export-ignore
+pint.json export-ignore
+rector.php export-ignore

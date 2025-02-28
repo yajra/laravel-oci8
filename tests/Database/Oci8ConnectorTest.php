@@ -4,63 +4,64 @@ namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Connectors\Connector;
 use Mockery as m;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Yajra\Pdo\Oci8;
 
 class Oci8ConnectorTest extends TestCase
 {
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         m::close();
     }
 
-    public function testCreateConnection()
+    /**
+     * @throws \Exception
+     */
+    public function test_create_connection()
     {
         $connector = new OracleConnectorStub;
         $tns = 'Connection String';
         $config = [
-            'driver'   => 'oracle',
-            'host'     => 'host',
+            'driver' => 'oracle',
+            'host' => 'host',
             'database' => 'database',
-            'port'     => 'port',
+            'port' => 'port',
             'username' => 'username',
             'password' => 'password',
-            'charset'  => 'charset',
-            'options'  => [],
+            'charset' => 'charset',
+            'options' => [],
         ];
         $oci8 = $connector->createConnection($tns, $config, []);
         $this->assertInstanceOf(Oci8::class, $oci8);
     }
 
-    public function testOptionResolution()
+    public function test_option_resolution()
     {
         $connector = new Connector;
         $connector->setDefaultOptions([0 => 'foo', 1 => 'bar']);
-        $this->assertEquals([0 => 'baz', 1 => 'bar', 2 => 'boom'],
-            $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']]));
+        $this->assertEquals(
+            [0 => 'baz', 1 => 'bar', 2 => 'boom'],
+            $connector->getOptions(['options' => [0 => 'baz', 2 => 'boom']])
+        );
     }
 
-    /**
-     * @dataProvider tnsDataProvider
-     *
-     * @param  $dsn
-     * @param  $config
-     */
-    public function testOracleConnectCallsCreateConnectionWithProperArguments($dsn, $config)
+    #[DataProvider('tnsDataProvider')]
+    public function test_oracle_connect_calls_create_connection_with_proper_arguments($dsn, $config)
     {
         $connector = $this->getMockBuilder(OracleConnector::class)
-                           ->onlyMethods(['createConnection', 'getOptions'])
-                           ->getMock();
+            ->onlyMethods(['createConnection', 'getOptions'])
+            ->getMock();
         $connection = m::mock('PDO');
         $connector->expects($this->once())
-                  ->method('getOptions')
-                  ->with($this->equalTo($config))
-                  ->will($this->returnValue(['options']));
+            ->method('getOptions')
+            ->with($this->equalTo($config))
+            ->willReturn(['options']);
         $connector->expects($this->once())
-                  ->method('createConnection')
-                  ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
-                  ->will($this->returnValue($connection));
+            ->method('createConnection')
+            ->with($this->equalTo($dsn), $this->equalTo($config), $this->equalTo(['options']))
+            ->willReturn($connection);
 
         if (isset($config['schema'])) {
             $connection->shouldReceive('setSchema')->andReturnSelf();
@@ -78,34 +79,34 @@ class Oci8ConnectorTest extends TestCase
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost, oracle.host',
-                    'port'         => '1234',
-                    'database'     => 'ORCL',
-                    'tns'          => '',
+                    'driver' => 'oracle',
+                    'host' => 'localhost, oracle.host',
+                    'port' => '1234',
+                    'database' => 'ORCL',
+                    'tns' => '',
                 ],
             ],
             // multiple hosts SID with schema
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost, oracle.host',
-                    'port'         => '1234',
-                    'database'     => 'ORCL',
-                    'tns'          => '',
-                    'schema'       => 'users',
+                    'driver' => 'oracle',
+                    'host' => 'localhost, oracle.host',
+                    'port' => '1234',
+                    'database' => 'ORCL',
+                    'tns' => '',
+                    'schema' => 'users',
                 ],
             ],
             // multiple hosts load_balance no SID
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = no) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost, oracle.host',
-                    'port'         => '1234',
-                    'database'     => 'ORCL',
-                    'tns'          => '',
+                    'driver' => 'oracle',
+                    'host' => 'localhost, oracle.host',
+                    'port' => '1234',
+                    'database' => 'ORCL',
+                    'tns' => '',
                     'load_balance' => 'no',
                 ],
             ],
@@ -113,12 +114,12 @@ class Oci8ConnectorTest extends TestCase
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = no) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SID = ORCL)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost, oracle.host',
-                    'port'         => '1234',
-                    'database'     => 'ORCL',
-                    'tns'          => '',
-                    'schema'       => 'users',
+                    'driver' => 'oracle',
+                    'host' => 'localhost, oracle.host',
+                    'port' => '1234',
+                    'database' => 'ORCL',
+                    'tns' => '',
+                    'schema' => 'users',
                     'load_balance' => 'no',
                 ],
             ],
@@ -126,23 +127,23 @@ class Oci8ConnectorTest extends TestCase
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCL)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost, oracle.host',
-                    'port'         => '1234',
+                    'driver' => 'oracle',
+                    'host' => 'localhost, oracle.host',
+                    'port' => '1234',
                     'service_name' => 'ORCL',
-                    'tns'          => '',
+                    'tns' => '',
                 ],
             ],
             // multiple hosts SERVICE_NAME with schema
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234))(ADDRESS = (PROTOCOL = TCP)(HOST = oracle.host)(PORT = 1234)) (LOAD_BALANCE = yes) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCL)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost, oracle.host',
-                    'port'         => '1234',
+                    'driver' => 'oracle',
+                    'host' => 'localhost, oracle.host',
+                    'port' => '1234',
                     'service_name' => 'ORCL',
-                    'tns'          => '',
-                    'schema'       => 'users',
+                    'tns' => '',
+                    'schema' => 'users',
                 ],
             ],
             // using config
@@ -157,44 +158,44 @@ class Oci8ConnectorTest extends TestCase
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SID = ORCL)))',
                 [
-                    'driver'   => 'pdo-via-oci8',
-                    'host'     => 'localhost',
-                    'port'     => '1234',
+                    'driver' => 'pdo-via-oci8',
+                    'host' => 'localhost',
+                    'port' => '1234',
                     'database' => 'ORCL',
-                    'tns'      => '',
+                    'tns' => '',
                 ],
             ],
             // using config with alias (service name)
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SERVICE_NAME = SID_ALIAS)))',
                 [
-                    'driver'       => 'oracle',
-                    'host'         => 'localhost',
-                    'port'         => '1234',
-                    'database'     => '',
-                    'tns'          => '',
+                    'driver' => 'oracle',
+                    'host' => 'localhost',
+                    'port' => '1234',
+                    'database' => '',
+                    'tns' => '',
                     'service_name' => 'SID_ALIAS',
                 ],
             ],
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SERVICE_NAME = SID_ALIAS)))',
                 [
-                    'driver'       => 'oci8',
-                    'host'         => 'localhost',
-                    'port'         => '1234',
-                    'database'     => '',
-                    'tns'          => '',
+                    'driver' => 'oci8',
+                    'host' => 'localhost',
+                    'port' => '1234',
+                    'database' => '',
+                    'tns' => '',
                     'service_name' => 'SID_ALIAS',
                 ],
             ],
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1234)) (CONNECT_DATA =(SERVICE_NAME = SID_ALIAS)))',
                 [
-                    'driver'       => 'pdo-via-oci8',
-                    'host'         => 'localhost',
-                    'port'         => '1234',
-                    'database'     => '',
-                    'tns'          => '',
+                    'driver' => 'pdo-via-oci8',
+                    'host' => 'localhost',
+                    'port' => '1234',
+                    'database' => '',
+                    'tns' => '',
                     'service_name' => 'SID_ALIAS',
                 ],
             ],
@@ -203,21 +204,21 @@ class Oci8ConnectorTest extends TestCase
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 [
                     'driver' => 'oracle',
-                    'tns'    => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
+                    'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 ],
             ],
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 [
                     'driver' => 'oci8',
-                    'tns'    => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
+                    'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 ],
             ],
             [
                 '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 [
                     'driver' => 'pdo-via-oci8',
-                    'tns'    => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
+                    'tns' => '(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 4321)) (CONNECT_DATA =(SID = ORCL)))',
                 ],
             ],
             // using tnsnames.ora
@@ -239,15 +240,15 @@ class Oci8ConnectorTest extends TestCase
 
 class OracleConnectorStub extends OracleConnector
 {
-    public function createConnection($tns, array $config, array $options)
+    protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options): Oci8
     {
-        return new Oci8Stub($tns, $config['username'], $config['password'], $config['options']);
+        return new Oci8Stub($dsn, $username, $password, $options);
     }
 }
 
 class Oci8Stub extends Oci8
 {
-    public function __construct($dsn, $username, $password, array $options = [])
+    public function __construct(string $dsn, ?string $username, ?string $password, ?array $options = [])
     {
         return true;
     }

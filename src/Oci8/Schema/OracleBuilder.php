@@ -5,28 +5,24 @@ namespace Yajra\Oci8\Schema;
 use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Builder;
+use Yajra\Oci8\Oci8Connection;
 
+/**
+ * @property \Yajra\Oci8\Oci8Connection $connection
+ * @property \Yajra\Oci8\Schema\OracleGrammar $grammar
+ */
 class OracleBuilder extends Builder
 {
-    /**
-     * @var \Yajra\Oci8\Schema\OracleAutoIncrementHelper
-     */
-    public $helper;
+    public OracleAutoIncrementHelper $helper;
 
-    /**
-     * @var \Yajra\Oci8\Schema\Comment
-     */
-    public $comment;
+    public Comment $comment;
 
     /**
      * @var \Yajra\Oci8\Schema\OraclePreferences
      */
     public $ctxDdlPreferences;
 
-    /**
-     * @param  Connection  $connection
-     */
-    public function __construct(Connection $connection)
+    public function __construct(Oci8Connection $connection)
     {
         parent::__construct($connection);
         $this->helper = new OracleAutoIncrementHelper($connection);
@@ -38,10 +34,8 @@ class OracleBuilder extends Builder
      * Create a new table on the schema.
      *
      * @param  string  $table
-     * @param  Closure  $callback
-     * @return \Illuminate\Database\Schema\Blueprint
      */
-    public function create($table, Closure $callback)
+    public function create($table, Closure $callback): void
     {
         $blueprint = $this->createBlueprint($table);
 
@@ -62,26 +56,18 @@ class OracleBuilder extends Builder
      * Create a new command set with a Closure.
      *
      * @param  string  $table
-     * @param  Closure  $callback
-     * @return \Illuminate\Database\Schema\Blueprint
      */
-    protected function createBlueprint($table, Closure $callback = null)
+    protected function createBlueprint($table, ?Closure $callback = null): OracleBlueprint
     {
-        $blueprint = new OracleBlueprint($table, $callback);
-        $blueprint->setTablePrefix($this->connection->getTablePrefix());
-        $blueprint->setMaxLength($this->grammar->getMaxLength());
-
-        return $blueprint;
+        return new OracleBlueprint($this->connection, $table, $callback);
     }
 
     /**
      * Changes an existing table on the schema.
      *
      * @param  string  $table
-     * @param  Closure  $callback
-     * @return \Illuminate\Database\Schema\Blueprint
      */
-    public function table($table, Closure $callback)
+    public function table($table, Closure $callback): void
     {
         $blueprint = $this->createBlueprint($table);
 
@@ -102,9 +88,8 @@ class OracleBuilder extends Builder
      * Drop a table from the schema.
      *
      * @param  string  $table
-     * @return \Illuminate\Database\Schema\Blueprint
      */
-    public function drop($table)
+    public function drop($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
         $this->ctxDdlPreferences->dropPreferencesByTable($table);
@@ -113,10 +98,8 @@ class OracleBuilder extends Builder
 
     /**
      * Drop all tables from the database.
-     *
-     * @return void
      */
-    public function dropAllTables()
+    public function dropAllTables(): void
     {
         $this->ctxDdlPreferences->dropAllPreferences();
         $this->connection->statement($this->grammar->compileDropAllTables());
@@ -126,9 +109,8 @@ class OracleBuilder extends Builder
      * Indicate that the table should be dropped if it exists.
      *
      * @param  string  $table
-     * @return \Illuminate\Support\Fluent
      */
-    public function dropIfExists($table)
+    public function dropIfExists($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
         $this->ctxDdlPreferences->dropPreferencesByTable($table);
@@ -136,33 +118,11 @@ class OracleBuilder extends Builder
     }
 
     /**
-     * Determine if the given table exists.
-     *
-     * @param  string  $table
-     * @return bool
-     */
-    public function hasTable($table)
-    {
-        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
-        $grammar = $this->grammar;
-        $sql = $grammar->compileTableExists();
-
-        $database = $this->connection->getConfig('username');
-        if ($this->connection->getConfig('prefix_schema')) {
-            $database = $this->connection->getConfig('prefix_schema');
-        }
-        $table = $this->connection->getTablePrefix().$table;
-
-        return count($this->connection->select($sql, [$database, $table])) > 0;
-    }
-
-    /**
      * Get the column listing for a given table.
      *
      * @param  string  $table
-     * @return array
      */
-    public function getColumnListing($table)
+    public function getColumnListing($table): array
     {
         $database = $this->connection->getConfig('username');
         $table = $this->connection->getTablePrefix().$table;
@@ -171,5 +131,92 @@ class OracleBuilder extends Builder
         $results = $this->connection->select($grammar->compileColumnExists($database, $table));
 
         return $this->connection->getPostProcessor()->processColumnListing($results);
+    }
+
+    /**
+     * Get the columns for a given table.
+     *
+     * @param  string  $table
+     */
+    public function getColumns($table): array
+    {
+        [$schema, $table] = $this->parseSchemaAndTable($table);
+
+        $table = $this->connection->getTablePrefix().$table;
+
+        return $this->connection->getPostProcessor()->processColumns(
+            $this->connection->selectFromWriteConnection($this->grammar->compileColumns($schema, $table))
+        );
+    }
+
+    /**
+     * Parse the database object reference and extract the schema and table.
+     *
+     * @param  string  $reference
+     * @param  string|bool|null  $withDefaultSchema
+     */
+    public function parseSchemaAndTable($reference, $withDefaultSchema = null): array
+    {
+        $parts = explode('.', $reference);
+
+        // We will use the default schema unless the schema has been specified in the
+        // query. If the schema has been specified in the query then we can use it
+        // instead of a default schema configured in the connection search path.
+        $schema = $this->connection->getConfig('username');
+
+        if (count($parts) === 2) {
+            $schema = $parts[0];
+            array_shift($parts);
+        }
+
+        return [$schema, $parts[0]];
+    }
+
+    /**
+     * Get the indexes for a given table.
+     *
+     * @param  string  $table
+     */
+    public function getIndexes($table): array
+    {
+        $table = $this->connection->getTablePrefix().$table;
+
+        return $this->connection->getPostProcessor()->processIndexes(
+            $this->connection->selectFromWriteConnection(
+                $this->grammar->compileIndexes($this->connection->getConfig('username'), $table)
+            )
+        );
+    }
+
+    /**
+     * Disable foreign key constraints.
+     */
+    public function disableForeignKeyConstraints(): bool
+    {
+        return $this->connection->statement(
+            $this->grammar->compileDisableForeignKeyConstraints($this->connection->getConfig('username'))
+        );
+    }
+
+    /**
+     * Enable foreign key constraints.
+     */
+    public function enableForeignKeyConstraints(): bool
+    {
+        return $this->connection->statement(
+            $this->grammar->compileEnableForeignKeyConstraints($this->connection->getConfig('username'))
+        );
+    }
+
+    /**
+     * Get the tables that belong to the database.
+     */
+    public function getTables($schema = null): array
+    {
+        return $this->connection->getPostProcessor()->processTables(
+            $this->connection->selectFromWriteConnection(
+                $this->grammar->compileTables($schema ?? $this->connection->getConfig('username'))
+            )
+        );
     }
 }

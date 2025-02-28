@@ -16,19 +16,18 @@ class OracleConnector extends Connector implements ConnectorInterface
      * @var array
      */
     protected $options = [
-        PDO::ATTR_CASE               => PDO::CASE_LOWER,
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_ORACLE_NULLS       => PDO::NULL_NATURAL,
+        PDO::ATTR_CASE => PDO::CASE_LOWER,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
     ];
 
     /**
      * Establish a database connection.
      *
-     * @param  array  $config
-     * @return PDO
+     * @throws \Exception
      */
-    public function connect(array $config)
+    public function connect(array $config): PDO
     {
         $tns = ! empty($config['tns']) ? $config['tns'] : $this->getDsn($config);
 
@@ -40,18 +39,13 @@ class OracleConnector extends Connector implements ConnectorInterface
             $config['password'] = null;
         }
 
-        $connection = $this->createConnection($tns, $config, $options);
-
-        return $connection;
+        return $this->createConnection($tns, $config, $options);
     }
 
     /**
      * Create a DSN string from a configuration.
-     *
-     * @param  array  $config
-     * @return string
      */
-    protected function getDsn(array $config)
+    protected function getDsn(array $config): string
     {
         if (! empty($config['tns'])) {
             return $config['tns'];
@@ -69,83 +63,64 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Parse configurations.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function parseConfig(array $config)
+    protected function parseConfig(array $config): array
     {
         $config = $this->setHost($config);
         $config = $this->setPort($config);
         $config = $this->setProtocol($config);
         $config = $this->setServiceId($config);
         $config = $this->setTNS($config);
-        $config = $this->setCharset($config);
 
-        return $config;
+        return $this->setCharset($config);
     }
 
     /**
      * Set host from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function setHost(array $config)
+    protected function setHost(array $config): array
     {
-        $config['host'] = isset($config['host']) ? $config['host'] : $config['hostname'];
+        $config['host'] ??= $config['hostname'];
 
         return $config;
     }
 
     /**
      * Set port from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    private function setPort(array $config)
+    private function setPort(array $config): array
     {
-        $config['port'] = isset($config['port']) ? $config['port'] : '1521';
+        $config['port'] ??= '1521';
 
         return $config;
     }
 
     /**
      * Set protocol from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    private function setProtocol(array $config)
+    private function setProtocol(array $config): array
     {
-        $config['protocol'] = isset($config['protocol']) ? $config['protocol'] : 'TCP';
+        $config['protocol'] ??= 'TCP';
 
         return $config;
     }
 
     /**
      * Set service id from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function setServiceId(array $config)
+    protected function setServiceId(array $config): array
     {
         $config['service'] = empty($config['service_name'])
-            ? $service_param = 'SID = '.$config['database']
-            : $service_param = 'SERVICE_NAME = '.$config['service_name'];
+            ? 'SID = '.$config['database']
+            : 'SERVICE_NAME = '.$config['service_name'];
 
         return $config;
     }
 
     /**
      * Set tns from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function setTNS(array $config)
+    protected function setTNS(array $config): array
     {
         $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
 
@@ -154,11 +129,8 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Set charset from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function setCharset(array $config)
+    protected function setCharset(array $config): array
     {
         if (! isset($config['charset'])) {
             $config['charset'] = 'AL32UTF8';
@@ -169,19 +141,16 @@ class OracleConnector extends Connector implements ConnectorInterface
 
     /**
      * Set DSN host from config.
-     *
-     * @param  array  $config
-     * @return array
      */
-    protected function checkMultipleHostDsn(array $config)
+    protected function checkMultipleHostDsn(array $config): array
     {
-        $host = is_array($config['host']) ? $config['host'] : explode(',', $config['host']);
+        $host = is_array($config['host']) ? $config['host'] : explode(',', (string) $config['host']);
 
         $count = count($host);
         if ($count > 1) {
             $address = '';
             for ($i = 0; $i < $count; $i++) {
-                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim($host[$i]).')(PORT = '.$config['port'].'))';
+                $address .= '(ADDRESS = (PROTOCOL = '.$config['protocol'].')(HOST = '.trim((string) $host[$i]).')(PORT = '.$config['port'].'))';
             }
 
             // backwards compatibility for users dont have this field in their php config
@@ -197,21 +166,33 @@ class OracleConnector extends Connector implements ConnectorInterface
     /**
      * Create a new PDO connection.
      *
-     * @param  string  $tns
-     * @param  array  $config
-     * @param  array  $options
-     * @return PDO
+     * @param  string  $dsn
+     *
+     * @throws \Exception
      */
-    public function createConnection($tns, array $config, array $options)
+    public function createConnection($dsn, array $config, array $options): PDO|Oci8
     {
         // add fallback in case driver is not set, will use pdo instead
         if (! in_array($config['driver'], ['oci8', 'pdo-via-oci8', 'oracle'])) {
-            return parent::createConnection($tns, $config, $options);
+            return parent::createConnection($dsn, $config, $options);
         }
 
         $config = $this->setCharset($config);
         $options['charset'] = $config['charset'];
 
-        return new Oci8($tns, $config['username'], $config['password'], $options);
+        return parent::createConnection($dsn, $config, $options);
+    }
+
+    /**
+     * Create a new PDO connection instance.
+     *
+     * @param  string  $dsn
+     * @param  string  $username
+     * @param  string  $password
+     * @param  array  $options
+     */
+    protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options): Oci8
+    {
+        return new Oci8($dsn, $username, $password, $options);
     }
 }
