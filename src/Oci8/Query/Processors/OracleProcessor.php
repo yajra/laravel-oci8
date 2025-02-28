@@ -29,7 +29,7 @@ class OracleProcessor extends Processor
         $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
         $values = $this->incrementBySequence($values, $sequence);
-        $parameter = $this->bindValues($values, $statement, $parameter);
+        $parameter = $this->bindValues($query, $values, $statement, $parameter);
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
         $statement->execute();
 
@@ -77,13 +77,13 @@ class OracleProcessor extends Processor
     /**
      * Bind values to PDO statement.
      */
-    private function bindValues(array &$values, PDOStatement $statement, int $parameter): int
+    private function bindValues(Builder $query, array &$values, PDOStatement $statement, int $parameter): int
     {
         $count = count($values);
         for ($i = 0; $i < $count; $i++) {
             if (is_object($values[$i])) {
                 if ($values[$i] instanceof DateTime) {
-                    $values[$i] = $values[$i]->format('Y-m-d H:i:s');
+                    $values[$i] = $values[$i]->format($query->grammar->getDateFormat());
                 } else {
                     $values[$i] = (string) $values[$i];
                 }
@@ -130,7 +130,7 @@ class OracleProcessor extends Processor
         $parameter = 1;
         $statement = $this->prepareStatement($query, $sql);
 
-        $parameter = $this->bindValues($values, $statement, $parameter);
+        $parameter = $this->bindValues($query, $values, $statement, $parameter);
 
         $countBinary = count($binaries);
         for ($i = 0; $i < $countBinary; $i++) {
