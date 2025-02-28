@@ -34,6 +34,11 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * @var int
+     */
+    protected $labelSearchFullText = 1;
+
+    /**
      * Compile a delete statement with joins into SQL.
      *
      * @param  string  $table
@@ -547,6 +552,40 @@ class OracleGrammar extends Grammar
         }
 
         return '0 = 1';
+    }
+
+    /**
+     * Compile a "where fulltext" clause.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
+     * @return string
+     */
+    public function whereFullText(Builder $query, $where)
+    {
+        // Build the fullText clause
+        $fullTextClause = collect($where['columns'])
+            ->map(function ($column, $index) use ($where) {
+                $labelSearchFullText = $index > 0 ? ++$this->labelSearchFullText : $this->labelSearchFullText;
+
+                return "CONTAINS({$this->wrap($column)}, {$this->parameter($where['value'])}, {$labelSearchFullText}) > 0";
+            })
+            ->implode(" {$where['boolean']} ");
+
+        // Count the total number of columns in the clauses
+        $fullTextClauseCount = array_reduce($query->wheres, function ($count, $queryWhere) {
+            return $queryWhere['type'] === 'Fulltext' ? $count + count($queryWhere['columns']) : $count;
+        }, 0);
+
+        // Reset the counter if all columns were used in the clause
+        if ($fullTextClauseCount === $this->labelSearchFullText) {
+            $this->labelSearchFullText = 0;
+        }
+
+        // Increment the counter for the next clause
+        $this->labelSearchFullText++;
+
+        return $fullTextClause;
     }
 
     private function resolveClause($column, $values, $type): string

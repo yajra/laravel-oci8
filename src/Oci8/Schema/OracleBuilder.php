@@ -17,11 +17,17 @@ class OracleBuilder extends Builder
 
     public Comment $comment;
 
+    /**
+     * @var \Yajra\Oci8\Schema\OraclePreferences
+     */
+    public $ctxDdlPreferences;
+
     public function __construct(Oci8Connection $connection)
     {
         parent::__construct($connection);
         $this->helper = new OracleAutoIncrementHelper($connection);
         $this->comment = new Comment($connection);
+        $this->ctxDdlPreferences = new OraclePreferences($connection);
     }
 
     /**
@@ -36,6 +42,8 @@ class OracleBuilder extends Builder
         $blueprint->create();
 
         $callback($blueprint);
+
+        $this->ctxDdlPreferences->createPreferences($blueprint);
 
         $this->build($blueprint);
 
@@ -84,6 +92,7 @@ class OracleBuilder extends Builder
     public function drop($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
+        $this->ctxDdlPreferences->dropPreferencesByTable($table);
         parent::drop($table);
     }
 
@@ -92,6 +101,7 @@ class OracleBuilder extends Builder
      */
     public function dropAllTables(): void
     {
+        $this->ctxDdlPreferences->dropAllPreferences();
         $this->connection->statement($this->grammar->compileDropAllTables());
     }
 
@@ -103,6 +113,7 @@ class OracleBuilder extends Builder
     public function dropIfExists($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
+        $this->ctxDdlPreferences->dropPreferencesByTable($table);
         parent::dropIfExists($table);
     }
 

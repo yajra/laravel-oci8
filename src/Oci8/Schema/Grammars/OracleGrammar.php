@@ -325,6 +325,42 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a fulltext index key command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileFullText(Blueprint $blueprint, Fluent $command): string
+    {
+        $tableName = $this->wrapTable($blueprint);
+        $columns = $command->columns;
+        $indexBaseName = $command->index;
+        $preferenceName = $indexBaseName.'_preference';
+
+        $sqlStatements = [];
+
+        foreach ($columns as $key => $column) {
+            $indexName = $indexBaseName;
+            $parametersIndex = '';
+
+            if (count($columns) > 1) {
+                $indexName .= "_{$key}";
+                $parametersIndex = "datastore {$preferenceName} ";
+            }
+
+            $parametersIndex .= 'sync(on commit)';
+
+            $sql = "execute immediate 'create index {$indexName} on $tableName ($column) indextype is 
+                ctxsys.context parameters (''$parametersIndex'')';";
+
+            $sqlStatements[] = $sql;
+        }
+
+        return 'begin '.implode(' ', $sqlStatements).' end;';
+    }
+
+    /**
      * Compile a drop table command.
      */
     public function compileDrop(Blueprint $blueprint, Fluent $command): string
@@ -432,6 +468,33 @@ class OracleGrammar extends Grammar
     public function compileDropForeign(Blueprint $blueprint, Fluent $command): string
     {
         return $this->dropConstraint($blueprint, $command, 'foreign');
+    }
+
+    /**
+     * Compile a drop fulltext index command.
+     *
+     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \Illuminate\Support\Fluent  $command
+     * @return string
+     */
+    public function compileDropFullText(Blueprint $blueprint, Fluent $command): string
+    {
+        $columns = $command->columns;
+
+        if (empty($columns)) {
+            return $this->compileDropIndex($blueprint, $command);
+        }
+
+        $columns = array_map(function ($column) {
+            return "'".strtoupper($column)."'";
+        }, $columns);
+        $columns = implode(', ', $columns);
+
+        $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ($columns)) loop
+            execute immediate 'drop index ' || idx_rec.idx_name;
+        end loop;";
+
+        return "begin $dropFullTextSql end;";
     }
 
     /**

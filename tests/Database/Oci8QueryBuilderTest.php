@@ -705,6 +705,49 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
+    public function testWhereFullTextWithSingleParameter()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereFullText('name', 'johnny');
+        $this->assertSame('select * from "USERS" where CONTAINS("NAME", ?, 1) > 0', $builder->toSql());
+        $this->assertEquals(['johnny'], $builder->getBindings());
+    }
+
+    public function testWhereFullTextWithMultipleParameters()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny');
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 and CONTAINS("LASTNAME", ?, 2) > 0',
+            $builder->toSql());
+        $this->assertEquals(['johnny'], $builder->getBindings());
+    }
+
+    public function testWhereFullTextWithLogicalOrOperator()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereFullText(['firstname', 'lastname'], 'johnny', [], 'or');
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 or CONTAINS("LASTNAME", ?, 2) > 0',
+            $builder->toSql());
+        $this->assertEquals(['johnny'], $builder->getBindings());
+    }
+
+    public function testOrWhereFullTextWithSingleParameter()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orWhereFullText('firstname', 'johnny');
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0', $builder->toSql());
+        $this->assertEquals(['johnny'], $builder->getBindings());
+    }
+
+    public function testOrWhereFullTextWithMultipleParameters()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orWhereFullText('firstname', 'johnny')->orWhereFullText('lastname', 'white');
+        $this->assertSame('select * from "USERS" where CONTAINS("FIRSTNAME", ?, 1) > 0 or CONTAINS("LASTNAME", ?, 2) > 0',
+            $builder->toSql());
+        $this->assertEquals(['johnny', 'white'], $builder->getBindings());
+    }
+
     public function test_unions()
     {
         $builder = $this->getBuilder();
