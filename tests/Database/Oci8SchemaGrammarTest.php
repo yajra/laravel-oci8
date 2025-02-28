@@ -514,7 +514,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $statements = $blueprint->toSql();
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals("declare c int;
             begin
                select count(*) into c from user_tables
@@ -531,11 +531,9 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint = new Blueprint($conn, 'users');
         $blueprint->drop();
 
-        $grammar = $this->getGrammar();
-
         $statements = $blueprint->toSql();
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('drop table "PREFIX_USERS"', $statements[0]);
     }
 
@@ -615,25 +613,25 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function test_single_drop_full_text_by_index()
     {
-        $blueprint = new Blueprint('users');
+        $blueprint = new Blueprint($this->getConnection(), 'users');
         $blueprint->dropFullText('name_index');
-        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $statements = $blueprint->toSql();
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals('drop index name_index', $statements[0]);
     }
 
     public function test_multiple_drop_full_text_by_columns()
     {
-        $blueprint = new Blueprint('users');
+        $blueprint = new Blueprint($this->getConnection(), 'users');
         $blueprint->dropFullText(['firstname', 'lastname']);
-        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $statements = $blueprint->toSql();
 
         $expected = "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ('FIRSTNAME', 'LASTNAME')) loop
             execute immediate 'drop index ' || idx_rec.idx_name;
         end loop; end;";
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
     }
 
@@ -744,30 +742,27 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function test_adding_m_single_column_full_text_index()
     {
-        $blueprint = new Blueprint('users');
+        $blueprint = new Blueprint($this->getConnection(), 'users');
         $blueprint->fullText(['name'], 'name');
-        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $statements = $blueprint->toSql();
 
-        $expected = "begin execute immediate 'create index name on users (name) indextype is 
-                ctxsys.context parameters (''sync(on commit)'')'; end;";
+        $expected = "begin execute immediate 'create index name on \"USERS\" (name) indextype is ctxsys.context parameters (''sync(on commit)'')'; end;";
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
     }
 
     public function test_adding_multiple_columns_full_text_index()
     {
-        $blueprint = new Blueprint('users');
+        $blueprint = new Blueprint($this->getConnection(), 'users');
         $blueprint->fullText(['firstname', 'lastname'], 'name');
-        $statements = $blueprint->toSql($this->getConnection(), $this->getGrammar());
+        $statements = $blueprint->toSql();
 
-        $expectedSql['firstnameIndex'] = "execute immediate 'create index name_0 on users (firstname) indextype is 
-                ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
-        $expectedSql['lastnameIndex'] = "execute immediate 'create index name_1 on users (lastname) indextype is 
-                ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['firstnameIndex'] = "execute immediate 'create index name_0 on \"USERS\" (firstname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['lastnameIndex'] = "execute immediate 'create index name_1 on \"USERS\" (lastname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
         $expected = 'begin '.implode(' ', $expectedSql).' end;';
 
-        $this->assertEquals(1, count($statements));
+        $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
     }
 

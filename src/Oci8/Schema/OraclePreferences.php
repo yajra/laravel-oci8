@@ -2,37 +2,22 @@
 
 namespace Yajra\Oci8\Schema;
 
-use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
+use Yajra\Oci8\Oci8Connection;
 
 /**
  * @see https://docs.oracle.com/en/database/oracle/oracle-database/19/ccref/CTX_DDL-package.html#GUID-0F7C39E8-E44A-421C-B40D-3B3578B507E9
  */
 class OraclePreferences
 {
-    /**
-     * @var \Illuminate\Database\Connection
-     */
-    protected $connection;
-
     protected array $columns = [];
 
     protected array $preferenceName = [];
 
-    /**
-     * Constructor method.
-     *
-     * @return void
-     */
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
+    public function __construct(protected Oci8Connection $connection) {}
 
     /**
      * Create a preferences values to use in index fullText.
-     *
-     * @return null
      */
     public function createPreferences(Blueprint $blueprint): void
     {

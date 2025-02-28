@@ -572,9 +572,7 @@ class OracleGrammar extends Grammar
             ->implode(" {$where['boolean']} ");
 
         // Count the total number of columns in the clauses
-        $fullTextClauseCount = array_reduce($query->wheres, function ($count, $queryWhere) {
-            return $queryWhere['type'] === 'Fulltext' ? $count + count($queryWhere['columns']) : $count;
-        }, 0);
+        $fullTextClauseCount = array_reduce($query->wheres, fn ($count, $queryWhere) => $queryWhere['type'] === 'Fulltext' ? $count + count($queryWhere['columns']) : $count, 0);
 
         // Reset the counter if all columns were used in the clause
         if ($fullTextClauseCount === $this->labelSearchFullText) {

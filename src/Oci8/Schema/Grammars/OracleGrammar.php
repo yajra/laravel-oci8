@@ -347,8 +347,7 @@ class OracleGrammar extends Grammar
 
             $parametersIndex .= 'sync(on commit)';
 
-            $sql = "execute immediate 'create index {$indexName} on $tableName ($column) indextype is 
-                ctxsys.context parameters (''$parametersIndex'')';";
+            $sql = "execute immediate 'create index {$indexName} on $tableName ($column) indextype is ctxsys.context parameters (''$parametersIndex'')';";
 
             $sqlStatements[] = $sql;
         }
@@ -477,9 +476,7 @@ class OracleGrammar extends Grammar
             return $this->compileDropIndex($blueprint, $command);
         }
 
-        $columns = array_map(function ($column) {
-            return "'".strtoupper($column)."'";
-        }, $columns);
+        $columns = array_map(fn ($column) => "'".strtoupper((string) $column)."'", $columns);
         $columns = implode(', ', $columns);
 
         $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ($columns)) loop

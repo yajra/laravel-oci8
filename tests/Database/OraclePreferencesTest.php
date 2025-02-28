@@ -5,6 +5,9 @@ namespace Yajra\Oci8\Tests\Database;
 use Illuminate\Database\Schema\Blueprint;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection as Connection;
+use Yajra\Oci8\Schema\Grammars\OracleGrammar;
+use Yajra\Oci8\Schema\OracleBuilder;
 use Yajra\Oci8\Schema\OraclePreferences;
 
 class OraclePreferencesTest extends TestCase
@@ -27,7 +30,7 @@ class OraclePreferencesTest extends TestCase
                 $this->assertTrue(false, 'A single full-text column cannot create preferences.');
             });
 
-        $blueprint = new Blueprint('users');
+        $blueprint = new Blueprint($connection, 'users');
         $blueprint->fullText('name', 'name_search_full_text');
 
         $oraclePreferences->createPreferences($blueprint);
@@ -49,7 +52,7 @@ class OraclePreferencesTest extends TestCase
                 $this->assertEquals($expected, $sql);
             });
 
-        $blueprint = new Blueprint('users');
+        $blueprint = new Blueprint($connection, 'users');
         $blueprint->fullText(['firstname', 'lastname'], 'name');
 
         $oraclePreferences->createPreferences($blueprint);
@@ -73,7 +76,7 @@ class OraclePreferencesTest extends TestCase
                 $this->assertEquals($expected, $sql);
             });
 
-        $blueprint = new Blueprint('users_product');
+        $blueprint = new Blueprint($connection, 'users_product');
         $blueprint->fullText(['firstname', 'lastname'], 'name');
         $blueprint->fullText(['category', 'price'], 'product');
 
@@ -127,8 +130,37 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences->dropAllPreferences();
     }
 
-    protected function getConnection()
+    protected function getConnection(
+        ?OracleGrammar $grammar = null,
+        ?OracleBuilder $builder = null,
+        string $prefix = '',
+        int $maxLength = 30,
+        string $schemaPrefix = ''
+    ) {
+        $connection = m::mock(Connection::class)
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getTablePrefix')->andReturn($prefix)
+            ->shouldReceive('getMaxLength')->andReturn($maxLength)
+            ->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix)
+            ->shouldReceive('isMaria')->andReturn(false)
+            ->getMock();
+
+        $grammar ??= $this->getGrammar($connection);
+        $builder ??= $this->getBuilder();
+
+        return $connection
+            ->shouldReceive('getSchemaGrammar')->andReturn($grammar)
+            ->shouldReceive('getSchemaBuilder')->andReturn($builder)
+            ->getMock();
+    }
+
+    public function getGrammar(?Connection $connection = null): OracleGrammar
     {
-        return m::mock('Illuminate\Database\Connection');
+        return new OracleGrammar($connection ?? $this->getConnection());
+    }
+
+    public function getBuilder()
+    {
+        return mock(OracleBuilder::class);
     }
 }
