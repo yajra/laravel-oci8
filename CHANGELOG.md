@@ -9,3 +9,4 @@
 - fix: generated constraint name to include prefix 
 - feat: sequence and trigger table wrapping 
 - fix: Cannot use sequences not owned by DB user #780
+- feat: added phpstan and rector workflow
