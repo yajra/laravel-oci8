@@ -5,20 +5,8 @@ on:
     branches:
       - master
       - 12.x
-    paths:
-      - .github/workflows/static-analysis.yml
-      - composer.*
-      - phpstan.neon.dist
-      - src/**
-      - tests/**
 
   pull_request:
-    paths:
-      - .github/workflows/static-analysis.yml
-      - composer.*
-      - phpstan.neon.dist
-      - src/**
-      - tests/**
 
   schedule:
     - cron: '0 0 * * *'
@@ -31,9 +19,6 @@ jobs:
 
     strategy:
       fail-fast: true
-      matrix:
-        php: [8.2, 8.3, 8.4]
-        stability: [prefer-stable]
 
     steps:
       - name: Checkout code
@@ -42,17 +27,17 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: 8.2
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd, memcached, oci8
           tools: composer:v2
           coverage: none
 
       - name: Install dependencies
-        uses: nick-invision/retry@v1
+        uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
           max_attempts: 5
-          command: COMPOSER_ROOT_VERSION=dev-master composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+          command: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
 
-      - name: "Run a static analysis with phpstan/phpstan"
-        run: "vendor/bin/phpstan --error-format=table"
+      - name: Run Static Analysis
+        run: vendor/bin/phpstan
