@@ -14,7 +14,7 @@ on:
 jobs:
   static-analysis-phpstan:
 
-    name: PHP ${{ matrix.php }} - STABILITY ${{ matrix.stability }}
+    name: Source Code
     runs-on: ubuntu-latest
 
     strategy:
