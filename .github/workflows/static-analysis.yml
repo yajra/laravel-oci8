@@ -1,10 +1,10 @@
-name: "Static Analysis"
+name: Static Analysis
 
 on:
   push:
     branches:
       - master
-      - 12.x
+      - '*.x'
 
   pull_request:
 
@@ -17,9 +17,6 @@ jobs:
     name: Source Code
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: true
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +25,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, gd, memcached, oci8
           tools: composer:v2
           coverage: none
 
