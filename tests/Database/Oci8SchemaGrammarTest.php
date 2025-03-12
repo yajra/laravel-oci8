@@ -518,7 +518,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals("declare c int;
             begin
                select count(*) into c from user_tables
-               where upper(table_name) = upper('USERS') and upper(tablespace_name) = upper('system');
+               where upper(table_name) = upper('USERS');
                if c = 1 then
                   execute immediate 'drop table \"USERS\"';
                end if;

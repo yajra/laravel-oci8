@@ -386,19 +386,12 @@ class OracleGrammar extends Grammar
     public function compileDropIfExists(Blueprint $blueprint, Fluent $command): string
     {
         $table = $this->wrapTable($blueprint);
-        $schema = $this->connection->getConfig('username');
-
-        if (str_contains($table, '.')) {
-            [$schema, $table] = explode('.', $table);
-        }
-
         $tableName = str_replace('"', '', $table);
-        $schema = str_replace('"', '', $schema);
 
         return "declare c int;
             begin
                select count(*) into c from user_tables
-               where upper(table_name) = upper('$tableName') and upper(tablespace_name) = upper('".$schema."');
+               where upper(table_name) = upper('$tableName');
                if c = 1 then
                   execute immediate 'drop table $table';
                end if;
