@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.0.1 - 2025-03-12
+
+- fix: compileDropIfExists #907
+
 ## v12.0.0 - 2025-02-28
 
 - Laravel 12 support
