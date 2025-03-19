@@ -6,6 +6,7 @@ use Mockery as m;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Oci8Connection;
+use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Schema\Sequence;
 
 class SequenceTest extends TestCase
@@ -24,6 +25,11 @@ class SequenceTest extends TestCase
         $connection->shouldReceive('statement')->andReturn(true);
         $connection->shouldReceive('getSchemaPrefix');
         $connection->shouldReceive('withSchemaPrefix');
+
+        $grammar = m::mock(OracleGrammar::class);
+        $grammar->shouldReceive('wrap')->andReturn('users_id_seq');
+
+        $connection->shouldReceive('getQueryGrammar')->andReturn($grammar);
 
         $success = $sequence->create('users_id_seq');
         $this->assertTrue($success);

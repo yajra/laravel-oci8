@@ -18,8 +18,12 @@ class Trigger
 
         if ($this->connection->getSchemaPrefix()) {
             $table = $this->connection->withSchemaPrefix($table);
-            $triggerName = $this->connection->withSchemaPrefix($sequenceName);
-            $sequenceName = $this->connection->withSchemaPrefix($sequenceName);
+            $triggerName = $this->connection->withSchemaPrefix(
+                $grammar->wrap($triggerName)
+            );
+            $sequenceName = $this->connection->withSchemaPrefix(
+                $grammar->wrap($sequenceName)
+            );
         }
 
         $column = $grammar->wrap($column);

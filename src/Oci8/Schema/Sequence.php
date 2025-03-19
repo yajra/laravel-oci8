@@ -17,7 +17,9 @@ class Sequence
         int $max = 0,
         int $increment = 1
     ): bool {
-        $name = $this->withSchemaPrefix($name);
+        $name = $this->withSchemaPrefix(
+            $this->connection->getQueryGrammar()->wrap($name)
+        );
 
         $nocache = $nocache ? 'nocache' : '';
 

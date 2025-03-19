@@ -56,5 +56,8 @@ class TriggerTest extends TestCase
                 $table->string('email');
                 $table->timestamps();
             });
+
+        $lastSql = array_slice($connection->getQueryLog(), -1)[0];
+        $this->assertStringContainsString('create trigger "ISSUE905"."MY_BUGS_ID_TRG"', $lastSql['query']);
     }
 }

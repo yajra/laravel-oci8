@@ -250,7 +250,7 @@ class Oci8Connection extends Connection
     public function withSchemaPrefix(string $name): string
     {
         if ($this->getSchemaPrefix()) {
-            return $this->getSchemaPrefix().'.'.$name;
+            return $this->getQueryGrammar()->wrap($this->getSchemaPrefix()).'.'.$name;
         }
 
         return $name;
