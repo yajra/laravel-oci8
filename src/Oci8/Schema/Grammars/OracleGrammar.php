@@ -386,6 +386,11 @@ class OracleGrammar extends Grammar
     public function compileDropIfExists(Blueprint $blueprint, Fluent $command): string
     {
         $table = $this->wrapTable($blueprint);
+
+        if (str_contains($table, '.')) {
+            [, $table] = explode('.', $table);
+        }
+
         $tableName = str_replace('"', '', $table);
 
         return "declare c int;
