@@ -51,7 +51,7 @@ class Oci8Connection extends Connection
      */
     public function getSchema(): string
     {
-        return $this->schema;
+        return empty($this->schemaPrefix) ? $this->schema : $this->schemaPrefix;
     }
 
     /**

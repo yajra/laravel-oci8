@@ -55,14 +55,10 @@ class Sequence
 
     public function exists(string $name): bool
     {
-        $owner = $this->connection->getConfig('username');
+        $owner = $this->connection->getSchema();
 
         if (str_contains($name, '.')) {
             [$owner, $name] = explode('.', $name);
-        }
-
-        if ($this->connection->getSchemaPrefix()) {
-            $owner = $this->connection->getSchemaPrefix();
         }
 
         return (bool) $this->connection->scalar(
