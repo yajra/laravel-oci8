@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.0.2 - 2025-03-19
+
+- fix: ORA-00942, wrong trigger prefix #909
+- fix: #905 
+- fix: drop if exist when using schema prefix 498fb94
+
 ## v12.0.1 - 2025-03-12
 
 - fix: compileDropIfExists #907
