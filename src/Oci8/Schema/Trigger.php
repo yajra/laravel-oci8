@@ -13,15 +13,15 @@ class Trigger
 
     public function autoIncrement(string $table, string $column, string $triggerName, string $sequenceName): bool
     {
+        $grammar = $this->connection->getQueryGrammar();
+        $table = $grammar->wrapTable($table);
+
         if ($this->connection->getSchemaPrefix()) {
             $table = $this->connection->withSchemaPrefix($table);
             $triggerName = $this->connection->withSchemaPrefix($sequenceName);
             $sequenceName = $this->connection->withSchemaPrefix($sequenceName);
         }
 
-        $grammar = $this->connection->getQueryGrammar();
-
-        $table = $grammar->wrapTable($table);
         $column = $grammar->wrap($column);
 
         return $this->connection->statement("
