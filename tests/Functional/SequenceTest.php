@@ -88,7 +88,7 @@ class SequenceTest extends TestCase
         $lastSql = array_slice($connection->getQueryLog(), -1)[0];
 
         $this->assertSame(
-            'create sequence demo.transaction_seq minvalue 1  start with 1 increment by 1',
+            'create sequence "DEMO"."TRANSACTION_SEQ" minvalue 1  start with 1 increment by 1',
             $lastSql['query']
         );
         $this->assertTrue($sequence->exists('transaction_seq'));

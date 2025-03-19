@@ -17,7 +17,9 @@ class Sequence
         int $max = 0,
         int $increment = 1
     ): bool {
-        $name = $this->withSchemaPrefix($name);
+        $name = $this->withSchemaPrefix(
+            $this->connection->getQueryGrammar()->wrap($name)
+        );
 
         $nocache = $nocache ? 'nocache' : '';
 
@@ -55,14 +57,10 @@ class Sequence
 
     public function exists(string $name): bool
     {
-        $owner = $this->connection->getConfig('username');
+        $owner = $this->connection->getSchema();
 
         if (str_contains($name, '.')) {
             [$owner, $name] = explode('.', $name);
-        }
-
-        if ($this->connection->getSchemaPrefix()) {
-            $owner = $this->connection->getSchemaPrefix();
         }
 
         return (bool) $this->connection->scalar(

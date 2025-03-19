@@ -96,7 +96,7 @@ class OracleAutoIncrementHelper
     public function getPrimaryKey(string $table): string
     {
         $table = $this->connection->getQueryGrammar()->wrapTable($table);
-        $owner = $this->connection->getConfig('username');
+        $owner = $this->connection->getSchema();
 
         if (str_contains($table, '.')) {
             [$owner, $table] = explode('.', $table);
