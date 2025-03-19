@@ -41,6 +41,8 @@ class Trigger
             return false;
         }
 
+        $name = $this->connection->withSchemaPrefix($name);
+
         return $this->connection->statement("declare
                 e exception;
                 pragma exception_init(e,-4080);
