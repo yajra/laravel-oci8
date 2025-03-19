@@ -79,10 +79,10 @@ abstract class TestCase extends BaseTestCase
         $app['config']->set('database.connections.oracle', [
             'driver' => 'oracle',
             'host' => 'localhost',
-            'database' => 'free',
-            'service_name' => 'free',
-            'username' => 'oci8',
-            'password' => 'secret',
+            'database' => 'xe',
+            'service_name' => 'xe',
+            'username' => 'system',
+            'password' => 'oracle',
             'port' => 1521,
         ]);
     }
