@@ -515,14 +515,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals("declare c int;
-            begin
-               select count(*) into c from user_tables
-               where upper(table_name) = upper('USERS');
-               if c = 1 then
-                  execute immediate 'drop table \"USERS\"';
-               end if;
-            end;", $statements[0]);
+        $this->assertEquals("begin execute immediate 'drop table \"USERS\"'; exception when others then null; end;", $statements[0]);
     }
 
     public function test_drop_table_with_prefix()
