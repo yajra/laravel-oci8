@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.0 - 2025-05-28
+
+- feat: add support for dateTime with timezone #918
+
 ## v12.0.2 - 2025-03-19
 
 - fix: ORA-00942, wrong trigger prefix #909
