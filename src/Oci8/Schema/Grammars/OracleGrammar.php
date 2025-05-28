@@ -655,6 +655,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a date-time type with timezone.
+     */
+    protected function typeDateTimeTz(Fluent $column): string
+    {
+        return 'timestamp with time zone';
+    }
+
+    /**
      * Create the column definition for a time type.
      */
     protected function typeTime(Fluent $column): string
