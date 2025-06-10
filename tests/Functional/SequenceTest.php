@@ -27,7 +27,7 @@ class SequenceTest extends TestCase
         $this->assertSame(1, $transaction_id);
 
         $transaction_id = $sequence->currentValue('transaction_seq');
-        $this->assertSame(1, $transaction_id);
+         $this->assertSame(1, $transaction_id);
 
         $transaction_id = $sequence->lastInsertId('transaction_seq');
         $this->assertSame(1, $transaction_id);
@@ -43,6 +43,10 @@ class SequenceTest extends TestCase
 
         try {
             $connection->statement('alter session set "_oracle_script"=true');
+            $connection->statement('drop user demo cascade');
+        } catch (\Exception) {}
+
+        try {
             $connection->statement('grant all privileges to demo identified by oracle container=ALL');
         } catch (\Exception) {
             $connection->statement('grant all privileges to demo identified by oracle');
@@ -74,6 +78,10 @@ class SequenceTest extends TestCase
         $connection = $this->getConnection();
         try {
             $connection->statement('alter session set "_oracle_script"=true');
+            $connection->statement('drop user demo cascade');
+        } catch (\Exception) {}
+
+        try {
             $connection->statement('grant all privileges to demo identified by oracle container=ALL');
         } catch (\Exception) {
             $connection->statement('grant all privileges to demo identified by oracle');

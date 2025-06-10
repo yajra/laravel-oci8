@@ -3183,12 +3183,12 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => '1'], $builder->getBindings());
     }
 
-    protected function getConnection(string $prefix = '')
+    protected function getConnection(string $prefix = '', string $schemaPrefix = '')
     {
         $connection = m::mock(Connection::class);
         $connection->shouldReceive('getDatabaseName')->andReturn('database');
         $connection->shouldReceive('getTablePrefix')->andReturn($prefix);
-        $connection->shouldReceive('getSchemaPrefix')->andReturn($prefix);
+        $connection->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix);
         $connection->shouldReceive('setSchemaPrefix');
         $connection->shouldReceive('getMaxLength')->andReturn(30);
         $connection->shouldReceive('setMaxLength');

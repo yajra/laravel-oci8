@@ -14,19 +14,8 @@ class Trigger
     public function autoIncrement(string $table, string $column, string $triggerName, string $sequenceName): bool
     {
         $grammar = $this->connection->getQueryGrammar();
-        $table = $grammar->wrapTable($table);
-
-        if ($this->connection->getSchemaPrefix()) {
-            $table = $this->connection->withSchemaPrefix($table);
-            $triggerName = $this->connection->withSchemaPrefix(
-                $grammar->wrap($triggerName)
-            );
-            $sequenceName = $this->connection->withSchemaPrefix(
-                $grammar->wrap($sequenceName)
-            );
-        }
-
         $column = $grammar->wrap($column);
+        $table = $grammar->wrapTable($table);
 
         return $this->connection->statement("
             create trigger $triggerName
@@ -44,8 +33,6 @@ class Trigger
         if (! $name) {
             return false;
         }
-
-        $name = $this->connection->withSchemaPrefix($name);
 
         return $this->connection->statement("declare
                 e exception;
