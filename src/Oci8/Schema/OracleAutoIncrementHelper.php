@@ -39,6 +39,7 @@ class OracleAutoIncrementHelper
 
         // create trigger for auto increment work around
         $triggerName = $this->createObjectName($table, $col, 'trg');
+
         $this->trigger->autoIncrement($table, $col, $triggerName, $sequenceName);
     }
 
@@ -66,9 +67,10 @@ class OracleAutoIncrementHelper
     private function createObjectName(string $table, string $col, string $type): string
     {
         $maxLength = $this->connection->getMaxLength();
-        $table = $this->connection->getTablePrefix().$table;
 
-        return mb_substr($table.'_'.$col.'_'.$type, 0, $maxLength);
+        return $this->connection
+            ->getQueryGrammar()
+            ->wrapTable(mb_substr($table.'_'.$col.'_'.$type, 0, $maxLength));
     }
 
     /**

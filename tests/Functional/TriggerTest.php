@@ -32,8 +32,14 @@ class TriggerTest extends TestCase
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
         $connection = $this->getConnection();
+
         try {
             $connection->statement('alter session set "_oracle_script"=true');
+            $connection->statement('drop user issue905 cascade');
+        } catch (\Exception) {
+        }
+
+        try {
             $connection->statement('grant all privileges to issue905 identified by oracle container=ALL');
         } catch (\Exception) {
             $connection->statement('grant all privileges to issue905 identified by oracle');

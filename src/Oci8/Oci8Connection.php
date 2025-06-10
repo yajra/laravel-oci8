@@ -245,18 +245,6 @@ class Oci8Connection extends Connection
     }
 
     /**
-     * Wrap object name with schema prefix.
-     */
-    public function withSchemaPrefix(string $name): string
-    {
-        if ($this->getSchemaPrefix()) {
-            return $this->getQueryGrammar()->wrap($this->getSchemaPrefix()).'.'.$name;
-        }
-
-        return $name;
-    }
-
-    /**
      * Get the default query grammar instance.
      */
     protected function getDefaultQueryGrammar(): QueryGrammar

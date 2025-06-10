@@ -17,10 +17,6 @@ class Sequence
         int $max = 0,
         int $increment = 1
     ): bool {
-        $name = $this->withSchemaPrefix(
-            $this->connection->getQueryGrammar()->wrap($name)
-        );
-
         $nocache = $nocache ? 'nocache' : '';
 
         $max = $max ? " maxvalue {$max}" : '';
@@ -30,18 +26,13 @@ class Sequence
         return $this->connection->statement(trim($sql));
     }
 
-    public function withSchemaPrefix(string $name): string
-    {
-        return $this->connection->withSchemaPrefix($name);
-    }
-
     public function drop(string $name): bool
     {
+        $name = $this->wrap($name);
+
         if (! $this->exists($name)) {
             return true;
         }
-
-        $name = $this->withSchemaPrefix($name);
 
         return $this->connection->statement("
             declare
@@ -63,14 +54,16 @@ class Sequence
             [$owner, $name] = explode('.', $name);
         }
 
-        return (bool) $this->connection->scalar(
-            "select count(*) from all_sequences where sequence_name=upper('{$name}') and sequence_owner=upper('{$owner}')"
-        );
+        $name = $this->unquote($name);
+        $owner = $this->unquote($owner);
+        $sql = "select count(*) from all_sequences where sequence_name=upper('{$name}') and sequence_owner=upper('{$owner}')";
+
+        return (bool) $this->connection->scalar($sql);
     }
 
     public function nextValue(string $name): int
     {
-        $name = $this->withSchemaPrefix($name);
+        $name = $this->wrap($name);
 
         return $this->connection->selectOne("SELECT $name.NEXTVAL as \"id\" FROM DUAL")->id;
     }
@@ -82,13 +75,13 @@ class Sequence
 
     public function lastInsertId(string $name): int
     {
+        $name = $this->wrap($name);
+
         if (! $this->exists($name)) {
             return 0;
         }
 
         try {
-            $name = $this->withSchemaPrefix($name);
-
             return $this->connection->selectOne("select {$name}.currval as \"id\" from dual")->id;
         } catch (QueryException) {
             return 0;
@@ -97,8 +90,28 @@ class Sequence
 
     public function forceCreate(string $name): bool
     {
+        $name = $this->wrap($name);
+
         $this->drop($name);
 
         return $this->create($name);
+    }
+
+    public function wrap(string $name): string
+    {
+        $owner = '';
+        $name = $this->unquote($name);
+
+        if (str_contains($name, '.')) {
+            [$owner, $name] = explode('.', $name);
+            $owner = $this->unquote($owner).'.';
+        }
+
+        return $this->connection->getQueryGrammar()->wrapTable($owner.$name);
+    }
+
+    public function unquote(string $name): string
+    {
+        return str_replace('"', '', $name);
     }
 }

@@ -24,7 +24,6 @@ class SequenceTest extends TestCase
         $connection->shouldReceive('getConfig')->andReturn('');
         $connection->shouldReceive('statement')->andReturn(true);
         $connection->shouldReceive('getSchemaPrefix');
-        $connection->shouldReceive('withSchemaPrefix');
 
         $grammar = m::mock(OracleGrammar::class);
         $grammar->shouldReceive('wrap')->andReturn('users_id_seq');
@@ -33,18 +32,6 @@ class SequenceTest extends TestCase
 
         $success = $sequence->create('users_id_seq');
         $this->assertTrue($success);
-    }
-
-    #[Test]
-    public function it_can_set_sequence_name_with_schema_prefix()
-    {
-        $connection = $this->getConnection();
-        $connection->shouldReceive('getSchemaPrefix')->andReturn('schema_prefix');
-        $connection->shouldReceive('withSchemaPrefix')->andReturn('schema_prefix.users_id_seq');
-
-        $sequence = new Sequence($connection);
-        $name = $sequence->withSchemaPrefix('users_id_seq');
-        $this->assertSame($name, 'schema_prefix.users_id_seq');
     }
 
     protected function getConnection()

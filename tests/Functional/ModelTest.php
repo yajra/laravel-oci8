@@ -66,7 +66,7 @@ class ModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_update_model_with_mutliple_blob_columns()
+    public function it_can_update_model_with_multiple_blob_columns()
     {
         $multiBlob = MultiBlob::create();
         $multiBlob->blob_1 = ['test'];
