@@ -36,7 +36,8 @@ class TriggerTest extends TestCase
         try {
             $connection->statement('alter session set "_oracle_script"=true');
             $connection->statement('drop user issue905 cascade');
-        } catch (\Exception) {}
+        } catch (\Exception) {
+        }
 
         try {
             $connection->statement('grant all privileges to issue905 identified by oracle container=ALL');
