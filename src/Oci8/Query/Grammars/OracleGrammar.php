@@ -211,6 +211,10 @@ class OracleGrammar extends Grammar
             $tableName = $this->wrap($prefix.$segments[0]).' '.$prefix.$segments[1];
         }
 
+        if ($this->connection->getSchemaPrefix()) {
+            return $this->wrap($this->getSchemaPrefix()).'.'.$tableName;
+        }
+
         return $tableName;
     }
 

@@ -13,6 +13,7 @@ class FunctionTest extends TestCase
     #[Test]
     public function it_can_return_numbers_using_a_function()
     {
+        /** @var \Yajra\Oci8\Oci8Connection $connection */
         $connection = $this->getConnection();
 
         $procedureName = 'add_two';
