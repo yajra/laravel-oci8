@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.1 - 2025-06-15
+
+- fix: pagination error "Undefined property: stdClass::$aggregate" #921
+- fix: schema prefix implementation #920
+
 ## v12.1.0 - 2025-05-28
 
 - feat: add support for dateTime with timezone #918
