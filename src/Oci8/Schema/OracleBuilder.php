@@ -92,7 +92,9 @@ class OracleBuilder extends Builder
     public function drop($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
-        $this->ctxDdlPreferences->dropPreferencesByTable($table);
+        if ($this->ctxDdlPreferences->checkIfCtxsysIsEnabled()) {
+            $this->ctxDdlPreferences->dropPreferencesByTable($table);
+        }
         parent::drop($table);
     }
 
@@ -113,7 +115,9 @@ class OracleBuilder extends Builder
     public function dropIfExists($table): void
     {
         $this->helper->dropAutoIncrementObjects($table);
-        $this->ctxDdlPreferences->dropPreferencesByTable($table);
+        if ($this->ctxDdlPreferences->checkIfCtxsysIsEnabled()) {
+            $this->ctxDdlPreferences->dropPreferencesByTable($table);
+        }
         parent::dropIfExists($table);
     }
 

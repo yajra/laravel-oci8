@@ -111,4 +111,18 @@ class OraclePreferences
 
         $this->connection->statement($sqlDropAllPreferences);
     }
+
+    /**
+     * Check if CTXSYS is enabled.
+     */
+    public function checkIfCtxsysIsEnabled(): bool
+    {
+        $results = $this->connection->select("SELECT USERNAME FROM all_users WHERE username = 'CTXSYS'");
+
+        if (empty($results)) {
+            return false;
+        }
+
+        return true;
+    }
 }
