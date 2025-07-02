@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.2 - 2025-07-02
+
+- fix: ORA-00942 when try to drop any table #923
+- fix: https://github.com/yajra/laravel-oci8/issues/916
+- fix: https://github.com/yajra/laravel-oci8/issues/917
+
 ## v12.1.1 - 2025-06-15
 
 - fix: pagination error "Undefined property: stdClass::$aggregate" #921
