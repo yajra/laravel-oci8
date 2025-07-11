@@ -126,7 +126,7 @@ class Oci8Connection extends Connection
         $versionQuery->execute();
         $version = $versionQuery->fetch(PDO::FETCH_OBJ);
 
-        return $version->banner_full;
+        return $version->banner;
     }
 
     /**
