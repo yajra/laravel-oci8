@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.3 - 2025-07-11
+
+- fix: php artisan db:show #924
+
 ## v12.1.2 - 2025-07-02
 
 - fix: ORA-00942 when try to drop any table #923
