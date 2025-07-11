@@ -101,6 +101,14 @@ class Oci8ConnectionTest extends TestCase
         $this->assertFalse($connection->dropSequence(null));
     }
 
+    public function test_get_server_version()
+    {
+        $connection = m::mock(Oci8Connection::class);
+        $connection->shouldReceive('getServerVersion')->withNoArgs()->once()->andReturn('Oracle Database');
+
+        $this->assertSame('Oracle Database', $connection->getServerVersion());
+    }
+
     protected function getMockConnection($methods = [], $pdo = null)
     {
         $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;

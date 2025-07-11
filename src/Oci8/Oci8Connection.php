@@ -118,6 +118,18 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Get the server version for the connection.
+     */
+    public function getServerVersion(): string
+    {
+        $versionQuery = $this->getPdo()->prepare('SELECT BANNER FROM v$version');
+        $versionQuery->execute();
+        $version = $versionQuery->fetch(PDO::FETCH_OBJ);
+
+        return $version->banner;
+    }
+
+    /**
      * Get a new query builder instance.
      */
     public function query(): QueryBuilder
