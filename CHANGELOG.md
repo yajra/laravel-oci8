@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.4 - 2025-07-24
+
+- fix: log query time to be compatible with laravel logging #925
+
 ## v12.1.3 - 2025-07-11
 
 - fix: php artisan db:show #924
