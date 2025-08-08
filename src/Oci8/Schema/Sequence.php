@@ -28,8 +28,6 @@ class Sequence
 
     public function drop(string $name): bool
     {
-        $name = $this->wrap($name);
-
         if (! $this->exists($name)) {
             return true;
         }
