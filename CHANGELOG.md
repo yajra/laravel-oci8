@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.6.5](https://github.com/yajra/laravel-oci8/compare/v11.6.4...v11.6.5) - 2025-08-19
+
+- fix: log query time to be compatible with laravel logging #928
+
 ## [v11.6.4](https://github.com/yajra/laravel-oci8/compare/v11.6.3...v11.6.4) - 2024-12-31
 
 - fix: OracleGrammar::compileDropAllTables method to ignore secondary objects. #897

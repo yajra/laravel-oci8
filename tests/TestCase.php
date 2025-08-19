@@ -79,9 +79,9 @@ abstract class TestCase extends BaseTestCase
         $app['config']->set('database.connections.oracle', [
             'driver' => 'oracle',
             'host' => 'localhost',
-            'database' => 'xe',
-            'service_name' => 'xe',
-            'username' => 'system',
+            'database' => 'free',
+            'service_name' => 'free',
+            'username' => 'oraora',
             'password' => 'oracle',
             'port' => 1521,
         ]);
