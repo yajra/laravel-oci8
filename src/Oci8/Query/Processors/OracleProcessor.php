@@ -34,9 +34,20 @@ class OracleProcessor extends Processor
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
         $statement->execute();
 
-        $connection->logQuery($sql, $values, $start);
+        $connection->logQuery($sql, $values, $this->getElapsedTime($start));
 
         return (int) $id;
+    }
+
+    /**
+     * Get the elapsed time since a given starting point.
+     *
+     * @param  int  $start
+     * @return float
+     */
+    protected function getElapsedTime($start)
+    {
+        return round((microtime(true) - $start) * 1000, 2);
     }
 
     /**
@@ -167,7 +178,7 @@ class OracleProcessor extends Processor
             return false;
         }
 
-        $connection->logQuery($sql, $values, $start);
+        $connection->logQuery($sql, $values, $this->getElapsedTime($start));
 
         return (int) $id;
     }
