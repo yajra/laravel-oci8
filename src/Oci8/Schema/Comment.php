@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Schema;
 
 use Illuminate\Database\Schema\Grammars\Grammar;
+use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
 
 class Comment extends Grammar
@@ -46,7 +47,7 @@ class Comment extends Grammar
      */
     protected function wrapValue($value): string
     {
-        return $this->isReserved($value) ? parent::wrapValue($value) : $value;
+        return $this->isReserved($value) ? Str::upper(trim(parent::wrapValue($value))) : $value;
     }
 
     /**
