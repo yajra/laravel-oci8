@@ -105,7 +105,21 @@ class OracleGrammar extends Grammar
         }
 
         if (isset($query->lock)) {
-            $sql .= ' '.$this->compileLock($query, $query->lock).' '.$this->compileOrders($query, $query->orders);
+            $lockSql = $this->compileLock($query, $query->lock);
+            $orderSql = $this->compileOrders($query, $query->orders);
+
+            // Handle ORDER BY placement based on query structure
+            if (isset($query->limit)) {
+                // With limit: ORDER BY is already in inner query, only add lock
+                $sql .= " {$lockSql}";
+            } else {
+                // Without limit: Check if ORDER BY already exists to prevent duplication
+                if (!empty($orderSql) && stripos($sql, 'order by') === false) {
+                    $sql .= " {$lockSql} {$orderSql}";
+                } else {
+                    $sql .= " {$lockSql}";
+                }
+            }
         }
 
         $query->columns = $original;
