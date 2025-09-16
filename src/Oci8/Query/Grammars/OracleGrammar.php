@@ -124,7 +124,7 @@ class OracleGrammar extends Grammar
              * - If LIMIT is set, we want ORDER BY for consistent pagination, but
              *   we still avoid appending ORDER BY if it's already present in $sql.
              */
-            $appendOrder = !empty($orderSql) && !$hasOrderInSql;
+            $appendOrder = ! empty($orderSql) && ! $hasOrderInSql;
 
             if ($appendOrder) {
                 $sql .= " {$orderSql}";
