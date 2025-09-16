@@ -105,7 +105,7 @@ class OracleGrammar extends Grammar
         }
 
         if (isset($query->lock)) {
-            $sql .= $this->compileLock($query, $query->lock);
+            $sql .= ' '.$this->compileLock($query, $query->lock);
             $orderSql = $this->compileOrders($query, $query->orders);
 
             /**
