@@ -110,8 +110,12 @@ class OracleGrammar extends Grammar
 
             // Handle ORDER BY placement based on query structure
             if (isset($query->limit)) {
-                // With limit: ORDER BY is already in inner query, only add lock
-                $sql .= " {$lockSql}";
+                // With limit: Add lock and ORDER BY clause if present
+                if (!empty($orderSql)) {
+                    $sql .= " {$lockSql} {$orderSql}";
+                } else {
+                    $sql .= " {$lockSql}";
+                }
             } else {
                 // Without limit: Check if ORDER BY already exists to prevent duplication
                 if (!empty($orderSql) && stripos($sql, 'order by') === false) {
