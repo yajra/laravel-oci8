@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.7 - 2025-09-18
+
+- Fix duplicate ORDER BY in Oracle lock queries #930
+
 ## v12.1.6 - 2025-09-06
 
 - Fix Migration comment not working, ORA-00904 #929
