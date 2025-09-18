@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
 
+## [v11.6.6](https://github.com/yajra/laravel-oci8/compare/v11.6.5...v11.6.6) - 2025-09-18
+
+- Fix duplicate ORDER BY clauses when using lock() without limit() #931
+
 ## [v11.6.5](https://github.com/yajra/laravel-oci8/compare/v11.6.4...v11.6.5) - 2025-08-19
 
 - fix: log query time to be compatible with laravel logging #928
