@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
 
+## v12.1.8 - 2025-09-18
+
+- Fix runPaginationCountQuery for Oracle: remove AS from subquery alias on version 12 #932
+- Fix https://github.com/yajra/laravel-oci8/issues/927
+
 ## v12.1.7 - 2025-09-18
 
 - Fix duplicate ORDER BY in Oracle lock queries #930
