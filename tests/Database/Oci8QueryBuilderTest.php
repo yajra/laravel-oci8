@@ -3272,7 +3272,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         // Should contain ORDER BY only once (the bug would cause 2)
         $this->assertEquals(1, substr_count(strtolower((string) $sql), 'order by'));
-        $this->assertStringContainsString('order by', strtolower($sql));
-        $this->assertStringContainsString('for update', strtolower($sql));
+        $this->assertStringContainsString('order by', strtolower((string) $sql));
+        $this->assertStringContainsString('for update', strtolower((string) $sql));
     }
 }
