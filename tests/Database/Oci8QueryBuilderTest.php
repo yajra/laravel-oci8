@@ -3225,4 +3225,54 @@ class Oci8QueryBuilderTest extends TestCase
 
         return new Builder(m::mock(ConnectionInterface::class), $grammar, $processor);
     }
+
+    public function test_order_by_not_duplicated_with_lock()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orderBy('name')->lock();
+
+        $sql = $builder->toSql();
+
+        // Should contain ORDER BY only once
+        $this->assertEquals(1, substr_count(strtolower((string) $sql), 'order by'));
+        $this->assertStringContainsString('order by', strtolower((string) $sql));
+        $this->assertStringContainsString('for update', strtolower((string) $sql));
+    }
+
+    public function test_order_by_not_duplicated_with_limit_and_lock()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orderBy('name')->limit(10)->lock();
+
+        $sql = $builder->toSql();
+
+        // Should contain ORDER BY only once
+        $this->assertEquals(1, substr_count(strtolower((string) $sql), 'order by'));
+        $this->assertStringContainsString('order by', strtolower((string) $sql));
+    }
+
+    public function test_order_by_appended_when_not_present()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orderBy('name');
+
+        $sql = $builder->toSql();
+
+        $this->assertStringContainsString('order by "name" asc', strtolower((string) $sql));
+    }
+
+    public function test_order_by_duplication_prevention_works_correctly()
+    {
+        // This test demonstrates that the ORDER BY duplication prevention
+        // successfully prevents duplicate ORDER BY when both limit and lock are used
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->orderBy('name')->limit(10)->lock();
+
+        $sql = $builder->toSql();
+
+        // Should contain ORDER BY only once (the bug would cause 2)
+        $this->assertEquals(1, substr_count(strtolower((string) $sql), 'order by'));
+        $this->assertStringContainsString('order by', strtolower((string) $sql));
+        $this->assertStringContainsString('for update', strtolower((string) $sql));
+    }
 }

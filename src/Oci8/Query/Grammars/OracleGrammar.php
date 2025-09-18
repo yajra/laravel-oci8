@@ -105,7 +105,30 @@ class OracleGrammar extends Grammar
         }
 
         if (isset($query->lock)) {
-            $sql .= ' '.$this->compileLock($query, $query->lock).' '.$this->compileOrders($query, $query->orders);
+            $sql .= ' '.$this->compileLock($query, $query->lock);
+            $orderSql = $this->compileOrders($query, $query->orders);
+
+            /**
+             * Check if the original SQL already contains an ORDER BY clause.
+             */
+            $hasOrderInSql = stripos($sql, 'order by') !== false;
+
+            /**
+             * Determine whether to append the ORDER BY clause:
+             * - Append ORDER BY only if $orderSql is not empty
+             * - Append ORDER BY only if the original SQL does NOT already contain ORDER BY
+             *
+             * This prevents duplicate ORDER BY clauses causing SQL syntax errors.
+             *
+             * Note:
+             * - If LIMIT is set, we want ORDER BY for consistent pagination, but
+             *   we still avoid appending ORDER BY if it's already present in $sql.
+             */
+            $appendOrder = ! empty($orderSql) && ! $hasOrderInSql;
+
+            if ($appendOrder) {
+                $sql .= " {$orderSql}";
+            }
         }
 
         $query->columns = $original;
