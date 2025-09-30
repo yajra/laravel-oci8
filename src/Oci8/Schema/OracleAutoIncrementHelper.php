@@ -66,7 +66,7 @@ class OracleAutoIncrementHelper
      */
     private function createObjectName(string $table, string $col, string $type): string
     {
-        $maxLength = $this->connection->getMaxLength();
+        $maxLength = $this->connection->getMaxLength() - strlen($this->connection->getTablePrefix());
 
         return $this->connection
             ->getQueryGrammar()
