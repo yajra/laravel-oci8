@@ -185,12 +185,12 @@ class OracleBuilder extends Builder
         if ($this->groups || $this->havings) {
             $clone = $this->cloneForPaginationCount();
 
-            if (is_null($clone->columns) && !empty($this->joins)) {
-                $clone->select($this->from . '.*');
+            if (is_null($clone->columns) && ! empty($this->joins)) {
+                $clone->select($this->from.'.*');
             }
 
             return $this->newQuery()
-                ->from(new Expression('(' . $clone->toSql() . ') ' . $this->grammar->wrap('aggregate_table')))
+                ->from(new Expression('('.$clone->toSql().') '.$this->grammar->wrap('aggregate_table')))
                 ->mergeBindings($clone)
                 ->setAggregate('count', $this->withoutSelectAliases($columns))
                 ->get()->all();
