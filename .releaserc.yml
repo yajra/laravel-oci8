@@ -1,5 +1,6 @@
 {
     "branches": [
+        "main",
         "master",
         "*.x"
     ],
