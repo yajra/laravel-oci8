@@ -7,6 +7,15 @@
 * Fix issue where db_prefix is not considered in max length ([ffceb87](https://github.com/yajra/laravel-oci8/commit/ffceb875500a305fd72f3b2e08c4a9220181846b))
 * pint :robot: ([3826188](https://github.com/yajra/laravel-oci8/commit/3826188ad732c02debfa8555570f3406684a8f6d))
 
+## [12.1.9](https://github.com/yajra/laravel-oci8/compare/v12.1.8...v12.1.9) (2025-10-15)
+
+
+### Bug Fixes
+
+* **#938:** use offsets only when no locks are used ([5bf8d40](https://github.com/yajra/laravel-oci8/commit/5bf8d40baf07b6f706821eb0325dcf91cc1fb028)), closes [#938](https://github.com/yajra/laravel-oci8/issues/938)
+* Fix issue where db_prefix is not considered in max length ([ffceb87](https://github.com/yajra/laravel-oci8/commit/ffceb875500a305fd72f3b2e08c4a9220181846b))
+* pint :robot: ([3826188](https://github.com/yajra/laravel-oci8/commit/3826188ad732c02debfa8555570f3406684a8f6d))
+
 # Laravel-OCI8 CHANGELOG
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...12.x)
