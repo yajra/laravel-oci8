@@ -141,8 +141,8 @@ class OracleGrammar extends Grammar
      */
     protected function compileAnsiOffset(Builder $query, array $components): string
     {
-        // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries
-        if ($query->getConnection()->getConfig('server_version') == '12c') {
+        // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries (only when no locks used else it results in ORA‑02014)
+        if ($query->getConnection()->getConfig('server_version') == '12c' && $query->lock === null) {
             $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */",
                 $components['columns']);
             $offset = $query->offset ?: 0;
