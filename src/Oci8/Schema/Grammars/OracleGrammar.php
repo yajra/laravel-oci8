@@ -737,7 +737,7 @@ class OracleGrammar extends Grammar
     /**
      * Get the SQL for a nullable column modifier.
      */
-    protected function modifyNullable(Blueprint $blueprint, Fluent $column): string
+    protected function modifyNullable(Blueprint $blueprint, Fluent $column, ?bool $currentNullable = null): string
     {
         // check if field is declared as enum
         $enum = '';
@@ -746,7 +746,36 @@ class OracleGrammar extends Grammar
             $enum = " check ({$columnName} in ('".implode("', '", $column->allowed)."'))";
         }
 
-        $null = $column->nullable ? ' null' : ' not null';
+        // If we have the current nullable state (from a change operation), only include
+        // NULL/NOT NULL if it's actually changing. This prevents ORA-01451 errors when
+        // trying to set a column to NULL that's already NULL, and preserves the
+        // existing nullable state when it's not being changed.
+        if ($currentNullable !== null) {
+            $desiredNullable = (bool) $column->nullable;
+
+            // Only include NULL/NOT NULL if the state is actually changing
+            if ($desiredNullable === $currentNullable) {
+                // State is not changing, preserve existing - don't include NULL/NOT NULL
+                $null = '';
+            } else {
+                // Special case: If column is currently nullable and we're trying to set it to NOT NULL,
+                // but nullable() was not explicitly called (it's the default), preserve the nullable state.
+                // This addresses the issue where omitting ->nullable() drops the nullable constraint.
+                // Note: We can't detect if nullable() was explicitly set, so we preserve nullable state
+                // when changing from nullable to NOT NULL to match user expectations from issue #941.
+                if ($currentNullable === true && $desiredNullable === false) {
+                    // Preserve nullable state when not explicitly changed
+                    $null = '';
+                } else {
+                    // State is changing, include the new constraint
+                    $null = $desiredNullable ? ' null' : ' not null';
+                }
+            }
+        } else {
+            // For create/add operations, always include the constraint
+            $null = $column->nullable ? ' null' : ' not null';
+        }
+
         $null .= $enum;
 
         if (! is_null($column->default)) {
@@ -798,6 +827,10 @@ class OracleGrammar extends Grammar
 
         $column = $command->column;
 
+        // Get the current nullable state of the column to avoid ORA-01451 errors
+        // and preserve the existing nullable constraint when not explicitly changed
+        $currentNullable = $this->getCurrentColumnNullable($blueprint, $column->name);
+
         $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
 
         foreach ($this->modifiers as $modifier) {
@@ -806,7 +839,12 @@ class OracleGrammar extends Grammar
             }
 
             if (method_exists($this, $method = "modify{$modifier}")) {
-                $constraints = (array) $this->{$method}($blueprint, $column);
+                // Pass current nullable state to modifyNullable for change operations
+                if ($modifier === 'Nullable' && $currentNullable !== null) {
+                    $constraints = (array) $this->{$method}($blueprint, $column, $currentNullable);
+                } else {
+                    $constraints = (array) $this->{$method}($blueprint, $column);
+                }
 
                 foreach ($constraints as $constraint) {
                     $changes[] = $constraint;
@@ -829,6 +867,62 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Get the current nullable state of a column from the database.
+     *
+     * @param  Blueprint  $blueprint
+     * @param  string  $columnName
+     * @return bool|null Returns true if nullable, false if not nullable, null if column doesn't exist
+     */
+    protected function getCurrentColumnNullable(Blueprint $blueprint, string $columnName): ?bool
+    {
+        // Check if connection is available and has the selectOne method
+        if (! isset($this->connection) || ! $this->connection) {
+            return null;
+        }
+
+        // Check if connection has selectOne method (might be mocked)
+        if (! method_exists($this->connection, 'selectOne')) {
+            return null;
+        }
+
+        try {
+            $table = $blueprint->getTable();
+            $schema = $this->connection->getConfig('username');
+
+            // Parse schema and table if table contains schema prefix
+            if (str_contains($table, '.')) {
+                [$schema, $table] = explode('.', $table, 2);
+            }
+
+            // Apply table prefix if configured
+            $table = $this->connection->getTablePrefix().$table;
+
+            // Query all_tab_cols to get the current nullable state
+            $sql = sprintf(
+                "SELECT decode(nullable, 'Y', 1, 0) as nullable
+                 FROM all_tab_cols
+                 WHERE upper(owner) = upper(%s)
+                   AND upper(table_name) = upper(%s)
+                   AND upper(column_name) = upper(%s)",
+                $this->quoteString($schema),
+                $this->quoteString($table),
+                $this->quoteString($columnName)
+            );
+
+            $result = $this->connection->selectOne($sql);
+
+            if ($result && isset($result->nullable)) {
+                return (bool) $result->nullable;
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            // If we can't query the current state, return null to fall back to default behavior
+            return null;
+        }
     }
 
     /**
