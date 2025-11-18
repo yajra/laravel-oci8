@@ -872,8 +872,6 @@ class OracleGrammar extends Grammar
     /**
      * Get the current nullable state of a column from the database.
      *
-     * @param  Blueprint  $blueprint
-     * @param  string  $columnName
      * @return bool|null Returns true if nullable, false if not nullable, null if column doesn't exist
      */
     protected function getCurrentColumnNullable(Blueprint $blueprint, string $columnName): ?bool
