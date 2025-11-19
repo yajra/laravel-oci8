@@ -72,7 +72,7 @@ abstract class TestCase extends BaseTestCase
      *
      * @param  \Illuminate\Foundation\Application  $app
      */
-    protected function getEnvironmentSetUp($app): void
+    protected function getEnvironmentSetUp($app)
     {
         $app['config']->set('app.debug', true);
         $app['config']->set('database.default', 'oracle');
