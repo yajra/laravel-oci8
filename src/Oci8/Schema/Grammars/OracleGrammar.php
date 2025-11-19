@@ -83,12 +83,11 @@ class OracleGrammar extends Grammar
      * Wrap a table in keyword identifiers.
      *
      * @param  mixed  $table
-     * @param  string|null  $prefix
      * @return string
      */
-    public function wrapTable($table, $prefix = null)
+    public function wrapTable($table)
     {
-        return $this->getSchemaPrefix().parent::wrapTable($table, $prefix);
+        return $this->getSchemaPrefix().parent::wrapTable($table);
     }
 
     /**
@@ -188,17 +187,11 @@ class OracleGrammar extends Grammar
     /**
      * Compile the query to determine if a table exists.
      *
-     * @param  string  $schema
-     * @param  string  $table
      * @return string
      */
-    public function compileTableExists($schema, $table)
+    public function compileTableExists()
     {
-        return sprintf(
-            'select count(*) from all_tables where upper(owner) = upper(%s) and upper(table_name) = upper(%s)',
-            $this->quoteString($schema),
-            $this->quoteString($table)
-        );
+        return 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
     }
 
     /**

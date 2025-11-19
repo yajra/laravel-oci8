@@ -514,8 +514,8 @@ class Oci8SchemaGrammarTest extends TestCase
     public function testCompileTableExistsMethod()
     {
         $grammar = $this->getGrammar();
-        $expected = 'select count(*) from all_tables where upper(owner) = upper(\'TEST_SCHEMA\') and upper(table_name) = upper(\'users\')';
-        $sql = $grammar->compileTableExists('TEST_SCHEMA', 'users');
+        $expected = 'select * from all_tables where upper(owner) = upper(?) and upper(table_name) = upper(?)';
+        $sql = $grammar->compileTableExists();
         $this->assertEquals($expected, $sql);
     }
 
