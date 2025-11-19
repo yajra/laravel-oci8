@@ -84,6 +84,7 @@ abstract class TestCase extends BaseTestCase
             'username' => 'system',
             'password' => 'oracle',
             'port' => 1521,
+            'server_version' => getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g',
         ]);
     }
 
