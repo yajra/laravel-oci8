@@ -231,4 +231,180 @@ class SchemaTest extends TestCase
 
         $this->assertContains('index_table_name_index', $indexes, 'name');
     }
+
+    #[Test]
+    public function it_can_add_generated_as_column()
+    {
+        // this is only supported from 12c and onward
+        if(config('database.connections.oracle.server_version') !== '12c') {
+            return;
+        }
+
+        if (Schema::hasTable('generated_as_table')) {
+            Schema::drop('generated_as_table');
+        }
+
+        Schema::create('generated_as_table', function (Blueprint $table) {
+            $table->integer('id')->generatedAs();
+            $table->string('name');
+        });
+
+        DB::table('generated_as_table')->insert([
+            'name' => 'foo',
+        ]);
+
+        DB::table('generated_as_table')->insert([
+            'name' => 'bar',
+        ]);
+
+        DB::table('generated_as_table')->insert([
+            'id' => 5,
+            'name' => 'foobar',
+        ]);
+
+        $this->assertDatabaseHas('generated_as_table', ['id' => 1, 'name' => 'foo']);
+        $this->assertDatabaseHas('generated_as_table', ['id' => 2, 'name' => 'bar']);
+        $this->assertDatabaseHas('generated_as_table', ['id' => 5, 'name' => 'foobar']);
+    }
+
+    #[Test]
+    public function it_can_add_generated_as_on_null_column()
+    {
+        // this is only supported from 12c and onward
+        if(config('database.connections.oracle.server_version') !== '12c') {
+            return;
+        }
+
+        if (Schema::hasTable('generated_as_on_null_table')) {
+            Schema::drop('generated_as_on_null_table');
+        }
+
+        Schema::create('generated_as_on_null_table', function (Blueprint $table) {
+            $table->integer('id')->generatedAs()->onNull();
+            $table->string('name');
+        });
+
+        DB::table('generated_as_on_null_table')->insert([
+            'name' => 'foo',
+        ]);
+
+        DB::table('generated_as_on_null_table')->insert([
+            'id' => null,
+            'name' => 'bar',
+        ]);
+
+        DB::table('generated_as_on_null_table')->insert([
+            'id' => 5,
+            'name' => 'foobar',
+        ]);
+
+        $this->assertDatabaseHas('generated_as_on_null_table', ['id' => 1, 'name' => 'foo']);
+        $this->assertDatabaseHas('generated_as_on_null_table', ['id' => 2, 'name' => 'bar']);
+        $this->assertDatabaseHas('generated_as_on_null_table', ['id' => 5, 'name' => 'foobar']);
+    }
+
+    #[Test]
+    public function it_can_add_generated_as_always_column()
+    {
+        // this is only supported from 12c and onward
+        if(config('database.connections.oracle.server_version') !== '12c') {
+            return;
+        }
+
+        if (Schema::hasTable('generated_as_always_table')) {
+            Schema::drop('generated_as_always_table');
+        }
+
+        Schema::create('generated_as_always_table', function (Blueprint $table) {
+            $table->integer('id')->generatedAs()->always();
+            $table->string('name');
+        });
+
+        DB::table('generated_as_always_table')->insert([
+            'name' => 'foo',
+        ]);
+
+        DB::table('generated_as_always_table')->insert([
+            'name' => 'bar',
+        ]);
+
+        DB::table('generated_as_always_table')->insert([
+            'name' => 'foobar',
+        ]);
+
+        $this->assertDatabaseHas('generated_as_always_table', ['id' => 1, 'name' => 'foo']);
+        $this->assertDatabaseHas('generated_as_always_table', ['id' => 2, 'name' => 'bar']);
+        $this->assertDatabaseHas('generated_as_always_table', ['id' => 3, 'name' => 'foobar']);
+    }
+
+    #[Test]
+    public function it_can_add_generated_as_with_options_column()
+    {
+        // this is only supported from 12c and onward
+        if(config('database.connections.oracle.server_version') !== '12c') {
+            return;
+        }
+
+        if (Schema::hasTable('generated_as_with_options_table')) {
+            Schema::drop('generated_as_with_options_table');
+        }
+
+        Schema::create('generated_as_with_options_table', function (Blueprint $table) {
+            $table->integer('id')->generatedAs('increment by 10 start with 100');
+            $table->string('name');
+        });
+
+        DB::table('generated_as_with_options_table')->insert([
+            'name' => 'foo',
+        ]);
+
+        DB::table('generated_as_with_options_table')->insert([
+            'name' => 'bar',
+        ]);
+
+        DB::table('generated_as_with_options_table')->insert([
+            'id' => 3,
+            'name' => 'foobar',
+        ]);
+
+        $this->assertDatabaseHas('generated_as_with_options_table', ['id' => 100, 'name' => 'foo']);
+        $this->assertDatabaseHas('generated_as_with_options_table', ['id' => 110, 'name' => 'bar']);
+        $this->assertDatabaseHas('generated_as_with_options_table', ['id' => 3, 'name' => 'foobar']);
+    }
+
+    #[Test]
+    public function it_can_add_generated_as_on_null_with_options_column()
+    {
+        // this is only supported from 12c and onward
+        if(config('database.connections.oracle.server_version') !== '12c') {
+            return;
+        }
+
+        if (Schema::hasTable('generated_as_on_null_with_options_table')) {
+            Schema::drop('generated_as_on_null_with_options_table');
+        }
+
+        Schema::create('generated_as_on_null_with_options_table', function (Blueprint $table) {
+            $table->integer('id')->generatedAs('increment by 10 start with 100')->onNull();
+            $table->string('name');
+        });
+
+        DB::table('generated_as_on_null_with_options_table')->insert([
+            'name' => 'foo',
+        ]);
+
+        DB::table('generated_as_on_null_with_options_table')->insert([
+            'id' => null,
+            'name' => 'bar',
+        ]);
+
+        DB::table('generated_as_on_null_with_options_table')->insert([
+            'id' => 3,
+            'name' => 'foobar',
+        ]);
+
+        $this->assertDatabaseHas('generated_as_on_null_with_options_table', ['id' => 100, 'name' => 'foo']);
+        $this->assertDatabaseHas('generated_as_on_null_with_options_table', ['id' => 110, 'name' => 'bar']);
+        $this->assertDatabaseHas('generated_as_on_null_with_options_table', ['id' => 3, 'name' => 'foobar']);
+    }
 }
