@@ -33,12 +33,24 @@ class Oci8SchemaGrammarTest extends TestCase
 
     protected function getConnection()
     {
-        return m::mock('Illuminate\Database\Connection');
+        $conn = m::mock('Illuminate\Database\Connection')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('setTablePrefix')->andReturnSelf()
+            ->getMock();
+        
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        
+        $schemaBuilder = m::mock('Illuminate\Database\Schema\Builder');
+        $conn->shouldReceive('getSchemaBuilder')->andReturn($schemaBuilder);
+        
+        return $conn;
     }
 
     public function getGrammar(): OracleGrammar
     {
-        return new OracleGrammar;
+        $conn = $this->getConnection();
+        return $conn->getSchemaGrammar();
     }
 
     public function testAddColumnWithSpace(): void
@@ -282,10 +294,10 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function testAlterTableModifyColumn()
     {
+        $conn = $this->getConnection();
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($this->getGrammar());
         $blueprint = new Blueprint('users');
         $blueprint->string('email')->change();
-
-        $conn = $this->getConnection();
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
@@ -295,10 +307,10 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function testAlterTableModifyColumnWithCollate()
     {
+        $conn = $this->getConnection();
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($this->getGrammar());
         $blueprint = new Blueprint('users');
         $blueprint->string('email')->change()->collation('latin1_swedish_ci');
-
-        $conn = $this->getConnection();
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
@@ -310,11 +322,11 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function testAlterTableModifyMultipleColumns()
     {
+        $conn = $this->getConnection();
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($this->getGrammar());
         $blueprint = new Blueprint('users');
         $blueprint->string('email')->change();
         $blueprint->string('name')->change();
-
-        $conn = $this->getConnection();
 
         $statements = $blueprint->toSql($conn, $this->getGrammar());
 
@@ -323,6 +335,109 @@ class Oci8SchemaGrammarTest extends TestCase
             'alter table "USERS" modify "EMAIL" varchar2(255) not null',
             'alter table "USERS" modify "NAME" varchar2(255) not null',
         ], $statements);
+    }
+
+    public function testAlterTableModifyColumnPreservesNullableWhenAlreadyNullable()
+    {
+        // Test case from issue #941: modifying nullable column with ->nullable() should not fail
+        $conn = m::mock('Illuminate\Database\Connection')
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('selectOne')->with(m::any())
+            ->andReturn((object) ['nullable' => 1]) // Column is currently nullable
+            ->getMock();
+
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+
+        $blueprint = new Blueprint('attributes');
+        $blueprint->string('validation_regex', 1024)->nullable()->change();
+
+        $statements = $blueprint->toSql($conn, $grammar);
+
+        $this->assertCount(1, $statements);
+        // Should NOT include 'null' since column is already nullable (prevents ORA-01451)
+        $this->assertStringNotContainsString(' null', $statements[0]);
+        $this->assertStringNotContainsString('not null', $statements[0]);
+        $this->assertStringContainsString('varchar2(1024)', $statements[0]);
+    }
+
+    public function testAlterTableModifyColumnPreservesNullableWhenNotSpecified()
+    {
+        // Test case from issue #941: omitting ->nullable() should preserve existing nullable state
+        $conn = m::mock('Illuminate\Database\Connection')
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('selectOne')->with(m::any())
+            ->andReturn((object) ['nullable' => 1]) // Column is currently nullable
+            ->getMock();
+
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+
+        $blueprint = new Blueprint('attributes');
+        $blueprint->string('validation_regex', 1024)->change(); // No ->nullable() call
+
+        $statements = $blueprint->toSql($conn, $grammar);
+
+        $this->assertCount(1, $statements);
+        // Should NOT include 'not null' since column is currently nullable and we want to preserve it
+        $this->assertStringNotContainsString('not null', $statements[0]);
+        $this->assertStringNotContainsString(' null', $statements[0]);
+        $this->assertStringContainsString('varchar2(1024)', $statements[0]);
+    }
+
+    public function testAlterTableModifyColumnChangesNullableToNotNull()
+    {
+        // Test changing from nullable to not null - when nullable() is not specified,
+        // we preserve the existing nullable state per issue #941
+        $conn = m::mock('Illuminate\Database\Connection')
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('selectOne')->with(m::any())
+            ->andReturn((object) ['nullable' => 1]) // Column is currently nullable
+            ->getMock();
+
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->change(); // No ->nullable() call
+
+        $statements = $blueprint->toSql($conn, $grammar);
+
+        $this->assertCount(1, $statements);
+        // Per issue #941, when nullable() is not specified, preserve existing nullable state
+        $this->assertStringNotContainsString('not null', $statements[0]);
+        $this->assertStringNotContainsString(' null', $statements[0]);
+    }
+
+    public function testAlterTableModifyColumnChangesNotNullToNullable()
+    {
+        // Test changing from not null to nullable
+        $conn = m::mock('Illuminate\Database\Connection')
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('selectOne')->with(m::any())
+            ->andReturn((object) ['nullable' => 0]) // Column is currently not null
+            ->getMock();
+
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+
+        $blueprint = new Blueprint('users');
+        $blueprint->string('email')->nullable()->change(); // Changing to nullable
+
+        $statements = $blueprint->toSql($conn, $grammar);
+
+        $this->assertCount(1, $statements);
+        // Should include ' null' since we're changing from not null to nullable
+        $this->assertStringContainsString(' null', $statements[0]);
+        $this->assertStringNotContainsString('not null', $statements[0]);
     }
 
     public function testBasicAlterTableWithPrimary()
