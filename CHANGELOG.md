@@ -1,3 +1,15 @@
+## [11.6.7](https://github.com/yajra/laravel-oci8/compare/v11.6.6...v11.6.7) (2025-11-21)
+
+
+### Bug Fixes
+
+* preserve nullable constraint when modifying column length (fixes [#941](https://github.com/yajra/laravel-oci8/issues/941)) ([51d6af5](https://github.com/yajra/laravel-oci8/commit/51d6af5c5d139f7b62cf0ac24cc272a757d8ef4f))
+
+
+### Reverts
+
+* remove compileTableExists, wrapTable, and compileTables changes ([9d3d0cb](https://github.com/yajra/laravel-oci8/commit/9d3d0cbbec758b1f3b61ad129769e924acd2a8ae)), closes [#941](https://github.com/yajra/laravel-oci8/issues/941)
+
 # Laravel-OCI8 CHANGELOG
 
 ## [Unreleased](https://github.com/yajra/laravel-oci8/compare/master...10.x)
@@ -100,4 +112,3 @@
 ## [v11.0.0](https://github.com/yajra/laravel-oci8/compare/10.x...v11.0.0) - 2024-03-16
 
 - Laravel 11
-
