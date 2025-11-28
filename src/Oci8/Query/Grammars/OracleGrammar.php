@@ -723,6 +723,6 @@ class OracleGrammar extends Grammar
 
         $operator = str_replace('?', '??', $where['operator']);
 
-        return 'upper('.$this->wrap($where['column']).') '.$operator.' upper('.$value.')';
+        return $this->wrap($where['column']).' '.$operator.' upper('.$value.')';
     }
 }
