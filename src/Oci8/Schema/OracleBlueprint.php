@@ -94,4 +94,13 @@ class OracleBlueprint extends Blueprint
     {
         return parent::float($column, $precision);
     }
+
+    public function id($column = 'id'): ColumnDefinition
+    {
+        if ($this->connection->getConfig('server_version') == '12c') {
+            return $this->addColumn('bigInteger', $column, ['generatedAs' => true, 'unsigned' => true, 'primary' => true]);
+        }
+
+        return parent::id($column);
+    }
 }
