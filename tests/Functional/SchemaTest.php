@@ -235,9 +235,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_column()
     {
-        // this is only supported from 12c and onward
-        if(config('database.connections.oracle.server_version') !== '12c') {
-            return;
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
         if (Schema::hasTable('generated_as_table')) {
@@ -270,9 +269,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_on_null_column()
     {
-        // this is only supported from 12c and onward
-        if(config('database.connections.oracle.server_version') !== '12c') {
-            return;
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
         if (Schema::hasTable('generated_as_on_null_table')) {
@@ -306,9 +304,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_always_column()
     {
-        // this is only supported from 12c and onward
-        if(config('database.connections.oracle.server_version') !== '12c') {
-            return;
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
         if (Schema::hasTable('generated_as_always_table')) {
@@ -340,9 +337,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_with_options_column()
     {
-        // this is only supported from 12c and onward
-        if(config('database.connections.oracle.server_version') !== '12c') {
-            return;
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
         if (Schema::hasTable('generated_as_with_options_table')) {
@@ -375,9 +371,8 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_on_null_with_options_column()
     {
-        // this is only supported from 12c and onward
-        if(config('database.connections.oracle.server_version') !== '12c') {
-            return;
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
         if (Schema::hasTable('generated_as_on_null_with_options_table')) {
@@ -406,5 +401,37 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('generated_as_on_null_with_options_table', ['id' => 100, 'name' => 'foo']);
         $this->assertDatabaseHas('generated_as_on_null_with_options_table', ['id' => 110, 'name' => 'bar']);
         $this->assertDatabaseHas('generated_as_on_null_with_options_table', ['id' => 3, 'name' => 'foobar']);
+    }
+
+    #[Test]
+    public function it_can_autoincrement_by_using_table_id_function()
+    {
+
+        if (Schema::hasTable('autoincrement_test')) {
+            Schema::drop('autoincrement_test');
+        }
+
+        Schema::create('autoincrement_test', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+        });
+
+        DB::table('autoincrement_test')->insert([
+            'name' => 'foo',
+        ]);
+
+        DB::table('autoincrement_test')->insert([
+            'id' => null,
+            'name' => 'bar',
+        ]);
+
+        DB::table('autoincrement_test')->insert([
+            'id' => 4,
+            'name' => 'foobar',
+        ]);
+
+        $this->assertDatabaseHas('autoincrement_test', ['id' => 1, 'name' => 'foo']);
+        $this->assertDatabaseHas('autoincrement_test', ['id' => 2, 'name' => 'bar']);
+        $this->assertDatabaseHas('autoincrement_test', ['id' => 4, 'name' => 'foobar']);
     }
 }
