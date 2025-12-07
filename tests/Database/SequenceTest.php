@@ -22,6 +22,7 @@ class SequenceTest extends TestCase
         $connection = $this->getConnection();
         $sequence = new Sequence($connection);
         $connection->shouldReceive('getConfig')->andReturn('');
+        $connection->shouldReceive('getConfig')->with('server_version')->andReturn(getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g');
         $connection->shouldReceive('statement')->andReturn(true);
         $connection->shouldReceive('getSchemaPrefix');
 
