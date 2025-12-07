@@ -350,6 +350,12 @@ class OracleGrammar extends Grammar
             }
         }
 
+        if (empty($values)) {
+            $table = $this->wrapTable($query->from);
+
+            return 'insert into '.$table.' ('.$this->wrap($sequence).') values(DEFAULT) returning '.$this->wrap($sequence).' into ?';
+        }
+
         return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence).' into ?';
     }
 
