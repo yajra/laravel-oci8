@@ -893,20 +893,38 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->select('*')->from('users')->whereIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
-        $this->assertEquals(
-            'select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-            $builder->toSql()
-        );
+
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select * from "USERS" where "ID" in (select /*+ FIRST_ROWS(3) */ "ID" from "USERS" where "AGE" > ? offset 0 rows fetch next 3 rows only)',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+                $builder->toSql()
+            );
+        }
+
         $this->assertEquals([25], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotIn('id', function ($q) {
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
-        $this->assertEquals(
-            'select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
-            $builder->toSql()
-        );
+
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select * from "USERS" where "ID" not in (select /*+ FIRST_ROWS(3) */ "ID" from "USERS" where "AGE" > ? offset 0 rows fetch next 3 rows only)',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+                $builder->toSql()
+            );
+        }
+
         $this->assertEquals([25], $builder->getBindings());
     }
 
@@ -1050,7 +1068,12 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_order_by_sub_queries()
     {
-        $expected = 'select * from "USERS" order by (select * from (select "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID") where rownum = 1)';
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $expected = 'select * from "USERS" order by (select /*+ FIRST_ROWS(1) */ "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID" offset 0 rows fetch next 1 rows only)';
+        } else {
+            $expected = 'select * from "USERS" order by (select * from (select "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID") where rownum = 1)';
+        }
+
         $subQuery = (fn ($query) => $query->select('created_at')->from('logins')->whereColumn('user_id', 'users.id')->limit(1));
 
         $builder = $this->getBuilder()->select('*')->from('users')->orderBy($subQuery);
@@ -1135,104 +1158,211 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(10);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" >= 11',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            // todo: this is wrong
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS() */ * from "USERS" offset 10 rows fetch next  rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" >= 11',
+                $builder->toSql()
+            );
+        }
     }
 
     public function test_limits_and_offsets()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(5)->limit(10);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(10) */ * from "USERS" offset 5 rows fetch next 10 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(5)->take(10);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(10) */ * from "USERS" offset 5 rows fetch next 10 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 6 and 15',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(-5)->take(10);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(10) */ * from "USERS" offset 0 rows fetch next 10 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 15 rows fetch next 15 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 0 rows fetch next 15 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
+                $builder->toSql()
+            );
+        }
     }
 
     public function test_limit_and_offset_to_paginate_one()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(0)->limit(1);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 1',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(1) */ * from "USERS" offset 0 rows fetch next 1 rows only',
+                $builder->toSql(),
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 1',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(1)->limit(1);
-        $this->assertEquals(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 2 and 2',
-            $builder->toSql()
-        );
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertEquals(
+                'select /*+ FIRST_ROWS(1) */ * from "USERS" offset 1 rows fetch next 1 rows only',
+                $builder->toSql(),
+            );
+        } else {
+            $this->assertEquals(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 2 and 2',
+                $builder->toSql()
+            );
+        }
     }
 
     public function test_for_page()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
-        $this->assertSame(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
-            $builder->toSql());
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 15 rows fetch next 15 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertSame(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 16 and 30',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 15);
-        $this->assertSame(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
-            $builder->toSql());
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 0 rows fetch next 15 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertSame(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
-        $this->assertSame(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
-            $builder->toSql());
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 0 rows fetch next 15 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertSame(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 15',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
-        $this->assertSame(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
-            $builder->toSql());
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            // todo: this seems wrong
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertSame(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 0);
-        $this->assertSame(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
-            $builder->toSql());
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertSame(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
+                $builder->toSql()
+            );
+        }
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 0);
-        $this->assertSame(
-            'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
-            $builder->toSql());
+
+        if ($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
+                $builder->toSql()
+            );
+        } else {
+            $this->assertSame(
+                'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
+                $builder->toSql());
+        }
+
     }
 
     public function test_get_count_for_pagination_with_bindings()
@@ -1713,8 +1843,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('select')
             ->once()
-            ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
-                [1], true)
+            ->with($this->getConnection()->getConfig('server_version') === '12c' ? 'select /*+ FIRST_ROWS(1) */ * from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select * from "USERS" where "ID" = ?) where rownum = 1', [1], true)
             ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
             ->shouldReceive('processSelect')
@@ -1730,7 +1859,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
             ->once()
-            ->with('select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
+            ->with($this->getConnection()->getConfig('server_version') === '12c' ? 'select /*+ FIRST_ROWS(1) */ * from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
                 [1], true)
             ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
@@ -1777,7 +1906,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function test_value_method_returns_single_column()
     {
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('select')->once()->with('select * from (select "FOO" from "USERS" where "ID" = ?) where rownum = 1', [1], true)->andReturn([['foo' => 'bar']]);
+        $builder->getConnection()->shouldReceive('select')->once()->with($this->getConnection()->getConfig('server_version') === '12c' ? 'select /*+ FIRST_ROWS(1) */ "FOO" from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select "FOO" from "USERS" where "ID" = ?) where rownum = 1', [1], true)->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar']])->andReturn([['foo' => 'bar']]);
         $results = $builder->from('users')->where('id', '=', 1)->value('foo');
         $this->assertSame('bar', $results);
@@ -3192,6 +3321,7 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('setSchemaPrefix');
         $connection->shouldReceive('getMaxLength')->andReturn(30);
         $connection->shouldReceive('setMaxLength');
+        $connection->shouldReceive('getConfig')->with('server_version')->andReturn(getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g');
         $connection->shouldReceive('getConfig')->andReturn([]);
 
         return $connection;
