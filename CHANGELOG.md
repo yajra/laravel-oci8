@@ -1,3 +1,15 @@
+# [12.2.0](https://github.com/yajra/laravel-oci8/compare/v12.1.10...v12.2.0) (2025-12-08)
+
+
+### Bug Fixes
+
+* when values are empty use ($sequence) values(DEFAULT) syntax in compileInsertGetId ([953bd88](https://github.com/yajra/laravel-oci8/commit/953bd88539e9ae5c4c102d1158ecd2c9de48e6bb))
+
+
+### Features
+
+* **ci:** run tests for 21c too ([fdea0ab](https://github.com/yajra/laravel-oci8/commit/fdea0ab38e9fc8bfdfe46a63c714735359aad5ae))
+
 ## [12.1.10](https://github.com/yajra/laravel-oci8/compare/v12.1.9...v12.1.10) (2025-10-15)
 
 
