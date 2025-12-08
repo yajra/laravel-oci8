@@ -2283,15 +2283,10 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-    /**
-     * @TODO: Fix sql for empty values.
-     *
-     * @link https://github.com/yajra/laravel-oci8/issues/586
-     */
     public function test_insert_get_id_with_empty_values()
     {
         $builder = $this->getBuilder();
-        $builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into "USERS" () values () returning "ID" into ?', [], null);
+        $builder->getProcessor()->shouldReceive('processInsertGetId')->once()->with($builder, 'insert into "USERS" ("ID") values(DEFAULT) returning "ID" into ?', [], null);
         $builder->from('users')->insertGetId([]);
     }
 

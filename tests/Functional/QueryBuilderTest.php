@@ -3,10 +3,12 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
+use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 use Yajra\Oci8\Tests\TestCase;
 
 class QueryBuilderTest extends TestCase
@@ -57,6 +59,27 @@ class QueryBuilderTest extends TestCase
         $lastId = $this->getConnection()->table('users')->max('id');
         $id = $this->getBuilder()->from('users')->insertGetId(['name' => 'foo', 'email' => 'bar']);
         $this->assertSame($lastId + 1, $id);
+    }
+
+    #[Test]
+    public function it_can_insert_empty_and_get_id()
+    {
+        if (Schema::hasTable('empty_defaults_table')) {
+            Schema::drop('empty_defaults_table');
+        }
+
+        Schema::create('empty_defaults_table', function (Blueprint $table) {
+            $table->id('id');
+            $table->string('name')->default('default');
+        });
+
+        $id = $this->getBuilder()->from('empty_defaults_table')->insertGetId([]);
+
+        $this->assertSame(1, $id);
+        $this->assertDatabaseHas('empty_defaults_table', [
+            'id' => 1,
+            'name' => 'default',
+        ]);
     }
 
     protected function getBuilder(): Builder
