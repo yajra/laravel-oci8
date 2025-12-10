@@ -3283,7 +3283,12 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereLike('id', '1', false);
-        $this->assertSame('select * from "USERS" where upper("ID") like upper(?)', $builder->toSql());
+        if($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame('select * from "USERS" where "ID" like ? COLLATE BINARY_CI', $builder->toSql());
+        } else {
+            $this->assertSame('select * from "USERS" where upper("ID") like upper(?)', $builder->toSql());
+        }
+
         $this->assertEquals([0 => '1'], $builder->getBindings());
 
         $builder = $this->getBuilder();
@@ -3293,12 +3298,20 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotLike('id', '1');
-        $this->assertSame('select * from "USERS" where upper("ID") not like upper(?)', $builder->toSql());
+        if($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame('select * from "USERS" where "ID" not like ? COLLATE BINARY_CI', $builder->toSql());
+        } else {
+            $this->assertSame('select * from "USERS" where upper("ID") not like upper(?)', $builder->toSql());
+        }
         $this->assertEquals([0 => '1'], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotLike('id', '1', false);
-        $this->assertSame('select * from "USERS" where upper("ID") not like upper(?)', $builder->toSql());
+        if($this->getConnection()->getConfig('server_version') === '12c') {
+            $this->assertSame('select * from "USERS" where "ID" not like ? COLLATE BINARY_CI', $builder->toSql());
+        } else {
+            $this->assertSame('select * from "USERS" where upper("ID") not like upper(?)', $builder->toSql());
+        }
         $this->assertEquals([0 => '1'], $builder->getBindings());
 
         $builder = $this->getBuilder();
