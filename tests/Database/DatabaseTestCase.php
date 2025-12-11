@@ -34,5 +34,7 @@ abstract class DatabaseTestCase extends TestCase
         $connection = $app['config']->get('database.default');
 
         $this->driver = $app['config']->get("database.connections.$connection.driver");
+
+        $app['config']->set('database.connections.oracle.server_version', getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g');
     }
 }
