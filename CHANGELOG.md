@@ -1,3 +1,15 @@
+# [12.3.0](https://github.com/yajra/laravel-oci8/compare/v12.2.0...v12.3.0) (2025-12-11)
+
+
+### Bug Fixes
+
+* pint :robot: ([e76225d](https://github.com/yajra/laravel-oci8/commit/e76225d52879d04e50cea27c723f011e5a6eb49d))
+
+
+### Features
+
+* use COLLATE BINARY_CI in where like for 12c+ ([c23c671](https://github.com/yajra/laravel-oci8/commit/c23c6715a7f5b7ed1ae28e2bfe33ba41343332f3))
+
 # [12.2.0](https://github.com/yajra/laravel-oci8/compare/v12.1.10...v12.2.0) (2025-12-08)
 
 
