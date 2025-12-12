@@ -2248,7 +2248,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('insert')
             ->once()
-            ->with('insert into "USERS" ("EMAIL") select ? from dual union all select ? from dual ', ['foo', 'foo'])
+            ->with('insert into "USERS" ("EMAIL") select ? from dual union all select ? from dual', ['foo', 'foo'])
             ->andReturn(true);
         $data[] = ['email' => 'foo'];
         $data[] = ['email' => 'foo'];
@@ -2302,14 +2302,10 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertTrue($result);
     }
 
-    /**
-     * @TODO: Fix raw expressions value.
-     *      insert into "USERS" ("EMAIL") select UPPER('Foo') from dual union all select LOWER('Foo') from dual
-     */
     public function test_multiple_inserts_with_expression_values()
     {
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('insert')->once()->with('insert into "USERS" ("EMAIL") select UPPER\'Foo\' from dual union all select UPPER\'Foo\' from dual ', [])->andReturn(true);
+        $builder->getConnection()->shouldReceive('insert')->once()->with('insert into "USERS" ("EMAIL") select UPPER(\'Foo\') from dual union all select LOWER(\'Foo\') from dual', [])->andReturn(true);
         $result = $builder->from('users')->insert([['email' => new Raw("UPPER('Foo')")], ['email' => new Raw("LOWER('Foo')")]]);
         $this->assertTrue($result);
     }
