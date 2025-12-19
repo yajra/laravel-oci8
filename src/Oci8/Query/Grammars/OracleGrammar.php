@@ -143,11 +143,16 @@ class OracleGrammar extends Grammar
     {
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries (only when no locks used else it results in ORA‑02014)
         if ($query->getConnection()->getConfig('server_version') == '12c' && $query->lock === null) {
-            $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */",
-                $components['columns']);
+            if ($query->limit !== null) {
+                $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns']);
+            }
+
             $offset = $query->offset ?: 0;
-            $limit = $query->limit;
-            $components['limit'] = "offset $offset rows fetch next $limit rows only";
+            $components['limit'] = "offset $offset rows";
+
+            if ($query->limit !== null) {
+                $components['limit'] .= " fetch next $query->limit rows only";
+            }
 
             return $this->concatenate($components);
         }

@@ -1159,9 +1159,8 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(10);
         if ($this->getConnection()->getConfig('server_version') === '12c') {
-            // todo: this is wrong
             $this->assertEquals(
-                'select /*+ FIRST_ROWS() */ * from "USERS" offset 10 rows fetch next  rows only',
+                'select * from "USERS" offset 10 rows',
                 $builder->toSql()
             );
         } else {
@@ -1323,7 +1322,6 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
         if ($this->getConnection()->getConfig('server_version') === '12c') {
-            // todo: this seems wrong
             $this->assertSame(
                 'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
                 $builder->toSql()
