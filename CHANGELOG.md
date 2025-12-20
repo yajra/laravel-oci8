@@ -1,3 +1,10 @@
+## [12.3.1](https://github.com/yajra/laravel-oci8/compare/v12.3.0...v12.3.1) (2025-12-20)
+
+
+### Bug Fixes
+
+* use limit syntax for 12c only when limit is set ([1e4586e](https://github.com/yajra/laravel-oci8/commit/1e4586e86c6977f2247f1cfd1138ae8f87987234))
+
 # [12.3.0](https://github.com/yajra/laravel-oci8/compare/v12.2.0...v12.3.0) (2025-12-11)
 
 
