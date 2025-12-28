@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
+use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -39,6 +40,11 @@ class QueryBuilderTest extends TestCase
         $this->getConnection()->table('jobs')->insert($data);
 
         $this->assertDatabaseCount('jobs', 5);
+        $this->assertDatabaseHas('jobs', ['name' => 'Foo', 'job_id' => null]);
+        $this->assertDatabaseHas('jobs', ['name' => 'Bar', 'job_id' => 1]);
+        $this->assertDatabaseHas('jobs', ['name' => 'Test', 'job_id' => 2]);
+        $this->assertDatabaseHas('jobs', ['name' => null, 'job_id' => 4]);
+        $this->assertDatabaseHas('jobs', ['name' => null, 'job_id' => null]);
     }
 
     #[Test]
@@ -79,6 +85,55 @@ class QueryBuilderTest extends TestCase
         $this->assertDatabaseHas('empty_defaults_table', [
             'id' => 1,
             'name' => 'default',
+        ]);
+    }
+
+    #[Test]
+    public function it_can_insert_single_using_raw_query()
+    {
+        if (Schema::hasTable('single_raw_insert_table')) {
+            Schema::drop('single_raw_insert_table');
+        }
+
+        Schema::create('single_raw_insert_table', function (Blueprint $table) {
+            $table->id('id');
+            $table->string('name');
+        });
+
+        $this->getBuilder()->from('single_raw_insert_table')->insert([
+            ['name' => new Raw("UPPER('Foo')")],
+        ]);
+
+        $this->assertDatabaseHas('single_raw_insert_table', [
+            'id' => 1,
+            'name' => 'FOO',
+        ]);
+    }
+
+    #[Test]
+    public function it_can_insert_multiple_using_raw_query()
+    {
+        if (Schema::hasTable('multiple_raw_insert_table')) {
+            Schema::drop('multiple_raw_insert_table');
+        }
+
+        Schema::create('multiple_raw_insert_table', function (Blueprint $table) {
+            $table->id('id');
+            $table->string('name');
+        });
+
+        $this->getBuilder()->from('multiple_raw_insert_table')->insert([
+            ['name' => new Raw("UPPER('Foo')")],
+            ['name' => new Raw("LOWER('Foo')")],
+        ]);
+
+        $this->assertDatabaseHas('multiple_raw_insert_table', [
+            'id' => 1,
+            'name' => 'FOO',
+        ]);
+        $this->assertDatabaseHas('multiple_raw_insert_table', [
+            'id' => 2,
+            'name' => 'foo',
         ]);
     }
 
