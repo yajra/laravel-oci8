@@ -14,6 +14,10 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_with_where()
     {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
         DB::table('json_test')->insert([
             'options' => json_encode(['language' => 'en']),
         ]);
@@ -32,6 +36,10 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_contains_root_value()
     {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
         DB::table('json_test')->insert([
             'options' => json_encode(['languages' => ['en', 'de']]),
         ]);
@@ -62,6 +70,10 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_contains_nested_value()
     {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
         DB::table('json_test')->insert([
             'options' => json_encode([
                 'settings' => [
@@ -88,6 +100,10 @@ class JsonTest extends TestCase
     #[Test]
     public function it_handles_multiple_levels_of_json_paths()
     {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
         DB::table('json_test')->insert([
             'options' => json_encode([
                 'profile' => [
@@ -108,6 +124,10 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_or_where_json_contains()
     {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
         DB::table('json_test')->insert([
             'options' => json_encode(['languages' => ['fr']]),
         ]);
