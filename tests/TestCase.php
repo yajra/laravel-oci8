@@ -54,6 +54,15 @@ abstract class TestCase extends BaseTestCase
             $table->string('name')->nullable();
             $table->integer('job_id')->nullable();
         });
+
+        if ($schemaBuilder->hasTable('json_test')) {
+            $schemaBuilder->drop('json_test');
+        }
+
+        $schemaBuilder->create('json_test', function (Blueprint $table) {
+            $table->id('id');
+            $table->json('options');
+        });
     }
 
     protected function seedDatabase(): void
