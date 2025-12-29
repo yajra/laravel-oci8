@@ -3150,26 +3150,21 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['10'], $builder->getBindings());
     }
 
-    /**
-     * @TODO: add json support?
-     */
     public function test_where_json_contains()
     {
-        $this->expectExceptionMessage('This database engine does not support JSON contains operations.');
-
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereJsonContains('options', ['en']);
-        $this->assertSame('select * from "USERS" where ("OPTIONS")::jsonb @> ?', $builder->toSql());
-        $this->assertEquals(['["en"]'], $builder->getBindings());
+        $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=?)', $builder->toSql());
+        $this->assertEquals(['en'], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereJsonContains('users.options->languages', ['en']);
-        $this->assertSame('select * from "USERS" where ("USERS"."OPTIONS"->\'languages\')::jsonb @> ?', $builder->toSql());
-        $this->assertEquals(['["en"]'], $builder->getBindings());
+        $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("USERS"."OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=?)', $builder->toSql());
+        $this->assertEquals(['en'], $builder->getBindings());
 
         $builder = $this->getBuilder();
-        $builder->select('*')->from('users')->where('id', '=', 1)->orWhereJsonContains('options->languages', new Raw("'[\"en\"]'"));
-        $this->assertSame('select * from "USERS" where "id" = ? or ("OPTIONS"->\'languages\')::jsonb @> \'["en"]\'', $builder->toSql());
+        $builder->select('*')->from('users')->where('id', '=', 1)->orWhereJsonContains('options->languages', new Raw("Upper('en')"));
+        $this->assertSame('select * from "USERS" where "ID" = ? or EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=Upper(\'en\'))', $builder->toSql());
         $this->assertEquals([1], $builder->getBindings());
     }
 

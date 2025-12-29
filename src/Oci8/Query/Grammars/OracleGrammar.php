@@ -736,4 +736,59 @@ class OracleGrammar extends Grammar
 
         return 'upper('.$this->wrap($where['column']).') '.$operator.' upper('.$value.')';
     }
+
+    /**
+     * Compile a "where like" clause.
+     *
+     * @param  array  $where
+     */
+    protected function whereJsonContains(Builder $query, $where): string
+    {
+        $not = $where['not'] ? 'NOT ' : '';
+
+        return $not.$this->compileJsonContains(
+            $where['column'],
+            is_array($where['value']) ? $this->parameterize($where['value']) : $this->parameter($where['value']),
+            is_array($where['value']) ? count($where['value']) : 1
+        );
+    }
+
+    /**
+     * Compile a "JSON contains" statement into SQL.
+     *
+     * @param  string  $column
+     * @param  string  $value
+     * @param  int  $count  = 1
+     *
+     * @throws \RuntimeException
+     */
+    protected function compileJsonContains($column, $value, int $count = 1): string
+    {
+        $parts = explode('->', $column, 2);
+        $field = $this->wrap($parts[0]);
+
+        if (count($parts) > 1) {
+            $jsonPath = '$.'.str_replace('->', '.', $parts[1]).'[*]';
+        } else {
+            $jsonPath = '$[*]';
+        }
+
+        $sql = 'EXISTS (SELECT 1 FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value';
+
+        if ($count === 1) {
+            return $sql.'='.$value.')';
+        }
+
+        return $sql.' IN ('.$value.') HAVING COUNT(DISTINCT jt.value) = '.$count.')';
+    }
+
+    /**
+     * Prepare the binding for a "JSON contains" statement.
+     *
+     * @param  mixed  $binding
+     */
+    public function prepareBindingForJsonContains($binding): mixed
+    {
+        return $binding;
+    }
 }
