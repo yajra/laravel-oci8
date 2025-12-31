@@ -380,26 +380,22 @@ class OracleGrammar extends Grammar
 
         $columns = $this->columnize(array_keys(reset($values)));
 
-        // We need to build a list of parameter place-holders of values that are bound
-        // to the query. Each insert should have the exact same amount of parameter
-        // bindings so we can just go off the first list of values in this array.
-        $parameters = $this->parameterize(reset($values));
+        $rowTemplates = array_map(fn ($row) => '('.$this->parameterize($row).')', $values);
 
-        $value = array_fill(0, count($values), "($parameters)");
-
-        if (count($value) > 1) {
-            $insertQueries = [];
-            foreach ($value as $parameter) {
-                $parameter = str_replace(['(', ')'], '', $parameter);
-                $insertQueries[] = 'select '.$parameter.' from dual ';
-            }
-            $parameters = implode('union all ', $insertQueries);
-
-            return "insert into $table ($columns) $parameters";
+        if (count($rowTemplates) === 1) {
+            return "insert into $table ($columns) values {$rowTemplates[0]}";
         }
-        $parameters = implode(', ', $value);
 
-        return "insert into $table ($columns) values $parameters";
+        // Batch insert using Oracle-style "select ... from dual union all select ..."
+        $selects = [];
+        foreach ($values as $row) {
+            $parameters = implode(', ', array_map(fn ($v) => $this->parameter($v), $row));
+            $selects[] = 'select '.$parameters.' from dual';
+        }
+
+        $parameters = implode(' union all ', $selects);
+
+        return "insert into $table ($columns) $parameters";
     }
 
     /**
