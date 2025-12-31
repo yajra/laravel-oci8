@@ -1,3 +1,10 @@
+## [12.3.2](https://github.com/yajra/laravel-oci8/compare/v12.3.1...v12.3.2) (2025-12-31)
+
+
+### Bug Fixes
+
+* raw query in multiple insert ([8526b40](https://github.com/yajra/laravel-oci8/commit/8526b40b7d4bc69226c564a20166adcdd27f8c4d))
+
 ## [12.3.1](https://github.com/yajra/laravel-oci8/compare/v12.3.0...v12.3.1) (2025-12-20)
 
 
