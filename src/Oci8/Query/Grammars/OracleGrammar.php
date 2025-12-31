@@ -738,9 +738,11 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * Compile a "where like" clause.
+     * Compile a "where JSON contains" clause.
      *
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
+     * @return string
      */
     protected function whereJsonContains(Builder $query, $where): string
     {
