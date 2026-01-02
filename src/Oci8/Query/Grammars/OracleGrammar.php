@@ -740,9 +740,7 @@ class OracleGrammar extends Grammar
     /**
      * Compile a "where JSON contains" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  array  $where
-     * @return string
      */
     protected function whereJsonContains(Builder $query, $where): string
     {
@@ -792,5 +790,36 @@ class OracleGrammar extends Grammar
     public function prepareBindingForJsonContains($binding): mixed
     {
         return $binding;
+    }
+
+    /**
+     * Compile a "JSON contains key" statement into SQL.
+     *
+     * @param  string  $column
+     */
+    protected function compileJsonContainsKey($column): string
+    {
+        [$field, $path] = $this->wrapJsonFieldAndPath($column);
+
+        return 'json_exists('.$field.$path.')';
+    }
+
+    /**
+     * Wrap the given JSON boolean value.
+     *
+     * @param  string  $value
+     */
+    protected function wrapJsonBooleanValue($value): string
+    {
+        return "'".strtolower($value)."'";
+    }
+
+    protected function compileJsonLength($column, $operator, $value)
+    {
+        [$field, $path] = $this->wrapJsonFieldAndPath($column);
+
+        $jsonPath = $path ?: '$[*]';
+
+        return '(SELECT COUNT(*) FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (val PATH \'$\')) ) '.$operator.' '.$value;
     }
 }

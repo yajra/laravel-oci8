@@ -3402,4 +3402,114 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertStringContainsString('order by', strtolower((string) $sql));
         $this->assertStringContainsString('for update', strtolower((string) $sql));
     }
+
+    /** @test */
+    public function it_compiles_where_json_boolean_true()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')->where('data->active', true);
+
+        $this->assertSame(
+            'select * from "users" where json_value("data",\'$.active\') = ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame(['true'], $builder->getBindings());
+    }
+
+    /** @test */
+    public function it_compiles_where_json_boolean_false()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')->where('data->active', false);
+
+        $this->assertSame(
+            'select * from "users" where json_value("data",\'$.active\') = ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame(['false'], $builder->getBindings());
+    }
+
+    /** @test */
+    public function it_compiles_where_json_contains_key()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')
+            ->whereJsonContainsKey('preferences->dietary_requirements');
+
+        $this->assertSame(
+            'select * from "users" where json_exists("preferences", \'$.dietary_requirements\')',
+            $builder->toSql()
+        );
+
+        $this->assertSame([], $builder->getBindings());
+    }
+
+    /** @test */
+    public function it_compiles_where_json_does_not_contain_key()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')
+            ->whereJsonDoesntContainKey('preferences->dietary_requirements');
+
+        $this->assertSame(
+            'select * from "users" where not json_exists("preferences", \'$.dietary_requirements\')',
+            $builder->toSql()
+        );
+
+        $this->assertSame([], $builder->getBindings());
+    }
+
+    /** @test */
+    public function it_compiles_where_json_length_for_root_array()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('json_test')
+            ->whereJsonLength('options', '>=', 3);
+
+        $this->assertSame(
+            '(SELECT COUNT(*) FROM JSON_TABLE("options", \'$[*]\' COLUMNS (val PATH \'$\'))) >= ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame([3], $builder->getBindings());
+    }
+
+    /** @test */
+    public function it_compiles_where_json_length_for_nested_array()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('json_test')
+            ->whereJsonLength('options.items', '=', 2);
+
+        $this->assertSame(
+            '(SELECT COUNT(*) FROM JSON_TABLE("options", \'$.items\' COLUMNS (val PATH \'$\'))) = ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame([2], $builder->getBindings());
+    }
+
+    /** @test */
+    public function it_compiles_where_json_length_with_different_operator()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('json_test')
+            ->whereJsonLength('options.data.subitems', '<', 10);
+
+        $this->assertSame(
+            '(SELECT COUNT(*) FROM JSON_TABLE("options", \'$.data.subitems\' COLUMNS (val PATH \'$\'))) < ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame([10], $builder->getBindings());
+    }
 }
