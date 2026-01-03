@@ -291,4 +291,141 @@ class JsonTest extends TestCase
 
         $this->assertCount(0, $results);
     }
+
+    #[Test]
+    public function it_finds_rows_where_json_doesnt_contain_value()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['en', 'de'])],
+            ['options' => json_encode(['fr'])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->whereJsonDoesntContain('options', 'en')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_works_with_or_where_json_doesnt_contain()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['en'])],
+            ['options' => json_encode(['fr'])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->where('id', 9999)
+            ->orWhereJsonDoesntContain('options', 'en')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_finds_rows_where_json_contains_key()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['language' => 'en'])],
+            ['options' => json_encode(['active' => true])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->whereJsonContainsKey('options->language')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_works_with_or_where_json_contains_key()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['language' => 'en'])],
+            ['options' => json_encode(['active' => true])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->where('id', 9999)
+            ->orWhereJsonContainsKey('options->active')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_finds_rows_where_json_doesnt_contain_key()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['language' => 'en'])],
+            ['options' => json_encode(['active' => true])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->whereJsonDoesntContainKey('options->language')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_works_with_or_where_json_doesnt_contain_key()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['language' => 'en'])],
+            ['options' => json_encode(['active' => true])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->where('id', 9999)
+            ->orWhereJsonDoesntContainKey('options->language')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_works_with_or_where_json_length()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['en'])],
+            ['options' => json_encode(['en', 'de'])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->where('id', 9999)
+            ->orWhereJsonLength('options', '>', 1)
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
 }
