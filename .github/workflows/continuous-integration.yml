@@ -56,3 +56,52 @@ jobs:
           else
             vendor/bin/phpunit
           fi
+
+  compatibility-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.2, 8.3, 8.4, 8.5]
+        stability: [prefer-stable]
+
+    name: Compatibility Tests (PHP ${{ matrix.php }} · Oracle ↔ PgSQL) - STABILITY ${{ matrix.stability }}
+
+    services:
+      pgsql:
+        image: postgres:16
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: oci8, pdo_pgsql
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Run compatibility tests
+        env:
+          SERVER_VERSION: 12c
+          PGSQL: true
+        run: vendor/bin/phpunit tests/Functional/Compatibility/

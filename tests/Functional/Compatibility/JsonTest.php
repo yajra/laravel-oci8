@@ -1,6 +1,6 @@
 <?php
 
-namespace Yajra\Oci8\Tests\Functional;
+namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;

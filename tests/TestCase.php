@@ -84,17 +84,32 @@ abstract class TestCase extends BaseTestCase
     protected function getEnvironmentSetUp($app): void
     {
         $app['config']->set('app.debug', true);
-        $app['config']->set('database.default', 'oracle');
-        $app['config']->set('database.connections.oracle', [
-            'driver' => 'oracle',
-            'host' => 'localhost',
-            'database' => 'xe',
-            'service_name' => 'xe',
-            'username' => 'system',
-            'password' => 'oracle',
-            'port' => 1521,
-            'server_version' => getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g',
-        ]);
+
+        /* this allows to run specific tests with pgsql to check for compatibility */
+        if (getenv('PGSQL') === 'true') {
+            $app['config']->set('database.default', 'pgsql');
+            $app['config']->set('database.connections.pgsql', [
+                'driver' => 'pgsql',
+                'host' => 'localhost',
+                'port' => 5432,
+                'database' => 'postgres',
+                'username' => 'postgres',
+                'password' => 'postgres',
+            ]);
+            $app['config']->set('database.connections.oracle.server_version', getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g');
+        } else {
+            $app['config']->set('database.default', 'oracle');
+            $app['config']->set('database.connections.oracle', [
+                'driver' => 'oracle',
+                'host' => 'localhost',
+                'database' => 'xe',
+                'service_name' => 'xe',
+                'username' => 'system',
+                'password' => 'oracle',
+                'port' => 1521,
+                'server_version' => getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g',
+            ]);
+        }
     }
 
     protected function getPackageProviders($app): array
