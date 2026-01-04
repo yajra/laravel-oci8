@@ -34,6 +34,28 @@ class JsonTest extends TestCase
     }
 
     #[Test]
+    public function it_finds_rows_with_where_case_sensitive()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
+        DB::table('json_test')->insert([
+            'options' => json_encode(['Language' => 'en']),
+        ]);
+
+        DB::table('json_test')->insert([
+            'options' => json_encode(['Language' => 'de']),
+        ]);
+
+        $results = DB::table('json_test')
+            ->where('options->Language', 'en')
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
     public function it_can_filter_json_boolean_values()
     {
         if (config('database.connections.oracle.server_version') !== '12c') {
@@ -52,6 +74,31 @@ class JsonTest extends TestCase
 
         $falseIds = DB::table('json_test')
             ->where('options->active', false)
+            ->get();
+
+        $this->assertCount(2, $trueIds);
+        $this->assertCount(1, $falseIds);
+    }
+
+    #[Test]
+    public function it_can_filter_json_boolean_values_case_sensitive()
+    {
+        if (config('database.connections.oracle.server_version') !== '12c') {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['Active' => true])],
+            ['options' => json_encode(['Active' => false])],
+            ['options' => json_encode(['Active' => true])],
+        ]);
+
+        $trueIds = DB::table('json_test')
+            ->where('options->Active', true)
+            ->get();
+
+        $falseIds = DB::table('json_test')
+            ->where('options->Active', false)
             ->get();
 
         $this->assertCount(2, $trueIds);
