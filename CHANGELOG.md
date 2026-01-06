@@ -1,3 +1,20 @@
+# [12.4.0](https://github.com/yajra/laravel-oci8/compare/v12.3.2...v12.4.0) (2026-01-06)
+
+
+### Bug Fixes
+
+* json tests ([6e63048](https://github.com/yajra/laravel-oci8/commit/6e630483c7424f6f71e468a32f86b39ec9050dbc))
+* wrong comment ([a1354a3](https://github.com/yajra/laravel-oci8/commit/a1354a3081d2ec76447a356e7ea1465b5377d6b5))
+
+
+### Features
+
+* add more json tests ([bc85c02](https://github.com/yajra/laravel-oci8/commit/bc85c02af886e2c893ca37fefb642185f562b9aa))
+* add support for whereJsonContains ([638cfec](https://github.com/yajra/laravel-oci8/commit/638cfec0658238495e9dab52305feed2e464875f))
+* implement whereJsonBoolean, whereJsonContainsKey, whereJsonLength, add tests for them and further improve tests ([1e3cfc6](https://github.com/yajra/laravel-oci8/commit/1e3cfc6e5b07ce42bff74b9056f9f41d84f43833))
+* scaffold compatibility tests for pgsql ([c756b2c](https://github.com/yajra/laravel-oci8/commit/c756b2cb8bbc945198d437c6af1a10f8c0ed0c05))
+* update readme with json support ([2c14876](https://github.com/yajra/laravel-oci8/commit/2c14876669e800b056b5d1c8f397923eaf16dd22))
+
 ## [12.3.2](https://github.com/yajra/laravel-oci8/compare/v12.3.1...v12.3.2) (2025-12-31)
 
 
