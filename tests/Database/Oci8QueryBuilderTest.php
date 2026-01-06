@@ -3150,26 +3150,21 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['10'], $builder->getBindings());
     }
 
-    /**
-     * @TODO: add json support?
-     */
     public function test_where_json_contains()
     {
-        $this->expectExceptionMessage('This database engine does not support JSON contains operations.');
-
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereJsonContains('options', ['en']);
-        $this->assertSame('select * from "USERS" where ("OPTIONS")::jsonb @> ?', $builder->toSql());
-        $this->assertEquals(['["en"]'], $builder->getBindings());
+        $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=?)', $builder->toSql());
+        $this->assertEquals(['en'], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereJsonContains('users.options->languages', ['en']);
-        $this->assertSame('select * from "USERS" where ("USERS"."OPTIONS"->\'languages\')::jsonb @> ?', $builder->toSql());
-        $this->assertEquals(['["en"]'], $builder->getBindings());
+        $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("USERS"."OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=?)', $builder->toSql());
+        $this->assertEquals(['en'], $builder->getBindings());
 
         $builder = $this->getBuilder();
-        $builder->select('*')->from('users')->where('id', '=', 1)->orWhereJsonContains('options->languages', new Raw("'[\"en\"]'"));
-        $this->assertSame('select * from "USERS" where "id" = ? or ("OPTIONS"->\'languages\')::jsonb @> \'["en"]\'', $builder->toSql());
+        $builder->select('*')->from('users')->where('id', '=', 1)->orWhereJsonContains('options->languages', new Raw("Upper('en')"));
+        $this->assertSame('select * from "USERS" where "ID" = ? or EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=Upper(\'en\'))', $builder->toSql());
         $this->assertEquals([1], $builder->getBindings());
     }
 
@@ -3406,5 +3401,104 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, substr_count(strtolower((string) $sql), 'order by'));
         $this->assertStringContainsString('order by', strtolower((string) $sql));
         $this->assertStringContainsString('for update', strtolower((string) $sql));
+    }
+
+    public function test_it_compiles_where_json_boolean_true()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')->where('data->active', true);
+
+        $this->assertSame(
+            'select * from "USERS" where json_value("DATA", \'$."active"\') = \'true\'',
+            $builder->toSql()
+        );
+    }
+
+    public function test_it_compiles_where_json_boolean_false()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')->where('data->active', false);
+
+        $this->assertSame(
+            'select * from "USERS" where json_value("DATA", \'$."active"\') = \'false\'',
+            $builder->toSql()
+        );
+    }
+
+    public function test_it_compiles_where_json_contains_key()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')
+            ->whereJsonContainsKey('preferences->dietary_requirements');
+
+        $this->assertSame(
+            'select * from "USERS" where json_exists("PREFERENCES", \'$."dietary_requirements"\')',
+            $builder->toSql()
+        );
+
+        $this->assertSame([], $builder->getBindings());
+    }
+
+    public function test_it_compiles_where_json_does_not_contain_key()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('users')
+            ->whereJsonDoesntContainKey('preferences->dietary_requirements');
+
+        $this->assertSame(
+            'select * from "USERS" where not json_exists("PREFERENCES", \'$."dietary_requirements"\')',
+            $builder->toSql()
+        );
+
+        $this->assertSame([], $builder->getBindings());
+    }
+
+    public function test_it_compiles_where_json_length_for_root_array()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('json_test')
+            ->whereJsonLength('options', '>=', 3);
+
+        $this->assertSame(
+            'select * from "JSON_TEST" where (SELECT COUNT(*) FROM JSON_TABLE("OPTIONS", \'$[*]\' COLUMNS (val PATH \'$\')) ) >= ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame([3], $builder->getBindings());
+    }
+
+    public function test_it_compiles_where_json_length_for_nested_array()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('json_test')
+            ->whereJsonLength('options.items', '=', 2);
+
+        $this->assertSame(
+            'select * from "JSON_TEST" where (SELECT COUNT(*) FROM JSON_TABLE("OPTIONS"."ITEMS", \'$[*]\' COLUMNS (val PATH \'$\')) ) = ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame([2], $builder->getBindings());
+    }
+
+    public function test_it_compiles_where_json_length_with_different_operator()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->from('json_test')
+            ->whereJsonLength('options.data.subitems', '<', 10);
+
+        $this->assertSame(
+            'select * from "JSON_TEST" where (SELECT COUNT(*) FROM JSON_TABLE("OPTIONS"."DATA"."SUBITEMS", \'$[*]\' COLUMNS (val PATH \'$\')) ) < ?',
+            $builder->toSql()
+        );
+
+        $this->assertSame([10], $builder->getBindings());
     }
 }

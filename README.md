@@ -178,6 +178,14 @@ To use, just update `auth.php` config and set the driver to `oracle`
     ],
 ]
 ```
+## JSON support
+Laravel-OCI8 provides **read-only JSON** query support for Oracle databases. 
+
+>⚠️This requires Oracle 12c02 or higher.
+
+>⚠️ JSON mutation / update operations are not supported.
+> Only JSON filtering and querying are available.  
+> For JSON updates, the full JSON document must be modified in the application and saved back to the database.
 
 ## Credits
 
