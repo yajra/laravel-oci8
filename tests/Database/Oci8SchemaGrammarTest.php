@@ -372,6 +372,131 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $statements);
     }
 
+    public function test_alter_table_modify_column_preserves_nullable_when_already_nullable()
+    {
+        // Test case from issue #941: modifying nullable column with ->nullable() should not fail
+        $conn = m::mock(Connection::class)
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('getMaxLength')->andReturn(30)
+            ->shouldReceive('getSchemaPrefix')->andReturn('')
+            ->shouldReceive('isMaria')->andReturn(false)
+            ->shouldReceive('selectOne')
+            ->andReturn((object) ['nullable' => 1]) // Column is currently nullable
+            ->getMock();
+
+        // Create grammar with the connection so it can access it
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
+
+        $blueprint = new Blueprint($conn, 'attributes');
+        $blueprint->string('validation_regex', 1024)->nullable()->change();
+
+        // The grammar needs to be set on the blueprint's connection
+        // Blueprint gets grammar from connection->getSchemaGrammar()
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        // Should NOT include 'null' since column is already nullable (prevents ORA-01451)
+        $this->assertStringNotContainsString(' null', $statements[0]);
+        $this->assertStringNotContainsString('not null', $statements[0]);
+        $this->assertStringContainsString('varchar2(1024)', $statements[0]);
+    }
+
+    public function test_alter_table_modify_column_preserves_nullable_when_not_specified()
+    {
+        // Test case from issue #941: omitting ->nullable() should preserve existing nullable state
+        $conn = m::mock(Connection::class)
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('getMaxLength')->andReturn(30)
+            ->shouldReceive('getSchemaPrefix')->andReturn('')
+            ->shouldReceive('isMaria')->andReturn(false)
+            ->shouldReceive('selectOne')
+            ->andReturn((object) ['nullable' => 1]) // Column is currently nullable
+            ->getMock();
+
+        // Create grammar with the connection so it can access it
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
+
+        $blueprint = new Blueprint($conn, 'attributes');
+        $blueprint->string('validation_regex', 1024)->change(); // No ->nullable() call
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        // Should NOT include 'not null' since column is currently nullable and we want to preserve it
+        $this->assertStringNotContainsString('not null', $statements[0]);
+        $this->assertStringNotContainsString(' null', $statements[0]);
+        $this->assertStringContainsString('varchar2(1024)', $statements[0]);
+    }
+
+    public function test_alter_table_modify_column_changes_nullable_to_not_null()
+    {
+        // Test changing from nullable to not null - when nullable() is not specified,
+        // we preserve the existing nullable state per issue #941
+        $conn = m::mock(Connection::class)
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('getMaxLength')->andReturn(30)
+            ->shouldReceive('getSchemaPrefix')->andReturn('')
+            ->shouldReceive('isMaria')->andReturn(false)
+            ->shouldReceive('selectOne')
+            ->andReturn((object) ['nullable' => 1]) // Column is currently nullable
+            ->getMock();
+
+        // Create grammar with the connection so it can access it
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->string('email')->change(); // No ->nullable() call
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        // Per issue #941, when nullable() is not specified, preserve existing nullable state
+        $this->assertStringNotContainsString('not null', $statements[0]);
+        $this->assertStringNotContainsString(' null', $statements[0]);
+    }
+
+    public function test_alter_table_modify_column_changes_not_null_to_nullable()
+    {
+        // Test changing from not null to nullable
+        $conn = m::mock(Connection::class)
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('getMaxLength')->andReturn(30)
+            ->shouldReceive('getSchemaPrefix')->andReturn('')
+            ->shouldReceive('isMaria')->andReturn(false)
+            ->shouldReceive('selectOne')
+            ->andReturn((object) ['nullable' => 0]) // Column is currently not null
+            ->getMock();
+
+        // Create grammar with the connection so it can access it
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->string('email')->nullable()->change(); // Changing to nullable
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        // Should include ' null' since we're changing from not null to nullable
+        $this->assertStringContainsString(' null', $statements[0]);
+        $this->assertStringNotContainsString('not null', $statements[0]);
+    }
+
     public function test_basic_alter_table_with_primary()
     {
         $conn = $this->getConnection();
