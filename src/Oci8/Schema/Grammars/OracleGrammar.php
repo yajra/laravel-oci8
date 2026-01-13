@@ -26,7 +26,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Increment', 'Nullable', 'Default'];
+    protected $modifiers = ['Increment', 'Nullable', 'Default', 'GeneratedAs'];
 
     /**
      * The possible column serials.
@@ -739,6 +739,11 @@ class OracleGrammar extends Grammar
      */
     protected function modifyNullable(Blueprint $blueprint, Fluent $column): string
     {
+        // identity columns are implicitly NOT NULL
+        if ($column->generatedAs) {
+            return '';
+        }
+
         // check if field is declared as enum
         $enum = '';
         if (count((array) $column->allowed)) {
@@ -909,5 +914,25 @@ class OracleGrammar extends Grammar
             group by all_tab_comments.table_name, all_tables.owner, all_tables.num_rows,
                 all_tables.avg_row_len, all_tables.blocks, all_tab_comments.comments
             order by all_tab_comments.table_name';
+    }
+
+    /**
+     * Get the SQL for an identity column modifier.
+     *
+     * @return string|list<string>|null
+     */
+    protected function modifyGeneratedAs(Blueprint $blueprint, Fluent $column)
+    {
+        $sql = null;
+
+        if (! is_null($column->generatedAs)) {
+            $sql = sprintf(
+                ' generated %s as identity%s',
+                $column->always ? 'always' : ('by default'.($column->onNull ? ' on null' : '')),
+                ! is_bool($column->generatedAs) && ! empty($column->generatedAs) ? " ({$column->generatedAs})" : ''
+            );
+        }
+
+        return $sql;
     }
 }
