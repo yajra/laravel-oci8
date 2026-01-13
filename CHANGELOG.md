@@ -1,3 +1,18 @@
+# [12.5.0](https://github.com/yajra/laravel-oci8/compare/v12.4.0...v12.5.0) (2026-01-13)
+
+
+### Bug Fixes
+
+* pint :robot: ([2b84ee9](https://github.com/yajra/laravel-oci8/commit/2b84ee9cf24a41b26937b9e5d01cbf0a01e1fb37))
+* preserve nullable constraint when modifying Oracle columns ([b6dd9be](https://github.com/yajra/laravel-oci8/commit/b6dd9be7bc9cf5a3d25fb8a2ecc594517e72f516)), closes [#941](https://github.com/yajra/laravel-oci8/issues/941)
+
+
+### Features
+
+* add generatedAs function similar to pgsql ([1c5dbe8](https://github.com/yajra/laravel-oci8/commit/1c5dbe828c4b6683a64058eada2281ea3b045725))
+* add onNull to match trigger style logic, add tests for it, mark 12c tests as skipped instead of empty ([c0a650c](https://github.com/yajra/laravel-oci8/commit/c0a650cf2d2cb74fd4c5171f0b765b783d58fcc2))
+* override Blueprint id() function based on oracle version ([d800b3d](https://github.com/yajra/laravel-oci8/commit/d800b3d5144875b1a4c16398bdc8f4a1197c7a16))
+
 # [12.4.0](https://github.com/yajra/laravel-oci8/compare/v12.3.2...v12.4.0) (2026-01-06)
 
 
