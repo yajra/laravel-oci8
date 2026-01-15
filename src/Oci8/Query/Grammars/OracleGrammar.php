@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Query\Grammars;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Support\Str;
 use Yajra\Oci8\Oci8Connection;
@@ -132,6 +133,21 @@ class OracleGrammar extends Grammar
         }
 
         $query->columns = $original;
+
+        /**
+         * withExists fix for oracle
+         * Since we can't modify laravel code in (vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/QueriesRelationships.php:922) we modify the inner query placing 2 placeholders and replacing the 2 placeholders in the outer query.
+         * Absolute black magic.
+         */
+        if (isset($query->columns[0]) && $this->isExpression($query->columns[0]) && $this->getValue($query->columns[0]) === '*') {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 3);
+            if ($backtrace[2]['function'] === 'withAggregate' && $backtrace[2]['args'][2] === 'exists' && $backtrace[2]['args'][1] === '*') {
+                $sql = '--withExistsPlaceholder'.$sql.'withExistsPlaceholder--';
+                $query->columns = [new Expression('1')];
+            }
+        } else {
+            $sql = str_replace(['exists(--withExistsPlaceholder', 'withExistsPlaceholder--)'], ['CASE WHEN EXISTS(', ') THEN 1 ELSE 0 END'], $sql);
+        }
 
         return trim($sql);
     }
