@@ -402,7 +402,7 @@ class Oci8Connection extends Connection
     public function bindValues($statement, $bindings): void
     {
         foreach ($bindings as $key => $value) {
-            $statement->bindValue(is_string($key) ? $key : $key + 1, $value);
+            $statement->bindValue(is_string($key) ? $key : $key + 1, $value, strlen($value) > 3999 ? SQLT_CLOB : PDO::PARAM_STR);
         }
     }
 }
