@@ -1,3 +1,16 @@
+# [12.6.0](https://github.com/yajra/laravel-oci8/compare/v12.5.0...v12.6.0) (2026-01-19)
+
+
+### Bug Fixes
+
+* withExists and add test for it ([d1cb941](https://github.com/yajra/laravel-oci8/commit/d1cb941c277502c54adcc45bd1c8a07f39db091f))
+
+
+### Features
+
+* clob binding in upsert when above 3999 char and add tests for it ([80fd461](https://github.com/yajra/laravel-oci8/commit/80fd461fcd73061c41f6a6c176857610196dafac))
+* improve tests for withExists and add tests other similar with functions ([a13fa1e](https://github.com/yajra/laravel-oci8/commit/a13fa1e81d21a6c49d144a7039ccdf517e723c44))
+
 # [12.5.0](https://github.com/yajra/laravel-oci8/compare/v12.4.0...v12.5.0) (2026-01-13)
 
 
