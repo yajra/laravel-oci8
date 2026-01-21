@@ -1,3 +1,10 @@
+## [12.6.1](https://github.com/yajra/laravel-oci8/compare/v12.6.0...v12.6.1) (2026-01-21)
+
+
+### Bug Fixes
+
+* compileColumns returning internal hidden oracle columns ([a1e03d1](https://github.com/yajra/laravel-oci8/commit/a1e03d15f4c86936e56984d8dea23ff203d4724c))
+
 # [12.6.0](https://github.com/yajra/laravel-oci8/compare/v12.5.0...v12.6.0) (2026-01-19)
 
 
