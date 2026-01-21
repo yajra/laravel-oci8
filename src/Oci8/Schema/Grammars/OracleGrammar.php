@@ -204,7 +204,7 @@ class OracleGrammar extends Grammar
                 decode(t.nullable, 'Y', 1, 0) as nullable,
                 t.data_default as \"default\",
                 c.comments as \"comment\"
-            from all_tab_cols t
+            from all_tab_columns t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
             where upper(t.table_name) = upper('{$table}')
                 and upper(t.owner) = upper('{$schema}')
