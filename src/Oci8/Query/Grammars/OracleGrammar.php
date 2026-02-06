@@ -158,7 +158,7 @@ class OracleGrammar extends Grammar
     protected function compileAnsiOffset(Builder $query, array $components): string
     {
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries (only when no locks used else it results in ORA‑02014)
-        if ($query->getConnection()->getConfig('server_version') == '12c' && $query->lock === null) {
+        if ($query->getConnection()->isVersionAboveOrEqual('12c') && $query->lock === null) {
             if ($query->limit !== null) {
                 $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns']);
             }
@@ -746,7 +746,7 @@ class OracleGrammar extends Grammar
 
         $operator = str_replace('?', '??', $where['operator']);
 
-        if ($query->getConnection()->getConfig('server_version') == '12c') {
+        if ($query->getConnection()->isVersionAboveOrEqual('12c')) {
             return $this->wrap($where['column']).' '.$operator.' '.$value.' COLLATE BINARY_CI';
         }
 

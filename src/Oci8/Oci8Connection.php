@@ -130,6 +130,34 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Get configured Oracle server version.
+     */
+    public function serverVersion(): string
+    {
+        return $this->getConfig('server_version') ?? '11g';
+    }
+
+    public function isVersionAbove(string $version): bool
+    {
+        return version_compare($version, $this->serverVersion(), '<');
+    }
+
+    public function isVersionAboveOrEqual(string $version): bool
+    {
+        return version_compare($version, $this->serverVersion(), '<=');
+    }
+
+    public function isVersionBelow(string $version): bool
+    {
+        return version_compare($version, $this->serverVersion(), '>');
+    }
+
+    public function isVersionBelowOrEqual(string $version): bool
+    {
+        return version_compare($version, $this->serverVersion(), '>=');
+    }
+
+    /**
      * Get a new query builder instance.
      */
     public function query(): QueryBuilder
