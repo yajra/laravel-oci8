@@ -97,7 +97,7 @@ class OracleBlueprint extends Blueprint
 
     public function id($column = 'id'): ColumnDefinition
     {
-        if ($this->connection->getConfig('server_version') == '12c') {
+        if (version_compare('12c', $this->connection->getConfig('server_version'), '<=')) {
             return $this->addColumn('bigInteger', $column, ['generatedAs' => true, 'unsigned' => true, 'primary' => true, 'onNull' => true]);
         }
 
