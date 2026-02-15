@@ -2,14 +2,41 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use PDO;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
+use Yajra\Oci8\Tests\User;
 
 class StoredProcedureTest extends TestCase
 {
-    use DatabaseTransactions;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
+        });
+
+        collect(range(1, 20))->each(function ($i) {
+            /** @var User $user */
+            User::query()->create([
+                'name' => 'Record-'.$i,
+                'email' => 'Email-'.$i.'@example.com',
+            ]);
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        Schema::drop('users');
+
+        parent::tearDown();
+    }
 
     #[Test]
     public function it_can_return_sys_refcursor()

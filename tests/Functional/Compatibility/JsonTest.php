@@ -2,14 +2,30 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class JsonTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('json_test', function (Blueprint $table) {
+            $table->id('id');
+            $table->json('options');
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        Schema::drop('json_test');
+
+        parent::tearDown();
+    }
 
     #[Test]
     public function it_finds_rows_with_where()

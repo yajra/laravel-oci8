@@ -2,14 +2,11 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class SequenceTest extends TestCase
 {
-    use DatabaseTransactions;
-
     #[Test]
     public function it_can_process_sequence()
     {

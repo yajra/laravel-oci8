@@ -2,7 +2,8 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
@@ -10,7 +11,24 @@ use Yajra\Oci8\Tests\User;
 
 class ValidationTest extends TestCase
 {
-    use DatabaseTransactions;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        Schema::drop('users');
+
+        parent::tearDown();
+    }
 
     #[Test]
     public function it_works_with_unique_case_insensitive_validation()
