@@ -838,4 +838,36 @@ class OracleGrammar extends Grammar
 
         return '(SELECT COUNT(*) FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (val PATH \'$\')) ) '.$operator.' '.$value;
     }
+
+    /**
+     * Compile the "join" portions of the query.
+     *
+     * @param  array  $joins
+     * @return string
+     */
+    protected function compileJoins(Builder $query, $joins)
+    {
+        return parent::compileJoins($query, $this->reorderJoins($joins));
+    }
+
+    /**
+     * Simple reordering: move any derived tables referencing other joins to the end
+     */
+    protected function reorderJoins(array $joins): array
+    {
+        $simple = [];
+        $derived = [];
+
+        foreach ($joins as $join) {
+            // Heuristic: if the table is a subquery (Expression or SELECT), treat as derived
+            if ($join->table instanceof Expression) {
+                $derived[] = $join;
+            } else {
+                $simple[] = $join;
+            }
+        }
+
+        // Place simple tables first, derived tables last
+        return array_merge($simple, $derived);
+    }
 }
