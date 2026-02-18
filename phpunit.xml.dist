@@ -23,8 +23,8 @@
         -->
     </php>
     <source>
-        <exclude>
-            <directory suffix=".blade.php">./src/</directory>
-        </exclude>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
     </source>
 </phpunit>

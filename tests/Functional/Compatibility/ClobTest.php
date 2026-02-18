@@ -3,7 +3,6 @@
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,7 +10,34 @@ use Yajra\Oci8\Tests\TestCase;
 
 class ClobTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('cache', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->mediumText('value');
+            $table->integer('expiration');
+        });
+
+        Schema::create('clob_test', function (Blueprint $table) {
+            $table->id();
+            $table->mediumText('value');
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        if (Schema::hasTable('cache')) {
+            Schema::drop('cache');
+        }
+
+        if (Schema::hasTable('clob_test')) {
+            Schema::drop('clob_test');
+        }
+
+        parent::tearDown();
+    }
 
     #[Test]
     public function it_can_insert_clob_upsert()
@@ -36,15 +62,6 @@ class ClobTest extends TestCase
     #[Test]
     public function it_can_insert_clob_insert_and_update()
     {
-        if (Schema::hasTable('clob_test')) {
-            Schema::drop('clob_test');
-        }
-
-        Schema::create('clob_test', function (Blueprint $table) {
-            $table->id();
-            $table->mediumText('value');
-        });
-
         $data = ['value' => str_repeat('abcdefghij', 4000)];
 
         DB::table('clob_test')->insert($data);

@@ -2,30 +2,46 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
-use Yajra\Oci8\Tests\Functional\Compatibility\Model\Child;
-use Yajra\Oci8\Tests\Functional\Compatibility\Model\User;
 use Yajra\Oci8\Tests\TestCase;
 
 class WithTest extends TestCase
 {
-    use RefreshDatabase;
-
-    #[Test]
-    public function it_works_with_exists()
+    protected function setUp(): void
     {
-        Schema::dropIfExists('children');
+        parent::setUp();
+
+        Schema::create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
+        });
 
         Schema::create('children', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->unsignedBigInteger('user_id');
+            $table->integer('score')->nullable();
             $table->timestamps();
         });
+    }
 
+    protected function tearDown(): void
+    {
+        Schema::dropIfExists('users');
+
+        Schema::dropIfExists('children');
+
+        parent::tearDown();
+    }
+
+    #[Test]
+    public function it_works_with_exists()
+    {
         $user = User::create([
             'name' => 'test',
             'email' => 'test@test.hu',
@@ -45,15 +61,6 @@ class WithTest extends TestCase
     #[Test]
     public function it_works_with_count()
     {
-        Schema::dropIfExists('children');
-
-        Schema::create('children', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->unsignedBigInteger('user_id');
-            $table->timestamps();
-        });
-
         $user = User::create([
             'name' => 'test',
             'email' => 'test@test.hu',
@@ -75,16 +82,6 @@ class WithTest extends TestCase
     #[Test]
     public function it_works_with_min()
     {
-        Schema::dropIfExists('children');
-
-        Schema::create('children', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->unsignedBigInteger('user_id');
-            $table->integer('score');
-            $table->timestamps();
-        });
-
         $user = User::create([
             'name' => 'test',
             'email' => 'test@test.hu',
@@ -107,16 +104,6 @@ class WithTest extends TestCase
     #[Test]
     public function it_works_with_max()
     {
-        Schema::dropIfExists('children');
-
-        Schema::create('children', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->unsignedBigInteger('user_id');
-            $table->integer('score');
-            $table->timestamps();
-        });
-
         $user = User::create([
             'name' => 'test',
             'email' => 'test@test.hu',
@@ -139,16 +126,6 @@ class WithTest extends TestCase
     #[Test]
     public function it_works_with_avg()
     {
-        Schema::dropIfExists('children');
-
-        Schema::create('children', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->unsignedBigInteger('user_id');
-            $table->integer('score');
-            $table->timestamps();
-        });
-
         $user = User::create([
             'name' => 'test',
             'email' => 'test@test.hu',
@@ -171,16 +148,6 @@ class WithTest extends TestCase
     #[Test]
     public function it_works_with_sum()
     {
-        Schema::dropIfExists('children');
-
-        Schema::create('children', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->unsignedBigInteger('user_id');
-            $table->integer('score');
-            $table->timestamps();
-        });
-
         $user = User::create([
             'name' => 'test',
             'email' => 'test@test.hu',
@@ -199,5 +166,30 @@ class WithTest extends TestCase
             50,
             User::withSum('children', 'score')->find($user->id)->children_sum_score
         );
+    }
+}
+
+/**
+ * @property int id
+ * @property string name
+ * @property int user_id
+ */
+class Child extends Model
+{
+    protected $guarded = [];
+}
+
+/**
+ * @property int id
+ * @property string name
+ * @property string email
+ */
+class User extends Model
+{
+    protected $guarded = [];
+
+    public function children()
+    {
+        return $this->hasMany(Child::class);
     }
 }

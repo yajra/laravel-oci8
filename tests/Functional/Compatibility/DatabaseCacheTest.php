@@ -3,7 +3,6 @@
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,21 +10,11 @@ use Yajra\Oci8\Tests\TestCase;
 
 class DatabaseCacheTest extends TestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         config(['cache.default' => 'database']);
-
-        if (Schema::hasTable('cache')) {
-            Schema::drop('cache');
-        }
-
-        if (Schema::hasTable('cache_locks')) {
-            Schema::drop('cache_locks');
-        }
 
         Schema::create('cache', function (Blueprint $table) {
             $table->string('key')->primary();
@@ -38,6 +27,19 @@ class DatabaseCacheTest extends TestCase
             $table->string('owner');
             $table->integer('expiration');
         });
+    }
+
+    protected function tearDown(): void
+    {
+        if (Schema::hasTable('cache')) {
+            Schema::drop('cache');
+        }
+
+        if (Schema::hasTable('cache_locks')) {
+            Schema::drop('cache_locks');
+        }
+
+        parent::tearDown();
     }
 
     #[Test]

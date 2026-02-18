@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
@@ -12,7 +13,7 @@ class TriggerTest extends TestCase
     public function it_can_generate_a_trigger()
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
-        $connection = $this->getConnection();
+        $connection = DB::connection();
 
         $connection->getSchemaBuilder()->dropIfExists('triggers');
         $connection->getSchemaBuilder()
@@ -31,7 +32,7 @@ class TriggerTest extends TestCase
     public function it_can_use_schema_with_db_prefix()
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
-        $connection = $this->getConnection();
+        $connection = DB::connection();
 
         try {
             $connection->statement('alter session set "_oracle_script"=true');
