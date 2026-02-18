@@ -1,3 +1,11 @@
+# [12.7.0](https://github.com/yajra/laravel-oci8/compare/v12.6.1...v12.7.0) (2026-02-18)
+
+
+### Features
+
+* add PHPStan extensions for Oracle procedure reflection ([f9af7b2](https://github.com/yajra/laravel-oci8/commit/f9af7b2c9c4589b4a3a71c0e72aa307fc1d13b21))
+* reorder joins to fix oracle specific functions ([f291eac](https://github.com/yajra/laravel-oci8/commit/f291eac259c5f8ba45bca0318e4d12477636fadf))
+
 ## [12.6.1](https://github.com/yajra/laravel-oci8/compare/v12.6.0...v12.6.1) (2026-01-21)
 
 
