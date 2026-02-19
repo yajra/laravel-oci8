@@ -3,6 +3,7 @@
 namespace Yajra\Oci8;
 
 use Illuminate\Database\Connection;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use PDO;
 use PDOStatement;
@@ -12,6 +13,7 @@ use Yajra\Oci8\Query\OracleBuilder as QueryBuilder;
 use Yajra\Oci8\Query\Processors\OracleProcessor as Processor;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar as SchemaGrammar;
 use Yajra\Oci8\Schema\OracleBuilder as SchemaBuilder;
+use Yajra\Oci8\Schema\OracleSchemaState;
 use Yajra\Oci8\Schema\Sequence;
 use Yajra\Oci8\Schema\Trigger;
 use Yajra\Pdo\Oci8\Statement;
@@ -298,6 +300,18 @@ class Oci8Connection extends Connection
         $this->maxLength = $maxLength;
 
         return $this;
+    }
+
+    /**
+     * Get the schema state for the connection.
+     *
+     * @param  Filesystem|null  $files
+     * @param  callable|null  $processFactory
+     * @return OracleSchemaState
+     */
+    public function getSchemaState(?Filesystem $files = null, ?callable $processFactory = null)
+    {
+        return new OracleSchemaState($this, $files, $processFactory);
     }
 
     /**
