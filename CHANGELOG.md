@@ -1,3 +1,10 @@
+# [12.8.0](https://github.com/yajra/laravel-oci8/compare/v12.7.0...v12.8.0) (2026-02-21)
+
+
+### Features
+
+* prepare for newer oracle versions ([c85d81d](https://github.com/yajra/laravel-oci8/commit/c85d81df30a912f351d0b6efdedd10416d90f606))
+
 # [12.7.0](https://github.com/yajra/laravel-oci8/compare/v12.6.1...v12.7.0) (2026-02-18)
 
 
