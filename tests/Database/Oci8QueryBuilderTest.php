@@ -894,7 +894,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
 
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select * from "USERS" where "ID" in (select /*+ FIRST_ROWS(3) */ "ID" from "USERS" where "AGE" > ? offset 0 rows fetch next 3 rows only)',
                 $builder->toSql()
@@ -913,7 +913,7 @@ class Oci8QueryBuilderTest extends TestCase
             $q->select('id')->from('users')->where('age', '>', 25)->take(3);
         });
 
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select * from "USERS" where "ID" not in (select /*+ FIRST_ROWS(3) */ "ID" from "USERS" where "AGE" > ? offset 0 rows fetch next 3 rows only)',
                 $builder->toSql()
@@ -1068,7 +1068,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_order_by_sub_queries()
     {
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $expected = 'select * from "USERS" order by (select /*+ FIRST_ROWS(1) */ "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID" offset 0 rows fetch next 1 rows only)';
         } else {
             $expected = 'select * from "USERS" order by (select * from (select "CREATED_AT" from "LOGINS" where "USER_ID" = "USERS"."ID") where rownum = 1)';
@@ -1158,7 +1158,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(10);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select * from "USERS" offset 10 rows',
                 $builder->toSql()
@@ -1175,7 +1175,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(5)->limit(10);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(10) */ * from "USERS" offset 5 rows fetch next 10 rows only',
                 $builder->toSql()
@@ -1189,7 +1189,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(5)->take(10);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(10) */ * from "USERS" offset 5 rows fetch next 10 rows only',
                 $builder->toSql()
@@ -1203,7 +1203,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->skip(-5)->take(10);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(10) */ * from "USERS" offset 0 rows fetch next 10 rows only',
                 $builder->toSql()
@@ -1217,7 +1217,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 15 rows fetch next 15 rows only',
                 $builder->toSql()
@@ -1231,7 +1231,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 0 rows fetch next 15 rows only',
                 $builder->toSql()
@@ -1248,7 +1248,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(0)->limit(1);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(1) */ * from "USERS" offset 0 rows fetch next 1 rows only',
                 $builder->toSql(),
@@ -1262,7 +1262,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->offset(1)->limit(1);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertEquals(
                 'select /*+ FIRST_ROWS(1) */ * from "USERS" offset 1 rows fetch next 1 rows only',
                 $builder->toSql(),
@@ -1279,7 +1279,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 15);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame(
                 'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 15 rows fetch next 15 rows only',
                 $builder->toSql()
@@ -1293,7 +1293,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 15);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame(
                 'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 0 rows fetch next 15 rows only',
                 $builder->toSql()
@@ -1307,7 +1307,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 15);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame(
                 'select /*+ FIRST_ROWS(15) */ * from "USERS" offset 0 rows fetch next 15 rows only',
                 $builder->toSql()
@@ -1321,7 +1321,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(2, 0);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame(
                 'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
                 $builder->toSql()
@@ -1335,7 +1335,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(0, 0);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame(
                 'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
                 $builder->toSql()
@@ -1350,7 +1350,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->forPage(-2, 0);
 
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame(
                 'select /*+ FIRST_ROWS(0) */ * from "USERS" offset 0 rows fetch next 0 rows only',
                 $builder->toSql()
@@ -1841,7 +1841,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('select')
             ->once()
-            ->with($this->getConnection()->getConfig('server_version') === '12c' ? 'select /*+ FIRST_ROWS(1) */ * from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select * from "USERS" where "ID" = ?) where rownum = 1', [1], true)
+            ->with($this->getConnection()->isVersionAboveOrEqual('12c') ? 'select /*+ FIRST_ROWS(1) */ * from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select * from "USERS" where "ID" = ?) where rownum = 1', [1], true)
             ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
             ->shouldReceive('processSelect')
@@ -1857,7 +1857,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('select')
             ->once()
-            ->with($this->getConnection()->getConfig('server_version') === '12c' ? 'select /*+ FIRST_ROWS(1) */ * from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
+            ->with($this->getConnection()->isVersionAboveOrEqual('12c') ? 'select /*+ FIRST_ROWS(1) */ * from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select * from "USERS" where "ID" = ?) where rownum = 1',
                 [1], true)
             ->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()
@@ -1904,7 +1904,7 @@ class Oci8QueryBuilderTest extends TestCase
     public function test_value_method_returns_single_column()
     {
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('select')->once()->with($this->getConnection()->getConfig('server_version') === '12c' ? 'select /*+ FIRST_ROWS(1) */ "FOO" from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select "FOO" from "USERS" where "ID" = ?) where rownum = 1', [1], true)->andReturn([['foo' => 'bar']]);
+        $builder->getConnection()->shouldReceive('select')->once()->with($this->getConnection()->isVersionAboveOrEqual('12c') ? 'select /*+ FIRST_ROWS(1) */ "FOO" from "USERS" where "ID" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select "FOO" from "USERS" where "ID" = ?) where rownum = 1', [1], true)->andReturn([['foo' => 'bar']]);
         $builder->getProcessor()->shouldReceive('processSelect')->once()->with($builder, [['foo' => 'bar']])->andReturn([['foo' => 'bar']]);
         $results = $builder->from('users')->where('id', '=', 1)->value('foo');
         $this->assertSame('bar', $results);
@@ -3272,7 +3272,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereLike('id', '1', false);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame('select * from "USERS" where "ID" like ? COLLATE BINARY_CI', $builder->toSql());
         } else {
             $this->assertSame('select * from "USERS" where upper("ID") like upper(?)', $builder->toSql());
@@ -3287,7 +3287,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotLike('id', '1');
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame('select * from "USERS" where "ID" not like ? COLLATE BINARY_CI', $builder->toSql());
         } else {
             $this->assertSame('select * from "USERS" where upper("ID") not like upper(?)', $builder->toSql());
@@ -3296,7 +3296,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereNotLike('id', '1', false);
-        if ($this->getConnection()->getConfig('server_version') === '12c') {
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame('select * from "USERS" where "ID" not like ? COLLATE BINARY_CI', $builder->toSql());
         } else {
             $this->assertSame('select * from "USERS" where upper("ID") not like upper(?)', $builder->toSql());
@@ -3311,6 +3311,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     protected function getConnection(string $prefix = '', string $schemaPrefix = '')
     {
+        $serverVersion = getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
         $connection = m::mock(Connection::class);
         $connection->shouldReceive('getDatabaseName')->andReturn('database');
         $connection->shouldReceive('getTablePrefix')->andReturn($prefix);
@@ -3318,7 +3319,8 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('setSchemaPrefix');
         $connection->shouldReceive('getMaxLength')->andReturn(30);
         $connection->shouldReceive('setMaxLength');
-        $connection->shouldReceive('getConfig')->with('server_version')->andReturn(getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g');
+        $connection->shouldReceive('getConfig')->with('server_version')->andReturn($serverVersion);
+        $connection->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='));
         $connection->shouldReceive('getConfig')->andReturn([]);
 
         return $connection;
