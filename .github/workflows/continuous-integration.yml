@@ -24,7 +24,8 @@ jobs:
 
     services:
       oracle:
-        image: ${{ matrix.oracle == '11g' && 'deepdiver/docker-oracle-xe-11g:2.0' || 'container-registry.oracle.com/database/express:21.3.0-xe' }}
+        image: ${{ matrix.oracle == '11g' && 'deepdiver/docker-oracle-xe-11g:2.0' || matrix.oracle == '21c' && 'container-registry.oracle.com/database/express:21.3.0-xe' }}
+
         ports:
           - 1521:1521
         env:
@@ -49,6 +50,38 @@ jobs:
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
+      - name: Debug containers
+        run: docker ps -a
+
+      - name: Initialize Oracle user
+        run: |
+          if [ ${{ matrix.oracle }} = "11g" ]; then
+            SQLPLUS_PATH="/u01/app/oracle/product/11.2.0/xe/bin/sqlplus"
+            ORACLE_ENV="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH;"
+          elif [ ${{ matrix.oracle }} = "21c" ]; then
+            SQLPLUS_PATH="sqlplus"
+            ORACLE_ENV=""
+          fi
+
+          docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+          $ORACLE_ENV
+          echo '
+          BEGIN
+            EXECUTE IMMEDIATE '\''ALTER SESSION SET \"_ORACLE_SCRIPT\" = true'\'';
+          EXCEPTION
+            WHEN OTHERS THEN NULL;
+          END;
+          /
+          CREATE USER second_connection
+          IDENTIFIED BY second_connection
+          DEFAULT TABLESPACE USERS
+          TEMPORARY TABLESPACE TEMP
+          QUOTA UNLIMITED ON USERS;
+          GRANT CREATE SESSION TO second_connection;
+          GRANT CREATE TABLE, CREATE SEQUENCE, CREATE VIEW, CREATE TRIGGER TO second_connection;
+          ' | $SQLPLUS_PATH -s system/oracle@XE
+          "
+
       - name: Execute tests
         run: |
           if [ "${{ matrix.oracle }}" = "21c" ]; then
@@ -57,7 +90,7 @@ jobs:
             vendor/bin/phpunit
           fi
 
-  compatibility-tests:
+  compatibility-pgsql-tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -100,8 +133,70 @@ jobs:
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
+      - name: Initialize PostgreSQL (second_connection)
+        run: |
+          psql "postgresql://postgres:postgres@localhost:5432/postgres" <<'SQL'
+          CREATE USER second_connection WITH PASSWORD 'second_connection';
+          CREATE DATABASE second_connection OWNER second_connection;
+          GRANT ALL PRIVILEGES ON DATABASE second_connection TO second_connection;
+          SQL
+
       - name: Run compatibility tests
         env:
           SERVER_VERSION: 12c
           PGSQL: true
+        run: vendor/bin/phpunit tests/Functional/Compatibility/
+
+  compatibility-mariadb-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.2, 8.3, 8.4, 8.5]
+        stability: [prefer-stable]
+
+    name: Compatibility Tests (PHP ${{ matrix.php }} · MariaDB) - STABILITY ${{ matrix.stability }}
+
+    services:
+      mariadb:
+        image: mariadb:11
+        ports:
+          - 3306:3306
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: root
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: oci8, pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Initialize MariaDB (second_connection)
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot -e "
+          CREATE DATABASE IF NOT EXISTS second_connection;
+          CREATE USER IF NOT EXISTS 'second_connection'@'%' IDENTIFIED BY 'second_connection';
+          GRANT ALL PRIVILEGES ON second_connection.* TO 'second_connection'@'%';
+          FLUSH PRIVILEGES;
+          "
+
+      - name: Run MariaDB compatibility tests
+        env:
+          SERVER_VERSION: 12c
+          MARIADB: true
         run: vendor/bin/phpunit tests/Functional/Compatibility/
