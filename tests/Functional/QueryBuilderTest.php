@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
@@ -11,6 +12,7 @@ use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 use Yajra\Oci8\Tests\TestCase;
+use Yajra\Oci8\Tests\User;
 
 class QueryBuilderTest extends TestCase
 {
@@ -135,6 +137,23 @@ class QueryBuilderTest extends TestCase
             'id' => 2,
             'name' => 'foo',
         ]);
+    }
+
+    #[Test]
+    public function it_keeps_rn_in_pagination_when_selected()
+    {
+        $expected = User::select(['name', DB::raw('ROWNUM rn')])->limit(2)->orderBy('id')->get()->toArray();
+        $notexpected = User::select(['name'])->limit(2)->orderBy('id')->get()->toArray();
+        $notexpected2 = User::select(['name'])->limit(2)->orderBy('id')->get()->toArray();
+
+        $this->assertArrayHasKey('rn', $expected[0]);
+        $this->assertArrayHasKey('rn', $expected[1]);
+
+        $this->assertArrayNotHasKey('rn', $notexpected[0]);
+        $this->assertArrayNotHasKey('rn', $notexpected[1]);
+
+        $this->assertArrayNotHasKey('rn', $notexpected2[0]);
+        $this->assertArrayNotHasKey('rn', $notexpected2[1]);
     }
 
     protected function getBuilder(): Builder
