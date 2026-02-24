@@ -1,3 +1,10 @@
+# [12.9.0](https://github.com/yajra/laravel-oci8/compare/v12.8.0...v12.9.0) (2026-02-24)
+
+
+### Features
+
+* filter rn number ([b31fb12](https://github.com/yajra/laravel-oci8/commit/b31fb12f186fa45cbab39c9c06d4569b50e48a0e))
+
 # [12.8.0](https://github.com/yajra/laravel-oci8/compare/v12.7.0...v12.8.0) (2026-02-21)
 
 
