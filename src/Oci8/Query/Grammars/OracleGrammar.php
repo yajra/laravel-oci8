@@ -548,7 +548,16 @@ class OracleGrammar extends Grammar
     {
         $value = $this->parameter($where['value']);
 
-        return "trunc({$this->wrap($where['column'])}) {$where['operator']} $value";
+        // If the value is a raw expression, don't modify it
+        if ($where['value'] instanceof Expression) {
+            return "trunc({$this->wrap($where['column'])}) {$where['operator']} $value";
+        }
+
+        // For string values, convert to DATE using TO_DATE with the NLS_DATE_FORMAT
+        // Then truncate both sides for consistent date-only comparison
+        $dateFormat = $this->connection->getDateFormat();
+
+        return "trunc({$this->wrap($where['column'])}) {$where['operator']} trunc(to_date($value, '$dateFormat'))";
     }
 
     /**

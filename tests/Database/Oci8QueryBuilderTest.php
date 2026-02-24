@@ -350,7 +350,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', 1);
-        $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") = trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDay('created_at', 1);
@@ -369,7 +369,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhereDate('created_at', 1);
-        $this->assertSame('select * from "USERS" where "ID" = ? or trunc("CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where \"ID\" = ? or trunc(\"CREATED_AT\") = trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhereDay('CREATED_AT', 1);
@@ -407,12 +407,52 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', '=', '2015-12-21');
-        $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") = trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
         $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', '=', new Raw('NOW()'));
         $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = NOW()', $builder->toSql());
+    }
+
+    public function test_where_date_greater_than()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '>', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") > trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_less_than()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '<', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") < trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_greater_than_or_equal()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '>=', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") >= trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_less_than_or_equal()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '<=', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") <= trunc(to_date(?, 'YYYY-MM-DD HH24:MI:SS'))", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_greater_than_with_raw_expression()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '>', new Raw('NOW()'));
+        $this->assertSame('select * from "USERS" where trunc("CREATED_AT") > NOW()', $builder->toSql());
+        $this->assertEquals([], $builder->getBindings());
     }
 
     public function test_where_day()
@@ -1360,7 +1400,6 @@ class Oci8QueryBuilderTest extends TestCase
                 'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
                 $builder->toSql());
         }
-
     }
 
     public function test_get_count_for_pagination_with_bindings()
@@ -3322,6 +3361,7 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('getConfig')->with('server_version')->andReturn($serverVersion);
         $connection->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='));
         $connection->shouldReceive('getConfig')->andReturn([]);
+        $connection->shouldReceive('getDateFormat')->andReturn('YYYY-MM-DD HH24:MI:SS');
 
         return $connection;
     }

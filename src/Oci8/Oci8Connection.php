@@ -181,6 +181,16 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Get the configured NLS_DATE_FORMAT from session variables.
+     */
+    public function getDateFormat(): string
+    {
+        $sessionVars = $this->getConfig('sessionVars') ?? [];
+
+        return $sessionVars['NLS_DATE_FORMAT'] ?? 'YYYY-MM-DD HH24:MI:SS';
+    }
+
+    /**
      * Execute a PL/SQL Function and return its value.
      * Usage: DB::executeFunction('function_name', ['binding_1' => 'hi', 'binding_n' =>
      * 'bye'], PDO::PARAM_LOB).
