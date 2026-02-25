@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: "laravel-pint"
-        uses: aglipanci/laravel-pint-action@latest
+        uses: aglipanci/laravel-pint-action@v2
         with:
           preset: laravel
           verboseMode: true
