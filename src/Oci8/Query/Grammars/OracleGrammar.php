@@ -892,23 +892,159 @@ class OracleGrammar extends Grammar
     }
 
     /**
-     * Simple reordering: move any derived tables referencing other joins to the end
+     * Reorder joins only when needed:
+     * - If current order already satisfies dependencies, return as-is.
+     * - Otherwise, perform a stable dependency-aware topological sort.
      */
     protected function reorderJoins(array $joins): array
     {
-        $simple = [];
-        $derived = [];
+        $n = count($joins);
+        if ($n <= 1) {
+            return $joins;
+        }
 
-        foreach ($joins as $join) {
-            // Heuristic: if the table is a subquery (Expression or SELECT), treat as derived
-            if ($join->table instanceof Expression) {
-                $derived[] = $join;
-            } else {
-                $simple[] = $join;
+        // 1) Determine what alias/table each join introduces
+        // index => alias (string|null)
+        $introduced = array_map(function ($join) {
+            return strtolower($this->extractJoinAlias($join));
+        }, $joins);
+
+        // alias -> index (first match wins)
+        $aliasToIndex = [];
+        foreach ($introduced as $i => $alias) {
+            if ($alias !== null && ! isset($aliasToIndex[$alias])) {
+                $aliasToIndex[$alias] = $i;
             }
         }
 
-        // Place simple tables first, derived tables last
-        return array_merge($simple, $derived);
+        $referencedAliasesByJoin = [];
+        foreach ($joins as $i => $join) {
+            $refs = [];
+
+            foreach (($join->wheres ?? []) as $where) {
+                foreach ([$where['first'] ?? null, $where['second'] ?? null] as $column) {
+                    if (! is_string($column)) {
+                        continue;
+                    }
+
+                    $parts = explode('.', str_replace('"', '', $column), 2);
+                    if (count($parts) < 2) {
+                        continue;
+                    }
+
+                    $prefix = trim($parts[0]);
+                    if ($prefix !== '') {
+                        $refs[] = $prefix;
+                    }
+                }
+            }
+
+            $referencedAliasesByJoin[$i] = array_values(array_unique($refs));
+        }
+
+        // 2) Detect if reordering is needed at all:
+        //    if any join references an alias introduced by a later join, order is invalid.
+        $needsReorder = false;
+        foreach ($joins as $i => $join) {
+            foreach ($referencedAliasesByJoin[$i] as $alias) {
+                if (isset($aliasToIndex[$alias]) && $aliasToIndex[$alias] > $i) {
+                    $needsReorder = true;
+                    break 2;
+                }
+            }
+        }
+
+        if (! $needsReorder) {
+            return $joins; // ✅ leave order untouched
+        }
+
+        // 3) Build dependency edges: j -> i if i references alias introduced by j
+        $outEdges = array_fill(0, $n, []);
+        $inDeg = array_fill(0, $n, 0);
+
+        foreach ($joins as $i => $join) {
+            foreach ($referencedAliasesByJoin[$i] as $alias) {
+                if (! isset($aliasToIndex[$alias])) {
+                    continue;
+                }
+                $j = $aliasToIndex[$alias];
+                if ($j === $i) {
+                    continue;
+                }
+                if (! in_array($i, $outEdges[$j], true)) {
+                    $outEdges[$j][] = $i;
+                    $inDeg[$i]++;
+                }
+            }
+        }
+
+        // 4) Stable Kahn topo sort (tie-break strictly by original index)
+        $available = [];
+        for ($i = 0; $i < $n; $i++) {
+            if ($inDeg[$i] === 0) {
+                $available[] = $i;
+            }
+        }
+
+        $sortedIdx = [];
+        while (! empty($available)) {
+            sort($available);           // stable: smallest original index first
+            $u = array_shift($available);
+
+            $sortedIdx[] = $u;
+
+            foreach ($outEdges[$u] as $v) {
+                $inDeg[$v]--;
+                if ($inDeg[$v] === 0) {
+                    $available[] = $v;
+                }
+            }
+        }
+
+        // If cycle/unresolvable, safest is keep original
+        if (count($sortedIdx) !== $n) {
+            return $joins;
+        }
+
+        $out = [];
+        foreach ($sortedIdx as $i) {
+            $out[] = $joins[$i];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Extract the alias/name a join introduces.
+     * Handles:
+     * - "table", "schema.table"
+     * - "table as t", "table t"
+     * - Expression "(select ...) as t" (best-effort)
+     */
+    protected function extractJoinAlias($join): ?string
+    {
+        if ($join->table instanceof Expression) {
+            $sql = (string) $join->table->getValue($this);
+            // "(select ...) alias"  or  "(select ...) "ALIAS"
+            if (preg_match('/\)\s+("?)([A-Za-z_][A-Za-z0-9_]*)\1\s*$/', $sql, $m)) {
+                return $m[2];
+            }
+
+            return null;
+        }
+
+        $table = preg_replace('/\s+/', ' ', trim((string) $join->table));
+
+        if (preg_match('/\bas\s+("?)([A-Za-z_][A-Za-z0-9_]*)\1$/i', $table, $m)) {
+            return $m[2];
+        }
+
+        if (str_contains($table, ' ') && preg_match('/\s("?)([A-Za-z_][A-Za-z0-9_]*)\1$/', $table, $m)) {
+            return $m[2];
+        }
+
+        $parts = preg_split('/\./', $table);
+
+        return trim(end($parts), '"');
     }
 }
