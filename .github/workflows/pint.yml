@@ -4,6 +4,7 @@ on:
     branches:
       - master
       - '*.x'
+  pull_request:
 
 jobs:
   phplint:
@@ -17,16 +18,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "laravel-pint"
-        uses: aglipanci/laravel-pint-action@latest
+        uses: aglipanci/laravel-pint-action@2.4
         with:
           preset: laravel
           verboseMode: true
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         with:
           commit_message: "fix: pint :robot:"
