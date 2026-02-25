@@ -1,13 +1,15 @@
 name: PHP Linting
+
 on:
+  pull_request:
   push:
     branches:
       - master
       - '*.x'
-  pull_request:
 
 jobs:
-  phplint:
+  pint:
+    name: Pint
     runs-on: ubuntu-latest
 
     permissions:
@@ -23,7 +25,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "laravel-pint"
-        uses: aglipanci/laravel-pint-action@2.4
+        uses: aglipanci/laravel-pint-action@v2
         with:
           preset: laravel
           verboseMode: true
