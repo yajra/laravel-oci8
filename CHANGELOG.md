@@ -1,3 +1,17 @@
+# [12.10.0](https://github.com/yajra/laravel-oci8/compare/v12.9.0...v12.10.0) (2026-02-25)
+
+
+### Bug Fixes
+
+* pint :robot: ([084612a](https://github.com/yajra/laravel-oci8/commit/084612aad6ec345bbd8c15bd7899878bedfbad69))
+* simplify whereDate to always use to_date with YYYY-MM-DD mask ([bd7ef47](https://github.com/yajra/laravel-oci8/commit/bd7ef4724170a9009d1446e31193511b38e3538b))
+* Support date comparison operators in whereDate() - Issue [#964](https://github.com/yajra/laravel-oci8/issues/964) ([4a3cceb](https://github.com/yajra/laravel-oci8/commit/4a3cceba65d4a3f8aa39acd3c3ee31d4f59db23e))
+
+
+### Features
+
+* add tests from laravel framework and rework current tests ([847a8e1](https://github.com/yajra/laravel-oci8/commit/847a8e125871f15cf71b96138f9c7ae97c9876ab))
+
 # [12.9.0](https://github.com/yajra/laravel-oci8/compare/v12.8.0...v12.9.0) (2026-02-24)
 
 
