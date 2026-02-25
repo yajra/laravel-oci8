@@ -3,6 +3,8 @@
 namespace Yajra\Oci8\Tests\Database;
 
 use BadMethodCallException;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Expression as Raw;
@@ -350,7 +352,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', 1);
-        $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") = to_date(?, 'YYYY-MM-DD')", $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDay('created_at', 1);
@@ -369,7 +371,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhereDate('created_at', 1);
-        $this->assertSame('select * from "USERS" where "ID" = ? or trunc("CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where \"ID\" = ? or trunc(\"CREATED_AT\") = to_date(?, 'YYYY-MM-DD')", $builder->toSql());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->where('id', 1)->orWhereDay('CREATED_AT', 1);
@@ -405,14 +407,81 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_where_date()
     {
+        // Date-only string: uses YYYY-MM-DD mask, no TRUNC on RHS
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', '=', '2015-12-21');
-        $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") = to_date(?, 'YYYY-MM-DD')", $builder->toSql());
         $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
 
+        // Raw expression: passed through unchanged
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereDate('created_at', '=', new Raw('NOW()'));
         $this->assertSame('select * from "USERS" where trunc("CREATED_AT") = NOW()', $builder->toSql());
+    }
+
+    public function test_where_date_with_carbon_instance()
+    {
+        // Laravel's Builder::whereDate normalises DateTimeInterface to 'Y-m-d' before the
+        // grammar sees it, so the grammar always receives a date-only string and uses
+        // the YYYY-MM-DD mask (no TRUNC on the RHS). The binding is the normalised string.
+        $date = Carbon::create(2015, 12, 21, 10, 30, 0);
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '=', $date);
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") = to_date(?, 'YYYY-MM-DD')", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_with_datetime_instance()
+    {
+        // Laravel's Builder::whereDate normalises DateTimeInterface to 'Y-m-d' before the
+        // grammar sees it, so the binding is always a date-only string.
+        $date = new DateTime('2015-12-21 10:30:00');
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '=', $date);
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") = to_date(?, 'YYYY-MM-DD')", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_greater_than()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '>', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") > to_date(?, 'YYYY-MM-DD')", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_less_than()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '<', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") < to_date(?, 'YYYY-MM-DD')", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_greater_than_or_equal()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '>=', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") >= to_date(?, 'YYYY-MM-DD')", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_less_than_or_equal()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '<=', '2015-12-21');
+        $this->assertSame("select * from \"USERS\" where trunc(\"CREATED_AT\") <= to_date(?, 'YYYY-MM-DD')", $builder->toSql());
+        $this->assertEquals([0 => '2015-12-21'], $builder->getBindings());
+    }
+
+    public function test_where_date_greater_than_with_raw_expression()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereDate('created_at', '>', new Raw('NOW()'));
+        $this->assertSame('select * from "USERS" where trunc("CREATED_AT") > NOW()', $builder->toSql());
+        $this->assertEquals([], $builder->getBindings());
     }
 
     public function test_where_day()
@@ -467,7 +536,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereTime('created_at', '>=', '22:00');
-        $this->assertSame('select * from "USERS" where extract (time from "CREATED_AT") >= ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where TO_CHAR(\"CREATED_AT\", 'HH24:MI') >= ?", $builder->toSql());
         $this->assertEquals([0 => '22:00'], $builder->getBindings());
     }
 
@@ -475,8 +544,24 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users')->whereTime('created_at', '22:00');
-        $this->assertSame('select * from "USERS" where extract (time from "CREATED_AT") = ?', $builder->toSql());
+        $this->assertSame("select * from \"USERS\" where TO_CHAR(\"CREATED_AT\", 'HH24:MI') = ?", $builder->toSql());
         $this->assertEquals([0 => '22:00'], $builder->getBindings());
+    }
+
+    public function test_where_time_with_seconds()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereTime('created_at', '>=', '22:00:00');
+        $this->assertSame("select * from \"USERS\" where TO_CHAR(\"CREATED_AT\", 'HH24:MI:SS') >= ?", $builder->toSql());
+        $this->assertEquals([0 => '22:00:00'], $builder->getBindings());
+    }
+
+    public function test_where_time_with_seconds_equality()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereTime('created_at', '=', '14:30:45');
+        $this->assertSame("select * from \"USERS\" where TO_CHAR(\"CREATED_AT\", 'HH24:MI:SS') = ?", $builder->toSql());
+        $this->assertEquals([0 => '14:30:45'], $builder->getBindings());
     }
 
     public function test_where_like()
@@ -1360,7 +1445,6 @@ class Oci8QueryBuilderTest extends TestCase
                 'select t2.* from ( select rownum AS "rn", t1.* from (select * from "USERS") t1 ) t2 where t2."rn" between 1 and 0',
                 $builder->toSql());
         }
-
     }
 
     public function test_get_count_for_pagination_with_bindings()
@@ -3322,6 +3406,7 @@ class Oci8QueryBuilderTest extends TestCase
         $connection->shouldReceive('getConfig')->with('server_version')->andReturn($serverVersion);
         $connection->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='));
         $connection->shouldReceive('getConfig')->andReturn([]);
+        $connection->shouldReceive('getDateFormat')->andReturn('YYYY-MM-DD HH24:MI:SS');
 
         return $connection;
     }
