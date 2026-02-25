@@ -15,7 +15,7 @@ use Yajra\Oci8\OracleReservedWords;
  */
 class OracleGrammar extends Grammar
 {
-    use   OracleReservedWords;
+    use OracleReservedWords;
 
     /**
      * The keyword identifier wrapper format.
