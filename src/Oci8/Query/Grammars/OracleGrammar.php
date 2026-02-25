@@ -548,16 +548,48 @@ class OracleGrammar extends Grammar
     {
         $value = $this->parameter($where['value']);
 
-        // If the value is a raw expression, don't modify it
+        // Raw expressions are passed through as-is.
         if ($where['value'] instanceof Expression) {
             return "trunc({$this->wrap($where['column'])}) {$where['operator']} $value";
         }
 
-        // For string values, convert to DATE using TO_DATE with the NLS_DATE_FORMAT
-        // Then truncate both sides for consistent date-only comparison
-        $dateFormat = $this->connection->getDateFormat();
+        // Laravel's Builder::whereDate() normalises any DateTimeInterface to a 'Y-m-d'
+        // string before the grammar is called, so the value is always a date-only string.
+        // TRUNC strips the time from the column; TO_DATE with 'YYYY-MM-DD' parses the
+        // date-only string and yields midnight, so no TRUNC is needed on the RHS.
+        return "trunc({$this->wrap($where['column'])}) {$where['operator']} to_date($value, 'YYYY-MM-DD')";
+    }
 
-        return "trunc({$this->wrap($where['column'])}) {$where['operator']} trunc(to_date($value, '$dateFormat'))";
+    /**
+     * Compile a "where time" clause.
+     *
+     * Oracle does not support EXTRACT(TIME FROM ...), so we use TO_CHAR instead.
+     * The format mask is matched to the precision of the supplied value so that
+     * both equality and range comparisons work correctly:
+     *
+     *   '22:00'    → TO_CHAR(column, 'HH24:MI')
+     *   '22:00:00' → TO_CHAR(column, 'HH24:MI:SS')
+     */
+    protected function whereTime(Builder $query, $where): string
+    {
+        $value = $this->parameter($where['value']);
+
+        // If the value is a raw expression, default to full precision.
+        if ($where['value'] instanceof Expression) {
+            return "TO_CHAR({$this->wrap($where['column'])}, 'HH24:MI:SS') {$where['operator']} $value";
+        }
+
+        $rawValue = $where['value'];
+
+        // Match the TO_CHAR format mask to the precision of the supplied value so
+        // that both equality and range comparisons are correct.
+        // A value with seconds (e.g. '22:00:00') uses HH24:MI:SS;
+        // a value without seconds (e.g. '22:00') uses HH24:MI.
+        $hasSeconds = is_string($rawValue) && preg_match('/^\d{2}:\d{2}:\d{2}/', $rawValue);
+
+        $format = $hasSeconds ? 'HH24:MI:SS' : 'HH24:MI';
+
+        return "TO_CHAR({$this->wrap($where['column'])}, '$format') {$where['operator']} $value";
     }
 
     /**
