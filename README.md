@@ -157,6 +157,17 @@ class Config {
 
 Then run your laravel installation...
 
+## Oracle versions
+
+To set this version use `DB_SERVER_VERSION` env variable or change `server_version` variable in the oracle.php config.
+
+### 11g
+This is the baseline, if no version is set, this version is assumed.
+### 12c
+- Use fetch/offset where possible instead of rownumber.
+- In whereLike use `binary ci` for case insensitivity. ([#945](https://github.com/yajra/laravel-oci8/pull/945))
+- Use identity instead of seqvence/trigger for ids when using laravel's scheme builder. ([#944](https://github.com/yajra/laravel-oci8/pull/944))
+
 ## Oracle Max Name Length
 
 By default, DB object name are limited to 30 characters. To increase the limit, you can set the `ORA_MAX_NAME_LEN=128` in your `.env` file.

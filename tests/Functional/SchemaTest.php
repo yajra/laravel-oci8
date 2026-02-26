@@ -2,7 +2,6 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -11,7 +10,24 @@ use Yajra\Oci8\Tests\TestCase;
 
 class SchemaTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        Schema::drop('users');
+
+        parent::tearDown();
+    }
 
     #[Test]
     public function it_can_get_column_type()
@@ -235,7 +251,7 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_column()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -269,7 +285,7 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_on_null_column()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -304,7 +320,7 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_always_column()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -337,7 +353,7 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_with_options_column()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -371,7 +387,7 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_add_generated_as_on_null_with_options_column()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 

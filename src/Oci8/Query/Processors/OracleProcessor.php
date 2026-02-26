@@ -5,6 +5,7 @@ namespace Yajra\Oci8\Query\Processors;
 use DateTime;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Processors\Processor;
 use PDO;
 use PDOStatement;
@@ -279,5 +280,49 @@ class OracleProcessor extends Processor
             'unique' => $items->first()['unique'],
             'primary' => $items->first()['primary'],
         ])->values()->all();
+    }
+
+    /**
+     * Process the results of a "select" query.
+     *
+     * @param  array  $results
+     * @return array
+     */
+    public function processSelect(Builder $query, $results)
+    {
+        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        $connection = $query->getConnection();
+
+        if (method_exists($connection, 'isVersionBelow') && $connection->isVersionBelow('12c') && (isset($query->limit) || isset($query->offset)) && ! $this->rnColumnSelected($query) && is_array($results)) {
+            return array_map(function ($row) {
+                if (is_object($row) && isset($row->rn)) {
+                    unset($row->rn);
+                }
+
+                return $row;
+            }, $results);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Check if the rn column is selected.
+     */
+    private function rnColumnSelected(Builder $query): bool
+    {
+        foreach (($query->columns ?? []) as $column) {
+            $value = $column instanceof Expression
+                ? $column->getValue($query->getGrammar())
+                : (string) $column;
+
+            $value = trim($value);
+
+            if ($value === 'rn' || preg_match('/\srn$/i', $value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -2,19 +2,35 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
 class JsonTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('json_test', function (Blueprint $table) {
+            $table->id('id');
+            $table->json('options');
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        Schema::drop('json_test');
+
+        parent::tearDown();
+    }
 
     #[Test]
     public function it_finds_rows_with_where()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -36,7 +52,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_with_where_case_sensitive()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -58,7 +74,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_can_filter_json_boolean_values()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -83,7 +99,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_can_filter_json_boolean_values_case_sensitive()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -108,7 +124,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_contains_root_value()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -142,7 +158,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_contains_nested_value()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -176,7 +192,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_contains_2_level_nested_value()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -206,7 +222,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_handles_multiple_levels_of_json_paths()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -230,7 +246,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_or_where_json_contains()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -253,7 +269,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_multiple_json_contains()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped('This is only supported from 12c and onward!');
         }
 
@@ -280,7 +296,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_with_json_length_equal_to_1()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -302,7 +318,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_with_json_length_greater_than_1()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -324,7 +340,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_returns_zero_results_for_empty_json_array()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -342,7 +358,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_doesnt_contain_value()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -361,7 +377,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_or_where_json_doesnt_contain()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -381,7 +397,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_contains_key()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -400,7 +416,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_or_where_json_contains_key()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -420,7 +436,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_finds_rows_where_json_doesnt_contain_key()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -439,7 +455,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_or_where_json_doesnt_contain_key()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 
@@ -459,7 +475,7 @@ class JsonTest extends TestCase
     #[Test]
     public function it_works_with_or_where_json_length()
     {
-        if (config('database.connections.oracle.server_version') !== '12c') {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
             $this->markTestSkipped();
         }
 

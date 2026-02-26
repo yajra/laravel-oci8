@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Yajra\Oci8\Tests\TestCase;
 
@@ -12,7 +13,7 @@ class ConnectionDateFormatTest extends TestCase
     public function it_can_set_the_date_format()
     {
         /** @var \Yajra\Oci8\Oci8Connection $connection */
-        $connection = $this->getConnection();
+        $connection = DB::connection();
 
         $connection->setDateFormat('YYYY-MM-DD');
 

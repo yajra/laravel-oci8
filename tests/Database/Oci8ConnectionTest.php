@@ -109,6 +109,25 @@ class Oci8ConnectionTest extends TestCase
         $this->assertSame('Oracle Database', $connection->getServerVersion());
     }
 
+    public function test_get_configured_server_version()
+    {
+        $connection = m::mock(Oci8Connection::class)->makePartial();
+        $connection->shouldReceive('getConfig')->with('server_version')->once()->andReturn('19c');
+
+        $this->assertSame('19c', $connection->serverVersion());
+    }
+
+    public function test_compare_configured_server_version()
+    {
+        $connection = m::mock(Oci8Connection::class)->makePartial();
+        $connection->shouldReceive('getConfig')->with('server_version')->times(4)->andReturn('19c');
+
+        $this->assertTrue($connection->isVersionAbove('12c'));
+        $this->assertTrue($connection->isVersionAboveOrEqual('19c'));
+        $this->assertTrue($connection->isVersionBelow('21c'));
+        $this->assertTrue($connection->isVersionBelowOrEqual('19c'));
+    }
+
     protected function getMockConnection($methods = [], $pdo = null)
     {
         $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;

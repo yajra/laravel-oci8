@@ -10,7 +10,6 @@ on:
 jobs:
   pint:
     name: Pint
-
     runs-on: ubuntu-latest
 
     permissions:
@@ -18,16 +17,21 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "laravel-pint"
-        uses: aglipanci/laravel-pint-action@latest
+        uses: aglipanci/laravel-pint-action@v2
         with:
           preset: laravel
           verboseMode: true
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         with:
           commit_message: "fix: pint :robot:"
