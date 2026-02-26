@@ -19,17 +19,17 @@
         "php": "^8.2",
         "ext-oci8": ">=3.0.1",
         "ext-pdo": "*",
-        "illuminate/database": "^12",
-        "illuminate/pagination": "^12",
-        "illuminate/support": "^12",
-        "illuminate/validation": "^12",
+        "illuminate/database": "^12|^13.0",
+        "illuminate/pagination": "^12|^13.0",
+        "illuminate/support": "^12|^13.0",
+        "illuminate/validation": "^12|^13.0",
         "yajra/laravel-pdo-via-oci8": "^3.7.1"
     },
     "require-dev": {
-        "larastan/larastan": "^3.1.0",
+        "larastan/larastan": "^3.1.0|dev-l13",
         "laravel/pint": "^1.21",
         "mockery/mockery": "^1.6.12",
-        "orchestra/testbench": "^10",
+        "orchestra/testbench": "^10|^11.0",
         "phpunit/phpunit": "^10.5.35|^11.5.10|^12.0.1",
         "rector/rector": "^2.0.9"
     },
