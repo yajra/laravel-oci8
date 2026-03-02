@@ -107,6 +107,10 @@ class OracleGrammar extends Grammar
             $sql = $this->compileAnsiOffset($query, $components);
         }
 
+        if ($query->unions && (isset($query->unionLimit) || isset($query->unionOffset))) {
+            $sql = $this->compileUnionLimitOffset($query, trim($sql));
+        }
+
         if (isset($query->lock)) {
             $sql .= ' '.$this->compileLock($query, $query->lock);
             $orderSql = $this->compileOrders($query, $query->orders);
@@ -183,6 +187,55 @@ class OracleGrammar extends Grammar
         // expression from the query and get the records with row numbers within our
         // given limit and offset value that we just put on as a query constraint.
         return $this->compileTableExpression($sql, $constraint, $query);
+    }
+
+    /**
+     * Compile union query with limit/offset.
+     */
+    protected function compileUnionLimitOffset(Builder $query, string $sql): string
+    {
+        $limit = $query->unionLimit ?? null;
+        $offset = $query->unionOffset ?? 0;
+
+        // For Oracle 12c and above, use OFFSET/FETCH
+        if ($query->getConnection()->isVersionAboveOrEqual('12c')) {
+            $sql .= " offset $offset rows";
+
+            if ($limit !== null) {
+                $sql .= " fetch next $limit rows only";
+            }
+
+            return $sql;
+        }
+
+        // For Oracle 11g and below, use ROW_NUMBER
+        $constraint = $this->compileUnionRowConstraint($limit, $offset);
+
+        // Special case for limit 1 with no offset - use simple rownum
+        if ($limit == 1 && $offset == 0) {
+            return "select * from ({$sql}) where rownum {$constraint}";
+        }
+
+        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+    }
+
+    /**
+     * Compile the limit / offset row constraint for a union query.
+     */
+    protected function compileUnionRowConstraint(?int $limit, int $offset): string
+    {
+        $start = $offset + 1;
+        $finish = $offset + $limit;
+
+        if ($limit == 1 && $offset == 0) {
+            return '= 1';
+        }
+
+        if ($offset && is_null($limit)) {
+            return ">= {$start}";
+        }
+
+        return "between {$start} and {$finish}";
     }
 
     /**

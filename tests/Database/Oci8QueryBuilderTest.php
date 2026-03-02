@@ -887,25 +887,166 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1, 1 => 2], $builder->getBindings());
     }
 
-    /**
-     * @TODO: Fix union sql with limit
-     */
     public function test_union_limits_and_offsets()
     {
         $builder = $this->getBuilder();
         $builder->select('*')->from('users');
         $builder->union($this->getBuilder()->select('*')->from('dogs'));
         $builder->skip(5)->take(10);
-        // $this->assertSame('(select * from "USERS") union (select * from "DOGS") limit 10 offset 5', $builder->toSql());
-        $this->assertSame('(select * from "USERS") union (select * from "DOGS")', $builder->toSql());
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS") union (select * from "DOGS") offset 5 rows fetch next 10 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select * from "USERS") union (select * from "DOGS")) t1 ) t2 where t2."rn" between 6 and 15', $builder->toSql());
+        }
 
         $builder = $this->getBuilder();
-        // $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc limit 10';
-        $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc';
         $union = $this->getBuilder()->select('a')->from('t2')->where('a', 11)->where('b', 2);
         $builder->select('a')->from('t1')->where('a', 10)->where('b', 1)->union($union)->orderBy('a')->limit(10);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc offset 0 rows fetch next 10 rows only';
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $expectedSql = 'select t2.* from ( select rownum AS "rn", t1.* from ((select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc) t1 ) t2 where t2."rn" between 1 and 10';
+        }
+
         $this->assertEquals($expectedSql, $builder->toSql());
         $this->assertEquals([0 => 10, 1 => 1, 2 => 11, 3 => 2], $builder->getBindings());
+    }
+
+    public function test_union_with_only_limit()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users');
+        $builder->union($this->getBuilder()->select('*')->from('dogs'));
+        $builder->take(10);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS") union (select * from "DOGS") offset 0 rows fetch next 10 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select * from "USERS") union (select * from "DOGS")) t1 ) t2 where t2."rn" between 1 and 10', $builder->toSql());
+        }
+    }
+
+    public function test_union_with_only_offset()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users');
+        $builder->union($this->getBuilder()->select('*')->from('dogs'));
+        $builder->skip(5);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS") union (select * from "DOGS") offset 5 rows', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select * from "USERS") union (select * from "DOGS")) t1 ) t2 where t2."rn" >= 6', $builder->toSql());
+        }
+    }
+
+    public function test_union_with_limit_one_and_no_offset()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users');
+        $builder->union($this->getBuilder()->select('*')->from('dogs'));
+        $builder->limit(1);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS") union (select * from "DOGS") offset 0 rows fetch next 1 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER with special rownum = 1 optimization
+            $this->assertSame('select * from ((select * from "USERS") union (select * from "DOGS")) where rownum = 1', $builder->toSql());
+        }
+    }
+
+    public function test_union_all_with_limit_and_offset()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users');
+        $builder->unionAll($this->getBuilder()->select('*')->from('dogs'));
+        $builder->skip(3)->take(5);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS") union all (select * from "DOGS") offset 3 rows fetch next 5 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select * from "USERS") union all (select * from "DOGS")) t1 ) t2 where t2."rn" between 4 and 8', $builder->toSql());
+        }
+    }
+
+    public function test_union_with_multiple_unions_and_limit()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users');
+        $builder->union($this->getBuilder()->select('*')->from('dogs'));
+        $builder->union($this->getBuilder()->select('*')->from('cats'));
+        $builder->take(15);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS") union (select * from "DOGS") union (select * from "CATS") offset 0 rows fetch next 15 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select * from "USERS") union (select * from "DOGS") union (select * from "CATS")) t1 ) t2 where t2."rn" between 1 and 15', $builder->toSql());
+        }
+    }
+
+    public function test_union_with_order_by_and_limit()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('id', 'name')->from('users');
+        $builder->union($this->getBuilder()->select('id', 'name')->from('dogs'));
+        $builder->orderBy('name', 'desc')->take(20);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "NAME" desc offset 0 rows fetch next 20 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "NAME" desc) t1 ) t2 where t2."rn" between 1 and 20', $builder->toSql());
+        }
+    }
+
+    public function test_union_with_order_by_limit_and_offset()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('id', 'name')->from('users');
+        $builder->union($this->getBuilder()->select('id', 'name')->from('dogs'));
+        $builder->orderBy('id')->skip(5)->take(10);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "ID" asc offset 5 rows fetch next 10 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "ID" asc) t1 ) t2 where t2."rn" between 6 and 15', $builder->toSql());
+        }
+    }
+
+    public function test_union_with_where_and_limit()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('active', 1);
+        $builder->union($this->getBuilder()->select('*')->from('dogs')->where('status', 'available'));
+        $builder->skip(2)->take(8);
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            // Oracle 12c and above: use OFFSET/FETCH
+            $this->assertSame('(select * from "USERS" where "ACTIVE" = ?) union (select * from "DOGS" where "STATUS" = ?) offset 2 rows fetch next 8 rows only', $builder->toSql());
+        } else {
+            // Oracle 11g: use ROW_NUMBER
+            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select * from "USERS" where "ACTIVE" = ?) union (select * from "DOGS" where "STATUS" = ?)) t1 ) t2 where t2."rn" between 3 and 10', $builder->toSql());
+        }
+
+        $this->assertEquals([0 => 1, 1 => 'available'], $builder->getBindings());
     }
 
     public function test_union_with_join()
