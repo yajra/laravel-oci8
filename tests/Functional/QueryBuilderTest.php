@@ -111,6 +111,133 @@ class QueryBuilderTest extends TestCase
     }
 
     #[Test]
+    public function it_can_perform_union_with_limit()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+        $builder->limit(5);
+
+        $results = $builder->get();
+
+        $this->assertCount(5, $results);
+    }
+
+    #[Test]
+    public function it_can_perform_union_with_offset()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+        $builder->skip(15);
+
+        $results = $builder->get();
+
+        $this->assertCount(5, $results); // 20 total records - 15 offset = 5 remaining
+    }
+
+    #[Test]
+    public function it_can_perform_union_with_limit_and_offset()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+        $builder->skip(5)->take(10);
+
+        $results = $builder->get();
+
+        $this->assertCount(10, $results);
+        // Verify we skipped the first 5 records
+        $this->assertGreaterThanOrEqual(6, $results->first()->id);
+    }
+
+    #[Test]
+    public function it_can_perform_union_with_order_by_and_limit()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+        $builder->orderBy('id', 'asc')->take(3);
+
+        $results = $builder->get();
+
+        $this->assertCount(3, $results);
+        $this->assertEquals(1, $results->first()->id);
+        $this->assertEquals(2, $results->get(1)->id);
+        $this->assertEquals(3, $results->last()->id);
+    }
+
+    #[Test]
+    public function it_can_perform_union_all_with_limit()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('name')->from('users')->where('id', '<=', 5);
+        $builder->unionAll($this->getBuilder()->select('name')->from('users')->where('id', '<=', 5));
+        $builder->take(7);
+
+        $results = $builder->get();
+
+        $this->assertCount(7, $results); // Should get 7 records from the 10 total (5 + 5 duplicate)
+    }
+
+    #[Test]
+    public function it_can_perform_multiple_unions_with_limit()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id')->from('users')->where('id', '<=', 5);
+        $builder->union($this->getBuilder()->select('id')->from('users')->where('id', '>', 5)->where('id', '<=', 10));
+        $builder->union($this->getBuilder()->select('id')->from('users')->where('id', '>', 10)->where('id', '<=', 15));
+        $builder->limit(8);
+
+        $results = $builder->get();
+
+        $this->assertCount(8, $results);
+    }
+
+    #[Test]
+    public function it_can_perform_union_with_limit_one()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+        $builder->limit(1);
+
+        $results = $builder->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_can_paginate_union_results()
+    {
+        $builder = $this->getBuilder();
+
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+
+        // First page
+        $page1 = $builder->skip(0)->take(5)->get();
+        $this->assertCount(5, $page1);
+
+        // Second page
+        $builder = $this->getBuilder();
+        $builder->select('id', 'name')->from('users')->where('id', '<=', 10);
+        $builder->union($this->getBuilder()->select('id', 'name')->from('users')->where('id', '>', 10));
+        $page2 = $builder->skip(5)->take(5)->get();
+        $this->assertCount(5, $page2);
+
+        // Ensure pages are different
+        $this->assertNotEquals($page1->first()->id, $page2->first()->id);
+    }
+
+    #[Test]
     public function it_can_insert_and_get_id()
     {
         $lastId = $this->getConnection()->table('users')->max('id');
