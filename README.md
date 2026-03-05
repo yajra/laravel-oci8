@@ -34,6 +34,7 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
  10.x     | 10.x
  11.x     | 11.x
  12.x     | 12.x
+ 13.x     | 13.x
 
 ## Quick Installation
 
