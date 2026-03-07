@@ -1,3 +1,10 @@
+## [12.10.1](https://github.com/yajra/laravel-oci8/compare/v12.10.0...v12.10.1) (2026-03-06)
+
+
+### Bug Fixes
+
+* align getCountForPagination logic to upstream laravel ([73927b0](https://github.com/yajra/laravel-oci8/commit/73927b04934065d906eb723a1d0ee638ce81a2e3))
+
 # [12.10.0](https://github.com/yajra/laravel-oci8/compare/v12.9.0...v12.10.0) (2026-02-25)
 
 
