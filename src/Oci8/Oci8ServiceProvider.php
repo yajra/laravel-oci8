@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8;
 
+use Illuminate\Auth\AuthServiceProvider;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +20,7 @@ class Oci8ServiceProvider extends ServiceProvider
         // Testing for existence of AuthServiceProvider before invoking it
         // prevents errors when used with laravel-zero micro-framework which
         // doesn't need auth.
-        if (class_exists(\Illuminate\Auth\AuthServiceProvider::class)) {
+        if (class_exists(AuthServiceProvider::class)) {
             Auth::provider('oracle', fn ($app, array $config) => new OracleUserProvider($app['hash'], $config['model']));
         }
     }

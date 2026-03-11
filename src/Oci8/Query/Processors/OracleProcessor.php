@@ -4,11 +4,13 @@ namespace Yajra\Oci8\Query\Processors;
 
 use DateTime;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Processors\Processor;
 use PDO;
 use PDOStatement;
+use Yajra\Oci8\Oci8Connection;
 
 class OracleProcessor extends Processor
 {
@@ -44,7 +46,7 @@ class OracleProcessor extends Processor
      */
     private function prepareStatement(Builder $query, string $sql): PDOStatement|false
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $query->getConnection();
         $pdo = $connection->getPdo();
 
@@ -61,10 +63,10 @@ class OracleProcessor extends Processor
 
         if (! isset($builderArgs[1][0][$sequence])) {
             if ($builder instanceof EloquentBuilder) {
-                /** @var \Illuminate\Database\Eloquent\Model $model */
+                /** @var Model $model */
                 $model = $builder->getModel();
 
-                /** @var \Yajra\Oci8\Oci8Connection $connection */
+                /** @var Oci8Connection $connection */
                 $connection = $model->getConnection();
                 if (isset($model->sequence) && $model->incrementing) {
                     $values[] = $connection->getSequence()->nextValue($model->sequence);
@@ -290,7 +292,7 @@ class OracleProcessor extends Processor
      */
     public function processSelect(Builder $query, $results)
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $query->getConnection();
 
         if (method_exists($connection, 'isVersionBelow') && $connection->isVersionBelow('12c') && (isset($query->limit) || isset($query->offset)) && ! $this->rnColumnSelected($query) && is_array($results)) {

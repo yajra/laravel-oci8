@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -791,7 +792,7 @@ class DatabaseEloquentCollectionTest extends LaravelTestCase
     /**
      * Get a database connection instance.
      *
-     * @return \Illuminate\Database\ConnectionInterface
+     * @return ConnectionInterface
      */
     protected function connection()
     {

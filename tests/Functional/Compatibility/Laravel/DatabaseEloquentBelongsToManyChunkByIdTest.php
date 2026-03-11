@@ -2,8 +2,10 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as Eloquent;
+use Illuminate\Database\Schema\Builder;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
 class DatabaseEloquentBelongsToManyChunkByIdTest extends LaravelTestCase
@@ -94,7 +96,7 @@ class DatabaseEloquentBelongsToManyChunkByIdTest extends LaravelTestCase
     /**
      * Get a database connection instance.
      *
-     * @return \Illuminate\Database\ConnectionInterface
+     * @return ConnectionInterface
      */
     protected function connection()
     {
@@ -104,7 +106,7 @@ class DatabaseEloquentBelongsToManyChunkByIdTest extends LaravelTestCase
     /**
      * Get a schema builder instance.
      *
-     * @return \Illuminate\Database\Schema\Builder
+     * @return Builder
      */
     protected function schema()
     {

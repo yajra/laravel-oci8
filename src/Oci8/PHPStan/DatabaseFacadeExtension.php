@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\PHPStan;
 
 use Larastan\Larastan\Reflection\StaticMethodReflection;
+use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
@@ -30,7 +31,7 @@ class DatabaseFacadeExtension implements MethodsClassReflectionExtension
             $this->reflectionProvider->getClass('Yajra\Oci8\Oci8Connection');
 
             return true;
-        } catch (\PHPStan\Broker\ClassNotFoundException $e) {
+        } catch (ClassNotFoundException $e) {
             return false;
         }
     }
@@ -43,7 +44,7 @@ class DatabaseFacadeExtension implements MethodsClassReflectionExtension
             if ($oci8ConnectionClass->hasNativeMethod($methodName)) {
                 return new StaticMethodReflection($oci8ConnectionClass->getNativeMethod($methodName));
             }
-        } catch (\PHPStan\Broker\ClassNotFoundException $e) {
+        } catch (ClassNotFoundException $e) {
             throw new ShouldNotHappenException('Yajra\Oci8\Oci8Connection class not found');
         }
 

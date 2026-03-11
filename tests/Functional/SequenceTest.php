@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Tests\TestCase;
 
 class SequenceTest extends TestCase
@@ -10,7 +11,7 @@ class SequenceTest extends TestCase
     #[Test]
     public function it_can_process_sequence()
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $this->getConnection();
 
         $sequence = $connection->getSequence();
@@ -35,7 +36,7 @@ class SequenceTest extends TestCase
     #[Test]
     public function it_can_use_sequence_not_owned_by_user()
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $this->getConnection();
 
         try {
@@ -72,7 +73,7 @@ class SequenceTest extends TestCase
     #[Test]
     public function it_can_use_schema_prefix()
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $this->getConnection();
         try {
             $connection->statement('alter session set "_oracle_script"=true');

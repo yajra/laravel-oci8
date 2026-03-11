@@ -5,6 +5,7 @@ namespace Yajra\Oci8\Tests\Functional;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Tests\TestCase;
 
 class TriggerTest extends TestCase
@@ -12,7 +13,7 @@ class TriggerTest extends TestCase
     #[Test]
     public function it_can_generate_a_trigger()
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = DB::connection();
 
         $connection->getSchemaBuilder()->dropIfExists('triggers');
@@ -31,7 +32,7 @@ class TriggerTest extends TestCase
     #[Test]
     public function it_can_use_schema_with_db_prefix()
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = DB::connection();
 
         try {

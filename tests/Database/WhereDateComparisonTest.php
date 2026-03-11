@@ -7,6 +7,7 @@ use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar as QueryGrammar;
 
 class WhereDateComparisonTest extends TestCase
@@ -18,7 +19,7 @@ class WhereDateComparisonTest extends TestCase
         parent::setUp();
 
         // Create a mock connection for testing
-        $connection = $this->createMock(\Yajra\Oci8\Oci8Connection::class);
+        $connection = $this->createMock(Oci8Connection::class);
         $connection->method('getSchemaPrefix')->willReturn('');
         $connection->method('getMaxLength')->willReturn(30);
         $connection->method('getDateFormat')->willReturn('YYYY-MM-DD HH24:MI:SS');

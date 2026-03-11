@@ -5,6 +5,7 @@ namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 use Exception;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\DatabaseTransactionsManager;
+use Illuminate\Database\Schema\Builder;
 use Mockery as m;
 use Throwable;
 use Yajra\Oci8\Tests\LaravelTestCase;
@@ -218,7 +219,7 @@ class DatabaseTransactionsTest extends LaravelTestCase
     /**
      * Get a schema builder instance.
      *
-     * @return \Illuminate\Database\Schema\Builder
+     * @return Builder
      */
     protected function schema($connection = 'default')
     {

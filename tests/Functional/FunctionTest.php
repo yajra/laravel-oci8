@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\Test;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Tests\TestCase;
 
 class FunctionTest extends TestCase
@@ -13,7 +14,7 @@ class FunctionTest extends TestCase
     #[Test]
     public function it_can_return_numbers_using_a_function()
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $this->getConnection();
 
         $procedureName = 'add_two';

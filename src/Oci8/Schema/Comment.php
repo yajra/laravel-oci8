@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Schema;
 
+use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Str;
 use Yajra\Oci8\OracleReservedWords;
@@ -11,7 +12,7 @@ class Comment extends Grammar
     use OracleReservedWords;
 
     /**
-     * @var \Illuminate\Database\Connection
+     * @var Connection
      */
     protected $connection;
 

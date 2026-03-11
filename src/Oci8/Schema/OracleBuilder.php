@@ -8,8 +8,8 @@ use Illuminate\Database\Schema\Builder;
 use Yajra\Oci8\Oci8Connection;
 
 /**
- * @property \Yajra\Oci8\Oci8Connection $connection
- * @property \Yajra\Oci8\Schema\OracleGrammar $grammar
+ * @property Oci8Connection $connection
+ * @property OracleGrammar $grammar
  */
 class OracleBuilder extends Builder
 {
@@ -18,7 +18,7 @@ class OracleBuilder extends Builder
     public Comment $comment;
 
     /**
-     * @var \Yajra\Oci8\Schema\OraclePreferences
+     * @var OraclePreferences
      */
     public $ctxDdlPreferences;
 
@@ -130,7 +130,7 @@ class OracleBuilder extends Builder
     {
         $database = $this->connection->getConfig('username');
         $table = $this->connection->getTablePrefix().$table;
-        /** @var \Yajra\Oci8\Schema\Grammars\OracleGrammar $grammar */
+        /** @var Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
         $results = $this->connection->select($grammar->compileColumnExists($database, $table));
 

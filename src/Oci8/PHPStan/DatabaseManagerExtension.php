@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\PHPStan;
 
+use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
@@ -29,7 +30,7 @@ class DatabaseManagerExtension implements MethodsClassReflectionExtension
             $this->reflectionProvider->getClass('Yajra\Oci8\Oci8Connection');
 
             return true;
-        } catch (\PHPStan\Broker\ClassNotFoundException $e) {
+        } catch (ClassNotFoundException $e) {
             return false;
         }
     }
@@ -42,7 +43,7 @@ class DatabaseManagerExtension implements MethodsClassReflectionExtension
             if ($oci8ConnectionClass->hasNativeMethod($methodName)) {
                 return $oci8ConnectionClass->getNativeMethod($methodName);
             }
-        } catch (\PHPStan\Broker\ClassNotFoundException $e) {
+        } catch (ClassNotFoundException $e) {
             throw new ShouldNotHappenException('Yajra\Oci8\Oci8Connection class not found');
         }
 

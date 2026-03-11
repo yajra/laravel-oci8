@@ -2,6 +2,9 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
+use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;
@@ -13,6 +16,7 @@ use Illuminate\Database\Query\Processors\SQLiteProcessor;
 use Illuminate\Database\Query\Processors\SqlServerProcessor;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Yajra\Oci8\Eloquent\OracleEloquent;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder;
@@ -52,11 +56,11 @@ class OracleEloquentTest extends TestCase
 
             $grammar = new $grammarClass($oci8Connection);
             $processor = new $processorClass;
-            $connection = m::mock(\Illuminate\Database\ConnectionInterface::class, [
+            $connection = m::mock(ConnectionInterface::class, [
                 'getQueryGrammar' => $grammar,
                 'getPostProcessor' => $processor,
             ]);
-            $resolver = m::mock(\Illuminate\Database\ConnectionResolverInterface::class,
+            $resolver = m::mock(ConnectionResolverInterface::class,
                 ['connection' => $connection]);
             $class = $model::class;
             $class::setConnectionResolver($resolver);
@@ -66,13 +70,13 @@ class OracleEloquentTest extends TestCase
 
         $grammarClass = 'Illuminate\Database\Query\Grammars\\'.$database.'Grammar';
         $processorClass = 'Illuminate\Database\Query\Processors\\'.$database.'Processor';
-        $grammar = new $grammarClass(m::mock(\Illuminate\Database\Connection::class));
+        $grammar = new $grammarClass(m::mock(Connection::class));
         $processor = new $processorClass;
-        $connection = m::mock(\Illuminate\Database\ConnectionInterface::class, [
+        $connection = m::mock(ConnectionInterface::class, [
             'getQueryGrammar' => $grammar,
             'getPostProcessor' => $processor,
         ]);
-        $resolver = m::mock(\Illuminate\Database\ConnectionResolverInterface::class,
+        $resolver = m::mock(ConnectionResolverInterface::class,
             ['connection' => $connection]);
         $class = $model::class;
         $class::setConnectionResolver($resolver);
@@ -134,4 +138,4 @@ class OracleEloquentTest extends TestCase
     }
 }
 
-class OracleEloquentStub extends \Yajra\Oci8\Eloquent\OracleEloquent {}
+class OracleEloquentStub extends OracleEloquent {}

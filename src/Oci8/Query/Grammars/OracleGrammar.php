@@ -11,7 +11,7 @@ use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
 /**
- * @property \Yajra\Oci8\Oci8Connection $connection
+ * @property Oci8Connection $connection
  */
 class OracleGrammar extends Grammar
 {
@@ -235,7 +235,7 @@ class OracleGrammar extends Grammar
     /**
      * Wrap a table in keyword identifiers.
      *
-     * @param  \Illuminate\Database\Query\Expression|string  $table
+     * @param  Expression|string  $table
      */
     public function wrapTable($table, $prefix = null): string
     {

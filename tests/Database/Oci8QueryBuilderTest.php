@@ -12,6 +12,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use InvalidArgumentException;
 use Mockery as m;
+use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Yajra\Oci8\Oci8Connection as Connection;
@@ -2670,9 +2671,9 @@ class Oci8QueryBuilderTest extends TestCase
         $method = 'whereFooBarAndBazOrQux';
         $parameters = ['corge', 'waldo', 'fred'];
         $grammar = $this->getGrammar();
-        $processor = m::mock(\Yajra\Oci8\Query\Processors\OracleProcessor::class);
+        $processor = m::mock(OracleProcessor::class);
         $builder = m::mock('Illuminate\Database\Query\Builder[where]',
-            [m::mock(\Illuminate\Database\ConnectionInterface::class), $grammar, $processor]);
+            [m::mock(ConnectionInterface::class), $grammar, $processor]);
 
         $builder->shouldReceive('where')->with('foo_bar', '=', $parameters[0], 'and')->once()->andReturn($builder);
         $builder->shouldReceive('where')->with('baz', '=', $parameters[1], 'and')->once()->andReturn($builder);
@@ -3421,7 +3422,7 @@ class Oci8QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return \Mockery\MockInterface|\Illuminate\Database\Query\Builder
+     * @return MockInterface|\Illuminate\Database\Query\Builder
      */
     protected function getMockQueryBuilder()
     {

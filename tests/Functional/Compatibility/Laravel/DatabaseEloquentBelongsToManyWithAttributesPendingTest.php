@@ -3,9 +3,11 @@
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 
 use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Schema\Builder;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
 class DatabaseEloquentBelongsToManyWithAttributesPendingTest extends LaravelTestCase
@@ -170,7 +172,7 @@ class DatabaseEloquentBelongsToManyWithAttributesPendingTest extends LaravelTest
     /**
      * Get a database connection instance.
      *
-     * @return \Illuminate\Database\Connection
+     * @return Connection
      */
     protected function connection($connection = 'default')
     {
@@ -180,7 +182,7 @@ class DatabaseEloquentBelongsToManyWithAttributesPendingTest extends LaravelTest
     /**
      * Get a schema builder instance.
      *
-     * @return \Illuminate\Database\Schema\Builder
+     * @return Builder
      */
     protected function schema($connection = 'default')
     {

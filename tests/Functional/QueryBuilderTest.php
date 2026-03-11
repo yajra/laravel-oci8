@@ -6,6 +6,7 @@ use Illuminate\Database\Query\Expression as Raw;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
+use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\OracleBuilder as Builder;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
@@ -180,7 +181,7 @@ class QueryBuilderTest extends TestCase
 
     protected function getBuilder(): Builder
     {
-        /** @var \Yajra\Oci8\Oci8Connection $connection */
+        /** @var Oci8Connection $connection */
         $connection = $this->getConnection();
         $grammar = new OracleGrammar($connection);
         $processor = new OracleProcessor;

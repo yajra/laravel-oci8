@@ -3,10 +3,12 @@
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 
 use Exception;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Builder;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
 class DatabaseEloquentBelongsToManyExpressionTest extends LaravelTestCase
@@ -124,7 +126,7 @@ class DatabaseEloquentBelongsToManyExpressionTest extends LaravelTestCase
     /**
      * Get a database connection instance.
      *
-     * @return \Illuminate\Database\ConnectionInterface
+     * @return ConnectionInterface
      */
     protected function connection()
     {
@@ -134,7 +136,7 @@ class DatabaseEloquentBelongsToManyExpressionTest extends LaravelTestCase
     /**
      * Get a schema builder instance.
      *
-     * @return \Illuminate\Database\Schema\Builder
+     * @return Builder
      */
     protected function schema()
     {

@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Tests\Database;
 
+use Illuminate\Database\Connection;
 use Mockery as m;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -132,7 +133,7 @@ class Oci8ConnectionTest extends TestCase
     {
         $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;
         $defaults = ['getDefaultQueryGrammar', 'getDefaultPostProcessor', 'getDefaultSchemaGrammar'];
-        $connection = $this->getMockBuilder(\Illuminate\Database\Connection::class)
+        $connection = $this->getMockBuilder(Connection::class)
             ->onlyMethods(array_merge($defaults, $methods))
             ->setConstructorArgs([$pdo])
             ->getMock();

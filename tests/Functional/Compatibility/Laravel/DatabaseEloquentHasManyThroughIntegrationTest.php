@@ -2,9 +2,11 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Yajra\Oci8\Tests\LaravelTestCase;
@@ -569,7 +571,7 @@ class DatabaseEloquentHasManyThroughIntegrationTest extends LaravelTestCase
     /**
      * Get a database connection instance.
      *
-     * @return \Illuminate\Database\Connection
+     * @return Connection
      */
     protected function connection()
     {
@@ -579,7 +581,7 @@ class DatabaseEloquentHasManyThroughIntegrationTest extends LaravelTestCase
     /**
      * Get a schema builder instance.
      *
-     * @return \Illuminate\Database\Schema\Builder
+     * @return Builder
      */
     protected function schema()
     {

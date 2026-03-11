@@ -2,12 +2,14 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel;
 
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Schema\Builder;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
 class DatabaseEloquentInverseRelationHasOneTest extends LaravelTestCase
@@ -148,7 +150,7 @@ class DatabaseEloquentInverseRelationHasOneTest extends LaravelTestCase
     /**
      * Get a database connection instance.
      *
-     * @return \Illuminate\Database\Connection
+     * @return Connection
      */
     protected function connection($connection = 'default')
     {
@@ -158,7 +160,7 @@ class DatabaseEloquentInverseRelationHasOneTest extends LaravelTestCase
     /**
      * Get a schema builder instance.
      *
-     * @return \Illuminate\Database\Schema\Builder
+     * @return Builder
      */
     protected function schema($connection = 'default')
     {

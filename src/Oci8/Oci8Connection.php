@@ -434,7 +434,7 @@ class Oci8Connection extends Connection
     /**
      * Bind values to their parameters in the given statement.
      *
-     * @param  \Yajra\Pdo\Oci8\Statement  $statement
+     * @param  Statement  $statement
      * @param  array  $bindings
      */
     public function bindValues($statement, $bindings): void

@@ -5,6 +5,8 @@ namespace Yajra\Oci8\Query;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use Yajra\Oci8\Query\Grammars\OracleGrammar;
+use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {
@@ -13,14 +15,14 @@ class OracleBuilder extends Builder
      */
     public function insertLob(array $values, array $binaries, string $sequence = 'id'): int
     {
-        /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
+        /** @var OracleGrammar $grammar */
         $grammar = $this->grammar;
         $sql = $grammar->compileInsertLob($this, $values, $binaries, $sequence);
 
         $values = $this->cleanBindings($values);
         $binaries = $this->cleanBindings($binaries);
 
-        /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
+        /** @var OracleProcessor $processor */
         $processor = $this->processor;
 
         return $processor->saveLob($this, $sql, $values, $binaries);
@@ -33,14 +35,14 @@ class OracleBuilder extends Builder
     {
         $bindings = array_values(array_merge($values, $this->getBindings()));
 
-        /** @var \Yajra\Oci8\Query\Grammars\OracleGrammar $grammar */
+        /** @var OracleGrammar $grammar */
         $grammar = $this->grammar;
         $sql = $grammar->compileUpdateLob($this, $values, $binaries, $sequence);
 
         $values = $this->cleanBindings($bindings);
         $binaries = $this->cleanBindings($binaries);
 
-        /** @var \Yajra\Oci8\Query\Processors\OracleProcessor $processor */
+        /** @var OracleProcessor $processor */
         $processor = $this->processor;
 
         return $processor->saveLob($this, $sql, $values, $binaries);
@@ -81,7 +83,7 @@ class OracleBuilder extends Builder
     /**
      * Set the table which the query is targeting.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $table
+     * @param  \Closure|Builder|string  $table
      * @param  string|null  $as
      * @return $this
      */
@@ -99,7 +101,7 @@ class OracleBuilder extends Builder
     /**
      * Makes "from" fetch from a subquery.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
+     * @param  \Closure|Builder|string  $query
      * @param  string  $as
      */
     public function fromSub($query, $as): static
@@ -112,7 +114,7 @@ class OracleBuilder extends Builder
     /**
      * Add a subquery join clause to the query.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
+     * @param  \Closure|Builder|string  $query
      * @param  string  $as
      * @param  \Closure|string  $first
      * @param  string|null  $operator
@@ -134,7 +136,7 @@ class OracleBuilder extends Builder
     /**
      * Add a subquery cross join to the query.
      *
-     * @param  \Closure|\Illuminate\Database\Query\Builder|string  $query
+     * @param  \Closure|Builder|string  $query
      * @param  string  $as
      */
     public function crossJoinSub($query, $as): static
