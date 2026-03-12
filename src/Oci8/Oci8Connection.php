@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8;
 
+use Exception;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
 use PDO;
@@ -355,6 +356,14 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Determine if the given database exception was caused by a unique constraint violation.
+     */
+    protected function isUniqueConstraintError(Exception $exception): bool
+    {
+        return (bool) preg_match('/ORA-00001:/i', $exception->getMessage());
+    }
+
+    /**
      * Add bindings to statement.
      */
     public function addBindingsToStatement(PDOStatement $stmt, array $bindings): PDOStatement
@@ -381,7 +390,7 @@ class Oci8Connection extends Connection
     /**
      * Determine if the given exception was caused by a lost connection.
      *
-     * @param  \Exception  $e
+     * @param  Exception  $e
      */
     protected function causedByLostConnection(Throwable $e): bool
     {

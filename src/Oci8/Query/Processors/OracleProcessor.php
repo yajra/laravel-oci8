@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Processors\Processor;
+use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use PDO;
 use PDOStatement;
+use Throwable;
 use Yajra\Oci8\Oci8Connection;
 
 class OracleProcessor extends Processor
@@ -34,7 +37,21 @@ class OracleProcessor extends Processor
         $values = $this->incrementBySequence($values, $sequence);
         $parameter = $this->bindValues($query, $values, $statement, $parameter);
         $statement->bindParam($parameter, $id, PDO::PARAM_INT, -1);
-        $statement->execute();
+
+        try {
+            $statement->execute();
+        } catch (Throwable $e) {
+            if (preg_match('/ORA-00001:/i', $e->getMessage())) {
+                throw new UniqueConstraintViolationException(
+                    $connection->getName(),
+                    $sql,
+                    $connection->prepareBindings($values),
+                    $e
+                );
+            }
+
+            throw new QueryException($connection->getName(), $sql, $connection->prepareBindings($values), $e);
+        }
 
         $connection->logQuery($sql, $values, $this->getElapsedTime($start));
 
