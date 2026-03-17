@@ -1,3 +1,17 @@
+# [12.11.0](https://github.com/yajra/laravel-oci8/compare/v12.10.1...v12.11.0) (2026-03-17)
+
+
+### Bug Fixes
+
+* pint :robot: ([41d979c](https://github.com/yajra/laravel-oci8/commit/41d979c30b1f0d65ab7153f428fe10cc74de8aff))
+* pint :robot: ([fe0b150](https://github.com/yajra/laravel-oci8/commit/fe0b1501e9c1d9243c82900f934629ad0bb92f07))
+
+
+### Features
+
+* add OracleSchemaState for dumping and loading database schema ([7a1973a](https://github.com/yajra/laravel-oci8/commit/7a1973aad306ab757322649dd2c68be38db63f74))
+* wrap insertGetId PDO errors as QueryException ([62bfae5](https://github.com/yajra/laravel-oci8/commit/62bfae5fe610c6afb388ed1db6d52b4278b2ca3c))
+
 ## [12.10.1](https://github.com/yajra/laravel-oci8/compare/v12.10.0...v12.10.1) (2026-03-06)
 
 
