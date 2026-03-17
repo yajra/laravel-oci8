@@ -344,8 +344,6 @@ class Oci8Connection extends Connection
     /**
      * Get the schema state for the connection.
      *
-     * @param  Filesystem|null  $files
-     * @param  callable|null  $processFactory
      * @return OracleSchemaState
      */
     public function getSchemaState(?Filesystem $files = null, ?callable $processFactory = null)
