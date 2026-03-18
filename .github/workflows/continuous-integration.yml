@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2, 8.3, 8.4, 8.5]
+        php: [8.3, 8.4, 8.5]
         stability: [prefer-stable]
         oracle: [11g, 21c, 26ai]
 
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2, 8.3, 8.4, 8.5]
+        php: [8.3, 8.4, 8.5]
         stability: [prefer-stable]
 
     name: Compatibility Tests (PHP ${{ matrix.php }} · Oracle ↔ PgSQL) - STABILITY ${{ matrix.stability }}
@@ -161,7 +161,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2, 8.3, 8.4, 8.5]
+        php: [8.3, 8.4, 8.5]
         stability: [prefer-stable]
 
     name: Compatibility Tests (PHP ${{ matrix.php }} · MariaDB) - STABILITY ${{ matrix.stability }}
