@@ -3,6 +3,8 @@
 namespace Yajra\Oci8\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\PaginationState;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Yajra\Oci8\Tests\Concerns\InteractsWithTestDatabases;
 
@@ -50,6 +52,10 @@ abstract class LaravelTestCase extends BaseTestCase
         $this->db->getDatabaseManager()->setDefaultConnection('default');
         $this->db->bootEloquent();
         $this->db->setAsGlobal();
+
+        $container = $this->db->getContainer();
+        $container->instance('request', Request::create('/'));
+        PaginationState::resolveUsing($container);
 
         if (method_exists($this, 'createSchema')) {
             $this->createSchema();
