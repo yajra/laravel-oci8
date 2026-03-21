@@ -42,12 +42,15 @@ class Oci8SchemaGrammarTest extends TestCase
         int $maxLength = 30,
         string $schemaPrefix = ''
     ) {
+        $serverVersion = getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
+
         $connection = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('server_version')->andReturn(getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g')
+            ->shouldReceive('getConfig')->with('server_version')->andReturn($serverVersion)
             ->shouldReceive('getTablePrefix')->andReturn($prefix)
             ->shouldReceive('getMaxLength')->andReturn($maxLength)
             ->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix)
+            ->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='))
             ->shouldReceive('isMaria')->andReturn(false)
             ->getMock();
 
@@ -1182,7 +1185,10 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->json('foo');
         $statements = $blueprint->toSql();
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
+        $expected = $conn->isVersionAboveOrEqual('21c')
+            ? 'alter table "USERS" add ( "FOO" json not null )'
+            : 'alter table "USERS" add ( "FOO" clob not null )';
+        $this->assertEquals($expected, $statements[0]);
     }
 
     public function test_adding_jsonb()
@@ -1192,7 +1198,10 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->jsonb('foo');
         $statements = $blueprint->toSql();
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
+        $expected = $conn->isVersionAboveOrEqual('21c')
+            ? 'alter table "USERS" add ( "FOO" json not null )'
+            : 'alter table "USERS" add ( "FOO" clob not null )';
+        $this->assertEquals($expected, $statements[0]);
     }
 
     public function test_adding_date()

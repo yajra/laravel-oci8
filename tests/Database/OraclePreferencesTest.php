@@ -137,12 +137,15 @@ class OraclePreferencesTest extends TestCase
         int $maxLength = 30,
         string $schemaPrefix = ''
     ) {
+        $serverVersion = getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
+
         $connection = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('server_version')->andReturn(getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g')
+            ->shouldReceive('getConfig')->with('server_version')->andReturn($serverVersion)
             ->shouldReceive('getTablePrefix')->andReturn($prefix)
             ->shouldReceive('getMaxLength')->andReturn($maxLength)
             ->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix)
+            ->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='))
             ->shouldReceive('isMaria')->andReturn(false)
             ->getMock();
 

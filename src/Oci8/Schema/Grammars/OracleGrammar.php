@@ -735,7 +735,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeJson(Fluent $column): string
     {
-        return 'clob';
+        return $this->connection->isVersionAboveOrEqual('21c') ? 'json' : 'clob';
     }
 
     /**
@@ -743,7 +743,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeJsonb(Fluent $column): string
     {
-        return 'clob';
+        return $this->typeJson($column);
     }
 
     /**
