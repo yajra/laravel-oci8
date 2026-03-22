@@ -12,6 +12,35 @@ use PHPStan\ShouldNotHappenException;
 
 class DatabaseFacadeExtension implements MethodsClassReflectionExtension
 {
+    private const SUPPORTED_METHODS = [
+        'getSchema',
+        'setSchema',
+        'setSessionVars',
+        'getSequence',
+        'getTrigger',
+        'serverVersion',
+        'isVersionAbove',
+        'isVersionAboveOrEqual',
+        'isVersionBelow',
+        'isVersionBelowOrEqual',
+        'setDateFormat',
+        'getDateFormat',
+        'executeFunction',
+        'executeProcedure',
+        'executeProcedureWithCursor',
+        'createSqlFromProcedure',
+        'createStatementFromProcedure',
+        'createStatementFromFunction',
+        'getSchemaPrefix',
+        'setSchemaPrefix',
+        'getMaxLength',
+        'setMaxLength',
+        'getSchemaState',
+        'addBindingsToStatement',
+        'useCaseInsensitiveSession',
+        'useCaseSensitiveSession',
+    ];
+
     public function __construct(
         private ReflectionProvider $reflectionProvider
     ) {}
@@ -22,7 +51,7 @@ class DatabaseFacadeExtension implements MethodsClassReflectionExtension
             return false;
         }
 
-        if (! in_array($methodName, ['executeProcedure', 'executeProcedureWithCursor', 'executeFunction', 'setDateFormat'])) {
+        if (! in_array($methodName, self::SUPPORTED_METHODS, true)) {
             return false;
         }
 
