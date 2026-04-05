@@ -85,6 +85,7 @@ jobs:
           GRANT CREATE PROCEDURE TO $TEST_USER;
           GRANT CREATE VIEW TO $TEST_USER;
           GRANT CREATE TYPE TO $TEST_USER;
+          GRANT SELECT ON V_\\$SESSION TO $TEST_USER;
           "
           if [ "${{ matrix.oracle }}" = "11g" ]; then
             LOGIN="system/oracle@XE"

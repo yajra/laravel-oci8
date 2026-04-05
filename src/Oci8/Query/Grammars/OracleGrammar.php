@@ -717,6 +717,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a query to get the number of open connections for the database.
+     */
+    public function compileThreadCount(): string
+    {
+        return 'select count(*) as "Value" from v$session';
+    }
+
+    /**
      * Compile an "upsert" statement into SQL.
      */
     public function compileUpsert(Builder $query, array $values, array $uniqueBy, array $update): string
