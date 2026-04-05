@@ -1,0 +1,208 @@
+name: Fresh Laravel Install
+
+on:
+  push:
+    branches:
+      - master
+      - '*.x'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fresh-laravel-install:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.3, 8.4, 8.5]
+        oracle: [11g, 19c, 21c, 23ai, 26ai]
+
+    name: PHP ${{ matrix.php }} · Oracle ${{ matrix.oracle }}
+
+    services:
+      oracle:
+        image: >-
+          ${{ matrix.oracle == '11g' && 'deepdiver/docker-oracle-xe-11g:2.0' ||
+          matrix.oracle == '19c' &&
+          'container-registry.oracle.com/database/adb-free:25.10.2.1' ||
+          matrix.oracle == '21c' &&
+          'container-registry.oracle.com/database/express:21.3.0-xe' ||
+          matrix.oracle == '23ai' &&
+          'container-registry.oracle.com/database/adb-free:25.9.3.2-23ai-amd64' ||
+          matrix.oracle == '26ai' &&
+          'container-registry.oracle.com/database/free:23.26.1.0' }}
+        ports:
+          - 1521:1521
+        env:
+          ORACLE_PWD: ${{ (matrix.oracle == '11g' || matrix.oracle == '21c' || matrix.oracle == '26ai') && 'oracle' || '' }}
+          ADMIN_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'SecureDb1234' || '' }}
+          WALLET_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'DummyWallet123' || '' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: oci8
+          tools: composer:v2
+          coverage: none
+
+      - name: Create fresh Laravel app
+        uses: nick-invision/retry@v4
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: composer create-project laravel/laravel:^13.0 /tmp/laravel-oci8-smoke --prefer-dist --no-interaction --no-progress
+
+      - name: Point Composer to local package checkout
+        run: composer config repositories.laravel-oci8 path "$GITHUB_WORKSPACE"
+        working-directory: /tmp/laravel-oci8-smoke
+
+      - name: Install package from local checkout
+        uses: nick-invision/retry@v4
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: composer -d /tmp/laravel-oci8-smoke require yajra/laravel-oci8:@dev --prefer-dist --no-interaction --no-progress --with-all-dependencies
+        env:
+          COMPOSER_MIRROR_PATH_REPOS: 1
+          COMPOSER_ROOT_VERSION: dev-master
+
+      - name: Initialize Oracle user
+        run: |
+          TEST_USER="laravel_smoke"
+          TEST_PASSWORD="LaravelSmoke_123!"
+          COMMON_USER_SQL="
+          CREATE USER $TEST_USER IDENTIFIED BY \\\"$TEST_PASSWORD\\\";
+          GRANT CREATE SESSION TO $TEST_USER;
+          GRANT CREATE TABLE TO $TEST_USER;
+          GRANT CREATE SEQUENCE TO $TEST_USER;
+          GRANT CREATE TRIGGER TO $TEST_USER;
+          GRANT CREATE PROCEDURE TO $TEST_USER;
+          GRANT CREATE VIEW TO $TEST_USER;
+          GRANT CREATE TYPE TO $TEST_USER;
+          "
+          if [ "${{ matrix.oracle }}" = "11g" ]; then
+            LOGIN="system/oracle@XE"
+            WAIT_CMD="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH; echo 'select 1 from dual;' | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s $LOGIN"
+            SQLPLUS_CMD="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH; echo \"
+          BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+          /
+          $COMMON_USER_SQL
+          GRANT DBA TO $TEST_USER;
+          \" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s $LOGIN"
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
+            LOGIN="system/oracle@XEPDB1"
+            WAIT_CMD="echo 'select 1 from dual;' | sqlplus -s $LOGIN"
+            SQLPLUS_CMD="echo \"
+          BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+          /
+          $COMMON_USER_SQL
+          GRANT UNLIMITED TABLESPACE TO $TEST_USER;
+          \" | sqlplus -s $LOGIN"
+          elif [ "${{ matrix.oracle }}" = "26ai" ]; then
+            LOGIN="system/oracle@FREEPDB1"
+            WAIT_CMD="echo 'select 1 from dual;' | sqlplus -s $LOGIN"
+            SQLPLUS_CMD="echo \"
+          BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+          /
+          $COMMON_USER_SQL
+          GRANT UNLIMITED TABLESPACE TO $TEST_USER;
+          \" | sqlplus -s $LOGIN"
+          else
+            LOGIN="admin/SecureDb1234@myatp_low"
+            WAIT_CMD="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet; echo 'select 1 from dual;' | sqlplus -s $LOGIN"
+            SQLPLUS_CMD="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet; echo \"
+          BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+          /
+          $COMMON_USER_SQL
+          ALTER USER $TEST_USER QUOTA UNLIMITED ON DATA;
+          \" | sqlplus -s $LOGIN"
+          fi
+          docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "$SQLPLUS_CMD"
+
+      - name: Configure Laravel for Oracle
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=oracle/' .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^DB_PORT=.*/DB_PORT=1521/' .env
+          if [ "${{ matrix.oracle }}" = "11g" ]; then
+            DB_DATABASE="xe"
+            DB_SERVICE_NAME="xe"
+            DB_SERVER_VERSION="11g"
+          elif [ "${{ matrix.oracle }}" = "19c" ]; then
+            DB_DATABASE="myatp_low"
+            DB_SERVICE_NAME="myatp"
+            DB_SERVER_VERSION="19c"
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
+            DB_DATABASE="XEPDB1"
+            DB_SERVICE_NAME="XEPDB1"
+            DB_SERVER_VERSION="21c"
+          elif [ "${{ matrix.oracle }}" = "23ai" ]; then
+            DB_DATABASE="myatp_low"
+            DB_SERVICE_NAME="myatp"
+            DB_SERVER_VERSION="23ai"
+          elif [ "${{ matrix.oracle }}" = "26ai" ]; then
+            DB_DATABASE="FREEPDB1"
+            DB_SERVICE_NAME="FREEPDB1"
+            DB_SERVER_VERSION="26ai"
+          fi
+          sed -i "s/^DB_DATABASE=.*/DB_DATABASE=${DB_DATABASE}/" .env
+          printf '\nDB_SERVICE_NAME=%s\nDB_USERNAME=laravel_smoke\nDB_PASSWORD=LaravelSmoke_123!\nDB_SERVER_VERSION=%s\n' "$DB_SERVICE_NAME" "$DB_SERVER_VERSION" >> .env
+        working-directory: /tmp/laravel-oci8-smoke
+
+      - name: Debug versions
+        run: |
+          echo "PHP:"
+          php -v
+          echo
+          echo "Composer:"
+          composer --version
+          echo
+          echo "Oracle database version:"
+          if [ "${{ matrix.oracle }}" = "11g" ]; then
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
+            export PATH=\$ORACLE_HOME/bin:\$PATH
+            export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s system/oracle@XE
+            "
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | sqlplus -s system/oracle@XEPDB1
+            "
+          elif [ "${{ matrix.oracle }}" = "26ai" ]; then
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | sqlplus -s system/oracle@FREEPDB1
+            "
+          else
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | sqlplus -s admin/SecureDb1234@myatp_low
+            "
+          fi
+          echo
+          echo "Laravel:"
+          php artisan --version
+          echo
+          echo "Application .env:"
+          cat .env
+        working-directory: /tmp/laravel-oci8-smoke
+
+      - name: Run migrations
+        run: php artisan migrate --force
+        working-directory: /tmp/laravel-oci8-smoke

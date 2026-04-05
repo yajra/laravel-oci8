@@ -33,21 +33,10 @@ class TriggerTest extends TestCase
     public function it_can_use_schema_with_db_prefix()
     {
         /** @var Oci8Connection $connection */
-        $connection = DB::connection();
+        $connection = DB::connection('second_connection');
+        $schemaName = strtoupper((string) $connection->getConfig('username'));
 
-        try {
-            $connection->statement('alter session set "_oracle_script"=true');
-            $connection->statement('drop user issue905 cascade');
-        } catch (\Exception) {
-        }
-
-        try {
-            $connection->statement('grant all privileges to issue905 identified by oracle container=ALL');
-        } catch (\Exception) {
-            $connection->statement('grant all privileges to issue905 identified by oracle');
-        }
-
-        $connection->setSchemaPrefix('issue905');
+        $connection->setSchemaPrefix((string) $connection->getConfig('username'));
         $connection->setTablePrefix('my_');
         $connection->enableQueryLog();
 
@@ -55,7 +44,7 @@ class TriggerTest extends TestCase
         $schema->dropIfExists('bugs');
 
         $lastSql = array_slice($connection->getQueryLog(), -1)[0];
-        $this->assertStringContainsString('drop table "ISSUE905"."MY_BUGS"', $lastSql['query']);
+        $this->assertStringContainsString("drop table \"{$schemaName}\".\"MY_BUGS\"", $lastSql['query']);
 
         $connection->getSchemaBuilder()
             ->create('bugs', function (Blueprint $table) {
@@ -66,6 +55,6 @@ class TriggerTest extends TestCase
             });
 
         $lastSql = array_slice($connection->getQueryLog(), -1)[0];
-        $this->assertStringContainsString('create trigger "ISSUE905"."MY_BUGS_ID_TRG"', $lastSql['query']);
+        $this->assertStringContainsString("create trigger \"{$schemaName}\".\"MY_BUGS_ID_TRG\"", $lastSql['query']);
     }
 }

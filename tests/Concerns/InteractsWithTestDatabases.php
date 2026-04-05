@@ -9,6 +9,26 @@ use Yajra\Oci8\Oci8Connection;
 
 trait InteractsWithTestDatabases
 {
+    protected function oracleUsername(): string
+    {
+        return getenv('ORACLE_USER') ?: 'laravel_oci8';
+    }
+
+    protected function oraclePassword(): string
+    {
+        return getenv('ORACLE_PASSWORD') ?: 'LaravelOci8_123!';
+    }
+
+    protected function secondOracleUsername(): string
+    {
+        return getenv('ORACLE_SECOND_USER') ?: 'second_connection';
+    }
+
+    protected function secondOraclePassword(): string
+    {
+        return getenv('ORACLE_SECOND_PASSWORD') ?: 'second_connection';
+    }
+
     protected function isPgsql(): bool
     {
         return getenv('PGSQL') === 'true';
@@ -54,10 +74,10 @@ trait InteractsWithTestDatabases
         ], $overrides);
     }
 
-    protected function mysqlConfig(array $overrides = []): array
+    protected function mariadbConfig(array $overrides = []): array
     {
         return array_merge([
-            'driver' => 'mysql',
+            'driver' => 'mariadb',
             'host' => '127.0.0.1',
             'port' => 3306,
             'database' => 'root',
@@ -80,8 +100,8 @@ trait InteractsWithTestDatabases
             'port' => 1521,
             'database' => $this->dataBase(),
             'service_name' => $this->serviceName(),
-            'username' => 'system',
-            'password' => 'oracle',
+            'username' => $this->oracleUsername(),
+            'password' => $this->oraclePassword(),
             'server_version' => $this->serverVersion(),
         ], $overrides);
     }

@@ -74,11 +74,11 @@ class DatabaseCacheTest extends TestCase
     #[Test]
     public function it_respects_cache_expiration(): void
     {
-        Cache::put('expiring_key', 'value', now()->addSecond());
+        Cache::put('expiring_key', 'value', now()->addSeconds(3));
 
         $this->assertSame('value', Cache::get('expiring_key'));
 
-        sleep(2);
+        sleep(4);
 
         $this->assertNull(Cache::get('expiring_key'));
     }
