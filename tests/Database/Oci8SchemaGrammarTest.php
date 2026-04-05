@@ -777,6 +777,20 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "PREFIX_USERS" rename to "PREFIX_FOO"', $statements[0]);
     }
 
+    public function test_rename_index()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->renameIndex('users_email_index', 'users_email_address_index');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'alter index "USERS_EMAIL_INDEX" rename to "USERS_EMAIL_ADDRESS_INDEX"',
+            $statements[0]
+        );
+    }
+
     public function test_adding_primary_key()
     {
         $conn = $this->getConnection();

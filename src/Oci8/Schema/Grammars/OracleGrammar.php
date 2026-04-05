@@ -495,6 +495,18 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a rename index command.
+     */
+    public function compileRenameIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        return sprintf(
+            'alter index %s rename to %s',
+            $this->wrap($command->from),
+            $this->wrap($command->to)
+        );
+    }
+
+    /**
      * Create the column definition for a char type.
      */
     protected function typeChar(Fluent $column): string
