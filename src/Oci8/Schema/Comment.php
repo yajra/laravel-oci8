@@ -30,14 +30,15 @@ class Comment extends Grammar
 
     /**
      * Run the comment on table statement.
-     * Comment set by $table->comment = 'comment';.
+     * Comment set by Laravel's $table->comment('comment') command.
      */
     private function commentTable(OracleBlueprint $blueprint): void
     {
         $table = $this->wrapValue($blueprint->getTable());
-
-        if ($blueprint->comment != null) {
-            $this->connection->statement("comment on table {$table} is '{$blueprint->comment}'");
+        foreach ($blueprint->getCommands() as $command) {
+            if ($command->name === 'tableComment') {
+                $this->connection->statement("comment on table {$table} is '{$command->comment}'");
+            }
         }
     }
 
