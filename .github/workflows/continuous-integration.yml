@@ -18,22 +18,33 @@ jobs:
       matrix:
         php: [8.3, 8.4, 8.5]
         stability: [prefer-stable]
-        oracle: [11g, 21c, 26ai]
+        oracle: [11g, 19c, 21c, 23ai, 26ai]
 
     name: PHP ${{ matrix.php }} - ORACLE ${{ matrix.oracle }} - STABILITY ${{ matrix.stability }}
 
     services:
       oracle:
-        image: ${{ matrix.oracle == '11g' && 'deepdiver/docker-oracle-xe-11g:2.0' || matrix.oracle == '21c' && 'container-registry.oracle.com/database/express:21.3.0-xe' || matrix.oracle == '26ai' && 'container-registry.oracle.com/database/free:23.26.1.0' }}
+        image: >-
+          ${{ matrix.oracle == '11g' && 'deepdiver/docker-oracle-xe-11g:2.0' ||
+          matrix.oracle == '19c' &&
+          'container-registry.oracle.com/database/adb-free:25.10.2.1' ||
+          matrix.oracle == '21c' &&
+          'container-registry.oracle.com/database/express:21.3.0-xe' ||
+          matrix.oracle == '23ai' &&
+          'container-registry.oracle.com/database/adb-free:25.9.3.2-23ai-amd64' ||
+          matrix.oracle == '26ai' &&
+          'container-registry.oracle.com/database/free:23.26.1.0' }}
 
         ports:
           - 1521:1521
         env:
-          ORACLE_PWD: ${{ (matrix.oracle == '21c' || matrix.oracle == '26ai') && 'oracle' || '' }}
+          ORACLE_PWD: ${{ (matrix.oracle == '11g' || matrix.oracle == '21c' || matrix.oracle == '26ai') && 'oracle' || '' }}
+          ADMIN_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'SecureDb1234' || '' }}
+          WALLET_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'DummyWallet123' || '' }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -44,54 +55,146 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        uses: nick-invision/retry@v1
+        uses: nick-invision/retry@v4
         with:
           timeout_minutes: 5
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
-      - name: Debug containers
-        run: docker ps -a
-
-      - name: Initialize Oracle user
+      - name: Initialize Oracle users
         run: |
-          CONNECT_STRING="XE"
+          TEST_USER="laravel_oci8"
+          TEST_PASSWORD="LaravelOci8_123!"
+          SECOND_USER="second_connection"
+          SECOND_PASSWORD="second_connection"
 
-          if [ ${{ matrix.oracle }} = "11g" ]; then
+          if [ "${{ matrix.oracle }}" = "11g" ]; then
             SQLPLUS_PATH="/u01/app/oracle/product/11.2.0/xe/bin/sqlplus"
             ORACLE_ENV="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH;"
-          elif [ ${{ matrix.oracle }} = "21c" ] || [ ${{ matrix.oracle }} = "26ai" ]; then
+            LOGIN="system/oracle@XE"
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
             SQLPLUS_PATH="sqlplus"
             ORACLE_ENV=""
+            LOGIN="system/oracle@XEPDB1"
+          elif [ "${{ matrix.oracle }}" = "26ai" ]; then
+            SQLPLUS_PATH="sqlplus"
+            ORACLE_ENV=""
+            LOGIN="system/oracle@FREEPDB1"
+          else
+            SQLPLUS_PATH="sqlplus"
+            ORACLE_ENV="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet;"
+            LOGIN="admin/SecureDb1234@myatp_low"
           fi
 
-          if [ ${{ matrix.oracle }} = "26ai" ]; then
-            CONNECT_STRING="FREEPDB1"
+          if [ "${{ matrix.oracle }}" = "19c" ] || [ "${{ matrix.oracle }}" = "23ai" ]; then
+            SECOND_PASSWORD="SecondConnection1!"
+
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            $ORACLE_ENV
+            echo \"
+            BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+            /
+            BEGIN EXECUTE IMMEDIATE 'DROP USER $SECOND_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+            /
+            CREATE USER $TEST_USER IDENTIFIED BY \\\"$TEST_PASSWORD\\\";
+            CREATE USER $SECOND_USER IDENTIFIED BY \\\"$SECOND_PASSWORD\\\";
+            GRANT CREATE SESSION TO $TEST_USER;
+            GRANT CREATE TABLE TO $TEST_USER;
+            GRANT CREATE SEQUENCE TO $TEST_USER;
+            GRANT CREATE TRIGGER TO $TEST_USER;
+            GRANT CREATE PROCEDURE TO $TEST_USER;
+            GRANT CREATE VIEW TO $TEST_USER;
+            GRANT CREATE TYPE TO $TEST_USER;
+            ALTER USER $TEST_USER QUOTA UNLIMITED ON DATA;
+            GRANT CREATE SESSION TO $SECOND_USER;
+            GRANT CREATE TABLE TO $SECOND_USER;
+            GRANT CREATE SEQUENCE TO $SECOND_USER;
+            GRANT CREATE TRIGGER TO $SECOND_USER;
+            GRANT CREATE PROCEDURE TO $SECOND_USER;
+            GRANT CREATE VIEW TO $SECOND_USER;
+            GRANT CREATE TYPE TO $SECOND_USER;
+            ALTER USER $SECOND_USER QUOTA UNLIMITED ON DATA;
+            \" | $SQLPLUS_PATH -s $LOGIN
+            "
+          else
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            $ORACLE_ENV
+            echo \"
+            BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+            /
+            BEGIN EXECUTE IMMEDIATE 'DROP USER $SECOND_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+            /
+            CREATE USER $TEST_USER IDENTIFIED BY \\\"$TEST_PASSWORD\\\";
+            CREATE USER $SECOND_USER IDENTIFIED BY \\\"$SECOND_PASSWORD\\\";
+            GRANT CREATE SESSION TO $TEST_USER;
+            GRANT CREATE SESSION TO $SECOND_USER;
+            GRANT DBA TO $TEST_USER;
+            GRANT DBA TO $SECOND_USER;
+            \" | $SQLPLUS_PATH -s $LOGIN
+            "
           fi
 
-          docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
-          $ORACLE_ENV
-          echo '
-          BEGIN
-            EXECUTE IMMEDIATE '\''ALTER SESSION SET \"_ORACLE_SCRIPT\" = true'\'';
-          EXCEPTION
-            WHEN OTHERS THEN NULL;
-          END;
-          /
-          CREATE USER second_connection
-          IDENTIFIED BY second_connection
-          DEFAULT TABLESPACE USERS
-          TEMPORARY TABLESPACE TEMP
-          QUOTA UNLIMITED ON USERS;
-          GRANT CREATE SESSION TO second_connection;
-          GRANT CREATE TABLE, CREATE SEQUENCE, CREATE VIEW, CREATE TRIGGER TO second_connection;
-          ' | $SQLPLUS_PATH -s system/oracle@$CONNECT_STRING
-          "
+      - name: Debug versions
+        run: |
+          echo "PHP:"
+          php -v
+          echo
+          echo "Composer:"
+          composer --version
+          echo
+          echo "Oracle database version:"
+          if [ "${{ matrix.oracle }}" = "11g" ]; then
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
+            export PATH=\$ORACLE_HOME/bin:\$PATH
+            export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s system/oracle@XE
+            "
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | sqlplus -s system/oracle@XEPDB1
+            "
+          elif [ "${{ matrix.oracle }}" = "26ai" ]; then
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | sqlplus -s system/oracle@FREEPDB1
+            "
+          else
+            docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
+            export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet
+            echo \"set heading off feedback off pagesize 0 verify off
+            select banner_full from v\\\$version where banner_full like 'Oracle Database%';
+            exit;\" | sqlplus -s admin/SecureDb1234@myatp_low
+            "
+          fi
+          echo
+          echo "Laravel package version:"
+          if composer show laravel/framework >/dev/null 2>&1; then
+            composer show laravel/framework
+          elif composer show illuminate/database >/dev/null 2>&1; then
+            composer show illuminate/database
+          else
+            composer show | grep -E '^(laravel/framework|illuminate/database) '
+          fi
 
       - name: Execute tests
+        env:
+          ORACLE_USER: laravel_oci8
+          ORACLE_PASSWORD: LaravelOci8_123!
+          ORACLE_SECOND_USER: second_connection
+          ORACLE_SECOND_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'SecondConnection1!' || 'second_connection' }}
         run: |
-          if [ "${{ matrix.oracle }}" = "21c" ]; then
-            SERVER_VERSION=12c vendor/bin/phpunit
+          if [ "${{ matrix.oracle }}" = "19c" ]; then
+            SERVER_VERSION=19c SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit
+          elif [ "${{ matrix.oracle }}" = "23ai" ]; then
+            SERVER_VERSION=23ai SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
+            SERVER_VERSION=12c SERVICE_NAME=XEPDB1 DATABASE=XEPDB1 vendor/bin/phpunit
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
             SERVER_VERSION=26ai SERVICE_NAME=FREEPDB1 DATABASE=FREEPDB1 vendor/bin/phpunit
           else
@@ -124,7 +227,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -135,7 +238,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        uses: nick-invision/retry@v1
+        uses: nick-invision/retry@v4
         with:
           timeout_minutes: 5
           max_attempts: 5
@@ -177,7 +280,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -188,7 +291,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        uses: nick-invision/retry@v1
+        uses: nick-invision/retry@v4
         with:
           timeout_minutes: 5
           max_attempts: 5

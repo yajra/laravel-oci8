@@ -112,15 +112,17 @@ class SchemaTest extends TestCase
     #[Test]
     public function it_can_get_columns_with_schema()
     {
-        if (Schema::hasTable('system.foo')) {
-            Schema::drop('system.foo');
+        $schema = DB::connection()->getConfig('username');
+
+        if (Schema::hasTable($schema.'.foo')) {
+            Schema::drop($schema.'.foo');
         }
 
-        Schema::create('system.foo', function (Blueprint $table) {
+        Schema::create($schema.'.foo', function (Blueprint $table) {
             $table->string('bar')->nullable();
         });
 
-        $columns = Schema::getColumns('system.foo');
+        $columns = Schema::getColumns($schema.'.foo');
 
         $this->assertCount(1, $columns);
         $this->assertTrue(collect($columns)->contains(

@@ -18,21 +18,25 @@ abstract class TestCase extends BaseTestCase
         if ($this->isPgsql()) {
             $app['config']->set('database.default', 'pgsql');
             $app['config']->set('database.connections.pgsql', $this->pgsqlConfig());
-            $app['config']->set('database.connections.oracle.server_version', $this->serverVersion());
 
             return;
         }
 
         if ($this->isMariaDb()) {
-            $app['config']->set('database.default', 'mysql');
-            $app['config']->set('database.connections.mysql', $this->mysqlConfig());
-            $app['config']->set('database.connections.mysql.server_version', '11');
+            $app['config']->set('database.default', 'mariadb');
+            $app['config']->set('database.connections.mariadb', $this->mariadbConfig([
+                'driver' => 'mariadb',
+            ]));
 
             return;
         }
 
         $app['config']->set('database.default', 'oracle');
         $app['config']->set('database.connections.oracle', $this->oracleConfig());
+        $app['config']->set('database.connections.second_connection', $this->oracleConfig([
+            'username' => $this->secondOracleUsername(),
+            'password' => $this->secondOraclePassword(),
+        ]));
     }
 
     protected function getPackageProviders($app): array

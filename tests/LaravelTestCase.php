@@ -34,16 +34,16 @@ abstract class LaravelTestCase extends BaseTestCase
             );
         } elseif ($this->isMariaDb()) {
             $this->db->addConnection(
-                $this->mysqlConfig(['database' => 'second_connection']),
+                $this->mariadbConfig(['database' => 'second_connection']),
                 'default'
             );
-            $this->db->addConnection($this->mysqlConfig(), 'second_connection');
+            $this->db->addConnection($this->mariadbConfig(), 'second_connection');
         } else {
             $this->db->addConnection($this->oracleConfig(), 'default');
             $this->db->addConnection(
                 $this->oracleConfig([
-                    'username' => 'second_connection',
-                    'password' => 'second_connection',
+                    'username' => $this->secondOracleUsername(),
+                    'password' => $this->secondOraclePassword(),
                 ]),
                 'second_connection'
             );
