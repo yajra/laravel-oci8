@@ -2,8 +2,8 @@
 
 namespace Yajra\Oci8\Tests\Functional;
 
-use Illuminate\Database\QueryException;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -401,5 +401,4 @@ class ReorderJoinsTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertSame(1, (int) $rows[0]->id);
     }
-
 }
