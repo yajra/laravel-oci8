@@ -1,3 +1,11 @@
+# [13.2.0](https://github.com/yajra/laravel-oci8/compare/v13.1.0...v13.2.0) (2026-04-07)
+
+
+### Features
+
+* implement compileThreadCount ([9cb4f03](https://github.com/yajra/laravel-oci8/commit/9cb4f0320f83d1a1639dd3d046b5713c9e0c8786))
+* use native json type for Oracle 21c and above ([eb039ce](https://github.com/yajra/laravel-oci8/commit/eb039cee9981962f9c969efc12507c6e8232e86f))
+
 # [13.1.0](https://github.com/yajra/laravel-oci8/compare/v13.0.0...v13.1.0) (2026-04-07)
 
 
