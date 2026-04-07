@@ -4,6 +4,7 @@ namespace Yajra\Oci8;
 
 use Exception;
 use Illuminate\Database\Connection;
+use Illuminate\Database\QueryException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use PDO;
@@ -158,6 +159,25 @@ class Oci8Connection extends Connection
     public function isVersionBelowOrEqual(string $version): bool
     {
         return version_compare($version, $this->serverVersion(), '>=');
+    }
+
+    /**
+     * Get the number of open connections for the database.
+     */
+    public function threadCount()
+    {
+        try {
+            return parent::threadCount();
+        } catch (QueryException $e) {
+            $previous = $e->getPrevious();
+
+            // handle "ORA-00942: table or view "SYS"."V_$SESSION" does not exist"
+            if ($previous instanceof Throwable && str_contains($previous->getMessage(), 'ORA-00942')) {
+                return null;
+            }
+
+            throw $e;
+        }
     }
 
     /**
