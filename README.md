@@ -42,6 +42,16 @@ Laravel-OCI8 is an Oracle Database Driver package for [Laravel](http://laravel.c
 composer require yajra/laravel-oci8:^12
 ```
 
+## Larastan / PHPStan
+
+This package includes an optional PHPStan/Larastan extension for OCI8-specific `DB` methods.
+Include it in your `phpstan.neon` if you want those methods recognized during static analysis.
+
+```neon
+includes:
+    - vendor/yajra/laravel-oci8/extension.neon
+```
+
 ## Service Provider (Optional on Laravel 5.5+)
 
 Once Composer has installed or updated your packages you need to register Laravel-OCI8. Open up `config/app.php` and find the providers key and add:
