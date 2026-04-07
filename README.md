@@ -177,9 +177,10 @@ This is the baseline, if no version is set, this version is assumed.
 ### 12c
 - Use fetch/offset where possible instead of rownumber.
 - Use identity instead of seqvence/trigger for ids when using laravel's scheme builder. ([#944](https://github.com/yajra/laravel-oci8/pull/944))
-
 ### 12cR2
 - In whereLike use `binary ci` for case insensitivity. ([#945](https://github.com/yajra/laravel-oci8/pull/945))
+### 21c
+- Use native json type instead of clob in schema builder. ([#983](https://github.com/yajra/laravel-oci8/pull/983))
 
 ## Oracle Max Name Length
 
