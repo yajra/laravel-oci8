@@ -129,6 +129,19 @@ class Oci8ConnectionTest extends TestCase
         $this->assertTrue($connection->isVersionBelowOrEqual('19c'));
     }
 
+    public function test_compare_configured_12cr2_server_version()
+    {
+        $connection = m::mock(Oci8Connection::class)->makePartial();
+        $connection->shouldReceive('getConfig')->with('server_version')->times(6)->andReturn('12cR2');
+
+        $this->assertTrue($connection->isVersionAbove('11g'));
+        $this->assertTrue($connection->isVersionAbove('12c'));
+        $this->assertTrue($connection->isVersionAboveOrEqual('12cR2'));
+        $this->assertFalse($connection->isVersionBelow('11g'));
+        $this->assertTrue($connection->isVersionBelow('19c'));
+        $this->assertTrue($connection->isVersionBelowOrEqual('12cR2'));
+    }
+
     protected function getMockConnection($methods = [], $pdo = null)
     {
         $pdo = $pdo ?: new DatabaseConnectionTestMockPDO;

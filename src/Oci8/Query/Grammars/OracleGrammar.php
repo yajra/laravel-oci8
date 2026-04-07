@@ -787,7 +787,7 @@ class OracleGrammar extends Grammar
 
         $operator = str_replace('?', '??', $where['operator']);
 
-        if ($query->getConnection()->isVersionAboveOrEqual('12c')) {
+        if ($query->getConnection()->isVersionAboveOrEqual('12cR2')) {
             return $this->wrap($where['column']).' '.$operator.' '.$value.' COLLATE BINARY_CI';
         }
 

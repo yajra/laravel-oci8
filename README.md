@@ -176,8 +176,10 @@ To set this version use `DB_SERVER_VERSION` env variable or change `server_versi
 This is the baseline, if no version is set, this version is assumed.
 ### 12c
 - Use fetch/offset where possible instead of rownumber.
-- In whereLike use `binary ci` for case insensitivity. ([#945](https://github.com/yajra/laravel-oci8/pull/945))
 - Use identity instead of seqvence/trigger for ids when using laravel's scheme builder. ([#944](https://github.com/yajra/laravel-oci8/pull/944))
+
+### 12cR2
+- In whereLike use `binary ci` for case insensitivity. ([#945](https://github.com/yajra/laravel-oci8/pull/945))
 
 ## Oracle Max Name Length
 
