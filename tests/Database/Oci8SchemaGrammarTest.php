@@ -1405,7 +1405,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $expected = 'select lower(all_tab_comments.table_name)  as "name",
                 lower(all_tables.owner) as "schema",
                 sum(user_segments.bytes) as "size",
-                all_tab_comments.comments as "comments",
+                all_tab_comments.comments as "comment",
                 (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
             from all_tables
                 join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
