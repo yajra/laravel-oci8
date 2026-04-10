@@ -582,28 +582,62 @@ class Oci8SchemaGrammarTest extends TestCase
     public function test_compile_columns_method()
     {
         $grammar = $this->getGrammar();
+        $conn = $this->getConnection();
         $expected = '
             select
                 t.column_name as name,
                 nvl(t.data_type_mod, data_type) as type_name,
-                null as auto_increment,
+                '.($conn->isVersionAboveOrEqual('12c') ? "decode(t.identity_column, 'YES', 1, 0) as auto_increment," : 'null as auto_increment,').'
                 t.data_type as type,
                 t.data_length,
                 t.char_length,
                 t.data_precision as precision,
                 t.data_scale as places,
+                '.($conn->isVersionAboveOrEqual('12cR2') ? 'lower(t.collation) as collation,' : 'null as collation,').'
+                decode(t.virtual_column, \'YES\', \'virtual\', null) as generated,
                 decode(t.nullable, \'Y\', 1, 0) as nullable,
                 t.data_default as "default",
                 c.comments as "comment"
-            from all_tab_columns t
+            from all_tab_cols t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
             where upper(t.table_name) = upper(\'test_table\')
                 and upper(t.owner) = upper(\'schema\')
+                '.($conn->isVersionAboveOrEqual('12c') ? "and (t.hidden_column = 'NO' or t.user_generated = 'YES')" : "and t.hidden_column = 'NO'").'
             order by
                 t.column_id
         ';
 
         $sql = $grammar->compileColumns('schema', 'test_table');
+        $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_views_method()
+    {
+        $grammar = $this->getGrammar();
+
+        $expected = "select lower(view_name) as name, lower(owner) as schema, text as definition from all_views where upper(owner) = upper('schema') order by owner, view_name";
+
+        $sql = $grammar->compileViews('schema');
+        $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_types_method()
+    {
+        $grammar = $this->getGrammar();
+
+        $expected = "select lower(type_name) as name, lower(owner) as schema, lower(typecode) as type, lower(typecode) as category, 0 as implicit from all_types where predefined = 'NO' and typecode != 'COLLECTION' and upper(owner) = upper('schema') union all select lower(type_name) as name, lower(owner) as schema, lower(replace(coll_type, ' ', '_')) as type, 'collection' as category, 0 as implicit from all_coll_types where upper(owner) = upper('schema') order by schema, name";
+
+        $sql = $grammar->compileTypes('schema');
+        $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_indexes_method()
+    {
+        $grammar = $this->getGrammar();
+
+        $expected = 'select i.index_name as name, LISTAGG(coalesce(extractvalue(dbms_xmlgen.getxmltype(\'select column_expression from all_ind_expressions where index_owner = \'\'\' || i.index_owner || \'\'\' and index_name = \'\'\' || i.index_name || \'\'\' and table_owner = \'\'\' || i.table_owner || \'\'\' and table_name = \'\'\' || i.table_name || \'\'\' and column_position = \' || i.column_position), \'/ROWSET/ROW/COLUMN_EXPRESSION\'), i.column_name), \',\') WITHIN GROUP (ORDER BY i.column_position) as columns, a.index_type as type, decode(a.uniqueness, \'UNIQUE\', 1, 0) as "unique", max(decode(c.constraint_type, \'P\', 1, 0)) as "primary" from all_ind_columns i join all_indexes a on a.owner = i.index_owner and a.index_name = i.index_name and a.table_owner = i.table_owner and a.table_name = i.table_name left join all_constraints c on c.owner = a.table_owner and c.index_name = a.index_name and c.constraint_type = \'P\' where i.table_owner = upper(\'schema\') and i.table_name = upper(\'test_table\') group by i.index_name, a.index_type, a.uniqueness order by i.index_name';
+
+        $sql = $grammar->compileIndexes('schema', 'test_table');
         $this->assertEquals($expected, $sql);
     }
 
