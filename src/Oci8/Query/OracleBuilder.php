@@ -153,6 +153,24 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Add a lateral join clause to the query.
+     *
+     * @param  \Closure|Builder|string  $query
+     */
+    public function joinLateral($query, string $as, string $type = 'inner'): static
+    {
+        [$query, $bindings] = $this->createSub($query);
+
+        $expression = '('.$query.') '.$this->grammar->wrapTable($as);
+
+        $this->addBinding($bindings, 'join');
+
+        $this->joins[] = $this->newJoinLateralClause($this, $type, new Expression($expression));
+
+        return $this;
+    }
+
+    /**
      * Get the count of the total records for the paginator.
      *
      * @param  array  $columns
