@@ -3454,6 +3454,45 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertStringContainsString('for update', strtolower((string) $sql));
     }
 
+    public function test_process_indexes_returns_grouped_columns_and_catalog_primary_flag()
+    {
+        $processor = new OracleProcessor;
+
+        $results = $processor->processIndexes([
+            (object) [
+                'name' => 'USERS_EMAIL_NAME_IDX',
+                'columns' => 'EMAIL,NAME',
+                'type' => 'NORMAL',
+                'unique' => 1,
+                'primary' => 0,
+            ],
+            (object) [
+                'name' => 'USERS_PK',
+                'columns' => 'ID',
+                'type' => 'NORMAL',
+                'unique' => 1,
+                'primary' => 1,
+            ],
+        ]);
+
+        $this->assertSame([
+            [
+                'name' => 'users_email_name_idx',
+                'columns' => ['email', 'name'],
+                'type' => 'normal',
+                'unique' => true,
+                'primary' => false,
+            ],
+            [
+                'name' => 'users_pk',
+                'columns' => ['id'],
+                'type' => 'normal',
+                'unique' => true,
+                'primary' => true,
+            ],
+        ], $results);
+    }
+
     public function test_order_by_not_duplicated_with_limit_and_lock()
     {
         $builder = $this->getBuilder();
