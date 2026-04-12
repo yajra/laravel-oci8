@@ -607,6 +607,26 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $sql);
     }
 
+    public function test_compile_views_method()
+    {
+        $grammar = $this->getGrammar();
+
+        $expected = "select lower(view_name) as name, lower(owner) as schema, text as definition from all_views where upper(owner) = upper('schema') order by owner, view_name";
+
+        $sql = $grammar->compileViews('schema');
+        $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_types_method()
+    {
+        $grammar = $this->getGrammar();
+
+        $expected = "select lower(type_name) as name, lower(owner) as schema, lower(typecode) as type, lower(typecode) as category, 0 as implicit from all_types where predefined = 'NO' and upper(owner) = upper('schema') union all select lower(type_name) as name, lower(owner) as schema, lower(replace(coll_type, ' ', '_')) as type, 'collection' as category, 0 as implicit from all_coll_types where upper(owner) = upper('schema') order by schema, name";
+
+        $sql = $grammar->compileTypes('schema');
+        $this->assertEquals($expected, $sql);
+    }
+
     public function test_compile_foreign_keys_method()
     {
         $grammar = $this->getGrammar();
