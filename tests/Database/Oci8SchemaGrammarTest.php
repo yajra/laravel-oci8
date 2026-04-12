@@ -317,6 +317,25 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_basic_create_table_with_not_valid_foreign_key()
+    {
+        $conn = $this->getConnection(prefix: 'prefix_');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->integer('id')->primary();
+        $blueprint->string('email');
+        $blueprint->integer('foo_id');
+        $blueprint->foreign('foo_id')->references('id')->on('orders')->notValid();
+        $blueprint->create();
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) enable novalidate, constraint prefix_users_id_pk primary key ( "ID" ) )',
+            $statements[0]
+        );
+    }
+
     public function test_basic_alter_table()
     {
         $conn = $this->getConnection();
@@ -993,6 +1012,20 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(1, $statements);
         $this->assertEquals(
             'alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) deferrable initially deferred',
+            $statements[0]
+        );
+    }
+
+    public function test_adding_not_valid_foreign_key()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->foreign('foo_id')->references('id')->on('orders')->notValid();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) enable novalidate',
             $statements[0]
         );
     }
