@@ -146,6 +146,8 @@ class OracleGrammar extends Grammar
             if (! is_null($foreign->onDelete)) {
                 $sql .= " on delete {$foreign->onDelete}";
             }
+
+            $sql = $this->appendDeferrableClause($foreign, $sql);
         }
 
         return $sql;
@@ -360,7 +362,7 @@ class OracleGrammar extends Grammar
                 $sql .= " on delete {$command->onDelete}";
             }
 
-            return $sql;
+            return $this->appendDeferrableClause($command, $sql);
         }
 
         return null;
@@ -371,7 +373,22 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command): string
     {
-        return 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+        $sql = 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+
+        return $this->appendDeferrableClause($command, $sql);
+    }
+
+    protected function appendDeferrableClause(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->deferrable)) {
+            $sql .= $command->deferrable ? ' deferrable' : ' not deferrable';
+        }
+
+        if ($command->deferrable && ! is_null($command->initiallyImmediate)) {
+            $sql .= $command->initiallyImmediate ? ' initially immediate' : ' initially deferred';
+        }
+
+        return $sql;
     }
 
     /**

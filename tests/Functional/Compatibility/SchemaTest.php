@@ -18,10 +18,16 @@ class SchemaTest extends TestCase
             DB::statement('begin execute immediate \'drop view "COMPATIBILITY_VIEW"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop type "COMPATIBILITY_TYPE" force\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_TEMP_TABLE"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_POSTS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_USERS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_MAIL"\'; exception when others then null; end;');
         } elseif ($driver === 'pgsql') {
             DB::statement('drop view if exists "compatibility_view"');
             DB::statement('drop type if exists "compatibility_type"');
             DB::statement('drop table if exists "compatibility_temp_table"');
+            DB::statement('drop table if exists "compatibility_deferrable_posts"');
+            DB::statement('drop table if exists "compatibility_deferrable_users"');
+            DB::statement('drop table if exists "compatibility_deferrable_mail"');
         }
 
         if (Schema::hasTable('rename_index_table')) {
@@ -114,5 +120,73 @@ class SchemaTest extends TestCase
         ]);
 
         $this->assertSame('temporary', DB::table('compatibility_temp_table')->value('name'));
+    }
+
+    #[Test]
+    public function it_can_use_deferrable_constraints_from_schema_builder()
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_deferrable_users', function (Blueprint $table) {
+            $table->integer('id')->primary();
+        });
+
+        Schema::create('compatibility_deferrable_posts', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->integer('user_id');
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('compatibility_deferrable_users')
+                ->deferrable()
+                ->initiallyImmediate(false);
+        });
+
+        Schema::create('compatibility_deferrable_mail', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->string('email');
+            $table->unique('email')
+                ->deferrable()
+                ->initiallyImmediate(false);
+        });
+
+        DB::transaction(function () {
+            DB::table('compatibility_deferrable_posts')->insert([
+                'id' => 10,
+                'user_id' => 1,
+            ]);
+
+            DB::table('compatibility_deferrable_users')->insert([
+                'id' => 1,
+            ]);
+        });
+
+        $this->assertSame(1, DB::table('compatibility_deferrable_posts')->where('user_id', 1)->count());
+
+        DB::table('compatibility_deferrable_mail')->insert([
+            ['id' => 1, 'email' => 'alpha@example.test'],
+            ['id' => 2, 'email' => 'beta@example.test'],
+        ]);
+
+        DB::transaction(function () {
+            DB::table('compatibility_deferrable_mail')
+                ->where('id', 1)
+                ->update(['email' => 'beta@example.test']);
+
+            DB::table('compatibility_deferrable_mail')
+                ->where('id', 2)
+                ->update(['email' => 'alpha@example.test']);
+        });
+
+        $emails = DB::table('compatibility_deferrable_mail')
+            ->orderBy('id')
+            ->pluck('email')
+            ->all();
+
+        $this->assertSame([
+            'beta@example.test',
+            'alpha@example.test',
+        ], $emails);
     }
 }
