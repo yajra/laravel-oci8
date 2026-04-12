@@ -148,6 +148,7 @@ class OracleGrammar extends Grammar
             }
 
             $sql = $this->appendDeferrableClause($foreign, $sql);
+            $sql = $this->appendNotValidClause($foreign, $sql);
         }
 
         return $sql;
@@ -362,7 +363,9 @@ class OracleGrammar extends Grammar
                 $sql .= " on delete {$command->onDelete}";
             }
 
-            return $this->appendDeferrableClause($command, $sql);
+            $sql = $this->appendDeferrableClause($command, $sql);
+
+            return $this->appendNotValidClause($command, $sql);
         }
 
         return null;
@@ -386,6 +389,15 @@ class OracleGrammar extends Grammar
 
         if ($command->deferrable && ! is_null($command->initiallyImmediate)) {
             $sql .= $command->initiallyImmediate ? ' initially immediate' : ' initially deferred';
+        }
+
+        return $sql;
+    }
+
+    protected function appendNotValidClause(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->notValid) && $command->notValid) {
+            $sql .= ' enable novalidate';
         }
 
         return $sql;

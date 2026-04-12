@@ -21,6 +21,8 @@ class SchemaTest extends TestCase
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_POSTS"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_USERS"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_EMAILS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_POSTS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_USERS"\'; exception when others then null; end;');
         } elseif ($driver === 'pgsql') {
             DB::statement('drop view if exists "compatibility_view"');
             DB::statement('drop type if exists "compatibility_type"');
@@ -28,6 +30,8 @@ class SchemaTest extends TestCase
             DB::statement('drop table if exists "compatibility_deferrable_posts"');
             DB::statement('drop table if exists "compatibility_deferrable_users"');
             DB::statement('drop table if exists "compatibility_deferrable_emails"');
+            DB::statement('drop table if exists "compatibility_not_valid_posts"');
+            DB::statement('drop table if exists "compatibility_not_valid_users"');
         }
 
         if (Schema::hasTable('rename_index_table')) {
@@ -188,5 +192,56 @@ class SchemaTest extends TestCase
             'beta@example.test',
             'alpha@example.test',
         ], $emails);
+    }
+
+    #[Test]
+    public function it_can_use_not_valid_foreign_keys_from_schema_builder()
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_not_valid_users', function (Blueprint $table) {
+            $table->integer('id')->primary();
+        });
+
+        Schema::create('compatibility_not_valid_posts', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->integer('user_id');
+        });
+
+        DB::table('compatibility_not_valid_posts')->insert([
+            'id' => 10,
+            'user_id' => 999,
+        ]);
+
+        Schema::table('compatibility_not_valid_posts', function (Blueprint $table) {
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('compatibility_not_valid_users')
+                ->notValid();
+        });
+
+        DB::table('compatibility_not_valid_users')->insert([
+            'id' => 1,
+        ]);
+
+        DB::table('compatibility_not_valid_posts')->insert([
+            'id' => 11,
+            'user_id' => 1,
+        ]);
+
+        $this->assertSame(2, DB::table('compatibility_not_valid_posts')->count());
+
+        try {
+            DB::table('compatibility_not_valid_posts')->insert([
+                'id' => 12,
+                'user_id' => 5000,
+            ]);
+
+            $this->fail('Expected the not valid foreign key to reject new invalid rows.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertTrue(true);
+        }
     }
 }
