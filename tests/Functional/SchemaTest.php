@@ -24,6 +24,14 @@ class SchemaTest extends TestCase
 
     protected function tearDown(): void
     {
+        if (Schema::hasTable('generated_columns')) {
+            Schema::drop('generated_columns');
+        }
+
+        DB::statement('begin execute immediate \'drop view "USERS_VIEW"\'; exception when others then null; end;');
+        DB::statement('begin execute immediate \'drop type "USERS_TYPE" force\'; exception when others then null; end;');
+        DB::statement('begin execute immediate \'drop type "USERS_TYPE_LIST" force\'; exception when others then null; end;');
+
         Schema::drop('users');
 
         parent::tearDown();
@@ -128,6 +136,42 @@ class SchemaTest extends TestCase
         $this->assertTrue(collect($columns)->contains(
             fn ($column) => $column['name'] === 'bar' && $column['nullable'] === true
         ));
+    }
+
+    #[Test]
+    public function it_can_get_views()
+    {
+        DB::statement('create view "USERS_VIEW" as select "ID", "NAME" from "USERS"');
+
+        $view = collect(Schema::getViews())->firstWhere('name', 'users_view');
+
+        $this->assertNotNull($view);
+        $this->assertSame(strtolower(DB::connection()->getConfig('username')), $view['schema']);
+        $this->assertSame(strtolower(DB::connection()->getConfig('username')).'.users_view', $view['schema_qualified_name']);
+        $this->assertStringContainsString('USERS', strtoupper((string) $view['definition']));
+    }
+
+    #[Test]
+    public function it_can_get_types()
+    {
+        DB::statement('create type "USERS_TYPE" as object ("ID" number(10,0), "NAME" varchar2(255))');
+        DB::statement('create type "USERS_TYPE_LIST" as table of "USERS_TYPE"');
+
+        $types = collect(Schema::getTypes());
+
+        $objectType = $types->firstWhere('name', 'users_type');
+        $collectionType = $types->firstWhere('name', 'users_type_list');
+
+        $this->assertNotNull($objectType);
+        $this->assertSame(strtolower(DB::connection()->getConfig('username')), $objectType['schema']);
+        $this->assertSame('object', $objectType['type']);
+        $this->assertSame('object', $objectType['category']);
+        $this->assertFalse((bool) $objectType['implicit']);
+
+        $this->assertNotNull($collectionType);
+        $this->assertSame('table', $collectionType['type']);
+        $this->assertSame('collection', $collectionType['category']);
+        $this->assertFalse((bool) $collectionType['implicit']);
     }
 
     #[Test]

@@ -252,6 +252,27 @@ class OracleProcessor extends Processor
     }
 
     /**
+     * Process the results of a types query.
+     *
+     * @param  array  $results
+     */
+    public function processTypes($results): array
+    {
+        return array_map(function ($result) {
+            $result = (object) $result;
+
+            return [
+                'name' => strtolower((string) $result->name),
+                'schema' => strtolower((string) $result->schema),
+                'schema_qualified_name' => strtolower((string) $result->schema).'.'.strtolower((string) $result->name),
+                'type' => strtolower((string) $result->type),
+                'category' => strtolower((string) $result->category),
+                'implicit' => (bool) $result->implicit,
+            ];
+        }, $results);
+    }
+
+    /**
      * Process the results of a columns query.
      *
      * @param  array  $results
