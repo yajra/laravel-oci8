@@ -17,9 +17,11 @@ class SchemaTest extends TestCase
         if ($driver === 'oracle') {
             DB::statement('begin execute immediate \'drop view "COMPATIBILITY_VIEW"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop type "COMPATIBILITY_TYPE" force\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_TEMP_TABLE"\'; exception when others then null; end;');
         } elseif ($driver === 'pgsql') {
             DB::statement('drop view if exists "compatibility_view"');
             DB::statement('drop type if exists "compatibility_type"');
+            DB::statement('drop table if exists "compatibility_temp_table"');
         }
 
         if (Schema::hasTable('rename_index_table')) {
@@ -91,5 +93,26 @@ class SchemaTest extends TestCase
         $this->assertArrayHasKey('category', $type);
         $this->assertArrayHasKey('implicit', $type);
         $this->assertFalse((bool) $type['implicit']);
+    }
+
+    #[Test]
+    public function it_can_create_temporary_tables_from_schema_builder()
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_temp_table', function (Blueprint $table) {
+            $table->temporary();
+            $table->integer('id');
+            $table->string('name');
+        });
+
+        DB::table('compatibility_temp_table')->insert([
+            'id' => 1,
+            'name' => 'temporary',
+        ]);
+
+        $this->assertSame('temporary', DB::table('compatibility_temp_table')->value('name'));
     }
 }

@@ -35,6 +35,25 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_basic_create_temporary_table()
+    {
+        $conn = $this->getConnection();
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->temporary();
+        $blueprint->increments('id');
+        $blueprint->string('email');
+        $blueprint->create();
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create global temporary table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) ) on commit preserve rows',
+            $statements[0]
+        );
+    }
+
     protected function getConnection(
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,

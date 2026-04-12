@@ -45,7 +45,9 @@ class OracleGrammar extends Grammar
     {
         $columns = implode(', ', $this->getColumns($blueprint));
 
-        $sql = 'create table '.$this->wrapTable($blueprint)." ( $columns";
+        $create = $blueprint->temporary ? 'create global temporary table ' : 'create table ';
+
+        $sql = $create.$this->wrapTable($blueprint)." ( $columns";
 
         /*
          * To be able to name the primary/foreign keys when the table is
@@ -58,6 +60,10 @@ class OracleGrammar extends Grammar
         $sql .= $this->addPrimaryKeys($blueprint);
 
         $sql .= ' )';
+
+        if ($blueprint->temporary) {
+            $sql .= ' on commit preserve rows';
+        }
 
         return $sql;
     }
