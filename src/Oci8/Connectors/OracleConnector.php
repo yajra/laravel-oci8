@@ -122,7 +122,9 @@ class OracleConnector extends Connector implements ConnectorInterface
      */
     protected function setTNS(array $config): array
     {
-        $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})) (CONNECT_DATA =({$config['service']})))";
+        $descriptionOptions = $this->buildDescriptionOptions($config);
+
+        $config['tns'] = "(DESCRIPTION = (ADDRESS = (PROTOCOL = {$config['protocol']})(HOST = {$config['host']})(PORT = {$config['port']})){$descriptionOptions} (CONNECT_DATA =({$config['service']})))";
 
         return $config;
     }
@@ -155,12 +157,41 @@ class OracleConnector extends Connector implements ConnectorInterface
 
             // backwards compatibility for users dont have this field in their php config
             $loadBalance = $config['load_balance'] ?? 'yes';
+            $descriptionOptions = $this->buildDescriptionOptions($config);
 
             // create a tns with multiple address connection
-            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$loadBalance}) (FAILOVER = on) (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
+            $config['tns'] = "(DESCRIPTION = {$address} (LOAD_BALANCE = {$loadBalance}) (FAILOVER = on){$descriptionOptions} (CONNECT_DATA = (SERVER = DEDICATED) ({$config['service']})))";
         }
 
         return $config;
+    }
+
+    /**
+     * Build optional Oracle connection descriptor parameters.
+     */
+    protected function buildDescriptionOptions(array $config): string
+    {
+        $supportedOptions = [
+            'connect_timeout' => ['descriptor' => 'CONNECT_TIMEOUT', 'min_version' => '11g'],
+            'retry_count' => ['descriptor' => 'RETRY_COUNT', 'min_version' => '12c'],
+            'retry_delay' => ['descriptor' => 'RETRY_DELAY', 'min_version' => '12c'],
+            'transport_connect_timeout' => ['descriptor' => 'TRANSPORT_CONNECT_TIMEOUT', 'min_version' => '12c'],
+            'expire_time' => ['descriptor' => 'EXPIRE_TIME', 'min_version' => '19c'],
+        ];
+
+        $options = '';
+        foreach ($supportedOptions as $configKey => $definition) {
+            if (
+                empty($config[$configKey])
+                || version_compare($definition['min_version'], $config['server_version'] ?? '11g', '>')
+            ) {
+                continue;
+            }
+
+            $options .= ' ('.$definition['descriptor'].' = '.trim((string) $config[$configKey]).')';
+        }
+
+        return $options;
     }
 
     /**
