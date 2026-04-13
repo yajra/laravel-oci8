@@ -370,10 +370,10 @@ class OracleGrammar extends Grammar
     {
         return 'BEGIN
             FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
-            EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS\');
+            EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS PURGE\');
             END LOOP;
 
-            FOR s IN (SELECT sequence_name FROM user_sequences) LOOP
+            FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
             EXECUTE IMMEDIATE (\'DROP SEQUENCE \' || s.sequence_name);
             END LOOP;
 
