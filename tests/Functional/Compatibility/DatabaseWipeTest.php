@@ -2,9 +2,9 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
-use Illuminate\Database\Schema\Blueprint;
 use Yajra\Oci8\Tests\TestCase;
 
 class DatabaseWipeTest extends TestCase
