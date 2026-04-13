@@ -1,3 +1,11 @@
+## [13.2.1](https://github.com/yajra/laravel-oci8/compare/v13.2.0...v13.2.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* compileDropAllTables for identity columns ([239001b](https://github.com/yajra/laravel-oci8/commit/239001b2b4d0bc5a7b780aa78e6326d0b89793d7))
+* pint :robot: ([abccdf3](https://github.com/yajra/laravel-oci8/commit/abccdf3f7b4ddad62b1ef924e7334b3c5b259c09))
+
 # [13.2.0](https://github.com/yajra/laravel-oci8/compare/v13.1.0...v13.2.0) (2026-04-07)
 
 
