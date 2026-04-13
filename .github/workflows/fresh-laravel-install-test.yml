@@ -38,6 +38,12 @@ jobs:
           ORACLE_PWD: ${{ (matrix.oracle == '11g' || matrix.oracle == '21c' || matrix.oracle == '26ai') && 'oracle' || '' }}
           ADMIN_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'SecureDb1234' || '' }}
           WALLET_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'DummyWallet123' || '' }}
+        options: >-
+          --health-cmd="bash -lc 'echo > /dev/tcp/127.0.0.1/1521'"
+          --health-interval=30s
+          --health-timeout=10s
+          --health-retries=20
+          --health-start-period=20m
 
     steps:
       - name: Checkout code
