@@ -241,12 +241,38 @@ class OracleProcessor extends Processor
                 'name' => strtolower((string) $result->name),
                 'type_name' => strtolower((string) $result->type_name),
                 'type' => $type,
+                'collation' => $result->collation ? strtolower((string) $result->collation) : null,
                 'nullable' => (bool) $result->nullable,
-                'default' => $result->default,
+                'default' => $result->generated ? null : $result->default,
                 'auto_increment' => (bool) $result->auto_increment,
                 'comment' => $result->comment != '' ? $result->comment : null,
+                'generation' => $result->generated ? [
+                    'type' => strtolower((string) $result->generated),
+                    'expression' => $result->default,
+                ] : null,
                 'length' => $length,
                 'precision' => $precision,
+            ];
+        }, $results);
+    }
+
+    /**
+     * Process the results of a types query.
+     *
+     * @param  array  $results
+     */
+    public function processTypes($results): array
+    {
+        return array_map(function ($result) {
+            $result = (object) $result;
+
+            return [
+                'name' => strtolower((string) $result->name),
+                'schema' => strtolower((string) $result->schema),
+                'schema_qualified_name' => strtolower((string) $result->schema).'.'.strtolower((string) $result->name),
+                'type' => strtolower((string) $result->type),
+                'category' => strtolower((string) $result->category),
+                'implicit' => (bool) $result->implicit,
             ];
         }, $results);
     }
@@ -280,25 +306,20 @@ class OracleProcessor extends Processor
      */
     public function processIndexes($results): array
     {
-        $collection = array_map(function ($result) {
+        return array_map(function ($result) {
             $result = (object) $result;
 
             return [
-                'name' => $name = strtolower((string) $result->name),
-                'columns' => $result->columns,
+                'name' => strtolower((string) $result->name),
+                'columns' => array_map(
+                    fn ($column) => strtolower(trim((string) $column)),
+                    array_filter(explode(',', (string) $result->columns), fn ($value) => $value !== '')
+                ),
                 'type' => strtolower((string) $result->type),
                 'unique' => (bool) $result->unique,
-                'primary' => str_contains($name, '_pk'),
+                'primary' => (bool) $result->primary,
             ];
         }, $results);
-
-        return collect($collection)->groupBy('name')->map(fn ($items) => [
-            'name' => $items->first()['name'],
-            'columns' => $items->pluck('columns')->map(fn ($item) => strtolower((string) $item))->all(),
-            'type' => $items->first()['type'],
-            'unique' => $items->first()['unique'],
-            'primary' => $items->first()['primary'],
-        ])->values()->all();
     }
 
     /**

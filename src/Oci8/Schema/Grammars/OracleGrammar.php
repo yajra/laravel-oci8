@@ -190,27 +190,70 @@ class OracleGrammar extends Grammar
     public function compileColumns($schema, $table): string
     {
         $schema ??= $this->connection->getConfig('username');
+        $autoIncrement = $this->connection->isVersionAboveOrEqual('12c')
+            ? "decode(t.identity_column, 'YES', 1, 0) as auto_increment,"
+            : 'null as auto_increment,';
+        $collation = $this->connection->isVersionAboveOrEqual('12cR2')
+            ? 'lower(t.collation) as collation,'
+            : 'null as collation,';
+        $hiddenColumnFilter = $this->connection->isVersionAboveOrEqual('12c')
+            ? "and (t.hidden_column = 'NO' or t.user_generated = 'YES')"
+            : "and t.hidden_column = 'NO'";
 
         return "
             select
                 t.column_name as name,
                 nvl(t.data_type_mod, data_type) as type_name,
-                null as auto_increment,
+                {$autoIncrement}
                 t.data_type as type,
                 t.data_length,
                 t.char_length,
                 t.data_precision as precision,
                 t.data_scale as places,
+                {$collation}
+                decode(t.virtual_column, 'YES', 'virtual', null) as generated,
                 decode(t.nullable, 'Y', 1, 0) as nullable,
                 t.data_default as \"default\",
                 c.comments as \"comment\"
-            from all_tab_columns t
+            from all_tab_cols t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
             where upper(t.table_name) = upper('{$table}')
                 and upper(t.owner) = upper('{$schema}')
+                {$hiddenColumnFilter}
             order by
                 t.column_id
         ";
+    }
+
+    /**
+     * Compile the query to determine the views.
+     *
+     * @param  string|string[]|null  $schema
+     */
+    public function compileViews($schema): string
+    {
+        return sprintf(
+            'select lower(view_name) as name, lower(owner) as schema, text as definition from all_views where %s order by owner, view_name',
+            $this->compileOwnerWhereClause($schema)
+        );
+    }
+
+    /**
+     * Compile the query to determine the user-defined types.
+     *
+     * @param  string|string[]|null  $schema
+     */
+    public function compileTypes($schema): string
+    {
+        $ownerWhere = $this->compileOwnerWhereClause($schema);
+
+        return sprintf(
+            "select lower(type_name) as name, lower(owner) as schema, lower(typecode) as type, lower(typecode) as category, 0 as implicit from all_types where predefined = 'NO' and %1\$s "
+            ."union all "
+            ."select lower(type_name) as name, lower(owner) as schema, lower(replace(coll_type, ' ', '_')) as type, 'collection' as category, 0 as implicit from all_coll_types where %1\$s "
+            .'order by schema, name',
+            $ownerWhere
+        );
     }
 
     /**
@@ -241,6 +284,27 @@ class OracleGrammar extends Grammar
             group by
                 kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
         ", $this->quoteString($table), $this->quoteString($schema));
+    }
+
+    /**
+     * Compile a schema owner where clause.
+     *
+     * @param  string|string[]|null  $schema
+     */
+    protected function compileOwnerWhereClause($schema, string $column = 'owner'): string
+    {
+        $schema ??= $this->connection->getConfig('username');
+
+        if (is_array($schema)) {
+            $schemas = implode(', ', array_map(
+                fn ($value) => 'upper('.$this->quoteString($value).')',
+                $schema
+            ));
+
+            return "upper({$column}) in ({$schemas})";
+        }
+
+        return sprintf('upper(%s) = upper(%s)', $column, $this->quoteString($schema));
     }
 
     /**
@@ -949,11 +1013,17 @@ class OracleGrammar extends Grammar
     public function compileIndexes($schema, $table): string
     {
         return sprintf(
-            'select i.index_name as name, i.column_name as columns, '
-            ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"UNIQUE\" "
-            .'from all_ind_columns i join ALL_INDEXES a on a.index_name = i.index_name '
-            .'WHERE i.table_name = a.table_name AND i.table_owner = a.table_owner AND '
-            .'i.TABLE_OWNER = upper(%s) AND i.TABLE_NAME = upper(%s) ',
+            "select i.index_name as name, "
+            ."LISTAGG(coalesce(extractvalue(dbms_xmlgen.getxmltype('select column_expression from all_ind_expressions where index_owner = ''' || i.index_owner || ''' and index_name = ''' || i.index_name || ''' and table_owner = ''' || i.table_owner || ''' and table_name = ''' || i.table_name || ''' and column_position = ' || i.column_position), '/ROWSET/ROW/COLUMN_EXPRESSION'), i.column_name), ',') WITHIN GROUP (ORDER BY i.column_position) as columns, "
+            .'a.index_type as type, '
+            ."decode(a.uniqueness, 'UNIQUE', 1, 0) as \"unique\", "
+            ."max(decode(c.constraint_type, 'P', 1, 0)) as \"primary\" "
+            .'from all_ind_columns i '
+            .'join all_indexes a on a.owner = i.index_owner and a.index_name = i.index_name and a.table_owner = i.table_owner and a.table_name = i.table_name '
+            ."left join all_constraints c on c.owner = a.table_owner and c.index_name = a.index_name and c.constraint_type = 'P' "
+            .'where i.table_owner = upper(%s) and i.table_name = upper(%s) '
+            .'group by i.index_name, a.index_type, a.uniqueness '
+            .'order by i.index_name',
             $this->quoteString($schema),
             $this->quoteString($table)
         );
