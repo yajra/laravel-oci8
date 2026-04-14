@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Query\JoinLateralClause;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -897,6 +899,18 @@ class OracleGrammar extends Grammar
     protected function compileJoins(Builder $query, $joins)
     {
         return parent::compileJoins($query, $this->reorderJoins($joins));
+    }
+
+    /**
+     * Compile a "lateral join" clause.
+     */
+    public function compileJoinLateral(JoinLateralClause $join, string $expression): string
+    {
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new RuntimeException('Lateral joins are only supported by Oracle 12c and newer.');
+        }
+
+        return trim("{$join->type} join lateral {$expression} on 1 = 1");
     }
 
     /**

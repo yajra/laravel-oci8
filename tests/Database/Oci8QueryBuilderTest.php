@@ -1913,6 +1913,52 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('users')->rightJoinSub(['foo'], 'sub', 'users.id', '=', 'sub.id');
     }
 
+    public function test_join_lateral()
+    {
+        $connection = $this->getConnection(serverVersion: '12c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $sub = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+        $sub->from('contacts')->whereColumn('contacts.user_id', 'users.id');
+
+        $builder->from('users')->joinLateral($sub, 'sub');
+
+        $this->assertSame(
+            'select * from "USERS" inner join lateral (select * from "CONTACTS" where "CONTACTS"."USER_ID" = "USERS"."ID") "SUB" on 1 = 1',
+            $builder->toSql()
+        );
+    }
+
+    public function test_left_join_lateral()
+    {
+        $connection = $this->getConnection(serverVersion: '12c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $sub = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+        $sub->from('contacts')->whereColumn('contacts.user_id', 'users.id');
+
+        $builder->from('users')->leftJoinLateral($sub, 'sub');
+
+        $this->assertSame(
+            'select * from "USERS" left join lateral (select * from "CONTACTS" where "CONTACTS"."USER_ID" = "USERS"."ID") "SUB" on 1 = 1',
+            $builder->toSql()
+        );
+    }
+
+    public function test_join_lateral_throws_for_pre_12c()
+    {
+        $connection = $this->getConnection(serverVersion: '11g');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $sub = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+        $sub->from('contacts')->whereColumn('contacts.user_id', 'users.id');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Lateral joins are only supported by Oracle 12c and newer.');
+
+        $builder->from('users')->joinLateral($sub, 'sub')->toSql();
+    }
+
     public function test_raw_expressions_in_select()
     {
         $builder = $this->getBuilder();
@@ -3394,9 +3440,9 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => '1'], $builder->getBindings());
     }
 
-    protected function getConnection(string $prefix = '', string $schemaPrefix = '')
+    protected function getConnection(string $prefix = '', string $schemaPrefix = '', ?string $serverVersion = null)
     {
-        $serverVersion = getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
+        $serverVersion ??= getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
         $connection = m::mock(Connection::class);
         $connection->shouldReceive('getDatabaseName')->andReturn('database');
         $connection->shouldReceive('getTablePrefix')->andReturn($prefix);
