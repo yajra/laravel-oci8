@@ -325,6 +325,36 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a spatial index key command.
+     */
+    public function compileSpatialIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        return "create index {$command->index} on ".$this->wrapTable($blueprint)
+            .' ( '.$this->columnize($command->columns).' ) indextype is mdsys.spatial_index_v2';
+    }
+
+    /**
+     * Compile a vector index key command.
+     */
+    public function compileVectorIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        if (! $this->connection->isVersionAboveOrEqual('23c')) {
+            return $this->compileIndex($blueprint, $command);
+        }
+
+        $algorithm = strtolower((string) ($command->algorithm ?? 'hnsw'));
+        $organization = match ($algorithm) {
+            'ivf' => 'organization neighbor partitions',
+            default => 'organization inmemory neighbor graph',
+        };
+
+        $distance = $this->compileVectorDistanceMetric((string) ($command->operatorClass ?? 'vector_cosine_ops'));
+
+        return "create vector index {$command->index} on ".$this->wrapTable($blueprint)
+            .' ( '.$this->columnize($command->columns)." ) {$organization} distance {$distance}";
+    }
+
+    /**
      * Compile a fulltext index key command.
      */
     public function compileFullText(Blueprint $blueprint, Fluent $command): string
@@ -683,6 +713,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a time type with timezone.
+     */
+    protected function typeTimeTz(Fluent $column): string
+    {
+        return 'timestamp with time zone';
+    }
+
+    /**
      * Create the column definition for a timestamp type.
      */
     protected function typeTimestamp(Fluent $column): string
@@ -731,6 +769,22 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a spatial geometry type.
+     */
+    protected function typeGeometry(Fluent $column): string
+    {
+        return 'sdo_geometry';
+    }
+
+    /**
+     * Create the column definition for a spatial geography type.
+     */
+    protected function typeGeography(Fluent $column): string
+    {
+        return 'sdo_geometry';
+    }
+
+    /**
      * Create the column definition for a json type.
      */
     protected function typeJson(Fluent $column): string
@@ -744,6 +798,46 @@ class OracleGrammar extends Grammar
     protected function typeJsonb(Fluent $column): string
     {
         return $this->typeJson($column);
+    }
+
+    /**
+     * Create the column definition for a vector type.
+     */
+    protected function typeVector(Fluent $column): string
+    {
+        if ($this->connection->isVersionAboveOrEqual('23c')) {
+            return isset($column->dimensions) && $column->dimensions !== ''
+                ? "vector({$column->dimensions})"
+                : 'vector';
+        }
+
+        return 'clob';
+    }
+
+    /**
+     * Create the column definition for a text-search vector type.
+     *
+     * Oracle Text does not expose a direct analogue to PostgreSQL's tsvector column
+     * type, so store the materialized search document in a CLOB.
+     */
+    protected function typeTsvector(Fluent $column): string
+    {
+        return 'clob';
+    }
+
+    /**
+     * Compile the Oracle distance metric for a vector index.
+     */
+    protected function compileVectorDistanceMetric(string $operatorClass): string
+    {
+        return match (strtolower($operatorClass)) {
+            'vector_ip_ops' => 'dot',
+            'vector_l1_ops' => 'manhattan',
+            'vector_hamming_ops' => 'hamming',
+            'vector_l2sq_ops' => 'l2_squared',
+            'vector_l2_ops' => 'euclidean',
+            default => 'cosine',
+        };
     }
 
     /**
