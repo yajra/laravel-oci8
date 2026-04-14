@@ -40,9 +40,10 @@ class Oci8SchemaGrammarTest extends TestCase
         ?OracleBuilder $builder = null,
         string $prefix = '',
         int $maxLength = 30,
-        string $schemaPrefix = ''
+        string $schemaPrefix = '',
+        ?string $serverVersion = null
     ) {
-        $serverVersion = getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
+        $serverVersion ??= getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
 
         $connection = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
@@ -117,6 +118,78 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('create index users_first_name_index on "USERS" ( "FIRST NAME" )', $statements[1]);
     }
 
+    public function test_create_spatial_index()
+    {
+        $conn = $this->getConnection();
+
+        $blueprint = new Blueprint($conn, 'places');
+        $blueprint->geometry('shape');
+        $blueprint->spatialIndex('shape', 'places_shape_spatial');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals('alter table "PLACES" add ( "SHAPE" sdo_geometry not null )', $statements[0]);
+        $this->assertEquals(
+            'create index places_shape_spatial on "PLACES" ( "SHAPE" ) indextype is mdsys.spatial_index_v2',
+            $statements[1]
+        );
+    }
+
+    public function test_create_vector_index_uses_portable_fallback()
+    {
+        $conn = $this->getConnection(serverVersion: '23c');
+
+        $blueprint = new Blueprint($conn, 'embeddings');
+        $blueprint->vector('embedding', 1536);
+        $blueprint->vectorIndex('embedding', 'embeddings_embedding_vector');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals('alter table "EMBEDDINGS" add ( "EMBEDDING" vector(1536) not null )', $statements[0]);
+        $this->assertEquals(
+            'create vector index embeddings_embedding_vector on "EMBEDDINGS" ( "EMBEDDING" ) organization inmemory neighbor graph distance cosine',
+            $statements[1]
+        );
+    }
+
+    public function test_create_vector_index_falls_back_on_legacy_oracle_versions()
+    {
+        $conn = $this->getConnection(serverVersion: '21c');
+
+        $blueprint = new Blueprint($conn, 'embeddings');
+        $blueprint->vector('embedding', 1536);
+        $blueprint->vectorIndex('embedding', 'embeddings_embedding_vector');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals('alter table "EMBEDDINGS" add ( "EMBEDDING" clob not null )', $statements[0]);
+        $this->assertEquals(
+            'create index embeddings_embedding_vector on "EMBEDDINGS" ( "EMBEDDING" )',
+            $statements[1]
+        );
+    }
+
+    public function test_create_vector_index_supports_ivf_and_l2_distance()
+    {
+        $conn = $this->getConnection(serverVersion: '23c');
+
+        $blueprint = new Blueprint($conn, 'embeddings');
+        $blueprint->vector('embedding', 1536);
+        $blueprint->vectorIndex('embedding', 'embeddings_embedding_vector')->algorithm('ivf')->operatorClass('vector_l2_ops');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals('alter table "EMBEDDINGS" add ( "EMBEDDING" vector(1536) not null )', $statements[0]);
+        $this->assertEquals(
+            'create vector index embeddings_embedding_vector on "EMBEDDINGS" ( "EMBEDDING" ) organization neighbor partitions distance euclidean',
+            $statements[1]
+        );
+    }
+
     public function test_basic_create_table_with_reserved_words()
     {
         $conn = $this->getConnection();
@@ -182,6 +255,87 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(1, $statements);
         $this->assertEquals(
             'create table "USERS" ( "ID" number(10,0) not null, "FIRST_NAME" nvarchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_time_tz()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'events');
+        $blueprint->create();
+        $blueprint->timeTz('starts_at');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "EVENTS" ( "STARTS_AT" timestamp with time zone not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_spatial_types()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'places');
+        $blueprint->create();
+        $blueprint->geometry('shape');
+        $blueprint->geography('area');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "PLACES" ( "SHAPE" sdo_geometry not null, "AREA" sdo_geometry not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_tsvector()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'documents');
+        $blueprint->create();
+        $blueprint->tsvector('search_document');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "DOCUMENTS" ( "SEARCH_DOCUMENT" clob not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_vector_on_legacy_oracle_versions()
+    {
+        $conn = $this->getConnection(serverVersion: '21c');
+        $blueprint = new Blueprint($conn, 'embeddings');
+        $blueprint->create();
+        $blueprint->vector('embedding', 1536);
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "EMBEDDINGS" ( "EMBEDDING" clob not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_vector_on_oracle_23c()
+    {
+        $conn = $this->getConnection(serverVersion: '23c');
+        $blueprint = new Blueprint($conn, 'embeddings');
+        $blueprint->create();
+        $blueprint->vector('embedding', 1536);
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "EMBEDDINGS" ( "EMBEDDING" vector(1536) not null )',
             $statements[0]
         );
     }
