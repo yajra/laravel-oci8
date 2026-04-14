@@ -45,7 +45,9 @@ class OracleGrammar extends Grammar
     {
         $columns = implode(', ', $this->getColumns($blueprint));
 
-        $sql = 'create table '.$this->wrapTable($blueprint)." ( $columns";
+        $create = $blueprint->temporary ? 'create global temporary table ' : 'create table ';
+
+        $sql = $create.$this->wrapTable($blueprint)." ( $columns";
 
         /*
          * To be able to name the primary/foreign keys when the table is
@@ -58,6 +60,10 @@ class OracleGrammar extends Grammar
         $sql .= $this->addPrimaryKeys($blueprint);
 
         $sql .= ' )';
+
+        if ($blueprint->temporary) {
+            $sql .= ' on commit preserve rows';
+        }
 
         return $sql;
     }
@@ -140,6 +146,9 @@ class OracleGrammar extends Grammar
             if (! is_null($foreign->onDelete)) {
                 $sql .= " on delete {$foreign->onDelete}";
             }
+
+            $sql = $this->appendDeferrableClause($foreign, $sql);
+            $sql = $this->appendNotValidClause($foreign, $sql);
         }
 
         return $sql;
@@ -214,6 +223,37 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile the query to determine the views.
+     *
+     * @param  string|string[]|null  $schema
+     */
+    public function compileViews($schema): string
+    {
+        return sprintf(
+            'select lower(view_name) as name, lower(owner) as schema, text as definition from all_views where %s order by owner, view_name',
+            $this->compileOwnerWhereClause($schema)
+        );
+    }
+
+    /**
+     * Compile the query to determine the user-defined types.
+     *
+     * @param  string|string[]|null  $schema
+     */
+    public function compileTypes($schema): string
+    {
+        $ownerWhere = $this->compileOwnerWhereClause($schema);
+
+        return sprintf(
+            "select lower(type_name) as name, lower(owner) as schema, lower(typecode) as type, lower(typecode) as category, 0 as implicit from all_types where predefined = 'NO' and %1\$s "
+            ."union all "
+            ."select lower(type_name) as name, lower(owner) as schema, lower(replace(coll_type, ' ', '_')) as type, 'collection' as category, 0 as implicit from all_coll_types where %1\$s "
+            .'order by schema, name',
+            $ownerWhere
+        );
+    }
+
+    /**
      * Compile the query to determine the foreign keys.
      *
      * @param  string|null  $schema
@@ -241,6 +281,27 @@ class OracleGrammar extends Grammar
             group by
                 kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
         ", $this->quoteString($table), $this->quoteString($schema));
+    }
+
+    /**
+     * Compile a schema owner where clause.
+     *
+     * @param  string|string[]|null  $schema
+     */
+    protected function compileOwnerWhereClause($schema, string $column = 'owner'): string
+    {
+        $schema ??= $this->connection->getConfig('username');
+
+        if (is_array($schema)) {
+            $schemas = implode(', ', array_map(
+                fn ($value) => 'upper('.$this->quoteString($value).')',
+                $schema
+            ));
+
+            return "upper({$column}) in ({$schemas})";
+        }
+
+        return sprintf('upper(%s) = upper(%s)', $column, $this->quoteString($schema));
     }
 
     /**
@@ -302,7 +363,9 @@ class OracleGrammar extends Grammar
                 $sql .= " on delete {$command->onDelete}";
             }
 
-            return $sql;
+            $sql = $this->appendDeferrableClause($command, $sql);
+
+            return $this->appendNotValidClause($command, $sql);
         }
 
         return null;
@@ -313,7 +376,31 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command): string
     {
-        return 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+        $sql = 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+
+        return $this->appendDeferrableClause($command, $sql);
+    }
+
+    protected function appendDeferrableClause(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->deferrable)) {
+            $sql .= $command->deferrable ? ' deferrable' : ' not deferrable';
+        }
+
+        if ($command->deferrable && ! is_null($command->initiallyImmediate)) {
+            $sql .= $command->initiallyImmediate ? ' initially immediate' : ' initially deferred';
+        }
+
+        return $sql;
+    }
+
+    protected function appendNotValidClause(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->notValid) && $command->notValid) {
+            $sql .= ' enable novalidate';
+        }
+
+        return $sql;
     }
 
     /**
