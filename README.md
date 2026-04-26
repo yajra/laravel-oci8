@@ -1,7 +1,7 @@
 # Oracle DB driver for Laravel via OCI8
 
-[![Continuous Integration](https://github.com/yajra/laravel-oci8/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/yajra/laravel-oci8/actions/workflows/continuous-integration.yml)
-[![Static Analysis](https://github.com/yajra/laravel-oci8/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/yajra/laravel-oci8/actions/workflows/static-analysis.yml)
+[![Continuous Integration](https://github.com/yajra/laravel-oci8/actions/workflows/continuous-integration.yml/badge.svg?branch=master)](https://github.com/yajra/laravel-oci8/actions/workflows/continuous-integration.yml?query=branch%3Amaster)
+[![Static Analysis](https://github.com/yajra/laravel-oci8/actions/workflows/static-analysis.yml/badge.svg?branch=master)](https://github.com/yajra/laravel-oci8/actions/workflows/static-analysis.yml?query=branch%3Amaster)
 [![Total Downloads](https://poser.pugx.org/yajra/laravel-oci8/d/total.svg)](https://packagist.org/packages/yajra/laravel-oci8)
 [![Latest Stable Version](https://poser.pugx.org/yajra/laravel-oci8/v/stable.svg)](https://packagist.org/packages/yajra/laravel-oci8)
 [![License](https://poser.pugx.org/yajra/laravel-oci8/license.svg)](https://packagist.org/packages/yajra/laravel-oci8)
