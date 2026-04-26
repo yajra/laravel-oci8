@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
@@ -502,6 +503,51 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile an update from statement into SQL.
+     */
+    public function compileUpdateFrom(Builder $query, $values): string
+    {
+        if (! isset($query->joins)) {
+            return $this->compileUpdate($query, $values);
+        }
+
+        $target = $this->wrapTable($query->from);
+        $targetReference = $this->getUpdateFromTargetReference($query);
+        $targetColumns = [];
+        $sourceColumns = [];
+        $assignments = [];
+
+        foreach ($values as $column => $value) {
+            $targetAlias = $this->wrap('laravel_target_'.Str::lower($column));
+            $sourceAlias = $this->wrap('laravel_source_'.Str::lower($column));
+
+            $targetColumns[] = $this->wrap($targetReference.'.'.$column).' as '.$targetAlias;
+            $sourceColumns[] = $this->parameter($value).' as '.$sourceAlias;
+            $assignments[] = $targetAlias.' = '.$sourceAlias;
+        }
+
+        $sourceTables = array_merge([$target], $this->compileUpdateFromTables($query));
+        $where = $this->compileUpdateFromWheres($query);
+
+        $selects = implode(', ', array_merge($targetColumns, $sourceColumns));
+        $from = implode(', ', $sourceTables);
+        $set = implode(', ', $assignments);
+
+        return trim("update (select {$selects} from {$from} {$where}) set {$set}");
+    }
+
+    /**
+     * Prepare the bindings for an update from statement.
+     */
+    public function prepareBindingsForUpdateFrom(array $bindings, array $values): array
+    {
+        $values = Arr::flatten(array_map(fn ($value) => value($value), $values));
+        $cleanBindings = Arr::except($bindings, ['select', 'where']);
+
+        return array_values(array_merge($values, $bindings['where'], Arr::flatten($cleanBindings)));
+    }
+
+    /**
      * Compile the lock into SQL.
      *
      * @param  bool|string  $value
@@ -537,6 +583,65 @@ class OracleGrammar extends Grammar
     protected function compileOffset(Builder $query, $offset): string
     {
         return '';
+    }
+
+    /**
+     * Compile the source tables for an update from statement.
+     */
+    protected function compileUpdateFromTables(Builder $query): array
+    {
+        return array_map(
+            fn ($join) => $this->wrapTable($join->table),
+            $this->reorderJoins($query->joins)
+        );
+    }
+
+    /**
+     * Compile the where clause for an update from statement.
+     */
+    protected function compileUpdateFromWheres(Builder $query): string
+    {
+        $baseWheres = $this->compileWheres($query);
+        $joinWheres = $this->compileUpdateJoinWheres($query);
+
+        if ($baseWheres === '') {
+            return $joinWheres === '' ? '' : 'where '.$this->removeLeadingBoolean($joinWheres);
+        }
+
+        return $joinWheres === '' ? $baseWheres : $baseWheres.' '.$joinWheres;
+    }
+
+    /**
+     * Compile join constraints for an update from statement.
+     */
+    protected function compileUpdateJoinWheres(Builder $query): string
+    {
+        $joinWheres = [];
+
+        foreach ($this->reorderJoins($query->joins) as $join) {
+            foreach ($join->wheres as $where) {
+                $method = 'where'.$where['type'];
+                $joinWheres[] = $where['boolean'].' '.$this->$method($query, $where);
+            }
+        }
+
+        return implode(' ', $joinWheres);
+    }
+
+    /**
+     * Get the target table reference used in update from queries.
+     */
+    protected function getUpdateFromTargetReference(Builder $query): string
+    {
+        $table = preg_replace('/\s+/', ' ', trim($query->from));
+
+        if (preg_match('/\s+("?)([A-Za-z_][A-Za-z0-9_]*)\1$/', $table, $matches)) {
+            return $matches[2];
+        }
+
+        $parts = explode('.', $table);
+
+        return trim((string) end($parts), '"');
     }
 
     /**

@@ -2507,6 +2507,27 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
+    public function test_update_from_method_with_join_aliases()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with(
+                'update (select "U"."EMAIL" as "LARAVEL_TARGET_EMAIL", "U"."NAME" as "LARAVEL_TARGET_NAME", o.email as "LARAVEL_SOURCE_EMAIL", ? as "LARAVEL_SOURCE_NAME" from "USERS" "U", "ORDERS" "O" where "O"."ACTIVE" = ? and "U"."ID" = ? and "O"."USER_ID" = "U"."ID") set "LARAVEL_TARGET_EMAIL" = "LARAVEL_SOURCE_EMAIL", "LARAVEL_TARGET_NAME" = "LARAVEL_SOURCE_NAME"',
+                ['bar', 1, 10]
+            )
+            ->andReturn(1);
+
+        $result = $builder->from('users as u')
+            ->join('orders as o', 'o.user_id', '=', 'u.id')
+            ->where('o.active', '=', 1)
+            ->where('u.id', '=', 10)
+            ->updateFrom(['email' => new Raw('o.email'), 'name' => 'bar']);
+
+        $this->assertEquals(1, $result);
+    }
+
     public function test_update_method_respects_raw()
     {
         $builder = $this->getBuilder();
