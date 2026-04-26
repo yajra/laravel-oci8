@@ -513,27 +513,26 @@ class OracleGrammar extends Grammar
 
         $target = $this->wrapTable($query->from);
         $targetReference = $this->getUpdateFromTargetReference($query);
-        $targetColumns = [];
         $sourceColumns = [];
         $assignments = [];
+        $source = $this->wrapTable('laravel_source');
 
         foreach ($values as $column => $value) {
-            $targetAlias = $this->wrap('laravel_target_'.Str::lower($column));
             $sourceAlias = $this->wrap('laravel_source_'.Str::lower($column));
 
-            $targetColumns[] = $this->wrap($targetReference.'.'.$column).' as '.$targetAlias;
             $sourceColumns[] = $this->parameter($value).' as '.$sourceAlias;
-            $assignments[] = $targetAlias.' = '.$sourceAlias;
+            $assignments[] = $this->wrap($column).' = '.$this->wrap('laravel_source.laravel_source_'.Str::lower($column));
         }
 
         $sourceTables = array_merge([$target], $this->compileUpdateFromTables($query));
         $where = $this->compileUpdateFromWheres($query);
-
-        $selects = implode(', ', array_merge($targetColumns, $sourceColumns));
+        $rowIdAlias = $this->wrap('laravel_rowid');
+        $selects = implode(', ', array_merge([$targetReference.'.rowid as '.$rowIdAlias], $sourceColumns));
         $from = implode(', ', $sourceTables);
         $set = implode(', ', $assignments);
+        $on = $source.'.'.$rowIdAlias.' = '.$targetReference.'.rowid';
 
-        return trim("update (select {$selects} from {$from} {$where}) set {$set}");
+        return trim("merge into {$target} using (select {$selects} from {$from} {$where}) {$source} on ({$on}) when matched then update set {$set}");
     }
 
     /**

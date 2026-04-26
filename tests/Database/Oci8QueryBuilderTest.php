@@ -2514,7 +2514,7 @@ class Oci8QueryBuilderTest extends TestCase
             ->shouldReceive('update')
             ->once()
             ->with(
-                'update (select "U"."EMAIL" as "LARAVEL_TARGET_EMAIL", "U"."NAME" as "LARAVEL_TARGET_NAME", o.email as "LARAVEL_SOURCE_EMAIL", ? as "LARAVEL_SOURCE_NAME" from "USERS" "U", "ORDERS" "O" where "O"."ACTIVE" = ? and "U"."ID" = ? and "O"."USER_ID" = "U"."ID") set "LARAVEL_TARGET_EMAIL" = "LARAVEL_SOURCE_EMAIL", "LARAVEL_TARGET_NAME" = "LARAVEL_SOURCE_NAME"',
+                'merge into "USERS" "U" using (select u.rowid as "LARAVEL_ROWID", o.email as "LARAVEL_SOURCE_EMAIL", ? as "LARAVEL_SOURCE_NAME" from "USERS" "U", "ORDERS" "O" where "O"."ACTIVE" = ? and "U"."ID" = ? and "O"."USER_ID" = "U"."ID") "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."LARAVEL_ROWID" = u.rowid) when matched then update set "EMAIL" = "LARAVEL_SOURCE"."LARAVEL_SOURCE_EMAIL", "NAME" = "LARAVEL_SOURCE"."LARAVEL_SOURCE_NAME"',
                 ['bar', 1, 10]
             )
             ->andReturn(1);
