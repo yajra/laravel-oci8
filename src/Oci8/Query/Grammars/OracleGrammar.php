@@ -827,7 +827,7 @@ class OracleGrammar extends Grammar
      * @param  string  $value
      * @param  int  $count  = 1
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function compileJsonContains($column, $value, int $count = 1): string
     {
