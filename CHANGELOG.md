@@ -1,3 +1,16 @@
+# [13.3.0](https://github.com/yajra/laravel-oci8/compare/v13.2.1...v13.3.0) (2026-04-27)
+
+
+### Bug Fixes
+
+* pint :robot: ([f9edd16](https://github.com/yajra/laravel-oci8/commit/f9edd16887f548f69141a0b9d8ff3af9fcb4141b))
+* scope badges to master branch ([37b13af](https://github.com/yajra/laravel-oci8/commit/37b13afb73c9174916551c0719dca022684ee8ad))
+
+
+### Features
+
+* add support for joinLateral ([6b45a47](https://github.com/yajra/laravel-oci8/commit/6b45a47b251a712c32cb2ccd559028989734583b))
+
 ## [13.2.1](https://github.com/yajra/laravel-oci8/compare/v13.2.0...v13.2.1) (2026-04-13)
 
 
