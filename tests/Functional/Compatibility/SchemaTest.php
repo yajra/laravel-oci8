@@ -23,6 +23,7 @@ class SchemaTest extends TestCase
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_MAIL"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_POSTS"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_USERS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_ONLINE_INDEXES"\'; exception when others then null; end;');
         } elseif ($driver === 'pgsql') {
             DB::statement('drop view if exists "compatibility_view"');
             DB::statement('drop type if exists "compatibility_type"');
@@ -32,6 +33,7 @@ class SchemaTest extends TestCase
             DB::statement('drop table if exists "compatibility_deferrable_mail"');
             DB::statement('drop table if exists "compatibility_not_valid_posts"');
             DB::statement('drop table if exists "compatibility_not_valid_users"');
+            DB::statement('drop table if exists "compatibility_online_indexes"');
         }
 
         if (Schema::hasTable('rename_index_table')) {
@@ -243,5 +245,33 @@ class SchemaTest extends TestCase
         } catch (\Illuminate\Database\QueryException $e) {
             $this->assertTrue(true);
         }
+    }
+
+    #[Test]
+    public function it_can_create_online_indexes_from_schema_builder()
+    {
+        if (! $this->isPgsql() && ! $this->isMariaDb() && version_compare($this->serverVersion(), '12c', '<')) {
+            $this->markTestSkipped('Online index builds are not enabled on Oracle 11g.');
+        }
+
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_online_indexes', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('name');
+        });
+
+        Schema::table('compatibility_online_indexes', function (Blueprint $table) {
+            $table->index('name', 'compat_online_name')->online();
+        });
+
+        $indexes = collect(Schema::getIndexes('compatibility_online_indexes'))
+            ->pluck('name')
+            ->map(fn ($name) => strtolower($name))
+            ->all();
+
+        $this->assertContains('compat_online_name', $indexes);
     }
 }
