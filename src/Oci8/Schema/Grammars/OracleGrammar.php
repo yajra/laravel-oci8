@@ -445,6 +445,32 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile the SQL needed to drop all views.
+     */
+    public function compileDropAllViews(): string
+    {
+        return 'BEGIN
+            FOR v IN (SELECT view_name FROM user_views) LOOP
+            EXECUTE IMMEDIATE (\'DROP VIEW "\' || v.view_name || \'" CASCADE CONSTRAINTS\');
+            END LOOP;
+
+            END;';
+    }
+
+    /**
+     * Compile the SQL needed to drop all types.
+     */
+    public function compileDropAllTypes(): string
+    {
+        return 'BEGIN
+            FOR t IN (SELECT type_name FROM user_types) LOOP
+            EXECUTE IMMEDIATE (\'DROP TYPE "\' || t.type_name || \'" FORCE\');
+            END LOOP;
+
+            END;';
+    }
+
+    /**
      * Compile a drop table (if exists) command.
      */
     public function compileDropIfExists(Blueprint $blueprint, Fluent $command): string

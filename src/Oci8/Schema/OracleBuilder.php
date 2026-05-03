@@ -108,6 +108,22 @@ class OracleBuilder extends Builder
     }
 
     /**
+     * Drop all views from the database.
+     */
+    public function dropAllViews(): void
+    {
+        $this->connection->statement($this->grammar->compileDropAllViews());
+    }
+
+    /**
+     * Drop all types from the database.
+     */
+    public function dropAllTypes(): void
+    {
+        $this->connection->statement($this->grammar->compileDropAllTypes());
+    }
+
+    /**
      * Indicate that the table should be dropped if it exists.
      *
      * @param  string  $table
