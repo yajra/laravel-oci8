@@ -45,4 +45,21 @@ class RownumberFilterTest extends TestCase
         $this->assertArrayNotHasKey('rn', $expected[0]);
         $this->assertArrayNotHasKey('rn', $expected[1]);
     }
+
+    #[Test]
+    public function it_does_not_replicate_internal_row_number_column()
+    {
+        $user = User::query()->limit(2)->orderBy('id')->first();
+
+        $this->assertArrayNotHasKey('rn', $user->getAttributes());
+
+        $replica = $user->replicate();
+        $replica->email = 'replica@example.com';
+        $replica->save();
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'Record-1',
+            'email' => 'replica@example.com',
+        ]);
+    }
 }
