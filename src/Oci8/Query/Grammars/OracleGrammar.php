@@ -271,6 +271,7 @@ class OracleGrammar extends Grammar
 
     /**
      * Compile the outer projection for a row-number limited query.
+     * Heuristics to try to avoid ORA-01789.
      */
     protected function compileTableExpressionColumns(Builder $query): string
     {
