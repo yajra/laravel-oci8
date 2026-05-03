@@ -911,7 +911,7 @@ class Oci8QueryBuilderTest extends TestCase
             $expectedSql = '(select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc offset 0 rows fetch next 10 rows only';
         } else {
             // Oracle 11g: use ROW_NUMBER
-            $expectedSql = 'select t2.* from ( select rownum AS "rn", t1.* from ((select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc) t1 ) t2 where t2."rn" between 1 and 10';
+            $expectedSql = 'select t2."A" from ( select rownum AS "rn", t1.* from ((select "A" from "T1" where "A" = ? and "B" = ?) union (select "A" from "T2" where "A" = ? and "B" = ?) order by "A" asc) t1 ) t2 where t2."rn" between 1 and 10';
         }
 
         $this->assertEquals($expectedSql, $builder->toSql());
@@ -1011,7 +1011,7 @@ class Oci8QueryBuilderTest extends TestCase
             $this->assertSame('(select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "NAME" desc offset 0 rows fetch next 20 rows only', $builder->toSql());
         } else {
             // Oracle 11g: use ROW_NUMBER
-            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "NAME" desc) t1 ) t2 where t2."rn" between 1 and 20', $builder->toSql());
+            $this->assertSame('select t2."ID", t2."NAME" from ( select rownum AS "rn", t1.* from ((select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "NAME" desc) t1 ) t2 where t2."rn" between 1 and 20', $builder->toSql());
         }
     }
 
@@ -1027,8 +1027,28 @@ class Oci8QueryBuilderTest extends TestCase
             $this->assertSame('(select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "ID" asc offset 5 rows fetch next 10 rows only', $builder->toSql());
         } else {
             // Oracle 11g: use ROW_NUMBER
-            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "ID" asc) t1 ) t2 where t2."rn" between 6 and 15', $builder->toSql());
+            $this->assertSame('select t2."ID", t2."NAME" from ( select rownum AS "rn", t1.* from ((select "ID", "NAME" from "USERS") union (select "ID", "NAME" from "DOGS") order by "ID" asc) t1 ) t2 where t2."rn" between 6 and 15', $builder->toSql());
         }
+    }
+
+    public function test_union_with_order_by_inside_union_query()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('id', 'name')->from('users')->where('id', 1);
+        $builder->union(
+            $this->getBuilder()
+                ->select('id', 'name')->from('users')->where('id', '>', 10)
+                ->orderBy('id', 'desc')->limit(2)
+        );
+        $builder->orderBy('id');
+
+        if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
+            $this->assertSame('(select "ID", "NAME" from "USERS" where "ID" = ?) union (select /*+ FIRST_ROWS(2) */ "ID", "NAME" from "USERS" where "ID" > ? order by "ID" desc offset 0 rows fetch next 2 rows only) order by "ID" asc', $builder->toSql());
+        } else {
+            $this->assertSame('(select "ID", "NAME" from "USERS" where "ID" = ?) union (select t2."ID", t2."NAME" from ( select rownum AS "rn", t1.* from (select "ID", "NAME" from "USERS" where "ID" > ? order by "ID" desc) t1 ) t2 where t2."rn" between 1 and 2) order by "ID" asc', $builder->toSql());
+        }
+
+        $this->assertSame([1, 10], $builder->getBindings());
     }
 
     public function test_union_with_where_and_limit()
@@ -1128,7 +1148,7 @@ class Oci8QueryBuilderTest extends TestCase
             );
         } else {
             $this->assertEquals(
-                'select * from "USERS" where "ID" in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+                'select * from "USERS" where "ID" in (select t2."ID" from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
                 $builder->toSql()
             );
         }
@@ -1147,7 +1167,7 @@ class Oci8QueryBuilderTest extends TestCase
             );
         } else {
             $this->assertEquals(
-                'select * from "USERS" where "ID" not in (select t2.* from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
+                'select * from "USERS" where "ID" not in (select t2."ID" from ( select rownum AS "rn", t1.* from (select "ID" from "USERS" where "AGE" > ?) t1 ) t2 where t2."rn" between 1 and 3)',
                 $builder->toSql()
             );
         }

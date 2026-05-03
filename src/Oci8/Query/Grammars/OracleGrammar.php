@@ -216,7 +216,7 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        return 'select '.$this->compileTableExpressionColumns($query)." from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
     }
 
     /**
@@ -266,7 +266,45 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        return 'select '.$this->compileTableExpressionColumns($query)." from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+    }
+
+    /**
+     * Compile the outer projection for a row-number limited query.
+     */
+    protected function compileTableExpressionColumns(Builder $query): string
+    {
+        if (empty($query->columns) || in_array('*', $query->columns, true)) {
+            return 't2.*';
+        }
+
+        $columns = [];
+
+        foreach ($query->columns as $column) {
+            $value = $column instanceof Expression
+                ? $column->getValue($query->getGrammar())
+                : $column;
+
+            $value = trim((string) $value);
+
+            if ($value === '*' || str_contains($value, '*')) {
+                return 't2.*';
+            }
+
+            if (preg_match('/\s+as\s+(.+)$/i', $value, $matches)) {
+                $columns[] = 't2.'.$this->wrap($matches[1]);
+
+                continue;
+            }
+
+            if (str_contains($value, '(')) {
+                return 't2.*';
+            }
+
+            $columns[] = 't2.'.$this->wrap(last(explode('.', $value)));
+        }
+
+        return implode(', ', $columns);
     }
 
     /**
