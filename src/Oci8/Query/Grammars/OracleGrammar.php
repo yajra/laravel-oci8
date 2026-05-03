@@ -288,6 +288,10 @@ class OracleGrammar extends Grammar
 
             $value = trim((string) $value);
 
+            if ($value === 'rn' || preg_match('/\srn$/i', $value)) {
+                return 't2.*';
+            }
+
             if ($value === '*' || str_contains($value, '*')) {
                 return 't2.*';
             }
