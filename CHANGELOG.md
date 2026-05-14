@@ -1,3 +1,10 @@
+# [13.4.0](https://github.com/yajra/laravel-oci8/compare/v13.3.0...v13.4.0) (2026-05-14)
+
+
+### Features
+
+* add timeout options for Oracle connection configuration ([d76d1bc](https://github.com/yajra/laravel-oci8/commit/d76d1bc3f07b03de18ab6ce96ed7618686abe091))
+
 # [13.3.0](https://github.com/yajra/laravel-oci8/compare/v13.2.1...v13.3.0) (2026-04-27)
 
 
