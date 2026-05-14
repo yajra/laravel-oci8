@@ -107,6 +107,10 @@ class OracleGrammar extends Grammar
             $sql = $this->compileAnsiOffset($query, $components);
         }
 
+        if ($query->unions && (isset($query->unionLimit) || isset($query->unionOffset))) {
+            $sql = $this->compileUnionLimitOffset($query, trim($sql));
+        }
+
         if (isset($query->lock)) {
             $sql .= ' '.$this->compileLock($query, $query->lock);
             $orderSql = $this->compileOrders($query, $query->orders);
@@ -186,6 +190,55 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile union query with limit/offset.
+     */
+    protected function compileUnionLimitOffset(Builder $query, string $sql): string
+    {
+        $limit = $query->unionLimit ?? null;
+        $offset = $query->unionOffset ?? 0;
+
+        // For Oracle 12c and above, use OFFSET/FETCH
+        if ($query->getConnection()->isVersionAboveOrEqual('12c')) {
+            $sql .= " offset $offset rows";
+
+            if ($limit !== null) {
+                $sql .= " fetch next $limit rows only";
+            }
+
+            return $sql;
+        }
+
+        // For Oracle 11g and below, use ROW_NUMBER
+        $constraint = $this->compileUnionRowConstraint($limit, $offset);
+
+        // Special case for limit 1 with no offset - use simple rownum
+        if ($limit == 1 && $offset == 0) {
+            return "select * from ({$sql}) where rownum {$constraint}";
+        }
+
+        return 'select '.$this->compileTableExpressionColumns($query)." from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+    }
+
+    /**
+     * Compile the limit / offset row constraint for a union query.
+     */
+    protected function compileUnionRowConstraint(?int $limit, int $offset): string
+    {
+        $start = $offset + 1;
+        $finish = $offset + $limit;
+
+        if ($limit == 1 && $offset == 0) {
+            return '= 1';
+        }
+
+        if ($offset && is_null($limit)) {
+            return ">= {$start}";
+        }
+
+        return "between {$start} and {$finish}";
+    }
+
+    /**
      * Compile the limit / offset row constraint for a query.
      */
     protected function compileRowConstraint(Builder $query): string
@@ -213,7 +266,50 @@ class OracleGrammar extends Grammar
             return "select * from ({$sql}) where rownum {$constraint}";
         }
 
-        return "select t2.* from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+        return 'select '.$this->compileTableExpressionColumns($query)." from ( select rownum AS \"rn\", t1.* from ({$sql}) t1 ) t2 where t2.\"rn\" {$constraint}";
+    }
+
+    /**
+     * Compile the outer projection for a row-number limited query.
+     * Heuristics to try to avoid ORA-01789.
+     */
+    protected function compileTableExpressionColumns(Builder $query): string
+    {
+        if (empty($query->columns) || in_array('*', $query->columns, true)) {
+            return 't2.*';
+        }
+
+        $columns = [];
+
+        foreach ($query->columns as $column) {
+            $value = $column instanceof Expression
+                ? $column->getValue($query->getGrammar())
+                : $column;
+
+            $value = trim((string) $value);
+
+            if ($value === 'rn' || preg_match('/\srn$/i', $value)) {
+                return 't2.*';
+            }
+
+            if ($value === '*' || str_contains($value, '*')) {
+                return 't2.*';
+            }
+
+            if (preg_match('/\s+as\s+(.+)$/i', $value, $matches)) {
+                $columns[] = 't2.'.$this->wrap($matches[1]);
+
+                continue;
+            }
+
+            if (str_contains($value, '(')) {
+                return 't2.*';
+            }
+
+            $columns[] = 't2.'.$this->wrap(last(explode('.', $value)));
+        }
+
+        return implode(', ', $columns);
     }
 
     /**
