@@ -103,6 +103,11 @@ trait InteractsWithTestDatabases
             'username' => $this->oracleUsername(),
             'password' => $this->oraclePassword(),
             'server_version' => $this->serverVersion(),
+            'connect_timeout' => '120',
+            'retry_count' => '3',
+            'retry_delay' => '1',
+            'transport_connect_timeout' => '60',
+            'expire_time' => '0',
         ], $overrides);
     }
 

@@ -89,6 +89,11 @@ This will copy the configuration file to `config/oracle.php`.
     'edition'        => env('DB_EDITION', 'ora$base'),
     'server_version' => env('DB_SERVER_VERSION', '11g'),
     'load_balance'   => env('DB_LOAD_BALANCE', 'yes'),
+    'connect_timeout' => env('DB_CONNECT_TIMEOUT', ''),
+    'retry_count'    => env('DB_RETRY_COUNT', '3'), // 12c and above only
+    'retry_delay'    => env('DB_RETRY_DELAY', '1'), // 12c and above only
+    'transport_connect_timeout' => env('DB_TRANSPORT_CONNECT_TIMEOUT', '60'), // 12c and above only
+    'expire_time'    => env('DB_EXPIRE_TIME', '0'), // 19c and above only
     'dynamic'        => [],
     'max_name_len'   => env('ORA_MAX_NAME_LEN', 30),
 ],
@@ -104,6 +109,11 @@ DB_SERVICE_NAME=orcl
 DB_DATABASE=xe
 DB_USERNAME=hr
 DB_PASSWORD=hr
+DB_CONNECT_TIMEOUT=10
+DB_RETRY_COUNT=3
+DB_RETRY_DELAY=1
+DB_TRANSPORT_CONNECT_TIMEOUT=60
+DB_EXPIRE_TIME=0
 ```
 
 > If you want to connect to a cluster containing multiple hosts, you can either set `tns` manually or set host as a comma-separated array and configure other fields as you wish:
