@@ -1,3 +1,10 @@
+## [13.4.1](https://github.com/yajra/laravel-oci8/compare/v13.4.0...v13.4.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* limit index length to 30 to prevent errors on oracle 11g and below ([25f3cea](https://github.com/yajra/laravel-oci8/commit/25f3ceae05d168b5debb83090d4bc504867c6beb))
+
 # [13.4.0](https://github.com/yajra/laravel-oci8/compare/v13.3.0...v13.4.0) (2026-05-14)
 
 
