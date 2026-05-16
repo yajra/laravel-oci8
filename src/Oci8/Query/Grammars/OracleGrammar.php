@@ -20,6 +20,11 @@ class OracleGrammar extends Grammar
     use OracleReservedWords;
 
     /**
+     * Indicates whether the truncate statement should cascade.
+     */
+    protected static bool $cascadeTruncate = false;
+
+    /**
      * The keyword identifier wrapper format.
      */
     protected string $wrapper = '%s';
@@ -221,7 +226,27 @@ class OracleGrammar extends Grammar
      */
     public function compileTruncate(Builder $query): array
     {
-        return ['truncate table '.$this->wrapTable($query->from) => []];
+        $cascade = static::$cascadeTruncate && $query->getConnection()->isVersionAboveOrEqual('12c')
+            ? ' cascade'
+            : '';
+
+        return ['truncate table '.$this->wrapTable($query->from).$cascade => []];
+    }
+
+    /**
+     * Enable or disable the "cascade" option when compiling the truncate statement.
+     */
+    public static function cascadeOnTruncate(bool $value = true): void
+    {
+        static::$cascadeTruncate = $value;
+    }
+
+    /**
+     * @deprecated use cascadeOnTruncate
+     */
+    public static function cascadeOnTrucate(bool $value = true): void
+    {
+        self::cascadeOnTruncate($value);
     }
 
     /**
