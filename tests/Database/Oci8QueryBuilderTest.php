@@ -2677,6 +2677,40 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('users')->truncate();
     }
 
+    public function test_truncate_method_with_cascade()
+    {
+        OracleGrammar::cascadeOnTruncate();
+
+        try {
+            $builder = new Builder(
+                $connection = $this->getConnection(serverVersion: '12c'),
+                new OracleGrammar($connection),
+                m::mock(OracleProcessor::class)
+            );
+            $builder->getConnection()->shouldReceive('statement')->once()->with('truncate table "USERS" cascade', []);
+            $builder->from('users')->truncate();
+        } finally {
+            OracleGrammar::cascadeOnTruncate(false);
+        }
+    }
+
+    public function test_truncate_method_with_cascade_on_unsupported_version()
+    {
+        OracleGrammar::cascadeOnTruncate();
+
+        try {
+            $builder = new Builder(
+                $connection = $this->getConnection(serverVersion: '11g'),
+                new OracleGrammar($connection),
+                m::mock(OracleProcessor::class)
+            );
+            $builder->getConnection()->shouldReceive('statement')->once()->with('truncate table "USERS"', []);
+            $builder->from('users')->truncate();
+        } finally {
+            OracleGrammar::cascadeOnTruncate(false);
+        }
+    }
+
     public function test_merge_wheres_can_merge_wheres_and_bindings()
     {
         $builder = $this->getBuilder();
