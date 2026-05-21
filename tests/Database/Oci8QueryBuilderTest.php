@@ -741,6 +741,36 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([], $builder->getBindings());
     }
 
+    public function test_where_integer_in_raw_thousands()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereIntegerInRaw('id', range(1, 1001));
+
+        $this->assertSame(
+            sprintf(
+                'select * from "USERS" where ("ID" in (%s) or "ID" in (1001))',
+                implode(', ', range(1, 1000))
+            ),
+            $builder->toSql()
+        );
+        $this->assertEquals([], $builder->getBindings());
+    }
+
+    public function test_where_integer_not_in_raw_thousands()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereIntegerNotInRaw('id', range(1, 1001));
+
+        $this->assertSame(
+            sprintf(
+                'select * from "USERS" where ("ID" not in (%s) and "ID" not in (1001))',
+                implode(', ', range(1, 1000))
+            ),
+            $builder->toSql()
+        );
+        $this->assertEquals([], $builder->getBindings());
+    }
+
     public function test_or_where_integer_not_in_raw()
     {
         $builder = $this->getBuilder();
