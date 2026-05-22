@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Functional;
 
 use Illuminate\Database\Query\Expression as Raw;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
@@ -117,6 +118,18 @@ class QueryBuilderTest extends TestCase
         $lastId = $this->getConnection()->table('users')->max('id');
         $id = $this->getBuilder()->from('users')->insertGetId(['name' => 'foo', 'email' => 'bar']);
         $this->assertSame($lastId + 1, $id);
+    }
+
+    #[Test]
+    public function it_returns_query_exception()
+    {
+        $this->expectException(QueryException::class);
+
+        User::forceCreate([
+            'name' => 'test',
+            'email' => 'test@test.hu',
+            'not_exists' => 'fail',
+        ]);
     }
 
     #[Test]
