@@ -67,6 +67,18 @@ jobs:
           max_attempts: 5
           command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
+      - name: Install Oracle Instant Client tools
+        run: |
+          curl -Ls https://download.oracle.com/otn_software/linux/instantclient/instantclient-tools-linuxx64.zip -o /tmp/instantclient-tools.zip
+          sudo unzip -oq /tmp/instantclient-tools.zip -d /opt/oracle
+          ORACLE_TOOLS_DIR="$(find /opt/oracle -maxdepth 1 -type d -name 'instantclient_*' | sort -V | tail -n 1)"
+
+          test -x "$ORACLE_TOOLS_DIR/exp"
+          test -x "$ORACLE_TOOLS_DIR/imp"
+
+          echo "$ORACLE_TOOLS_DIR" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$ORACLE_TOOLS_DIR:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+
       - name: Initialize Oracle users
         run: |
           TEST_USER="laravel_oci8"
@@ -206,6 +218,7 @@ jobs:
 
       - name: Execute tests
         env:
+          ORACLE_TOOLS: ${{ (matrix.oracle == '11g' || matrix.oracle == '19c' || matrix.oracle == '23ai') && 'false' || 'true' }}
           ORACLE_USER: laravel_oci8
           ORACLE_PASSWORD: LaravelOci8_123!
           ORACLE_SECOND_USER: second_connection
