@@ -58,7 +58,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: oci8
           tools: composer:v2
-          coverage: none
+          coverage: xdebug
 
       - name: Install dependencies
         uses: nick-invision/retry@v4
@@ -75,22 +75,36 @@ jobs:
           SECOND_PASSWORD="second_connection"
 
           if [ "${{ matrix.oracle }}" = "11g" ]; then
-            SQLPLUS_PATH="/u01/app/oracle/product/11.2.0/xe/bin/sqlplus"
+            SQLPLUS_PATH="/u01/app/oracle/product/11.2.0/xe/bin/sqlplus -L"
             ORACLE_ENV="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH;"
             LOGIN="system/oracle@XE"
           elif [ "${{ matrix.oracle }}" = "21c" ]; then
-            SQLPLUS_PATH="sqlplus"
+            SQLPLUS_PATH="sqlplus -L"
             ORACLE_ENV=""
             LOGIN="system/oracle@XEPDB1"
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
-            SQLPLUS_PATH="sqlplus"
+            SQLPLUS_PATH="sqlplus -L"
             ORACLE_ENV=""
             LOGIN="system/oracle@FREEPDB1"
           else
-            SQLPLUS_PATH="sqlplus"
+            SQLPLUS_PATH="sqlplus -L"
             ORACLE_ENV="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet;"
             LOGIN="admin/SecureDb1234@myatp_low"
           fi
+          WAIT_CMD="$ORACLE_ENV echo 'select 1 from dual;' | $SQLPLUS_PATH -s $LOGIN"
+
+          for i in {1..60}; do
+            if docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "$WAIT_CMD" >/dev/null 2>&1; then
+              break
+            fi
+
+            if [ "$i" -eq 60 ]; then
+              echo "Oracle did not become SQLPlus-ready"
+              exit 1
+            fi
+
+            sleep 10
+          done
 
           if [ "${{ matrix.oracle }}" = "19c" ] || [ "${{ matrix.oracle }}" = "23ai" ]; then
             SECOND_PASSWORD="SecondConnection1!"
@@ -158,26 +172,26 @@ jobs:
             export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s system/oracle@XE
+            exit;\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -L -s system/oracle@XE
             "
           elif [ "${{ matrix.oracle }}" = "21c" ]; then
             docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | sqlplus -s system/oracle@XEPDB1
+            exit;\" | sqlplus -L -s system/oracle@XEPDB1
             "
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
             docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | sqlplus -s system/oracle@FREEPDB1
+            exit;\" | sqlplus -L -s system/oracle@FREEPDB1
             "
           else
             docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
             export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | sqlplus -s admin/SecureDb1234@myatp_low
+            exit;\" | sqlplus -L -s admin/SecureDb1234@myatp_low
             "
           fi
           echo
@@ -197,17 +211,27 @@ jobs:
           ORACLE_SECOND_USER: second_connection
           ORACLE_SECOND_PASSWORD: ${{ (matrix.oracle == '19c' || matrix.oracle == '23ai') && 'SecondConnection1!' || 'second_connection' }}
         run: |
+          mkdir -p build/coverage
+          COVERAGE_FILE="build/coverage/oracle-php-${{ matrix.php }}-${{ matrix.oracle }}.cov"
           if [ "${{ matrix.oracle }}" = "19c" ]; then
-            SERVER_VERSION=19c SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit
+            SERVER_VERSION=19c SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
           elif [ "${{ matrix.oracle }}" = "23ai" ]; then
-            SERVER_VERSION=23ai SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit
+            SERVER_VERSION=23ai SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
           elif [ "${{ matrix.oracle }}" = "21c" ]; then
-            SERVER_VERSION=12c SERVICE_NAME=XEPDB1 DATABASE=XEPDB1 vendor/bin/phpunit
+            SERVER_VERSION=12c SERVICE_NAME=XEPDB1 DATABASE=XEPDB1 vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
-            SERVER_VERSION=26ai SERVICE_NAME=FREEPDB1 DATABASE=FREEPDB1 vendor/bin/phpunit
+            SERVER_VERSION=26ai SERVICE_NAME=FREEPDB1 DATABASE=FREEPDB1 vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
           else
-            vendor/bin/phpunit
+            vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
           fi
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-oracle-php-${{ matrix.php }}-${{ matrix.oracle }}
+          path: build/coverage/*.cov
+          if-no-files-found: error
+          retention-days: 1
 
   compatibility-pgsql-tests:
     runs-on: ubuntu-latest
@@ -319,3 +343,136 @@ jobs:
           SERVER_VERSION: 12c
           MARIADB: true
         run: vendor/bin/phpunit tests/Functional/Compatibility/
+
+  coverage:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && 'coverage-master' || format('coverage-{0}', github.run_id) }}
+      cancel-in-progress: false
+    permissions:
+      actions: read
+      contents: write
+    needs:
+      - tests
+
+    name: Merge and show coverage
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          coverage: xdebug
+
+      - name: Install PHPCOV
+        run: |
+          curl -Ls https://phar.phpunit.de/phpcov-11.0.phar -o phpcov
+          chmod +x phpcov
+          ./phpcov --version
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-oracle-*
+          path: build/coverage
+          merge-multiple: true
+
+      - name: Merge coverage
+        run: |
+          mkdir -p build/logs
+          ./phpcov merge \
+            --clover build/logs/clover.xml \
+            --text build/logs/coverage.txt \
+            build/coverage
+
+      - name: Show coverage
+        run: cat build/logs/coverage.txt
+
+      - name: Generate coverage badge
+        run: |
+          php <<'PHP'
+          <?php
+
+          $coverage = simplexml_load_file('build/logs/clover.xml');
+          $metrics = $coverage->project->metrics;
+          $statements = (int) $metrics['statements'];
+          $coveredStatements = (int) $metrics['coveredstatements'];
+          $percentage = $statements > 0 ? round(($coveredStatements / $statements) * 100, 2) : 0;
+          $label = 'Coverage';
+          $value = $percentage . '%';
+          $color = match (true) {
+              $percentage >= 90 => '#4c1',
+              $percentage >= 80 => '#97ca00',
+              $percentage >= 70 => '#dfb317',
+              default => '#e05d44',
+          };
+          $labelWidth = 70;
+          $valueWidth = max(46, strlen($value) * 7 + 12);
+          $width = $labelWidth + $valueWidth;
+          $valueX = $labelWidth + ($valueWidth / 2);
+          $label = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+          $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+
+          file_put_contents('build/logs/coverage.svg', <<<SVG
+          <svg xmlns="http://www.w3.org/2000/svg" width="$width" height="20" role="img" aria-label="$label: $value">
+            <title>$label: $value</title>
+            <linearGradient id="s" x2="0" y2="100%">
+              <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+              <stop offset="1" stop-opacity=".1"/>
+            </linearGradient>
+            <clipPath id="r">
+              <rect width="$width" height="20" rx="3" fill="#fff"/>
+            </clipPath>
+            <g clip-path="url(#r)">
+              <rect width="$labelWidth" height="20" fill="#555"/>
+              <rect x="$labelWidth" width="$valueWidth" height="20" fill="$color"/>
+              <rect width="$width" height="20" fill="url(#s)"/>
+            </g>
+            <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="11">
+              <text x="35" y="15" fill="#010101" fill-opacity=".3">$label</text>
+              <text x="35" y="14">$label</text>
+              <text x="$valueX" y="15" fill="#010101" fill-opacity=".3">$value</text>
+              <text x="$valueX" y="14">$value</text>
+            </g>
+          </svg>
+          SVG);
+          PHP
+
+      - name: Publish coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin coverage-report:refs/remotes/origin/coverage-report || true
+          if git show-ref --verify --quiet refs/remotes/origin/coverage-report; then
+            git worktree add -B coverage-report /tmp/coverage-badge origin/coverage-report
+          else
+            git worktree add --detach /tmp/coverage-badge
+            cd /tmp/coverage-badge
+            git checkout --orphan coverage-report
+            git reset
+          fi
+          cd /tmp/coverage-badge
+          mkdir -p badges
+          cp "$GITHUB_WORKSPACE/build/logs/coverage.svg" badges/coverage.svg
+          git add badges/coverage.svg
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Update coverage badge"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" coverage-report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload merged coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-merged
+          path: |
+            build/logs/clover.xml
+            build/logs/coverage.txt
+            build/logs/coverage.svg
+          if-no-files-found: error

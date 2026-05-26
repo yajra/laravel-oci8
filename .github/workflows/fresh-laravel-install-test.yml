@@ -95,41 +95,54 @@ jobs:
           "
           if [ "${{ matrix.oracle }}" = "11g" ]; then
             LOGIN="system/oracle@XE"
-            WAIT_CMD="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH; echo 'select 1 from dual;' | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s $LOGIN"
+            WAIT_CMD="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH; echo 'select 1 from dual;' | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -L -s $LOGIN"
             SQLPLUS_CMD="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH; echo \"
           BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
           /
           $COMMON_USER_SQL
           GRANT DBA TO $TEST_USER;
-          \" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s $LOGIN"
+          \" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -L -s $LOGIN"
           elif [ "${{ matrix.oracle }}" = "21c" ]; then
             LOGIN="system/oracle@XEPDB1"
-            WAIT_CMD="echo 'select 1 from dual;' | sqlplus -s $LOGIN"
+            WAIT_CMD="echo 'select 1 from dual;' | sqlplus -L -s $LOGIN"
             SQLPLUS_CMD="echo \"
           BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
           /
           $COMMON_USER_SQL
           GRANT UNLIMITED TABLESPACE TO $TEST_USER;
-          \" | sqlplus -s $LOGIN"
+          \" | sqlplus -L -s $LOGIN"
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
             LOGIN="system/oracle@FREEPDB1"
-            WAIT_CMD="echo 'select 1 from dual;' | sqlplus -s $LOGIN"
+            WAIT_CMD="echo 'select 1 from dual;' | sqlplus -L -s $LOGIN"
             SQLPLUS_CMD="echo \"
           BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
           /
           $COMMON_USER_SQL
           GRANT UNLIMITED TABLESPACE TO $TEST_USER;
-          \" | sqlplus -s $LOGIN"
+          \" | sqlplus -L -s $LOGIN"
           else
             LOGIN="admin/SecureDb1234@myatp_low"
-            WAIT_CMD="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet; echo 'select 1 from dual;' | sqlplus -s $LOGIN"
+            WAIT_CMD="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet; echo 'select 1 from dual;' | sqlplus -L -s $LOGIN"
             SQLPLUS_CMD="export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet; echo \"
           BEGIN EXECUTE IMMEDIATE 'DROP USER $TEST_USER CASCADE'; EXCEPTION WHEN OTHERS THEN NULL; END;
           /
           $COMMON_USER_SQL
           ALTER USER $TEST_USER QUOTA UNLIMITED ON DATA;
-          \" | sqlplus -s $LOGIN"
+          \" | sqlplus -L -s $LOGIN"
           fi
+          for i in {1..60}; do
+            if docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "$WAIT_CMD" >/dev/null 2>&1; then
+              break
+            fi
+
+            if [ "$i" -eq 60 ]; then
+              echo "Oracle did not become SQLPlus-ready"
+              exit 1
+            fi
+
+            sleep 10
+          done
+
           docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "$SQLPLUS_CMD"
 
       - name: Configure Laravel for Oracle
@@ -180,26 +193,26 @@ jobs:
             export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -s system/oracle@XE
+            exit;\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus -L -s system/oracle@XE
             "
           elif [ "${{ matrix.oracle }}" = "21c" ]; then
             docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | sqlplus -s system/oracle@XEPDB1
+            exit;\" | sqlplus -L -s system/oracle@XEPDB1
             "
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
             docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | sqlplus -s system/oracle@FREEPDB1
+            exit;\" | sqlplus -L -s system/oracle@FREEPDB1
             "
           else
             docker exec -u oracle ${{ job.services.oracle.id }} bash -lc "
             export TNS_ADMIN=/u01/app/oracle/wallets/tls_wallet
             echo \"set heading off feedback off pagesize 0 verify off
             select banner_full from v\\\$version where banner_full like 'Oracle Database%';
-            exit;\" | sqlplus -s admin/SecureDb1234@myatp_low
+            exit;\" | sqlplus -L -s admin/SecureDb1234@myatp_low
             "
           fi
           echo
