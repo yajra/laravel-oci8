@@ -769,6 +769,19 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a "where null safe equals" clause.
+     *
+     * Oracle's DECODE treats two NULL values as equal, matching Laravel's
+     * null-safe equality semantics without requiring duplicate bindings.
+     *
+     * @param  array  $where
+     */
+    protected function whereNullSafeEquals(Builder $query, $where): string
+    {
+        return 'DECODE('.$this->wrap($where['column']).', '.$this->parameter($where['value']).', 1, 0) = 1';
+    }
+
+    /**
      * Compile a "where not in raw" clause.
      *
      * For safety, whereIntegerInRaw ensures this method is only used with integer values.
