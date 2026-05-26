@@ -25,6 +25,7 @@ class SchemaTest extends TestCase
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_POSTS"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_USERS"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop table "COMPATIBILITY_ONLINE_INDEXES"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPAT_COLLATION_COLUMNS"\'; exception when others then null; end;');
         } elseif ($driver === 'pgsql') {
             DB::statement('drop view if exists "compatibility_view"');
             DB::statement('drop type if exists compatibility_type_list');
@@ -36,6 +37,7 @@ class SchemaTest extends TestCase
             DB::statement('drop table if exists "compatibility_not_valid_posts"');
             DB::statement('drop table if exists "compatibility_not_valid_users"');
             DB::statement('drop table if exists "compatibility_online_indexes"');
+            DB::statement('drop table if exists "compat_collation_columns"');
         }
 
         if (Schema::hasTable('rename_index_table')) {
@@ -289,6 +291,40 @@ class SchemaTest extends TestCase
             ->all();
 
         $this->assertContains('compat_online_name', $indexes);
+    }
+
+    #[Test]
+    public function it_can_create_and_add_collated_columns_from_schema_builder()
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if (! in_array($driver, ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        if ($driver === 'oracle' && DB::connection()->isVersionBelow('12cR2')) {
+            $this->markTestSkipped('Column collation is only supported from Oracle 12cR2 and onward.');
+        }
+
+        $collation = $driver === 'oracle' ? 'BINARY_CI' : 'C';
+
+        Schema::create('compat_collation_columns', function (Blueprint $table) use ($collation) {
+            $table->string('name')->collation($collation);
+        });
+
+        Schema::table('compat_collation_columns', function (Blueprint $table) use ($collation) {
+            $table->string('email')->collation($collation);
+        });
+
+        $columns = collect(Schema::getColumns('compat_collation_columns'))->keyBy('name');
+
+        $nameColumn = $columns->get('name');
+        $emailColumn = $columns->get('email');
+
+        $this->assertNotNull($nameColumn);
+        $this->assertNotNull($emailColumn);
+        $this->assertSame(strtolower($collation), strtolower((string) $nameColumn['collation']));
+        $this->assertSame(strtolower($collation), strtolower((string) $emailColumn['collation']));
     }
 
     #[Test]

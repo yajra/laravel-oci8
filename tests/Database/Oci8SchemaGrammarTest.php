@@ -222,6 +222,36 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function test_basic_create_table_with_collation()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->create();
+        $blueprint->string('email')->collation('latin1_swedish_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "USERS" ( "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_alter_table_add_column_with_collation()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->string('email')->collation('latin1_swedish_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null )',
+        ], $statements);
+    }
+
     public function test_basic_create_table_with_prefix()
     {
         $conn = $this->getConnection(prefix: 'prefix_');

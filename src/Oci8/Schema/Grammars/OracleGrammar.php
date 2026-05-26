@@ -26,7 +26,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Increment', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Increment', 'Collate', 'Nullable', 'Default', 'GeneratedAs'];
 
     /**
      * The possible column serials.
