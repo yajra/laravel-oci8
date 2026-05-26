@@ -681,17 +681,12 @@ class OracleGrammar extends Grammar
     private function resolveClause($column, $values, $type): string
     {
         $chunks = array_chunk($values, 1000);
-        $whereClause = '';
-        $i = 0;
-        $type = $this->wrap($column).' '.$type.' ';
-        foreach ($chunks as $ch) {
-            // Add or only at the second loop
-            if ($i === 1) {
-                $type = ' or '.$type.' ';
-            }
-            $whereClause .= $type.'('.implode(', ', $ch).')';
-            $i++;
-        }
+        $boolean = $type === 'not in' ? ' and ' : ' or ';
+        $type = $this->wrap($column).' '.$type;
+
+        $whereClause = collect($chunks)
+            ->map(fn ($ch) => $type.' ('.implode(', ', $ch).')')
+            ->implode($boolean);
 
         return '('.$whereClause.')';
     }
