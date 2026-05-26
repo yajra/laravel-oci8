@@ -1,3 +1,10 @@
+## [13.5.1](https://github.com/yajra/laravel-oci8/compare/v13.5.0...v13.5.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* whereIntegerNotInRaw not working above 1000, chunking uses "or" instead of "and" ([559ff19](https://github.com/yajra/laravel-oci8/commit/559ff19d1feab12f25e4d6ff03c454ada8f57eaa))
+
 # [13.5.0](https://github.com/yajra/laravel-oci8/compare/v13.4.1...v13.5.0) (2026-05-26)
 
 
