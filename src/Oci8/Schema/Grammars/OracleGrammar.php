@@ -249,7 +249,7 @@ class OracleGrammar extends Grammar
 
         return sprintf(
             "select lower(type_name) as name, lower(owner) as schema, lower(typecode) as type, lower(typecode) as category, 0 as implicit from all_types where predefined = 'NO' and typecode != 'COLLECTION' and %1\$s "
-            ."union all "
+            .'union all '
             ."select lower(type_name) as name, lower(owner) as schema, lower(replace(coll_type, ' ', '_')) as type, 'collection' as category, 0 as implicit from all_coll_types where %1\$s "
             .'order by schema, name',
             $ownerWhere
@@ -1013,7 +1013,7 @@ class OracleGrammar extends Grammar
     public function compileIndexes($schema, $table): string
     {
         return sprintf(
-            "select i.index_name as name, "
+            'select i.index_name as name, '
             ."LISTAGG(coalesce(extractvalue(dbms_xmlgen.getxmltype('select column_expression from all_ind_expressions where index_owner = ''' || i.index_owner || ''' and index_name = ''' || i.index_name || ''' and table_owner = ''' || i.table_owner || ''' and table_name = ''' || i.table_name || ''' and column_position = ' || i.column_position), '/ROWSET/ROW/COLUMN_EXPRESSION'), i.column_name), ',') WITHIN GROUP (ORDER BY i.column_position) as columns, "
             .'a.index_type as type, '
             ."decode(a.uniqueness, 'UNIQUE', 1, 0) as \"unique\", "
