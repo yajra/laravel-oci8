@@ -1,3 +1,15 @@
+# [13.5.0](https://github.com/yajra/laravel-oci8/compare/v13.4.1...v13.5.0) (2026-05-26)
+
+
+### Bug Fixes
+
+* pint :robot: ([e1f6b2d](https://github.com/yajra/laravel-oci8/commit/e1f6b2da2a11b2717476aba30fe40ba3d655712b))
+
+
+### Features
+
+* improve column introspection ([f8d3743](https://github.com/yajra/laravel-oci8/commit/f8d3743a827aa3a4346b3d3a31fc76c77bb66fe8))
+
 ## [13.4.1](https://github.com/yajra/laravel-oci8/compare/v13.4.0...v13.4.1) (2026-05-16)
 
 
