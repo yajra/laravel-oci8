@@ -1008,6 +1008,28 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
     }
 
+    public function test_adding_index_with_algorithm()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->index(['foo', 'bar'], 'baz', 'bitmap');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('create bitmap index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
+    }
+
+    public function test_adding_online_index_with_algorithm()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->index(['foo', 'bar'], 'baz', 'bitmap')->online();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('create bitmap index baz on "USERS" ( "FOO", "BAR" ) online', $statements[0]);
+    }
+
     public function test_adding_online_index()
     {
         $conn = $this->getConnection();

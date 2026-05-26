@@ -420,7 +420,9 @@ class OracleGrammar extends Grammar
      */
     public function compileIndex(Blueprint $blueprint, Fluent $command): string
     {
-        $sql = "create index {$command->index} on ".$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' )';
+        $algorithm = $command->algorithm ? trim((string) $command->algorithm).' ' : '';
+
+        $sql = "create {$algorithm}index {$command->index} on ".$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' )';
 
         if ($command->online) {
             $sql .= ' online';
