@@ -326,6 +326,27 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
+    public function test_where_null_safe_equals()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereNullSafeEquals('id', 1);
+        $this->assertSame('select * from "USERS" where DECODE("ID", ?, 1, 0) = 1', $builder->toSql());
+        $this->assertEquals([0 => 1], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereNullSafeEquals('id', null);
+        $this->assertSame('select * from "USERS" where DECODE("ID", ?, 1, 0) = 1', $builder->toSql());
+        $this->assertEquals([0 => null], $builder->getBindings());
+    }
+
+    public function test_where_null_safe_equals_operator()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('id', '<=>', 1);
+        $this->assertSame('select * from "USERS" where DECODE("ID", ?, 1, 0) = 1', $builder->toSql());
+        $this->assertEquals([0 => 1], $builder->getBindings());
+    }
+
     public function test_wheres_with_array_value()
     {
         $builder = $this->getBuilder();
