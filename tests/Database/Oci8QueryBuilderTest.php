@@ -2509,6 +2509,116 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
+    public function test_update_method_with_json_selector()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."language"\' = ?) where "ID" = ?', ['en', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->update(['options->language' => 'en']);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_json_selector_formats_json_values()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with(
+                'update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."settings"\' = ? FORMAT JSON), "NAME" = ? where "ID" = ?',
+                ['{"theme":"dark"}', 'Taylor', 1]
+            )
+            ->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->update([
+            'options->settings' => ['theme' => 'dark'],
+            'name' => 'Taylor',
+        ]);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_json_selector_formats_number_value()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."score"\' = ? FORMAT JSON) where "ID" = ?', ['42', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->update(['options->score' => 42]);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_json_selector_formats_float_value()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."ratio"\' = ? FORMAT JSON) where "ID" = ?', ['4.5', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->update(['options->ratio' => 4.5]);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_json_selector_formats_null_value()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."nullable"\' = ? FORMAT JSON) where "ID" = ?', ['null', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->update(['options->nullable' => null]);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_multilevel_json_selector()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with(
+                'update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."items"[0]."count"\' = ? FORMAT JSON) where "ID" = ?',
+                ['12', 1]
+            )
+            ->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->update(['options->items[0]->count' => 12]);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_json_selector_requires_oracle_19c()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON path updates require Oracle 19c or newer.');
+
+        $connection = $this->getConnection(serverVersion: '12c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->from('users')->where('id', '=', 1)->update(['options->language' => 'en']);
+    }
+
     public function test_upsert_method()
     {
         $builder = $this->getBuilder();

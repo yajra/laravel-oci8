@@ -491,4 +491,139 @@ class JsonTest extends TestCase
 
         $this->assertCount(1, $results);
     }
+
+    #[Test]
+    public function it_can_update_json_paths()
+    {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('19c')) {
+            $this->markTestSkipped('JSON path updates require Oracle 19c or newer.');
+        }
+
+        DB::table('json_test')->insert([
+            'options' => json_encode([
+                'language' => 'en',
+                'settings' => ['theme' => 'light'],
+                'active' => false,
+                'tags' => ['old'],
+                'nullable' => 'value',
+                'score' => 1,
+                'ratio' => 0.5,
+            ]),
+        ]);
+
+        $id = DB::table('json_test')->value('id');
+
+        foreach ([
+            'options->language' => 'hu',
+            'options->settings->theme' => 'dark',
+            'options->active' => true,
+            'options->nullable' => null,
+            'options->score' => 42,
+            'options->ratio' => 4.5,
+        ] as $path => $value) {
+            DB::table('json_test')->where('id', $id)->update([$path => $value]);
+        }
+
+        $options = json_decode((string) DB::table('json_test')->where('id', $id)->value('options'), true);
+
+        $this->assertSame('hu', $options['language']);
+        $this->assertSame('dark', $options['settings']['theme']);
+        $this->assertTrue($options['active']);
+        $this->assertNull($options['nullable']);
+        $this->assertSame(42, $options['score']);
+
+        if (DB::connection()->getDriverName() === 'mariadb') {
+            $this->assertEquals(4.5, $options['ratio']);
+        } else {
+            $this->assertSame(4.5, $options['ratio']);
+        }
+    }
+
+    #[Test]
+    public function it_can_update_json_paths_with_array_values()
+    {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('19c')) {
+            $this->markTestSkipped('JSON path updates require Oracle 19c or newer.');
+        }
+
+        if (DB::connection()->getDriverName() === 'mariadb') {
+            $this->markTestSkipped('MariaDB stores Collection JSON path update values as strings through Laravel JSON_SET.');
+        }
+
+        DB::table('json_test')->insert([
+            'options' => json_encode([
+                'settings' => [
+                    'theme' => 'light',
+                    'notifications' => [
+                        'email' => false,
+                    ],
+                ],
+            ]),
+        ]);
+
+        $id = DB::table('json_test')->value('id');
+
+        $settings = collect([
+            'theme' => 'dark',
+            'notifications' => [
+                'email' => true,
+            ],
+        ]);
+
+        DB::table('json_test')->where('id', $id)->update(['options->settings' => $settings]);
+
+        $options = json_decode((string) DB::table('json_test')->where('id', $id)->value('options'), true);
+
+        $this->assertSame('dark', $options['settings']['theme']);
+        $this->assertTrue($options['settings']['notifications']['email']);
+    }
+
+    #[Test]
+    public function it_can_update_multilevel_json_paths()
+    {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('19c')) {
+            $this->markTestSkipped('JSON path updates require Oracle 19c or newer.');
+        }
+
+        DB::table('json_test')->insert([
+            'options' => json_encode([
+                'profile' => [
+                    'settings' => [
+                        'theme' => 'light',
+                        'notifications' => [
+                            'email' => false,
+                            'sms' => true,
+                        ],
+                        'attempts' => 1,
+                    ],
+                    'languages' => ['en'],
+                ],
+                'items' => [
+                    ['name' => 'old', 'count' => 1],
+                ],
+            ]),
+        ]);
+
+        $id = DB::table('json_test')->value('id');
+
+        foreach ([
+            'options->profile->settings->theme' => 'dark',
+            'options->profile->settings->notifications->email' => true,
+            'options->profile->settings->notifications->sms' => null,
+            'options->profile->settings->attempts' => 7,
+            'options->items[0]->name' => 'new',
+            'options->items[0]->count' => 12,
+        ] as $path => $value) {
+            DB::table('json_test')->where('id', $id)->update([$path => $value]);
+        }
+
+        $options = json_decode((string) DB::table('json_test')->where('id', $id)->value('options'), true);
+
+        $this->assertSame('dark', $options['profile']['settings']['theme']);
+        $this->assertTrue($options['profile']['settings']['notifications']['email']);
+        $this->assertNull($options['profile']['settings']['notifications']['sms']);
+        $this->assertSame(7, $options['profile']['settings']['attempts']);
+        $this->assertSame('new', $options['items'][0]['name']);
+        $this->assertSame(12, $options['items'][0]['count']);
+    }
 }
