@@ -83,7 +83,9 @@ class OracleEloquent extends Model
         // If dirty attributes contains binary field
         // extract binary fields to new array
         if ($this->extractBinaries($attributes)) {
-            return $this->newQuery()->updateLob($attributes, $this->binaryFields, $this->getKeyName());
+            return $this->setKeysForSaveQuery($this->newQuery())
+                ->getQuery()
+                ->updateLob($attributes, $this->binaryFields, $this->getKeyName());
         }
 
         return $this->fill($attributes)->save($options);
