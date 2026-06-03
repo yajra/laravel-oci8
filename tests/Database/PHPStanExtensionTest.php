@@ -147,6 +147,28 @@ class PHPStanExtensionTest extends PHPStanTestCase
         (new DatabaseManagerExtension($missingConnectionProvider))->getMethod($managerReflection, 'getSchema');
     }
 
+    public function test_database_facade_get_method_throws_when_method_is_not_found_on_oci8_connection(): void
+    {
+        $reflectionProvider = $this->createReflectionProvider();
+        $facadeReflection = $reflectionProvider->getClass('Illuminate\Support\Facades\DB');
+
+        $this->expectException(ShouldNotHappenException::class);
+        $this->expectExceptionMessage('Method unsupportedOci8Method not found on Oci8Connection');
+
+        (new DatabaseFacadeExtension($reflectionProvider))->getMethod($facadeReflection, 'unsupportedOci8Method');
+    }
+
+    public function test_database_manager_get_method_throws_when_method_is_not_found_on_oci8_connection(): void
+    {
+        $reflectionProvider = $this->createReflectionProvider();
+        $managerReflection = $reflectionProvider->getClass('Illuminate\Database\DatabaseManager');
+
+        $this->expectException(ShouldNotHappenException::class);
+        $this->expectExceptionMessage('Method unsupportedOci8Method not found on Oci8Connection');
+
+        (new DatabaseManagerExtension($reflectionProvider))->getMethod($managerReflection, 'unsupportedOci8Method');
+    }
+
     /**
      * @return list<string>
      */
