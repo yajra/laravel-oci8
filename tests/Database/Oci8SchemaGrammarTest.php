@@ -73,6 +73,30 @@ class Oci8SchemaGrammarTest extends TestCase
         return mock(OracleBuilder::class);
     }
 
+    public function test_set_schema_prefix_delegates_to_connection(): void
+    {
+        $conn = m::mock(Connection::class);
+        $conn->shouldReceive('setSchemaPrefix')->once()->with('reporting')->andReturnSelf();
+
+        $grammar = new OracleGrammar($conn);
+
+        $grammar->setSchemaPrefix('reporting');
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_set_max_length_delegates_to_connection(): void
+    {
+        $conn = m::mock(Connection::class);
+        $conn->shouldReceive('setMaxLength')->once()->with(128)->andReturnSelf();
+
+        $grammar = new OracleGrammar($conn);
+
+        $grammar->setMaxLength(128);
+
+        $this->addToAssertionCount(1);
+    }
+
     public function test_add_column_with_space(): void
     {
         $conn = $this->getConnection();
