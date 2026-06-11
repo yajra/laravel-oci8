@@ -1,3 +1,15 @@
+# [13.6.0](https://github.com/yajra/laravel-oci8/compare/v13.5.1...v13.6.0) (2026-06-11)
+
+
+### Bug Fixes
+
+* union limit/offset ([9160c60](https://github.com/yajra/laravel-oci8/commit/9160c60d2e63f7ad7e9636fc36d0deee0c95fcda))
+
+
+### Features
+
+* add json update support for 19c and above ([416b731](https://github.com/yajra/laravel-oci8/commit/416b731c5483b141b4c2f7cc76d6055def2ad9a9))
+
 ## [13.5.1](https://github.com/yajra/laravel-oci8/compare/v13.5.0...v13.5.1) (2026-05-26)
 
 
