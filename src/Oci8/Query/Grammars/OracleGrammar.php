@@ -80,6 +80,14 @@ class OracleGrammar extends Grammar
             return $this->compileUnionAggregate($query);
         }
 
+        if (isset($query->groupLimit)) {
+            if (is_null($query->columns)) {
+                $query->columns = ['*'];
+            }
+
+            return $this->compileGroupLimit($query);
+        }
+
         // If the query does not have any columns set, we'll set the columns to the
         // * character to just get all of the columns from the database. Then we
         // can build the query and concatenate all the pieces together as one.
@@ -158,6 +166,63 @@ class OracleGrammar extends Grammar
         }
 
         return trim($sql);
+    }
+
+    /**
+     * Compile a group limit clause.
+     */
+    protected function compileGroupLimit(Builder $query): string
+    {
+        $selectBindings = array_merge($query->getRawBindings()['select'], $query->getRawBindings()['order']);
+
+        $query->setBindings($selectBindings, 'select');
+        $query->setBindings([], 'order');
+
+        if ($query->columns === ['*'] && is_string($query->from)) {
+            $segments = preg_split('/\s+(?:as\s+)?/i', trim($query->from));
+            $qualifier = count($segments) > 1 ? end($segments) : $query->from;
+
+            $query->columns = [$qualifier.'.*'];
+        }
+
+        $limit = (int) $query->groupLimit['value'];
+        $offset = $query->offset;
+
+        if (isset($offset)) {
+            $offset = (int) $offset;
+            $limit += $offset;
+
+            $query->offset = null;
+        }
+
+        $components = $this->compileComponents($query);
+
+        $components['columns'] .= $this->compileRowNumber(
+            $query->groupLimit['column'],
+            $components['orders'] ?? ''
+        );
+
+        unset($components['orders']);
+
+        $table = $this->wrap('laravel_table');
+        $row = $this->wrap('laravel_row');
+
+        $sql = $this->concatenate($components);
+        $sql = "select * from ({$sql}) {$table} where {$row} <= {$limit}";
+
+        if (isset($offset)) {
+            $sql .= " and {$row} > {$offset}";
+        }
+
+        return $sql." order by {$row}";
+    }
+
+    /**
+     * Compile a row number clause.
+     */
+    protected function compileRowNumber($partition, $orders): string
+    {
+        return parent::compileRowNumber($partition, $orders ?: 'order by null');
     }
 
     /**
