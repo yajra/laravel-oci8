@@ -191,6 +191,8 @@ This is the baseline, if no version is set, this version is assumed.
 - JoinLateral support ([#989](https://github.com/yajra/laravel-oci8/pull/989))
 ### 12cR2
 - In whereLike use `binary ci` for case insensitivity. ([#945](https://github.com/yajra/laravel-oci8/pull/945))
+### 19c
+- JSON path updates with query builder `update(['options->path' => $value])`. ([#1007](https://github.com/yajra/laravel-oci8/pull/1007))
 ### 21c
 - Use native json type instead of clob in schema builder. ([#983](https://github.com/yajra/laravel-oci8/pull/983))
 
@@ -216,13 +218,21 @@ To use, just update `auth.php` config and set the driver to `oracle`
 ]
 ```
 ## JSON support
-Laravel-OCI8 provides **read-only JSON** query support for Oracle databases. 
+Laravel-OCI8 provides JSON query support for Oracle databases.
 
 >⚠️This requires Oracle 12c02 or higher.
 
->⚠️ JSON mutation / update operations are not supported.
-> Only JSON filtering and querying are available.  
-> For JSON updates, the full JSON document must be modified in the application and saved back to the database.
+JSON path updates using Laravel's `update(['json->key' => ...])` syntax are supported on Oracle 19c or higher:
+
+```php
+DB::table('users')
+    ->where('id', $id)
+    ->update(['options->profile->settings->theme' => 'dark']);
+```
+
+Only one JSON path may be updated for the same JSON column in a single `update()` call. Use separate `update()` calls for multiple paths, matching Laravel's PostgreSQL and MariaDB grammar behavior.
+
+On Oracle versions below 19c, JSON path updates are not supported. Modify the full JSON document in the application and save the column value instead.
 
 ## Credits
 

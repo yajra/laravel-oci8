@@ -8,7 +8,9 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\JoinLateralClause;
 use Illuminate\Support\Str;
+use JsonSerializable;
 use RuntimeException;
+use stdClass;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -501,6 +503,65 @@ class OracleGrammar extends Grammar
         $where = $this->compileWheres($query);
 
         return "update {$table}{$joins} set $columns$binarySql $where returning ".$binaryColumns.', '.$this->wrap($sequence).' into '.$binaryParameters.', ?';
+    }
+
+    /**
+     * Compile the columns for an update statement.
+     */
+    protected function compileUpdateColumns(Builder $query, array $values): string
+    {
+        return collect($values)->map(function ($value, $key) use ($query) {
+            if ($this->isJsonSelector($key)) {
+                return $this->compileJsonUpdateColumn($query, $key, $value);
+            }
+
+            return $this->wrap($key).' = '.$this->parameter($value);
+        })->implode(', ');
+    }
+
+    /**
+     * Compile a JSON column update using Oracle's JSON_TRANSFORM function.
+     */
+    protected function compileJsonUpdateColumn(Builder $query, string $key, mixed $value): string
+    {
+        if (! $query->getConnection()->isVersionAboveOrEqual('19c')) {
+            throw new RuntimeException('JSON path updates require Oracle 19c or newer.');
+        }
+
+        [$field, $path] = $this->wrapJsonFieldAndPath($key);
+        $path = substr($path, 2);
+
+        $formatJson = $this->shouldFormatJsonUpdateValue($value) ? ' FORMAT JSON' : '';
+
+        return "{$field} = json_transform({$field}, SET {$path} = {$this->parameter($value)}{$formatJson})";
+    }
+
+    /**
+     * Prepare the bindings for an update statement.
+     */
+    public function prepareBindingsForUpdate(array $bindings, array $values): array
+    {
+        $values = collect($values)
+            ->map(fn ($value, $column) => $this->isJsonSelector($column) && $this->shouldFormatJsonUpdateValue($value)
+                ? json_encode($value)
+                : $value)
+            ->all();
+
+        return parent::prepareBindingsForUpdate($bindings, $values);
+    }
+
+    /**
+     * Determine if an updated JSON value should be passed as JSON text.
+     */
+    protected function shouldFormatJsonUpdateValue(mixed $value): bool
+    {
+        return is_bool($value)
+            || is_int($value)
+            || is_float($value)
+            || is_null($value)
+            || is_array($value)
+            || $value instanceof JsonSerializable
+            || $value instanceof stdClass;
     }
 
     /**
