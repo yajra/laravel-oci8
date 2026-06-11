@@ -222,6 +222,25 @@ class ReorderJoinsTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_null_for_expression_subquery_join_without_alias(): void
+    {
+        $rows = DB::table('users')
+            ->join(
+                new Expression('(select user_id from "STATS")'),
+                'users.id',
+                '=',
+                'user_id'
+            )
+            ->join('orders', 'users.id', '=', 'orders.user_id')
+            ->select('users.id', DB::raw('"ORDERS"."ID" as order_id'))
+            ->get();
+
+        $this->assertCount(1, $rows);
+        $this->assertSame(1, (int) $rows[0]->id);
+        $this->assertSame(1, (int) $rows[0]->order_id);
+    }
+
+    #[Test]
     public function it_extracts_alias_from_whitespace_heavy_table_and_falls_back_to_table_name(): void
     {
         $rows = DB::table('users')
