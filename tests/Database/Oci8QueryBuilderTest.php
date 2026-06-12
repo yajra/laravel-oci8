@@ -326,6 +326,27 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
+    public function test_where_null_safe_equals()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereNullSafeEquals('id', 1);
+        $this->assertSame('select * from "USERS" where DECODE("ID", ?, 1, 0) = 1', $builder->toSql());
+        $this->assertEquals([0 => 1], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->whereNullSafeEquals('id', null);
+        $this->assertSame('select * from "USERS" where DECODE("ID", ?, 1, 0) = 1', $builder->toSql());
+        $this->assertEquals([0 => null], $builder->getBindings());
+    }
+
+    public function test_where_null_safe_equals_operator()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('id', '<=>', 1);
+        $this->assertSame('select * from "USERS" where DECODE("ID", ?, 1, 0) = 1', $builder->toSql());
+        $this->assertEquals([0 => 1], $builder->getBindings());
+    }
+
     public function test_wheres_with_array_value()
     {
         $builder = $this->getBuilder();
@@ -3042,6 +3063,40 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $builder->getConnection()->shouldReceive('statement')->once()->with('truncate table "USERS"', []);
         $builder->from('users')->truncate();
+    }
+
+    public function test_truncate_method_with_cascade()
+    {
+        OracleGrammar::cascadeOnTruncate();
+
+        try {
+            $builder = new Builder(
+                $connection = $this->getConnection(serverVersion: '12c'),
+                new OracleGrammar($connection),
+                m::mock(OracleProcessor::class)
+            );
+            $builder->getConnection()->shouldReceive('statement')->once()->with('truncate table "USERS" cascade', []);
+            $builder->from('users')->truncate();
+        } finally {
+            OracleGrammar::cascadeOnTruncate(false);
+        }
+    }
+
+    public function test_truncate_method_with_cascade_on_unsupported_version()
+    {
+        OracleGrammar::cascadeOnTruncate();
+
+        try {
+            $builder = new Builder(
+                $connection = $this->getConnection(serverVersion: '11g'),
+                new OracleGrammar($connection),
+                m::mock(OracleProcessor::class)
+            );
+            $builder->getConnection()->shouldReceive('statement')->once()->with('truncate table "USERS"', []);
+            $builder->from('users')->truncate();
+        } finally {
+            OracleGrammar::cascadeOnTruncate(false);
+        }
     }
 
     public function test_merge_wheres_can_merge_wheres_and_bindings()

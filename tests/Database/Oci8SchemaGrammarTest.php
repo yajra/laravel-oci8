@@ -35,6 +35,25 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_basic_create_temporary_table()
+    {
+        $conn = $this->getConnection();
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->temporary();
+        $blueprint->increments('id');
+        $blueprint->string('email');
+        $blueprint->create();
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create global temporary table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) ) on commit preserve rows',
+            $statements[0]
+        );
+    }
+
     protected function getConnection(
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,
@@ -227,6 +246,36 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function test_basic_create_table_with_collation()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->create();
+        $blueprint->string('email')->collation('latin1_swedish_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "USERS" ( "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_alter_table_add_column_with_collation()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->string('email')->collation('latin1_swedish_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertSame([
+            'alter table "USERS" add ( "EMAIL" varchar2(255) collate "LATIN1_SWEDISH_CI" not null )',
+        ], $statements);
+    }
+
     public function test_basic_create_table_with_prefix()
     {
         $conn = $this->getConnection(prefix: 'prefix_');
@@ -299,6 +348,44 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(1, $statements);
         $this->assertEquals(
             'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) on delete cascade, constraint prefix_users_id_pk primary key ( "ID" ) )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_deferrable_foreign_key()
+    {
+        $conn = $this->getConnection(prefix: 'prefix_');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->integer('id')->primary();
+        $blueprint->string('email');
+        $blueprint->integer('foo_id');
+        $blueprint->foreign('foo_id')->references('id')->on('orders')->deferrable()->initiallyImmediate(false);
+        $blueprint->create();
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) deferrable initially deferred, constraint prefix_users_id_pk primary key ( "ID" ) )',
+            $statements[0]
+        );
+    }
+
+    public function test_basic_create_table_with_not_valid_foreign_key()
+    {
+        $conn = $this->getConnection(prefix: 'prefix_');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->integer('id')->primary();
+        $blueprint->string('email');
+        $blueprint->integer('foo_id');
+        $blueprint->foreign('foo_id')->references('id')->on('orders')->notValid();
+        $blueprint->create();
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) enable novalidate, constraint prefix_users_id_pk primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -898,6 +985,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add constraint bar unique ( "FOO" )', $statements[0]);
     }
 
+    public function test_adding_deferrable_unique_key()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->unique('foo', 'bar')->deferrable()->initiallyImmediate(false);
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add constraint bar unique ( "FOO" ) deferrable initially deferred', $statements[0]);
+    }
+
     public function test_adding_defined_unique_key_with_prefix()
     {
         $conn = $this->getConnection(prefix: 'prefix_');
@@ -932,6 +1030,39 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
+    }
+
+    public function test_adding_index_with_algorithm()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->index(['foo', 'bar'], 'baz', 'bitmap');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('create bitmap index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
+    }
+
+    public function test_adding_online_index_with_algorithm()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->index(['foo', 'bar'], 'baz', 'bitmap')->online();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('create bitmap index baz on "USERS" ( "FOO", "BAR" ) online', $statements[0]);
+    }
+
+    public function test_adding_online_index()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->index(['foo', 'bar'], 'baz')->online();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" ) online', $statements[0]);
     }
 
     public function test_adding_m_single_column_full_text_index()
@@ -970,6 +1101,34 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" )',
             $statements[0]);
+    }
+
+    public function test_adding_deferrable_foreign_key()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->foreign('foo_id')->references('id')->on('orders')->deferrable()->initiallyImmediate(false);
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) deferrable initially deferred',
+            $statements[0]
+        );
+    }
+
+    public function test_adding_not_valid_foreign_key()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->foreign('foo_id')->references('id')->on('orders')->notValid();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) enable novalidate',
+            $statements[0]
+        );
     }
 
     public function test_adding_foreign_key_with_cascade_delete()

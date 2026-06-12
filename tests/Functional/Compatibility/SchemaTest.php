@@ -18,10 +18,28 @@ class SchemaTest extends TestCase
             DB::statement('begin execute immediate \'drop view "COMPATIBILITY_VIEW"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop type "COMPATIBILITY_TYPE_LIST" force\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop type "COMPATIBILITY_TYPE" force\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_TEMP_TABLE"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_POSTS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_USERS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_DEFERRABLE_MAIL"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_POSTS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_NOT_VALID_USERS"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_ONLINE_INDEXES"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPATIBILITY_ALGORITHM_INDEXES"\'; exception when others then null; end;');
+            DB::statement('begin execute immediate \'drop table "COMPAT_COLLATION_COLUMNS"\'; exception when others then null; end;');
         } elseif ($driver === 'pgsql') {
             DB::statement('drop view if exists "compatibility_view"');
             DB::statement('drop type if exists compatibility_type_list');
             DB::statement('drop type if exists "compatibility_type"');
+            DB::statement('drop table if exists "compatibility_temp_table"');
+            DB::statement('drop table if exists "compatibility_deferrable_posts"');
+            DB::statement('drop table if exists "compatibility_deferrable_users"');
+            DB::statement('drop table if exists "compatibility_deferrable_mail"');
+            DB::statement('drop table if exists "compatibility_not_valid_posts"');
+            DB::statement('drop table if exists "compatibility_not_valid_users"');
+            DB::statement('drop table if exists "compatibility_online_indexes"');
+            DB::statement('drop table if exists "compatibility_algorithm_indexes"');
+            DB::statement('drop table if exists "compat_collation_columns"');
         }
 
         if (Schema::hasTable('rename_index_table')) {
@@ -107,6 +125,236 @@ class SchemaTest extends TestCase
         $this->assertArrayHasKey('category', $type);
         $this->assertArrayHasKey('implicit', $type);
         $this->assertFalse((bool) $type['implicit']);
+    }
+
+    #[Test]
+    public function it_can_create_temporary_tables_from_schema_builder()
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_temp_table', function (Blueprint $table) {
+            $table->temporary();
+            $table->integer('id');
+            $table->string('name');
+        });
+
+        DB::table('compatibility_temp_table')->insert([
+            'id' => 1,
+            'name' => 'temporary',
+        ]);
+
+        $this->assertSame('temporary', DB::table('compatibility_temp_table')->value('name'));
+    }
+
+    #[Test]
+    public function it_can_use_deferrable_constraints_from_schema_builder()
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_deferrable_users', function (Blueprint $table) {
+            $table->integer('id')->primary();
+        });
+
+        Schema::create('compatibility_deferrable_posts', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->integer('user_id');
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('compatibility_deferrable_users')
+                ->deferrable()
+                ->initiallyImmediate(false);
+        });
+
+        Schema::create('compatibility_deferrable_mail', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->string('email');
+            $table->unique('email')
+                ->deferrable()
+                ->initiallyImmediate(false);
+        });
+
+        DB::transaction(function () {
+            DB::table('compatibility_deferrable_posts')->insert([
+                'id' => 10,
+                'user_id' => 1,
+            ]);
+
+            DB::table('compatibility_deferrable_users')->insert([
+                'id' => 1,
+            ]);
+        });
+
+        $this->assertSame(1, DB::table('compatibility_deferrable_posts')->where('user_id', 1)->count());
+
+        DB::table('compatibility_deferrable_mail')->insert([
+            ['id' => 1, 'email' => 'alpha@example.test'],
+            ['id' => 2, 'email' => 'beta@example.test'],
+        ]);
+
+        DB::transaction(function () {
+            DB::table('compatibility_deferrable_mail')
+                ->where('id', 1)
+                ->update(['email' => 'beta@example.test']);
+
+            DB::table('compatibility_deferrable_mail')
+                ->where('id', 2)
+                ->update(['email' => 'alpha@example.test']);
+        });
+
+        $emails = DB::table('compatibility_deferrable_mail')
+            ->orderBy('id')
+            ->pluck('email')
+            ->all();
+
+        $this->assertSame([
+            'beta@example.test',
+            'alpha@example.test',
+        ], $emails);
+    }
+
+    #[Test]
+    public function it_can_use_not_valid_foreign_keys_from_schema_builder()
+    {
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_not_valid_users', function (Blueprint $table) {
+            $table->integer('id')->primary();
+        });
+
+        Schema::create('compatibility_not_valid_posts', function (Blueprint $table) {
+            $table->integer('id')->primary();
+            $table->integer('user_id');
+        });
+
+        DB::table('compatibility_not_valid_posts')->insert([
+            'id' => 10,
+            'user_id' => 999,
+        ]);
+
+        Schema::table('compatibility_not_valid_posts', function (Blueprint $table) {
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('compatibility_not_valid_users')
+                ->notValid();
+        });
+
+        DB::table('compatibility_not_valid_users')->insert([
+            'id' => 1,
+        ]);
+
+        DB::table('compatibility_not_valid_posts')->insert([
+            'id' => 11,
+            'user_id' => 1,
+        ]);
+
+        $this->assertSame(2, DB::table('compatibility_not_valid_posts')->count());
+
+        try {
+            DB::table('compatibility_not_valid_posts')->insert([
+                'id' => 12,
+                'user_id' => 5000,
+            ]);
+
+            $this->fail('Expected the not valid foreign key to reject new invalid rows.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertTrue(true);
+        }
+    }
+
+    #[Test]
+    public function it_can_create_online_indexes_from_schema_builder()
+    {
+        if (! $this->isPgsql() && ! $this->isMariaDb() && version_compare($this->serverVersion(), '12c', '<')) {
+            $this->markTestSkipped('Online index builds are not enabled on Oracle 11g.');
+        }
+
+        if (! in_array(DB::connection()->getDriverName(), ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        Schema::create('compatibility_online_indexes', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('name');
+        });
+
+        Schema::table('compatibility_online_indexes', function (Blueprint $table) {
+            $table->index('name', 'compat_online_name')->online();
+        });
+
+        $indexes = collect(Schema::getIndexes('compatibility_online_indexes'))
+            ->pluck('name')
+            ->map(fn ($name) => strtolower($name))
+            ->all();
+
+        $this->assertContains('compat_online_name', $indexes);
+    }
+
+    #[Test]
+    public function it_can_create_indexes_with_algorithm_from_schema_builder()
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if (! in_array($driver, ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        $algorithm = $driver === 'oracle' ? 'bitmap' : 'hash';
+
+        Schema::create('compatibility_algorithm_indexes', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('name');
+        });
+
+        Schema::table('compatibility_algorithm_indexes', function (Blueprint $table) use ($algorithm) {
+            $table->index('name', 'compat_algorithm_name', $algorithm);
+        });
+
+        $index = collect(Schema::getIndexes('compatibility_algorithm_indexes'))
+            ->firstWhere('name', 'compat_algorithm_name');
+
+        $this->assertNotNull($index);
+        $this->assertSame(['name'], $index['columns']);
+        $this->assertSame($algorithm, $index['type']);
+    }
+
+    #[Test]
+    public function it_can_create_and_add_collated_columns_from_schema_builder()
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if (! in_array($driver, ['oracle', 'pgsql'], true)) {
+            $this->markTestSkipped('This compatibility test only targets Oracle and PostgreSQL.');
+        }
+
+        if ($driver === 'oracle' && DB::connection()->isVersionBelow('12cR2')) {
+            $this->markTestSkipped('Column collation is only supported from Oracle 12cR2 and onward.');
+        }
+
+        $collation = $driver === 'oracle' ? 'BINARY_CI' : 'C';
+
+        Schema::create('compat_collation_columns', function (Blueprint $table) use ($collation) {
+            $table->string('name')->collation($collation);
+        });
+
+        Schema::table('compat_collation_columns', function (Blueprint $table) use ($collation) {
+            $table->string('email')->collation($collation);
+        });
+
+        $columns = collect(Schema::getColumns('compat_collation_columns'))->keyBy('name');
+
+        $nameColumn = $columns->get('name');
+        $emailColumn = $columns->get('email');
+
+        $this->assertNotNull($nameColumn);
+        $this->assertNotNull($emailColumn);
+        $this->assertSame(strtolower($collation), strtolower((string) $nameColumn['collation']));
+        $this->assertSame(strtolower($collation), strtolower((string) $emailColumn['collation']));
     }
 
     #[Test]
