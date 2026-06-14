@@ -7,6 +7,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\JoinLateralClause;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use RuntimeException;
@@ -44,6 +45,21 @@ class OracleGrammar extends Grammar
     protected $labelSearchFullText = 1;
 
     /**
+     * Compile a delete statement.
+     */
+    public function compileDelete(Builder $query): string
+    {
+        if (isset($query->joins) || isset($query->limit)) {
+            $table = $this->wrapTable($query->from);
+            $where = $this->compileWheres($query);
+
+            return $this->compileDeleteWithJoins($query, $table, $where);
+        }
+
+        return parent::compileDelete($query);
+    }
+
+    /**
      * Compile a delete statement with joins into SQL.
      *
      * @param  string  $table
@@ -51,11 +67,25 @@ class OracleGrammar extends Grammar
      */
     protected function compileDeleteWithJoins(Builder $query, $table, $where): string
     {
-        $alias = last(explode(' as ', $table));
+        $selectSql = $this->compileRowIdSelect($query);
 
-        $joins = $this->compileJoins($query, $query->joins);
+        return "delete from {$table} where ROWID in ({$selectSql})";
+    }
 
-        return "delete (select * from {$alias} {$joins} {$where})";
+    /**
+     * Compile the ROWID select used by joined or limited write queries.
+     */
+    protected function compileRowIdSelect(Builder $query): string
+    {
+        $segments = preg_split('/\s+(?:as\s+)?/i', trim($query->from));
+        $alias = last($segments);
+        $qualifier = count($segments) > 1
+            ? $this->wrapValue($query->getConnection()->getTablePrefix().$alias)
+            : $this->wrapTable($query->from);
+
+        $rowId = new Expression($qualifier.'.ROWID as laravel_rowid');
+
+        return $this->compileSelect($query->select($rowId));
     }
 
     /**
@@ -622,6 +652,30 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile an update statement.
+     */
+    public function compileUpdate(Builder $query, array $values): string
+    {
+        if (isset($query->joins) || isset($query->limit)) {
+            return $this->compileUpdateWithJoinsOrLimit($query, $values);
+        }
+
+        return parent::compileUpdate($query, $values);
+    }
+
+    /**
+     * Compile an update statement with joins or a limit.
+     */
+    protected function compileUpdateWithJoinsOrLimit(Builder $query, array $values): string
+    {
+        $table = $this->wrapTable($query->from);
+        $columns = $this->compileUpdateColumns($query, $values);
+        $selectSql = $this->compileRowIdSelect($query);
+
+        return "update {$table} set {$columns} where ROWID in ({$selectSql})";
+    }
+
+    /**
      * Compile a JSON column update using Oracle's JSON_TRANSFORM function.
      */
     protected function compileJsonUpdateColumn(Builder $query, string $key, mixed $value): string
@@ -649,7 +703,10 @@ class OracleGrammar extends Grammar
                 : $value)
             ->all();
 
-        return parent::prepareBindingsForUpdate($bindings, $values);
+        $cleanBindings = Arr::except($bindings, 'select');
+        $values = Arr::flatten(array_map(fn ($value) => value($value), $values));
+
+        return array_values(array_merge($values, Arr::flatten($cleanBindings)));
     }
 
     /**
