@@ -3,13 +3,72 @@
 namespace Yajra\Oci8\Query;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
+use UnitEnum;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
+use function Illuminate\Support\enum_value;
+
 class OracleBuilder extends Builder
 {
+    /**
+     * Update records in the database.
+     */
+    public function update(array $values)
+    {
+        $this->applyBeforeQueryCallbacks();
+
+        $values = (new Collection($values))->map(function ($value) {
+            if (! $value instanceof Builder && ! $value instanceof EloquentBuilder && ! $value instanceof Relation) {
+                return ['value' => $value, 'bindings' => match (true) {
+                    $value instanceof Collection => $value->all(),
+                    $value instanceof UnitEnum => enum_value($value),
+                    default => $value,
+                }];
+            }
+
+            [$query, $bindings] = $this->parseSub($value);
+
+            return ['value' => new Expression("({$query})"), 'bindings' => fn () => $bindings];
+        });
+
+        /** @var OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $sql = $grammar->compileUpdate($this, $values->map(fn ($value) => $value['value'])->all());
+        $bindings = $grammar->prepareBindingsForUpdateQuery(
+            $this,
+            $this->bindings,
+            $values->map(fn ($value) => $value['bindings'])->all()
+        );
+
+        return $this->connection->update($sql, $this->cleanBindings($bindings));
+    }
+
+    /**
+     * Delete records from the database.
+     */
+    public function delete($id = null)
+    {
+        if (! is_null($id)) {
+            $this->where($this->from.'.id', '=', $id);
+        }
+
+        $this->applyBeforeQueryCallbacks();
+
+        /** @var OracleGrammar $grammar */
+        $grammar = $this->grammar;
+
+        return $this->connection->delete(
+            $grammar->compileDelete($this),
+            $this->cleanBindings($grammar->prepareBindingsForDeleteQuery($this, $this->bindings))
+        );
+    }
+
     /**
      * Insert a new record and get the value of the primary key.
      */
