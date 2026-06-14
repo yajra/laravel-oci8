@@ -611,11 +611,13 @@ class OracleGrammar extends Grammar
     protected function compileUpdateColumns(Builder $query, array $values): string
     {
         return collect($values)->map(function ($value, $key) use ($query) {
-            if ($this->isJsonSelector($key)) {
-                return $this->compileJsonUpdateColumn($query, $key, $value);
+            $column = last(explode('.', $key));
+
+            if ($this->isJsonSelector($column)) {
+                return $this->compileJsonUpdateColumn($query, $column, $value);
             }
 
-            return $this->wrap($key).' = '.$this->parameter($value);
+            return $this->wrap($column).' = '.$this->parameter($value);
         })->implode(', ');
     }
 

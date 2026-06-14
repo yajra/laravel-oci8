@@ -2736,6 +2736,22 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
+    public function test_update_method_strips_column_qualifiers()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "EMAIL" = ?, "NAME" = ? where "USERS"."ID" = ?', ['foo', 'bar', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')
+            ->where('users.id', '=', 1)
+            ->update(['users.email' => 'foo', 'users.name' => 'bar']);
+
+        $this->assertEquals(1, $result);
+    }
+
     public function test_update_method_with_json_selector()
     {
         $connection = $this->getConnection(serverVersion: '19c');
@@ -2748,6 +2764,24 @@ class Oci8QueryBuilderTest extends TestCase
             ->andReturn(1);
 
         $result = $builder->from('users')->where('id', '=', 1)->update(['options->language' => 'en']);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_qualified_json_selector()
+    {
+        $connection = $this->getConnection(serverVersion: '19c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "OPTIONS" = json_transform("OPTIONS", SET \'$."language"\' = ?) where "USERS"."ID" = ?', ['en', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')
+            ->where('users.id', '=', 1)
+            ->update(['users.options->language' => 'en']);
+
         $this->assertEquals(1, $result);
     }
 
