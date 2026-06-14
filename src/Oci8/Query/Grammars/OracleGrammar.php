@@ -394,32 +394,53 @@ class OracleGrammar extends Grammar
     /**
      * Compile an insert ignore statement into SQL.
      */
-    public function compileInsertOrIgnore(Builder $query, array $values): string
+    public function compileInsertOrIgnore(Builder $query, array $values, ?array $uniqueBy = null): string
     {
         $keys = array_keys(reset($values));
-        $columns = $this->columnize($keys);
-
         $parameters = $this->compileUnionSelectFromDual($values);
 
-        $source = $this->wrapTable('laravel_source');
-
-        $sql = 'merge into '.$this->wrapTable($query->from).' ';
-        $sql .= 'using ('.$parameters.') '.$source;
-
-        $uniqueBy = $keys;
-        if (strtolower($query->from) == 'cache') {
+        if ($uniqueBy === null && strtolower($query->from) == 'cache') {
             $uniqueBy = ['key'];
         }
 
-        $on = collect($uniqueBy)->map(fn ($column) => $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column))->implode(' and ');
+        return $this->compileInsertOrIgnoreMerge($query, $keys, $parameters, $uniqueBy ?? $keys);
+    }
 
-        $sql .= ' on ('.$on.') ';
+    /**
+     * Compile an insert-ignore statement using a subquery.
+     */
+    public function compileInsertOrIgnoreUsing(Builder $query, array $columns, string $sql): string
+    {
+        if (empty($columns) || $columns === ['*']) {
+            throw new RuntimeException('Oracle insertOrIgnoreUsing requires explicit target columns.');
+        }
 
-        $columnValues = collect(explode(', ', $columns))->map(fn ($column) => $source.'.'.$column)->implode(', ');
+        $sourceData = $this->wrapTable('laravel_source_data');
+        $columnList = $this->columnize($columns);
+        $sourceSql = "with {$sourceData} ({$columnList}) as ({$sql}) select {$columnList} from {$sourceData}";
 
-        $sql .= 'when not matched then insert ('.$columns.') values ('.$columnValues.')';
+        return $this->compileInsertOrIgnoreMerge($query, $columns, $sourceSql, $columns);
+    }
 
-        return $sql;
+    /**
+     * Compile an Oracle MERGE that ignores matching source rows.
+     */
+    public function compileInsertOrIgnoreMerge(Builder $query, array $columns, string $sourceSql, array $uniqueBy): string
+    {
+        $source = $this->wrapTable('laravel_source');
+        $target = $this->wrapTable($query->from);
+        $columnList = $this->columnize($columns);
+
+        $on = collect($uniqueBy)
+            ->map(fn ($column) => $this->wrap('laravel_source.'.$column).' = '.$this->wrap($query->from.'.'.$column))
+            ->implode(' and ');
+
+        $columnValues = collect($columns)
+            ->map(fn ($column) => $this->wrap('laravel_source.'.$column))
+            ->implode(', ');
+
+        return "merge into {$target} using ({$sourceSql}) {$source} on ({$on}) "
+            ."when not matched then insert ({$columnList}) values ({$columnValues})";
     }
 
     /**

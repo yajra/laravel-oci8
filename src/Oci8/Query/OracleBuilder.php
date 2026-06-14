@@ -5,11 +5,89 @@ namespace Yajra\Oci8\Query;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {
+    /**
+     * Insert records while ignoring conflicts and return rows that were inserted.
+     */
+    public function insertOrIgnoreReturning(array $values, array $returning = ['*'], array|string|null $uniqueBy = null): Collection
+    {
+        if (empty($values)) {
+            return new Collection;
+        }
+
+        if ($uniqueBy === [] || $uniqueBy === '') {
+            throw new InvalidArgumentException('The unique columns must not be empty.');
+        }
+
+        if ($returning === []) {
+            throw new InvalidArgumentException('The returning columns must not be empty.');
+        }
+
+        if (! is_array(array_first($values))) {
+            $values = [$values];
+        } else {
+            foreach ($values as $key => $value) {
+                ksort($value);
+                $values[$key] = $value;
+            }
+        }
+
+        $this->applyBeforeQueryCallbacks();
+
+        /** @var OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $results = new Collection;
+
+        foreach ($values as $value) {
+            $matchColumns = $uniqueBy === null ? array_keys($value) : Arr::wrap($uniqueBy);
+
+            foreach ($matchColumns as $column) {
+                if (! array_key_exists($column, $value)) {
+                    throw new InvalidArgumentException("The unique column [{$column}] is missing from the inserted values.");
+                }
+            }
+
+            try {
+                $inserted = $this->connection->affectingStatement(
+                    $grammar->compileInsertOrIgnore($this, [$value], $matchColumns),
+                    $this->cleanBindings(Arr::flatten($value, 1))
+                );
+            } catch (UniqueConstraintViolationException $e) {
+                if ($uniqueBy !== null) {
+                    throw $e;
+                }
+
+                $inserted = 0;
+            }
+
+            if ($inserted === 0) {
+                continue;
+            }
+
+            $query = $this->newQuery()
+                ->from($this->from)
+                ->select($returning);
+
+            foreach ($matchColumns as $column) {
+                $query->where($column, '=', $value[$column]);
+            }
+
+            if ($row = $query->first()) {
+                $results->push($row);
+            }
+        }
+
+        return $results;
+    }
+
     /**
      * Insert a new record and get the value of the primary key.
      */

@@ -2649,6 +2649,74 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [$values]));
     }
 
+    public function test_insert_or_ignore_returning_method()
+    {
+        $expected = 'merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")';
+        $builder = $this->getBuilder();
+        $builder->getProcessor()
+            ->shouldReceive('processSelect')
+            ->once()
+            ->andReturnUsing(fn ($query, $results) => $results);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, ['new@example.com', 'New User'])
+            ->andReturn(1);
+        $builder->getConnection()
+            ->shouldReceive('select')
+            ->once()
+            ->with('select * from (select "ID", "EMAIL" from "USERS" where "EMAIL" = ?) where rownum = 1', ['new@example.com'], true, [])
+            ->andReturn([(object) ['id' => 2, 'email' => 'new@example.com']]);
+
+        $result = $builder->from('users')->insertOrIgnoreReturning(
+            ['email' => 'new@example.com', 'name' => 'New User'],
+            ['id', 'email'],
+            'email'
+        );
+
+        $this->assertCount(1, $result);
+        $this->assertSame('new@example.com', $result->first()->email);
+    }
+
+    public function test_insert_or_ignore_returning_method_omits_conflicting_rows()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->andReturn(0);
+        $builder->getConnection()->shouldNotReceive('select');
+
+        $result = $builder->from('users')->insertOrIgnoreReturning(
+            ['email' => 'existing@example.com'],
+            ['id'],
+            'email'
+        );
+
+        $this->assertCount(0, $result);
+    }
+
+    public function test_insert_or_ignore_using_method()
+    {
+        $expected = 'merge into "USERS" using (with "LARAVEL_SOURCE_DATA" ("EMAIL", "NAME") as (select "CONTACT_EMAIL", "CONTACT_NAME" from "CONTACTS" where "ACTIVE" = ?) select "EMAIL", "NAME" from "LARAVEL_SOURCE_DATA") "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL" and "LARAVEL_SOURCE"."NAME" = "USERS"."NAME") when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")';
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, [1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->insertOrIgnoreUsing(
+            ['email', 'name'],
+            fn (Builder $query) => $query
+                ->select('contact_email', 'contact_name')
+                ->from('contacts')
+                ->where('active', '=', 1)
+        );
+
+        $this->assertEquals(1, $result);
+    }
+
     public function test_multiple_insert_method()
     {
         $builder = $this->getBuilder();
