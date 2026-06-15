@@ -1,3 +1,16 @@
+# [13.7.0](https://github.com/yajra/laravel-oci8/compare/v13.6.0...v13.7.0) (2026-06-15)
+
+
+### Bug Fixes
+
+* strip qualifiers from Oracle update columns ([c9f0689](https://github.com/yajra/laravel-oci8/commit/c9f0689b2ee0f04fce9a88a136d513c200235810))
+
+
+### Features
+
+* implement whereNullSafeEquals ([843e8df](https://github.com/yajra/laravel-oci8/commit/843e8dfa3df69c103c58956f7e4920d47296f3b6))
+* support wiping Oracle views and types ([4aa5397](https://github.com/yajra/laravel-oci8/commit/4aa5397048f9858ac9207b4443bd238becacf147))
+
 # [13.6.0](https://github.com/yajra/laravel-oci8/compare/v13.5.1...v13.6.0) (2026-06-11)
 
 
