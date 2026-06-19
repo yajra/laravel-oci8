@@ -67,6 +67,26 @@ class UpdateWithJoinTest extends TestCase
     }
 
     #[Test]
+    public function it_updates_a_target_row_once_when_the_join_matches_it_multiple_times(): void
+    {
+        DB::table('update_join_contacts')->insert([
+            ['user_id' => 1, 'status' => 'inactive'],
+        ]);
+
+        $updated = DB::table('update_join_users')
+            ->join('update_join_contacts', 'update_join_users.id', '=', 'update_join_contacts.user_id')
+            ->where('update_join_contacts.status', '=', 'inactive')
+            ->where('update_join_users.name', '=', 'Alice')
+            ->update(['name' => 'Updated Alice']);
+
+        $this->assertSame(1, $updated);
+        $this->assertSame(
+            ['Updated Alice', 'Bob', 'Charlie', 'Diana'],
+            DB::table('update_join_users')->orderBy('id')->pluck('name')->all()
+        );
+    }
+
+    #[Test]
     public function it_updates_an_ordered_page_of_rows_matching_a_join(): void
     {
         if ($this->isMariaDb()) {

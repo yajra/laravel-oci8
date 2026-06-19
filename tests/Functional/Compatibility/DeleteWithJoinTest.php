@@ -67,6 +67,26 @@ class DeleteWithJoinTest extends TestCase
     }
 
     #[Test]
+    public function it_deletes_a_target_row_once_when_the_join_matches_it_multiple_times(): void
+    {
+        DB::table('delete_join_contacts')->insert([
+            ['user_id' => 1, 'status' => 'inactive'],
+        ]);
+
+        $deleted = DB::table('delete_join_users')
+            ->join('delete_join_contacts', 'delete_join_users.id', '=', 'delete_join_contacts.user_id')
+            ->where('delete_join_contacts.status', '=', 'inactive')
+            ->where('delete_join_users.name', '=', 'Alice')
+            ->delete();
+
+        $this->assertSame(1, $deleted);
+        $this->assertSame(
+            ['Bob', 'Charlie', 'Diana'],
+            DB::table('delete_join_users')->orderBy('id')->pluck('name')->all()
+        );
+    }
+
+    #[Test]
     public function it_deletes_an_ordered_page_of_rows_matching_a_join(): void
     {
         if ($this->isMariaDb()) {
