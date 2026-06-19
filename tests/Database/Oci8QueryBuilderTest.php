@@ -2965,13 +2965,131 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('update')
             ->once()
-            ->with('update "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" set "EMAIL" = ?, "NAME" = ? where "USERS"."ID" = ?',
+            ->with('update "USERS" set "EMAIL" = ?, "NAME" = ? where ROWID in (select "USERS".ROWID as laravel_rowid from "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" where "USERS"."ID" = ?)',
                 ['foo', 'bar', 1])
             ->andReturn(1);
         $result = $builder->from('users')
             ->join('orders', 'users.id', '=', 'orders.user_id')
             ->where('users.id', '=', 1)
             ->update(['email' => 'foo', 'name' => 'bar']);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_joins_and_limit_on_12c()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" "U" set "EMAIL" = ? where ROWID in (select /*+ FIRST_ROWS(2) */ "U".ROWID as laravel_rowid from "USERS" "U" inner join "ORDERS" "O" on "U"."ID" = "O"."USER_ID" where "O"."STATUS" = ? order by "U"."ID" asc offset 1 rows fetch next 2 rows only)',
+                ['updated@example.com', 'pending'])
+            ->andReturn(2);
+
+        $result = $builder->from('users as u')
+            ->join('orders as o', 'u.id', '=', 'o.user_id')
+            ->where('o.status', '=', 'pending')
+            ->orderBy('u.id')
+            ->offset(1)
+            ->limit(2)
+            ->update(['email' => 'updated@example.com']);
+
+        $this->assertEquals(2, $result);
+    }
+
+    public function test_update_method_with_joins_and_limit_below_12c()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "EMAIL" = ? where ROWID in (select t2."LARAVEL_ROWID" from ( select rownum AS "rn", t1.* from (select "USERS".ROWID as laravel_rowid from "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" where "ORDERS"."STATUS" = ? order by "USERS"."ID" asc) t1 ) t2 where t2."rn" between 2 and 3)',
+                ['updated@example.com', 'pending'])
+            ->andReturn(2);
+
+        $result = $builder->from('users')
+            ->join('orders', 'users.id', '=', 'orders.user_id')
+            ->where('orders.status', '=', 'pending')
+            ->orderBy('users.id')
+            ->offset(1)
+            ->limit(2)
+            ->update(['email' => 'updated@example.com']);
+
+        $this->assertEquals(2, $result);
+    }
+
+    public function test_update_method_with_schema_qualified_alias_uses_alias_rowid()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "APP"."USERS" "U" set "EMAIL" = ? where ROWID in (select "U".ROWID as laravel_rowid from "APP"."USERS" "U" inner join "APP"."ORDERS" "O" on "U"."ID" = "O"."USER_ID" where "O"."STATUS" = ?)',
+                ['updated@example.com', 'pending'])
+            ->andReturn(1);
+
+        $result = $builder->from('app.users as u')
+            ->join('app.orders as o', 'u.id', '=', 'o.user_id')
+            ->where('o.status', '=', 'pending')
+            ->update(['email' => 'updated@example.com']);
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_schema_qualified_table_uses_qualified_rowid()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "APP"."USERS" set "EMAIL" = ? where ROWID in (select "APP"."USERS".ROWID as laravel_rowid from "APP"."USERS" inner join "APP"."ORDERS" on "APP"."USERS"."ID" = "APP"."ORDERS"."USER_ID" where "APP"."USERS"."ID" = ?)',
+                ['updated@example.com', 1])
+            ->andReturn(1);
+
+        $result = $builder->from('app.users')
+            ->join('app.orders', 'app.users.id', '=', 'app.orders.user_id')
+            ->where('app.users.id', '=', 1)
+            ->update(['email' => 'updated@example.com']);
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_view_alias_uses_alias_rowid()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "ACTIVE_USERS_VIEW" "V" set "EMAIL" = ? where ROWID in (select /*+ FIRST_ROWS(1) */ "V".ROWID as laravel_rowid from "ACTIVE_USERS_VIEW" "V" where "V"."STATUS" = ? order by "V"."ID" asc offset 0 rows fetch next 1 rows only)',
+                ['updated@example.com', 'active'])
+            ->andReturn(1);
+
+        $result = $builder->from('active_users_view as v')
+            ->where('v.status', '=', 'active')
+            ->orderBy('v.id')
+            ->limit(1)
+            ->update(['email' => 'updated@example.com']);
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_join_bindings_keeps_value_join_and_where_binding_order()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with('update "USERS" set "EMAIL" = ? where ROWID in (select "USERS".ROWID as laravel_rowid from "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" and "ORDERS"."STATUS" = ? where "USERS"."NAME" = ?)',
+                ['updated@example.com', 'pending', 'Alice'])
+            ->andReturn(1);
+
+        $result = $builder->from('users')
+            ->join('orders', function ($join) {
+                $join->on('users.id', '=', 'orders.user_id')
+                    ->where('orders.status', '=', 'pending');
+            })
+            ->where('users.name', '=', 'Alice')
+            ->update(['email' => 'updated@example.com']);
+
         $this->assertEquals(1, $result);
     }
 
@@ -3051,33 +3169,66 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
+    public function test_delete_method_with_limit_on_12c()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->getConnection()
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "USERS" where ROWID in (select /*+ FIRST_ROWS(2) */ "USERS".ROWID as laravel_rowid from "USERS" where "STATUS" = ? order by "ID" asc offset 0 rows fetch next 2 rows only)', ['inactive'])
+            ->andReturn(2);
+
+        $result = $builder->from('users')
+            ->where('status', '=', 'inactive')
+            ->orderBy('id')
+            ->limit(2)
+            ->delete();
+
+        $this->assertEquals(2, $result);
+    }
+
+    public function test_delete_method_with_limit_below_12c()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->getConnection()
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "USERS" where ROWID in (select t2."LARAVEL_ROWID" from ( select rownum AS "rn", t1.* from (select "USERS".ROWID as laravel_rowid from "USERS" where "STATUS" = ? order by "ID" asc) t1 ) t2 where t2."rn" between 1 and 2)', ['inactive'])
+            ->andReturn(2);
+
+        $result = $builder->from('users')
+            ->where('status', '=', 'inactive')
+            ->orderBy('id')
+            ->limit(2)
+            ->delete();
+
+        $this->assertEquals(2, $result);
+    }
+
     public function getGrammar(string $prefix = ''): OracleGrammar
     {
         return new OracleGrammar($this->getConnection(prefix: $prefix));
     }
 
-    /**
-     * @TODO: fix delete with join sql.
-     */
-    protected function test_delete_with_join_method()
+    public function test_delete_with_join_method()
     {
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where "CTID" in (select "USERS"."CTID" from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" where "USERS"."EMAIL" = ?)', ['foo'])->andReturn(1);
+        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where ROWID in (select "USERS".ROWID as laravel_rowid from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" where "USERS"."EMAIL" = ?)', ['foo'])->andReturn(1);
         $result = $builder->from('users')->join('contacts', 'users.id', '=', 'contacts.id')->where('users.email', '=', 'foo')->delete();
         $this->assertEquals(1, $result);
 
-        $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" as "a" where "CTID" in (select "a"."CTID" from "USERS" as "a" inner join "USERS" as "b" on "a"."ID" = "b"."user_id" where "EMAIL" = ? order by "ID" asc limit 1)', ['foo'])->andReturn(1);
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" "A" where ROWID in (select /*+ FIRST_ROWS(1) */ "A".ROWID as laravel_rowid from "USERS" "A" inner join "USERS" "B" on "A"."ID" = "B"."USER_ID" where "EMAIL" = ? order by "ID" asc offset 0 rows fetch next 1 rows only)', ['foo'])->andReturn(1);
         $result = $builder->from('users AS a')->join('users AS b', 'a.id', '=', 'b.user_id')->where('email', '=', 'foo')->orderBy('id')->limit(1)->delete();
         $this->assertEquals(1, $result);
 
-        $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where "CTID" in (select "USERS"."CTID" from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" where "USERS"."ID" = ? order by "ID" asc limit 1)', [1])->andReturn(1);
-        $result = $builder->from('users')->join('contacts', 'users.id', '=', 'contacts.id')->orderBy('id')->take(1)->delete(1);
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where ROWID in (select t2."LARAVEL_ROWID" from ( select rownum AS "rn", t1.* from (select "USERS".ROWID as laravel_rowid from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID" where "USERS"."ID" = ? order by "ID" asc) t1 ) t2 where t2."rn" between 2 and 2)', [1])->andReturn(1);
+        $result = $builder->from('users')->join('contacts', 'users.id', '=', 'contacts.id')->orderBy('id')->offset(1)->take(1)->delete(1);
         $this->assertEquals(1, $result);
 
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where "CTID" in (select "USERS"."CTID" from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."user_id" and "USERS"."ID" = ? where "NAME" = ?)', [1, 'baz'])->andReturn(1);
+        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where ROWID in (select "USERS".ROWID as laravel_rowid from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."USER_ID" and "USERS"."ID" = ? where "NAME" = ?)', [1, 'baz'])->andReturn(1);
         $result = $builder->from('users')
             ->join('contacts', function ($join) {
                 $join->on('users.id', '=', 'contacts.user_id')
@@ -3087,8 +3238,80 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $result);
 
         $builder = $this->getBuilder();
-        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where "CTID" in (select "USERS"."CTID" from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID")', [])->andReturn(1);
+        $builder->getConnection()->shouldReceive('delete')->once()->with('delete from "USERS" where ROWID in (select "USERS".ROWID as laravel_rowid from "USERS" inner join "CONTACTS" on "USERS"."ID" = "CONTACTS"."ID")', [])->andReturn(1);
         $result = $builder->from('users')->join('contacts', 'users.id', '=', 'contacts.id')->delete();
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_delete_method_with_schema_qualified_alias_uses_alias_rowid()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "APP"."USERS" "U" where ROWID in (select "U".ROWID as laravel_rowid from "APP"."USERS" "U" inner join "APP"."ORDERS" "O" on "U"."ID" = "O"."USER_ID" where "O"."STATUS" = ?)', ['pending'])
+            ->andReturn(1);
+
+        $result = $builder->from('app.users as u')
+            ->join('app.orders as o', 'u.id', '=', 'o.user_id')
+            ->where('o.status', '=', 'pending')
+            ->delete();
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_delete_method_with_schema_qualified_table_uses_qualified_rowid()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "APP"."USERS" where ROWID in (select "APP"."USERS".ROWID as laravel_rowid from "APP"."USERS" inner join "APP"."ORDERS" on "APP"."USERS"."ID" = "APP"."ORDERS"."USER_ID" where "APP"."USERS"."ID" = ?)', [1])
+            ->andReturn(1);
+
+        $result = $builder->from('app.users')
+            ->join('app.orders', 'app.users.id', '=', 'app.orders.user_id')
+            ->where('app.users.id', '=', 1)
+            ->delete();
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_delete_method_with_view_alias_uses_alias_rowid()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->getConnection()
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "ACTIVE_USERS_VIEW" "V" where ROWID in (select /*+ FIRST_ROWS(1) */ "V".ROWID as laravel_rowid from "ACTIVE_USERS_VIEW" "V" where "V"."STATUS" = ? order by "V"."ID" asc offset 0 rows fetch next 1 rows only)', ['inactive'])
+            ->andReturn(1);
+
+        $result = $builder->from('active_users_view as v')
+            ->where('v.status', '=', 'inactive')
+            ->orderBy('v.id')
+            ->limit(1)
+            ->delete();
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_delete_method_with_join_bindings_keeps_join_and_where_binding_order()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('delete')
+            ->once()
+            ->with('delete from "USERS" where ROWID in (select "USERS".ROWID as laravel_rowid from "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" and "ORDERS"."STATUS" = ? where "USERS"."NAME" = ?)', ['pending', 'Alice'])
+            ->andReturn(1);
+
+        $result = $builder->from('users')
+            ->join('orders', function ($join) {
+                $join->on('users.id', '=', 'orders.user_id')
+                    ->where('orders.status', '=', 'pending');
+            })
+            ->where('users.name', '=', 'Alice')
+            ->delete();
+
         $this->assertEquals(1, $result);
     }
 
@@ -3880,9 +4103,9 @@ class Oci8QueryBuilderTest extends TestCase
         return $connection;
     }
 
-    protected function getBuilder(string $prefix = '')
+    protected function getBuilder(string $prefix = '', ?string $serverVersion = null)
     {
-        $connection = $this->getConnection(prefix: $prefix);
+        $connection = $this->getConnection(prefix: $prefix, serverVersion: $serverVersion);
         $grammar = new OracleGrammar($connection);
         $processor = m::mock(OracleProcessor::class);
 
