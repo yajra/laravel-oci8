@@ -2665,7 +2665,7 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('select')
             ->once()
-            ->with('select * from (select "ID", "EMAIL" from "USERS" where "EMAIL" = ?) where rownum = 1', ['new@example.com'], true, [])
+            ->with($this->getConnection()->isVersionAboveOrEqual('12c') ? 'select /*+ FIRST_ROWS(1) */ "ID", "EMAIL" from "USERS" where "EMAIL" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select "ID", "EMAIL" from "USERS" where "EMAIL" = ?) where rownum = 1', ['new@example.com'], true, [])
             ->andReturn([(object) ['id' => 2, 'email' => 'new@example.com']]);
 
         $result = $builder->from('users')->insertOrIgnoreReturning(
