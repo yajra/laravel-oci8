@@ -68,6 +68,21 @@ class InsertOrIgnoreTest extends TestCase
     }
 
     #[Test]
+    public function it_ignores_unique_conflicts_when_non_unique_columns_differ(): void
+    {
+        $inserted = DB::table('insert_ignore_users')->insertOrIgnore([
+            'email' => 'existing@example.com',
+            'name' => 'Changed',
+        ]);
+
+        $this->assertSame(0, $inserted);
+        $this->assertSame(
+            'Existing',
+            DB::table('insert_ignore_users')->where('email', 'existing@example.com')->value('name')
+        );
+    }
+
+    #[Test]
     public function it_inserts_from_a_subquery_while_ignoring_matching_rows(): void
     {
         $inserted = DB::table('insert_ignore_users')->insertOrIgnoreUsing(

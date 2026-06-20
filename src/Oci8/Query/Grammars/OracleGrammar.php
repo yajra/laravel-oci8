@@ -399,10 +399,6 @@ class OracleGrammar extends Grammar
         $keys = array_keys(reset($values));
         $parameters = $this->compileUnionSelectFromDual($values);
 
-        if ($uniqueBy === null && strtolower($query->from) == 'cache') {
-            $uniqueBy = ['key'];
-        }
-
         return $this->compileInsertOrIgnoreMerge($query, $keys, $parameters, $uniqueBy ?? $keys);
     }
 

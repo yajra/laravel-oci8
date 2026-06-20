@@ -9,11 +9,46 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Throwable;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {
+    /**
+     * Insert new records into the database while ignoring unique constraint errors.
+     */
+    public function insertOrIgnore(array $values)
+    {
+        if (empty($values)) {
+            return 0;
+        }
+
+        if (! is_array(array_first($values))) {
+            $values = [$values];
+        } else {
+            foreach ($values as $key => $value) {
+                ksort($value);
+                $values[$key] = $value;
+            }
+        }
+
+        $this->applyBeforeQueryCallbacks();
+
+        /** @var OracleGrammar $grammar */
+        $grammar = $this->grammar;
+        $uniqueBy = $this->uniqueColumnsForInsertOrIgnore(array_keys(reset($values)));
+
+        try {
+            return $this->connection->affectingStatement(
+                $grammar->compileInsertOrIgnore($this, $values, $uniqueBy),
+                $this->cleanBindings(Arr::flatten($values, 1))
+            );
+        } catch (UniqueConstraintViolationException) {
+            return $this->insertOrIgnoreOneByOne($values);
+        }
+    }
+
     /**
      * Insert records while ignoring conflicts and return rows that were inserted.
      */
@@ -45,9 +80,10 @@ class OracleBuilder extends Builder
         /** @var OracleGrammar $grammar */
         $grammar = $this->grammar;
         $results = new Collection;
+        $inferredUniqueBy = $uniqueBy === null ? $this->uniqueColumnsForInsertOrIgnore(array_keys(reset($values))) : null;
 
         foreach ($values as $value) {
-            $matchColumns = $uniqueBy === null ? array_keys($value) : Arr::wrap($uniqueBy);
+            $matchColumns = $uniqueBy === null ? ($inferredUniqueBy ?? array_keys($value)) : Arr::wrap($uniqueBy);
 
             foreach ($matchColumns as $column) {
                 if (! array_key_exists($column, $value)) {
@@ -86,6 +122,60 @@ class OracleBuilder extends Builder
         }
 
         return $results;
+    }
+
+    /**
+     * Find a usable primary or unique index for insert-or-ignore conflict matching.
+     */
+    protected function uniqueColumnsForInsertOrIgnore(array $columns): ?array
+    {
+        try {
+            $indexes = $this->connection->getSchemaBuilder()->getIndexes($this->from);
+        } catch (Throwable) {
+            return null;
+        }
+
+        $insertColumns = collect($columns)->mapWithKeys(fn ($column) => [strtolower($column) => $column]);
+
+        return collect($indexes)
+            ->filter(fn ($index) => ($index['primary'] || $index['unique']) && ! empty($index['columns']))
+            ->map(function ($index) use ($insertColumns) {
+                $index['insert_columns'] = collect($index['columns'])
+                    ->map(fn ($column) => $insertColumns[strtolower($column)] ?? null)
+                    ->filter()
+                    ->values()
+                    ->all();
+
+                return $index;
+            })
+            ->filter(fn ($index) => count($index['insert_columns']) === count($index['columns']))
+            ->sortBy([
+                ['primary', 'desc'],
+                fn ($left, $right) => count($left['columns']) <=> count($right['columns']),
+                ['name', 'asc'],
+            ])
+            ->value('insert_columns');
+    }
+
+    /**
+     * Fallback for unique constraints not covered by the inferred merge predicate.
+     */
+    protected function insertOrIgnoreOneByOne(array $values): int
+    {
+        $inserted = 0;
+
+        foreach ($values as $value) {
+            try {
+                $inserted += $this->connection->affectingStatement(
+                    $this->grammar->compileInsert($this, [$value]),
+                    $this->cleanBindings(Arr::flatten($value, 1))
+                );
+            } catch (UniqueConstraintViolationException) {
+                continue;
+            }
+        }
+
+        return $inserted;
     }
 
     /**
