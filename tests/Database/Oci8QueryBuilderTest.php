@@ -8,6 +8,7 @@ use DateTime;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Expression as Raw;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use InvalidArgumentException;
@@ -2621,6 +2622,14 @@ class Oci8QueryBuilderTest extends TestCase
         $expected = 'merge into "USERS" using (select ? as "EMAIL" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL") values ("LARAVEL_SOURCE"."EMAIL")';
         $builder = $this->getBuilder();
         $grammar = $builder->getGrammar();
+        $schema = m::mock(\Yajra\Oci8\Schema\OracleBuilder::class);
+        $schema->shouldReceive('getIndexes')->once()->with('users')->andReturn([
+            ['name' => 'users_email_uk', 'columns' => ['email'], 'type' => 'normal', 'unique' => true, 'primary' => false],
+        ]);
+        $builder->getConnection()
+            ->shouldReceive('getSchemaBuilder')
+            ->once()
+            ->andReturn($schema);
         $builder->getConnection()
             ->shouldReceive('affectingStatement')
             ->once()
@@ -2629,7 +2638,7 @@ class Oci8QueryBuilderTest extends TestCase
 
         $result = $builder->from('users')->insertOrIgnore(['email' => 'foo']);
         $this->assertEquals(1, $result);
-        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [['email' => 'foo']]));
+        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [['email' => 'foo']], ['email']));
     }
 
     public function test_insert_or_ignore_method_on_cache_store()
@@ -2637,6 +2646,14 @@ class Oci8QueryBuilderTest extends TestCase
         $expected = 'merge into "CACHE" using (select ? as "KEY", ? as "VALUES", ? as "EXPIRATION" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."KEY" = "CACHE"."KEY") when not matched then insert ("KEY", "VALUES", "EXPIRATION") values ("LARAVEL_SOURCE"."KEY", "LARAVEL_SOURCE"."VALUES", "LARAVEL_SOURCE"."EXPIRATION")';
         $builder = $this->getBuilder();
         $grammar = $builder->getGrammar();
+        $schema = m::mock(\Yajra\Oci8\Schema\OracleBuilder::class);
+        $schema->shouldReceive('getIndexes')->once()->with('cache')->andReturn([
+            ['name' => 'cache_key_uk', 'columns' => ['key'], 'type' => 'normal', 'unique' => true, 'primary' => false],
+        ]);
+        $builder->getConnection()
+            ->shouldReceive('getSchemaBuilder')
+            ->once()
+            ->andReturn($schema);
         $builder->getConnection()
             ->shouldReceive('affectingStatement')
             ->once()
@@ -2646,7 +2663,141 @@ class Oci8QueryBuilderTest extends TestCase
         $values = ['key' => 'foo', 'values' => 'bar', 'expiration' => 1234567890];
         $result = $builder->from('cache')->insertOrIgnore($values);
         $this->assertEquals(1, $result);
-        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [$values]));
+        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, [$values], ['key']));
+    }
+
+    public function test_insert_or_ignore_method_inserts_multiple_records_with_one_query()
+    {
+        $expected = 'merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual union all select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")';
+        $builder = $this->getBuilder();
+        $grammar = $builder->getGrammar();
+        $schema = m::mock(\Yajra\Oci8\Schema\OracleBuilder::class);
+        $schema->shouldReceive('getIndexes')->once()->with('users')->andReturn([
+            ['name' => 'users_email_uk', 'columns' => ['email'], 'type' => 'normal', 'unique' => true, 'primary' => false],
+        ]);
+        $builder->getConnection()
+            ->shouldReceive('getSchemaBuilder')
+            ->once()
+            ->andReturn($schema);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, ['first@example.com', 'First User', 'second@example.com', 'Second User'])
+            ->andReturn(2);
+
+        $values = [
+            ['email' => 'first@example.com', 'name' => 'First User'],
+            ['email' => 'second@example.com', 'name' => 'Second User'],
+        ];
+        $result = $builder->from('users')->insertOrIgnore($values);
+
+        $this->assertSame(2, $result);
+        $this->assertSame($expected, $grammar->compileInsertOrIgnore($builder, $values, ['email']));
+    }
+
+    public function test_insert_or_ignore_method_falls_back_to_row_inserts_when_inferred_conflict_columns_miss()
+    {
+        $merge = 'merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual union all select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")';
+        $insert = 'insert into "USERS" ("EMAIL", "NAME") values (?, ?)';
+        $builder = $this->getBuilder();
+        $schema = m::mock(\Yajra\Oci8\Schema\OracleBuilder::class);
+        $schema->shouldReceive('getIndexes')->once()->with('users')->andReturn([
+            ['name' => 'users_email_uk', 'columns' => ['email'], 'type' => 'normal', 'unique' => true, 'primary' => false],
+        ]);
+        $builder->getConnection()
+            ->shouldReceive('getSchemaBuilder')
+            ->once()
+            ->andReturn($schema);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($merge, ['first@example.com', 'First User', 'second@example.com', 'Second User'])
+            ->andThrow(new UniqueConstraintViolationException('oracle', 'sql', [], new RuntimeException('ORA-00001')));
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($insert, ['first@example.com', 'First User'])
+            ->andReturn(1);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($insert, ['second@example.com', 'Second User'])
+            ->andThrow(new UniqueConstraintViolationException('oracle', 'sql', [], new RuntimeException('ORA-00001')));
+
+        $result = $builder->from('users')->insertOrIgnore([
+            ['email' => 'first@example.com', 'name' => 'First User'],
+            ['email' => 'second@example.com', 'name' => 'Second User'],
+        ]);
+
+        $this->assertSame(1, $result);
+    }
+
+    public function test_insert_or_ignore_returning_method()
+    {
+        $expected = 'merge into "USERS" using (select ? as "EMAIL", ? as "NAME" from dual) "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL") when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")';
+        $builder = $this->getBuilder();
+        $builder->getProcessor()
+            ->shouldReceive('processSelect')
+            ->once()
+            ->andReturnUsing(fn ($query, $results) => $results);
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, ['new@example.com', 'New User'])
+            ->andReturn(1);
+        $builder->getConnection()
+            ->shouldReceive('select')
+            ->once()
+            ->with($this->getConnection()->isVersionAboveOrEqual('12c') ? 'select /*+ FIRST_ROWS(1) */ "ID", "EMAIL" from "USERS" where "EMAIL" = ? offset 0 rows fetch next 1 rows only' : 'select * from (select "ID", "EMAIL" from "USERS" where "EMAIL" = ?) where rownum = 1', ['new@example.com'], true, [])
+            ->andReturn([(object) ['id' => 2, 'email' => 'new@example.com']]);
+
+        $result = $builder->from('users')->insertOrIgnoreReturning(
+            ['email' => 'new@example.com', 'name' => 'New User'],
+            ['id', 'email'],
+            'email'
+        );
+
+        $this->assertCount(1, $result);
+        $this->assertSame('new@example.com', $result->first()->email);
+    }
+
+    public function test_insert_or_ignore_returning_method_omits_conflicting_rows()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->andReturn(0);
+        $builder->getConnection()->shouldNotReceive('select');
+
+        $result = $builder->from('users')->insertOrIgnoreReturning(
+            ['email' => 'existing@example.com'],
+            ['id'],
+            'email'
+        );
+
+        $this->assertCount(0, $result);
+    }
+
+    public function test_insert_or_ignore_using_method()
+    {
+        $expected = 'merge into "USERS" using (with "LARAVEL_SOURCE_DATA" ("EMAIL", "NAME") as (select "CONTACT_EMAIL", "CONTACT_NAME" from "CONTACTS" where "ACTIVE" = ?) select "EMAIL", "NAME" from "LARAVEL_SOURCE_DATA") "LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."EMAIL" = "USERS"."EMAIL" and "LARAVEL_SOURCE"."NAME" = "USERS"."NAME") when not matched then insert ("EMAIL", "NAME") values ("LARAVEL_SOURCE"."EMAIL", "LARAVEL_SOURCE"."NAME")';
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('affectingStatement')
+            ->once()
+            ->with($expected, [1])
+            ->andReturn(1);
+
+        $result = $builder->from('users')->insertOrIgnoreUsing(
+            ['email', 'name'],
+            fn (Builder $query) => $query
+                ->select('contact_email', 'contact_name')
+                ->from('contacts')
+                ->where('active', '=', 1)
+        );
+
+        $this->assertEquals(1, $result);
     }
 
     public function test_multiple_insert_method()
