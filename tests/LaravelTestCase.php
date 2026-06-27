@@ -64,10 +64,15 @@ abstract class LaravelTestCase extends BaseTestCase
 
     protected function tearDown(): void
     {
-        try {
-            $this->db->connection('default')->disconnect();
-            $this->db->connection('second_connection')->disconnect();
-        } catch (\Throwable $e) {
+        if ($this->db !== null) {
+            $database = $this->db->getDatabaseManager();
+            try {
+                $database->connection('default')->unsetTransactionManager();
+                $database->purge('default');
+                $database->connection('second_connection')->unsetTransactionManager();
+                $database->purge('second_connection');
+            } catch (\Throwable $e) {
+            }
         }
 
         parent::tearDown();
