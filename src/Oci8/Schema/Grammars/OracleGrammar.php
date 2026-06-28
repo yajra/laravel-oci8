@@ -45,7 +45,9 @@ class OracleGrammar extends Grammar
     {
         $columns = implode(', ', $this->getColumns($blueprint));
 
-        $sql = 'create table '.$this->wrapTable($blueprint)." ( $columns";
+        $create = $blueprint->temporary ? 'create global temporary table ' : 'create table ';
+
+        $sql = $create.$this->wrapTable($blueprint)." ( $columns";
 
         /*
          * To be able to name the primary/foreign keys when the table is
@@ -58,6 +60,10 @@ class OracleGrammar extends Grammar
         $sql .= $this->addPrimaryKeys($blueprint);
 
         $sql .= ' )';
+
+        if ($blueprint->temporary) {
+            $sql .= ' on commit preserve rows';
+        }
 
         return $sql;
     }
@@ -140,6 +146,9 @@ class OracleGrammar extends Grammar
             if (! is_null($foreign->onDelete)) {
                 $sql .= " on delete {$foreign->onDelete}";
             }
+
+            $sql = $this->appendDeferrableClause($foreign, $sql);
+            $sql = $this->appendNotValidClause($foreign, $sql);
         }
 
         return $sql;
@@ -366,7 +375,9 @@ class OracleGrammar extends Grammar
                 $sql .= " on delete {$command->onDelete}";
             }
 
-            return $sql;
+            $sql = $this->appendDeferrableClause($command, $sql);
+
+            return $this->appendNotValidClause($command, $sql);
         }
 
         return null;
@@ -377,7 +388,31 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command): string
     {
-        return 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+        $sql = 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+
+        return $this->appendDeferrableClause($command, $sql);
+    }
+
+    protected function appendDeferrableClause(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->deferrable)) {
+            $sql .= $command->deferrable ? ' deferrable' : ' not deferrable';
+        }
+
+        if ($command->deferrable && ! is_null($command->initiallyImmediate)) {
+            $sql .= $command->initiallyImmediate ? ' initially immediate' : ' initially deferred';
+        }
+
+        return $sql;
+    }
+
+    protected function appendNotValidClause(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->notValid) && $command->notValid) {
+            $sql .= ' enable novalidate';
+        }
+
+        return $sql;
     }
 
     /**
@@ -385,7 +420,13 @@ class OracleGrammar extends Grammar
      */
     public function compileIndex(Blueprint $blueprint, Fluent $command): string
     {
-        return "create index {$command->index} on ".$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' )';
+        $sql = "create index {$command->index} on ".$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' )';
+
+        if ($command->online) {
+            $sql .= ' online';
+        }
+
+        return $sql;
     }
 
     /**
