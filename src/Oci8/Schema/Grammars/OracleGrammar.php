@@ -44,7 +44,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $fluentCommands = ['Comment'];
+    protected $fluentCommands = ['Comment', 'AutoIncrementStartingValues'];
 
     /**
      * Compile a create database command.
@@ -353,6 +353,14 @@ class OracleGrammar extends Grammar
             $this->wrapTable($blueprint),
             $this->getColumn($blueprint, $command->column)
         );
+    }
+
+    /**
+     * Compile the auto-incrementing column starting values.
+     */
+    public function compileAutoIncrementStartingValues(Blueprint $blueprint, Fluent $command): ?string
+    {
+        return null;
     }
 
     /**
@@ -1223,10 +1231,20 @@ class OracleGrammar extends Grammar
         $sql = null;
 
         if (! is_null($column->generatedAs)) {
+            $options = [];
+
+            if (! is_bool($column->generatedAs) && ! empty($column->generatedAs)) {
+                $options[] = $column->generatedAs;
+            }
+
+            if ($value = $column->get('startingValue', $column->get('from'))) {
+                $options[] = "start with {$value}";
+            }
+
             $sql = sprintf(
                 ' generated %s as identity%s',
                 $column->always ? 'always' : ('by default'.($column->onNull ? ' on null' : '')),
-                ! is_bool($column->generatedAs) && ! empty($column->generatedAs) ? " ({$column->generatedAs})" : ''
+                $options === [] ? '' : ' ('.implode(' ', $options).')'
             );
         }
 
