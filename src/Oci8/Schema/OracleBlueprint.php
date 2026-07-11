@@ -13,16 +13,6 @@ use Yajra\Oci8\Oci8Connection;
  */
 class OracleBlueprint extends Blueprint
 {
-    /**
-     * Table comment.
-     */
-    public ?string $comment = null;
-
-    /**
-     * Column comments.
-     */
-    public array $commentColumns = [];
-
     public function __construct(Connection $connection, $table, ?Closure $callback = null)
     {
         parent::__construct($connection, $table, $callback);
