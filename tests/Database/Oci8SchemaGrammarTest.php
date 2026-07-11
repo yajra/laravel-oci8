@@ -695,6 +695,14 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('drop table "USERS"', $statements[0]);
     }
 
+    public function test_compile_schemas_method()
+    {
+        $grammar = $this->getGrammar();
+        $expected = 'select lower(username) as "name", decode(username, user, 1, 0) as "default" from all_users order by username';
+        $sql = $grammar->compileSchemas();
+        $this->assertEquals($expected, $sql);
+    }
+
     public function test_compile_table_exists_method()
     {
         $grammar = $this->getGrammar();
