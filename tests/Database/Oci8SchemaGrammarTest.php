@@ -151,6 +151,22 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function test_create_database_is_not_supported(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Oracle does not support creating databases via the schema builder.');
+
+        $this->getGrammar()->compileCreateDatabase('testing');
+    }
+
+    public function test_drop_database_if_exists_is_not_supported(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Oracle does not support dropping databases via the schema builder.');
+
+        $this->getGrammar()->compileDropDatabaseIfExists('testing');
+    }
+
     public function test_add_column_with_space(): void
     {
         $conn = $this->getConnection();

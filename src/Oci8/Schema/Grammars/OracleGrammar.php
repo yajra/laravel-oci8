@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -44,6 +45,26 @@ class OracleGrammar extends Grammar
      * @var array
      */
     protected $fluentCommands = ['Comment'];
+
+    /**
+     * Compile a create database command.
+     *
+     * @throws RuntimeException
+     */
+    public function compileCreateDatabase($name): string
+    {
+        throw new RuntimeException('Oracle does not support creating databases via the schema builder.');
+    }
+
+    /**
+     * Compile a drop database if exists command.
+     *
+     * @throws RuntimeException
+     */
+    public function compileDropDatabaseIfExists($name): string
+    {
+        throw new RuntimeException('Oracle does not support dropping databases via the schema builder.');
+    }
 
     /**
      * Compile a create table command.
