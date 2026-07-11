@@ -227,15 +227,15 @@ jobs:
           mkdir -p build/coverage
           COVERAGE_FILE="build/coverage/oracle-php-${{ matrix.php }}-${{ matrix.oracle }}.cov"
           if [ "${{ matrix.oracle }}" = "19c" ]; then
-            SERVER_VERSION=19c SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
+            SERVER_VERSION=19c SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit --coverage-php "$COVERAGE_FILE" --display-all-issues --testdox-summary
           elif [ "${{ matrix.oracle }}" = "23ai" ]; then
-            SERVER_VERSION=23ai SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
+            SERVER_VERSION=23ai SERVICE_NAME=myatp DATABASE=myatp_low vendor/bin/phpunit --coverage-php "$COVERAGE_FILE" --display-all-issues --testdox-summary
           elif [ "${{ matrix.oracle }}" = "21c" ]; then
-            SERVER_VERSION=12c SERVICE_NAME=XEPDB1 DATABASE=XEPDB1 vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
+            SERVER_VERSION=12c SERVICE_NAME=XEPDB1 DATABASE=XEPDB1 vendor/bin/phpunit --coverage-php "$COVERAGE_FILE" --display-all-issues --testdox-summary
           elif [ "${{ matrix.oracle }}" = "26ai" ]; then
-            SERVER_VERSION=26ai SERVICE_NAME=FREEPDB1 DATABASE=FREEPDB1 vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
+            SERVER_VERSION=26ai SERVICE_NAME=FREEPDB1 DATABASE=FREEPDB1 vendor/bin/phpunit --coverage-php "$COVERAGE_FILE" --display-all-issues --testdox-summary
           else
-            vendor/bin/phpunit --coverage-php "$COVERAGE_FILE"
+            vendor/bin/phpunit --coverage-php "$COVERAGE_FILE" --display-all-issues --testdox-summary
           fi
 
       - name: Upload coverage
@@ -301,7 +301,7 @@ jobs:
         env:
           SERVER_VERSION: 12c
           PGSQL: true
-        run: vendor/bin/phpunit tests/Functional/Compatibility/
+        run: vendor/bin/phpunit tests/Functional/Compatibility/ --display-all-issues --testdox-summary
 
   compatibility-mariadb-tests:
     runs-on: ubuntu-latest
@@ -355,7 +355,7 @@ jobs:
         env:
           SERVER_VERSION: 12c
           MARIADB: true
-        run: vendor/bin/phpunit tests/Functional/Compatibility/
+        run: vendor/bin/phpunit tests/Functional/Compatibility/ --display-all-issues --testdox-summary
 
   coverage:
     runs-on: ubuntu-latest
