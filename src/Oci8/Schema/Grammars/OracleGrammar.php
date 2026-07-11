@@ -200,6 +200,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile the query to determine the schemas.
+     */
+    public function compileSchemas(): string
+    {
+        return 'select lower(username) as "name", decode(username, user, 1, 0) as "default" from all_users order by username';
+    }
+
+    /**
      * Compile the query to determine if a table exists.
      */
     public function compileTableExists($schema, $table): ?string
