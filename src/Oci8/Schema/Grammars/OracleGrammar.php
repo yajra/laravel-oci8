@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use LogicException;
 use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
@@ -27,7 +28,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Increment', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
 
     /**
      * The possible column serials.
@@ -1013,6 +1014,28 @@ class OracleGrammar extends Grammar
     {
         if (in_array($column->type, $this->serials) && $column->autoIncrement) {
             $blueprint->primary($column->name);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the SQL for a generated virtual column modifier.
+     *
+     * @throws LogicException
+     */
+    protected function modifyVirtualAs(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if ($column->change) {
+            if (array_key_exists('virtualAs', $column->getAttributes())) {
+                throw new LogicException('This database driver does not support modifying generated columns.');
+            }
+
+            return null;
+        }
+
+        if (! is_null($column->virtualAs)) {
+            return " generated always as ({$this->getValue($column->virtualAs)}) virtual";
         }
 
         return null;
