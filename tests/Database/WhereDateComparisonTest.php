@@ -19,7 +19,7 @@ class WhereDateComparisonTest extends TestCase
         parent::setUp();
 
         // Create a mock connection for testing
-        $connection = $this->createMock(Oci8Connection::class);
+        $connection = $this->createStub(Oci8Connection::class);
         $connection->method('getSchemaPrefix')->willReturn('');
         $connection->method('getMaxLength')->willReturn(30);
         $connection->method('getDateFormat')->willReturn('YYYY-MM-DD HH24:MI:SS');
