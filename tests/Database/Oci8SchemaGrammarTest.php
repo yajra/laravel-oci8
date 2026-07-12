@@ -35,6 +35,41 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_create_table_with_comments()
+    {
+        $conn = $this->getConnection();
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->create();
+        $blueprint->increments('id');
+        $blueprint->string('email')->comment("User's email");
+        $blueprint->comment('Application users');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(3, $statements);
+        $this->assertEquals(
+            'create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+            $statements[0]
+        );
+        $this->assertEquals("comment on table \"USERS\" is 'Application users'", $statements[1]);
+        $this->assertEquals("comment on column \"USERS\".\"EMAIL\" is 'User''s email'", $statements[2]);
+    }
+
+    public function test_add_column_with_comment()
+    {
+        $conn = $this->getConnection();
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->string('nickname')->comment('Public nickname');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals('alter table "USERS" add ( "NICKNAME" varchar2(255) not null )', $statements[0]);
+        $this->assertEquals("comment on column \"USERS\".\"NICKNAME\" is 'Public nickname'", $statements[1]);
+    }
+
     protected function getConnection(
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,

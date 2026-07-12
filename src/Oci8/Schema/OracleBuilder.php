@@ -3,7 +3,6 @@
 namespace Yajra\Oci8\Schema;
 
 use Closure;
-use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Builder;
 use Yajra\Oci8\Oci8Connection;
 
@@ -15,8 +14,6 @@ class OracleBuilder extends Builder
 {
     public OracleAutoIncrementHelper $helper;
 
-    public Comment $comment;
-
     /**
      * @var OraclePreferences
      */
@@ -26,7 +23,6 @@ class OracleBuilder extends Builder
     {
         parent::__construct($connection);
         $this->helper = new OracleAutoIncrementHelper($connection);
-        $this->comment = new Comment($connection);
         $this->ctxDdlPreferences = new OraclePreferences($connection);
     }
 
@@ -46,8 +42,6 @@ class OracleBuilder extends Builder
         $this->ctxDdlPreferences->createPreferences($blueprint);
 
         $this->build($blueprint);
-
-        $this->comment->setComments($blueprint);
 
         $this->helper->createAutoIncrementObjects($blueprint, $table);
     }
@@ -80,8 +74,6 @@ class OracleBuilder extends Builder
         }
 
         $this->build($blueprint);
-
-        $this->comment->setComments($blueprint);
     }
 
     /**

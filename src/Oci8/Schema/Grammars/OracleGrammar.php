@@ -39,6 +39,13 @@ class OracleGrammar extends Grammar
     protected $transactions = true;
 
     /**
+     * The commands to be executed outside of create or alter command.
+     *
+     * @var array
+     */
+    protected $fluentCommands = ['Comment'];
+
+    /**
      * Compile a create table command.
      */
     public function compileCreate(Blueprint $blueprint, Fluent $command): string
@@ -559,6 +566,34 @@ class OracleGrammar extends Grammar
         end loop;";
 
         return "begin $dropFullTextSql end;";
+    }
+
+    /**
+     * Compile a comment command.
+     */
+    public function compileComment(Blueprint $blueprint, Fluent $command): ?string
+    {
+        $comment = $command->column->comment;
+        if (is_null($comment)) {
+            return null;
+        }
+
+        return sprintf('comment on column %s.%s is %s',
+            $this->wrapTable($blueprint),
+            $this->wrap($command->column->name),
+            $this->getDefaultValue($comment)
+        );
+    }
+
+    /**
+     * Compile a table comment command.
+     */
+    public function compileTableComment(Blueprint $blueprint, Fluent $command): string
+    {
+        return sprintf('comment on table %s is %s',
+            $this->wrapTable($blueprint),
+            $this->getDefaultValue($command->comment)
+        );
     }
 
     /**
