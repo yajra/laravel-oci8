@@ -1,3 +1,10 @@
+# [13.8.0](https://github.com/yajra/laravel-oci8/compare/v13.7.0...v13.8.0) (2026-07-12)
+
+
+### Features
+
+* support group limits in Oracle queries ([97c5cc3](https://github.com/yajra/laravel-oci8/commit/97c5cc3c9785b376caf18735496fd4ed7c7872b8))
+
 # [13.7.0](https://github.com/yajra/laravel-oci8/compare/v13.6.0...v13.7.0) (2026-06-15)
 
 
