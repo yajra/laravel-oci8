@@ -17,18 +17,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
-
-      - name: Setup Configuration
-        run: |
-          if [ -n "$GH_TOKEN_SECRET" ]; then
-            echo "GH_TOKEN=$GH_TOKEN_SECRET" >> $GITHUB_ENV
-          else
-            echo "GH_TOKEN=$GITHUB_TOKEN" >> $GITHUB_ENV
-          fi
-        env:
-          GH_TOKEN_SECRET: ${{ secrets.GH_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -37,5 +27,11 @@ jobs:
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@9cc899c47e6841430bbaedb43de1560a568dfd16
+        with:
+          semantic_version: 25.0.6
+          extra_plugins: |
+            @semantic-release/changelog@6.0.3
+            @semantic-release/git@10.0.1
+            conventional-changelog-conventionalcommits@10.2.1
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
