@@ -6,7 +6,27 @@
     ],
     "plugins": [
         "@semantic-release/commit-analyzer",
-        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/release-notes-generator",
+            {
+                "preset": "conventionalcommits",
+                "presetConfig": {
+                    "types": [
+                        { "type": "feat", "section": "Features", "effect": "bump" },
+                        { "type": "fix", "section": "Bug Fixes", "effect": "bump" },
+                        { "type": "perf", "section": "Performance Improvements", "effect": "bump" },
+                        { "type": "refactor", "section": "Code Refactoring", "effect": "changelog" },
+                        { "type": "test", "section": "Tests", "effect": "changelog" },
+                        { "type": "build", "section": "Build System", "effect": "changelog" },
+                        { "type": "ci", "section": "Continuous Integration", "effect": "changelog" },
+                        { "type": "docs", "section": "Documentation", "effect": "changelog" },
+                        { "type": "style", "section": "Styles", "effect": "changelog" },
+                        { "type": "chore", "section": "Chores", "effect": "changelog" },
+                        { "type": "revert", "section": "Reverts", "effect": "bump" }
+                    ]
+                }
+            }
+        ],
         [
             "@semantic-release/changelog",
             {
