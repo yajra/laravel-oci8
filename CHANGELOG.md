@@ -1,3 +1,5 @@
+## [13.10.0](https://github.com/yajra/laravel-oci8/compare/v13.9.0...v13.10.0) (2026-07-17)
+
 ## [13.9.0](https://github.com/yajra/laravel-oci8/compare/v13.8.0...v13.9.0) (2026-07-17)
 
 # [13.8.0](https://github.com/yajra/laravel-oci8/compare/v13.7.0...v13.8.0) (2026-07-12)
