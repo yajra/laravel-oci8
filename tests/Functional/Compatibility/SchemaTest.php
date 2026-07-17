@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -258,7 +259,7 @@ class SchemaTest extends TestCase
             ]);
 
             $this->fail('Expected the not valid foreign key to reject new invalid rows.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $this->assertTrue(true);
         }
     }
