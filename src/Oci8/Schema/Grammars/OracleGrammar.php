@@ -649,6 +649,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a drop spatial index command.
+     */
+    public function compileDropSpatialIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        return $this->compileDropIndex($blueprint, $command);
+    }
+
+    /**
      * Compile a comment command.
      */
     public function compileComment(Blueprint $blueprint, Fluent $command): ?string
