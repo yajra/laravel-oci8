@@ -233,4 +233,14 @@ class OracleBuilder extends Builder
             )
         );
     }
+
+    /**
+     * Get the current schema for the connection.
+     *
+     * @return list<string>
+     */
+    public function getCurrentSchemaListing(): array
+    {
+        return [$this->connection->getSchema()];
+    }
 }
