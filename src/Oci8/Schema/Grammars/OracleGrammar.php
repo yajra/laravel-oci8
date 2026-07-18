@@ -29,7 +29,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Collate', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
 
     /**
      * The possible column serials.

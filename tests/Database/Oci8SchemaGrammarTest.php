@@ -89,6 +89,31 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals("comment on column \"USERS\".\"NICKNAME\" is 'Public nickname'", $statements[1]);
     }
 
+    public function test_create_table_with_collated_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->create();
+        $blueprint->string('email')->collation('binary_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'create table "USERS" ( "EMAIL" varchar2(255) collate "BINARY_CI" not null )',
+        ], $statements);
+    }
+
+    public function test_add_collated_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->string('email')->collation('binary_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "EMAIL" varchar2(255) collate "BINARY_CI" not null )',
+        ], $statements);
+    }
+
     protected function getConnection(
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,
