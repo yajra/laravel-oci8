@@ -727,6 +727,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a tiny text type.
+     */
+    protected function typeTinyText(Fluent $column): string
+    {
+        return 'varchar2(255)';
+    }
+
+    /**
      * Create column definition for a nvarchar type.
      */
     protected function typeNvarchar2(Fluent $column): string

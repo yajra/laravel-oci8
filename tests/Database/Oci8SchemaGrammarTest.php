@@ -1232,6 +1232,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
     }
 
+    public function test_adding_tiny_text()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->tinyText('foo');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "FOO" varchar2(255) not null )', $statements[0]);
+    }
+
     public function test_adding_char()
     {
         $conn = $this->getConnection();
