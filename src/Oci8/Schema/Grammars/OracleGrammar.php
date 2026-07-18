@@ -829,6 +829,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a real type.
+     */
+    protected function typeReal(Fluent $column): string
+    {
+        return 'binary_float';
+    }
+
+    /**
      * Create the column definition for a double type.
      */
     protected function typeDouble(Fluent $column): string

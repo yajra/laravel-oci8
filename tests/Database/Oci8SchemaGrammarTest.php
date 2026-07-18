@@ -1356,6 +1356,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" float(126) not null )', $statements[0]);
     }
 
+    public function test_adding_real()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->addColumn('real', 'foo');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "FOO" binary_float not null )', $statements[0]);
+    }
+
     public function test_adding_double()
     {
         $conn = $this->getConnection();
