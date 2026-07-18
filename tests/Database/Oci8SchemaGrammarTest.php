@@ -151,6 +151,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function test_get_current_schema_listing_uses_connection_schema(): void
+    {
+        $conn = m::mock(Connection::class);
+        $conn->shouldReceive('getSchemaGrammar')->once()->andReturn(m::mock(OracleGrammar::class));
+        $conn->shouldReceive('getSchema')->once()->andReturn('REPORTING');
+
+        $builder = new OracleBuilder($conn);
+
+        $this->assertSame(['REPORTING'], $builder->getCurrentSchemaListing());
+    }
+
     public function test_create_database_is_not_supported(): void
     {
         $this->expectException(\RuntimeException::class);
