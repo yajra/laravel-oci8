@@ -1532,6 +1532,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" date not null )', $statements[0]);
     }
 
+    public function test_adding_date_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->date('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" date default CURRENT_DATE not null )',
+        ], $statements);
+    }
+
     public function test_adding_date_time()
     {
         $conn = $this->getConnection();
@@ -1541,6 +1552,17 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" date not null )', $statements[0]);
+    }
+
+    public function test_adding_date_time_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->dateTime('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" date default CURRENT_TIMESTAMP not null )',
+        ], $statements);
     }
 
     public function test_adding_time()
@@ -1565,6 +1587,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" timestamp not null )', $statements[0]);
     }
 
+    public function test_adding_time_stamp_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->timestamp('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp default CURRENT_TIMESTAMP not null )',
+        ], $statements);
+    }
+
     public function test_adding_time_stamp_tz()
     {
         $conn = $this->getConnection();
@@ -1574,6 +1607,17 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" timestamp with time zone not null )', $statements[0]);
+    }
+
+    public function test_adding_time_stamp_tz_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->timestampTz('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp with time zone default CURRENT_TIMESTAMP not null )',
+        ], $statements);
     }
 
     public function test_adding_nullable_time_stamps()
