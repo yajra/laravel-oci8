@@ -2,6 +2,7 @@
 
 namespace Yajra\Oci8\Schema\Grammars;
 
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
@@ -868,6 +869,18 @@ class OracleGrammar extends Grammar
         $length = $column->length ?: 255;
 
         return "varchar2({$length})";
+    }
+
+    /**
+     * Create the column definition for a year type.
+     */
+    protected function typeYear(Fluent $column): string
+    {
+        if ($column->useCurrent) {
+            $column->default(new Expression('EXTRACT(YEAR FROM CURRENT_DATE)'));
+        }
+
+        return $this->typeInteger($column);
     }
 
     /**

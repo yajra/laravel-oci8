@@ -1424,6 +1424,31 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function test_adding_year()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->year('foo');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "FOO" number(10,0) not null )', $statements[0]);
+    }
+
+    public function test_adding_year_with_current_default()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->year('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'alter table "USERS" add ( "FOO" number(10,0) default EXTRACT(YEAR FROM CURRENT_DATE) not null )',
+            $statements[0]
+        );
+    }
+
     public function test_adding_json()
     {
         $conn = $this->getConnection();
