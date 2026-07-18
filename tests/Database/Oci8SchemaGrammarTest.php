@@ -931,6 +931,16 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statements[0]);
     }
 
+    public function test_drop_spatial_index()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->dropSpatialIndex('users_location_spatialindex');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertSame('drop index users_location_spatialindex', $statements[0]);
+    }
+
     public function test_rename_table()
     {
         $conn = $this->getConnection();
