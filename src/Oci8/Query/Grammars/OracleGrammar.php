@@ -50,6 +50,11 @@ class OracleGrammar extends Grammar
     protected $labelSearchFullText = 1;
 
     /**
+     * @var bool
+     */
+    protected $caseSensitive;
+
+    /**
      * Compile a delete statement with joins into SQL.
      *
      * @param  string  $table
@@ -82,6 +87,14 @@ class OracleGrammar extends Grammar
      */
     public function compileSelect(Builder $query): string
     {
+            if ($query->getConnection()->getConfig('options') != null){
+            if ($query->getConnection()->getConfig('options')['8'] === 0){
+                $this->caseSensitive = true;
+            }
+        } else {
+            $this->caseSensitive = false;
+        }
+        
         if (($query->unions || $query->havings) && $query->aggregate) {
             return $this->compileUnionAggregate($query);
         }
@@ -540,7 +553,9 @@ class OracleGrammar extends Grammar
             return $value;
         }
 
-        $value = Str::upper($value);
+        if ($this->caseSensitive != true) {
+            $value = Str::upper($value);
+        }
 
         return '"'.str_replace('"', '""', $value).'"';
     }
