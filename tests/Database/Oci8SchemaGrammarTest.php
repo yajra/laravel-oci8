@@ -89,6 +89,31 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals("comment on column \"USERS\".\"NICKNAME\" is 'Public nickname'", $statements[1]);
     }
 
+    public function test_create_table_with_collated_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->create();
+        $blueprint->string('email')->collation('binary_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'create table "USERS" ( "EMAIL" varchar2(255) collate "BINARY_CI" not null )',
+        ], $statements);
+    }
+
+    public function test_add_collated_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->string('email')->collation('binary_ci');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "EMAIL" varchar2(255) collate "BINARY_CI" not null )',
+        ], $statements);
+    }
+
     protected function getConnection(
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,
@@ -149,6 +174,33 @@ class Oci8SchemaGrammarTest extends TestCase
         $grammar->setMaxLength(128);
 
         $this->addToAssertionCount(1);
+    }
+
+    public function test_get_current_schema_listing_uses_connection_schema(): void
+    {
+        $conn = m::mock(Connection::class);
+        $conn->shouldReceive('getSchemaGrammar')->once()->andReturn(m::mock(OracleGrammar::class));
+        $conn->shouldReceive('getSchema')->once()->andReturn('REPORTING');
+
+        $builder = new OracleBuilder($conn);
+
+        $this->assertSame(['REPORTING'], $builder->getCurrentSchemaListing());
+    }
+
+    public function test_create_database_is_not_supported(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Oracle does not support creating databases via the schema builder.');
+
+        $this->getGrammar()->compileCreateDatabase('testing');
+    }
+
+    public function test_drop_database_if_exists_is_not_supported(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Oracle does not support dropping databases via the schema builder.');
+
+        $this->getGrammar()->compileDropDatabaseIfExists('testing');
     }
 
     public function test_add_column_with_space(): void
@@ -679,6 +731,14 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('drop table "USERS"', $statements[0]);
     }
 
+    public function test_compile_schemas_method()
+    {
+        $grammar = $this->getGrammar();
+        $expected = 'select lower(username) as "name", decode(username, user, 1, 0) as "default" from all_users order by username';
+        $sql = $grammar->compileSchemas();
+        $this->assertEquals($expected, $sql);
+    }
+
     public function test_compile_table_exists_method()
     {
         $grammar = $this->getGrammar();
@@ -905,6 +965,16 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
+    }
+
+    public function test_drop_spatial_index()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->dropSpatialIndex('users_location_spatialindex');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertSame('drop index users_location_spatialindex', $statements[0]);
     }
 
     public function test_rename_table()
@@ -1208,6 +1278,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" clob not null )', $statements[0]);
     }
 
+    public function test_adding_tiny_text()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->tinyText('foo');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "FOO" varchar2(255) not null )', $statements[0]);
+    }
+
     public function test_adding_char()
     {
         $conn = $this->getConnection();
@@ -1321,6 +1402,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" float(126) not null )', $statements[0]);
     }
 
+    public function test_adding_real()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->addColumn('real', 'foo');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "FOO" binary_float not null )', $statements[0]);
+    }
+
     public function test_adding_double()
     {
         $conn = $this->getConnection();
@@ -1378,6 +1470,31 @@ class Oci8SchemaGrammarTest extends TestCase
             $statements[0]);
     }
 
+    public function test_adding_year()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->year('foo');
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals('alter table "USERS" add ( "FOO" number(10,0) not null )', $statements[0]);
+    }
+
+    public function test_adding_year_with_current_default()
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->year('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertEquals(
+            'alter table "USERS" add ( "FOO" number(10,0) default EXTRACT(YEAR FROM CURRENT_DATE) not null )',
+            $statements[0]
+        );
+    }
+
     public function test_adding_json()
     {
         $conn = $this->getConnection();
@@ -1415,6 +1532,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" date not null )', $statements[0]);
     }
 
+    public function test_adding_date_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->date('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" date default CURRENT_DATE not null )',
+        ], $statements);
+    }
+
     public function test_adding_date_time()
     {
         $conn = $this->getConnection();
@@ -1424,6 +1552,17 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" date not null )', $statements[0]);
+    }
+
+    public function test_adding_date_time_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->dateTime('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" date default CURRENT_TIMESTAMP not null )',
+        ], $statements);
     }
 
     public function test_adding_time()
@@ -1448,6 +1587,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add ( "FOO" timestamp not null )', $statements[0]);
     }
 
+    public function test_adding_time_stamp_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->timestamp('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp default CURRENT_TIMESTAMP not null )',
+        ], $statements);
+    }
+
     public function test_adding_time_stamp_tz()
     {
         $conn = $this->getConnection();
@@ -1457,6 +1607,17 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add ( "FOO" timestamp with time zone not null )', $statements[0]);
+    }
+
+    public function test_adding_time_stamp_tz_with_current_default()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->timestampTz('foo')->useCurrent();
+        $statements = $blueprint->toSql();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp with time zone default CURRENT_TIMESTAMP not null )',
+        ], $statements);
     }
 
     public function test_adding_nullable_time_stamps()
@@ -1664,5 +1825,49 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
         $this->assertCount(1, $statements);
         $this->assertSame('alter table "USERS" add ( "FOO" number(10,0) generated by default on null as identity (increment by 10 start with 100) )', $statements[0]);
+
+        // With fluent starting value
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->increments('foo')->generatedAs()->startingValue(100);
+        $statements = $blueprint->toSql();
+        $this->assertCount(1, $statements);
+        $this->assertSame('alter table "USERS" add ( "FOO" number(10,0) generated by default as identity (start with 100) )', $statements[0]);
+
+        // With fluent from alias
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->increments('foo')->generatedAs()->from(200);
+        $statements = $blueprint->toSql();
+        $this->assertCount(1, $statements);
+        $this->assertSame('alter table "USERS" add ( "FOO" number(10,0) generated by default as identity (start with 200) )', $statements[0]);
+    }
+
+    public function test_create_table_with_virtual_as()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'generated_columns');
+        $blueprint->integer('value');
+        $blueprint->integer('double_value')->virtualAs('"VALUE" * 2');
+        $blueprint->create();
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertSame(
+            'create table "GENERATED_COLUMNS" ( "VALUE" number(10,0) not null, "DOUBLE_VALUE" number(10,0) generated always as ("VALUE" * 2) virtual not null )',
+            $statements[0]
+        );
+    }
+
+    public function test_add_column_with_virtual_as()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'generated_columns');
+        $blueprint->integer('double_value')->virtualAs('"VALUE" * 2');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(1, $statements);
+        $this->assertSame(
+            'alter table "GENERATED_COLUMNS" add ( "DOUBLE_VALUE" number(10,0) generated always as ("VALUE" * 2) virtual not null )',
+            $statements[0]
+        );
     }
 }

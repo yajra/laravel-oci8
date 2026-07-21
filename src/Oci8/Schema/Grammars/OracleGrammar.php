@@ -2,10 +2,13 @@
 
 namespace Yajra\Oci8\Schema\Grammars;
 
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use LogicException;
+use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -26,7 +29,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Increment', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Collate', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
 
     /**
      * The possible column serials.
@@ -43,7 +46,27 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $fluentCommands = ['Comment'];
+    protected $fluentCommands = ['Comment', 'AutoIncrementStartingValues'];
+
+    /**
+     * Compile a create database command.
+     *
+     * @throws RuntimeException
+     */
+    public function compileCreateDatabase($name): string
+    {
+        throw new RuntimeException('Oracle does not support creating databases via the schema builder.');
+    }
+
+    /**
+     * Compile a drop database if exists command.
+     *
+     * @throws RuntimeException
+     */
+    public function compileDropDatabaseIfExists($name): string
+    {
+        throw new RuntimeException('Oracle does not support dropping databases via the schema builder.');
+    }
 
     /**
      * Compile a create table command.
@@ -175,6 +198,14 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Compile the query to determine the schemas.
+     */
+    public function compileSchemas(): string
+    {
+        return 'select lower(username) as "name", decode(username, user, 1, 0) as "default" from all_users order by username';
     }
 
     /**
@@ -332,6 +363,14 @@ class OracleGrammar extends Grammar
             $this->wrapTable($blueprint),
             $this->getColumn($blueprint, $command->column)
         );
+    }
+
+    /**
+     * Compile the auto-incrementing column starting values.
+     */
+    public function compileAutoIncrementStartingValues(Blueprint $blueprint, Fluent $command): ?string
+    {
+        return null;
     }
 
     /**
@@ -610,6 +649,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a drop spatial index command.
+     */
+    public function compileDropSpatialIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        return $this->compileDropIndex($blueprint, $command);
+    }
+
+    /**
      * Compile a comment command.
      */
     public function compileComment(Blueprint $blueprint, Fluent $command): ?string
@@ -686,6 +733,14 @@ class OracleGrammar extends Grammar
     protected function typeString(Fluent $column): string
     {
         return "varchar2({$column->length})";
+    }
+
+    /**
+     * Create the column definition for a tiny text type.
+     */
+    protected function typeTinyText(Fluent $column): string
+    {
+        return 'varchar2(255)';
     }
 
     /**
@@ -783,6 +838,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a real type.
+     */
+    protected function typeReal(Fluent $column): string
+    {
+        return 'binary_float';
+    }
+
+    /**
      * Create the column definition for a double type.
      */
     protected function typeDouble(Fluent $column): string
@@ -817,10 +880,26 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a year type.
+     */
+    protected function typeYear(Fluent $column): string
+    {
+        if ($column->useCurrent) {
+            $column->default(new Expression('EXTRACT(YEAR FROM CURRENT_DATE)'));
+        }
+
+        return $this->typeInteger($column);
+    }
+
+    /**
      * Create the column definition for a date type.
      */
     protected function typeDate(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_DATE'));
+        }
+
         return 'date';
     }
 
@@ -829,6 +908,10 @@ class OracleGrammar extends Grammar
      */
     protected function typeDateTime(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_TIMESTAMP'));
+        }
+
         return 'date';
     }
 
@@ -837,6 +920,10 @@ class OracleGrammar extends Grammar
      */
     protected function typeDateTimeTz(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_TIMESTAMP'));
+        }
+
         return 'timestamp with time zone';
     }
 
@@ -853,6 +940,10 @@ class OracleGrammar extends Grammar
      */
     protected function typeTimestamp(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_TIMESTAMP'));
+        }
+
         return 'timestamp';
     }
 
@@ -861,6 +952,10 @@ class OracleGrammar extends Grammar
      */
     protected function typeTimestampTz(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_TIMESTAMP'));
+        }
+
         return 'timestamp with time zone';
     }
 
@@ -984,6 +1079,28 @@ class OracleGrammar extends Grammar
     {
         if (in_array($column->type, $this->serials) && $column->autoIncrement) {
             $blueprint->primary($column->name);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the SQL for a generated virtual column modifier.
+     *
+     * @throws LogicException
+     */
+    protected function modifyVirtualAs(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if ($column->change) {
+            if (array_key_exists('virtualAs', $column->getAttributes())) {
+                throw new LogicException('This database driver does not support modifying generated columns.');
+            }
+
+            return null;
+        }
+
+        if (! is_null($column->virtualAs)) {
+            return " generated always as ({$this->getValue($column->virtualAs)}) virtual";
         }
 
         return null;
@@ -1202,10 +1319,20 @@ class OracleGrammar extends Grammar
         $sql = null;
 
         if (! is_null($column->generatedAs)) {
+            $options = [];
+
+            if (! is_bool($column->generatedAs) && ! empty($column->generatedAs)) {
+                $options[] = $column->generatedAs;
+            }
+
+            if ($value = $column->get('startingValue', $column->get('from'))) {
+                $options[] = "start with {$value}";
+            }
+
             $sql = sprintf(
                 ' generated %s as identity%s',
                 $column->always ? 'always' : ('by default'.($column->onNull ? ' on null' : '')),
-                ! is_bool($column->generatedAs) && ! empty($column->generatedAs) ? " ({$column->generatedAs})" : ''
+                $options === [] ? '' : ' ('.implode(' ', $options).')'
             );
         }
 
