@@ -1569,28 +1569,52 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function test_adding_json()
     {
-        $conn = $this->getConnection();
+        $conn = $this->getConnection(serverVersion: '19c');
         $blueprint = new Blueprint($conn, 'users');
         $blueprint->json('foo');
         $statements = $blueprint->toSql();
+
         $this->assertCount(1, $statements);
-        $expected = $conn->isVersionAboveOrEqual('21c')
-            ? 'alter table "USERS" add ( "FOO" json not null )'
-            : 'alter table "USERS" add ( "FOO" clob not null )';
-        $this->assertEquals($expected, $statements[0]);
+        $this->assertEquals(
+            'alter table "USERS" add ( "FOO" clob not null check ("FOO" is json) )',
+            $statements[0]
+        );
+    }
+
+    public function test_adding_json_on_oracle_21c_uses_native_type(): void
+    {
+        $conn = $this->getConnection(serverVersion: '21c');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->json('foo');
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" json not null )',
+        ], $blueprint->toSql());
+    }
+
+    public function test_adding_json_on_oracle_11g_uses_unconstrained_clob(): void
+    {
+        $conn = $this->getConnection(serverVersion: '11g');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->json('foo');
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" clob not null )',
+        ], $blueprint->toSql());
     }
 
     public function test_adding_jsonb()
     {
-        $conn = $this->getConnection();
+        $conn = $this->getConnection(serverVersion: '19c');
         $blueprint = new Blueprint($conn, 'users');
         $blueprint->jsonb('foo');
         $statements = $blueprint->toSql();
+
         $this->assertCount(1, $statements);
-        $expected = $conn->isVersionAboveOrEqual('21c')
-            ? 'alter table "USERS" add ( "FOO" json not null )'
-            : 'alter table "USERS" add ( "FOO" clob not null )';
-        $this->assertEquals($expected, $statements[0]);
+        $this->assertEquals(
+            'alter table "USERS" add ( "FOO" clob not null check ("FOO" is json) )',
+            $statements[0]
+        );
     }
 
     public function test_adding_date()

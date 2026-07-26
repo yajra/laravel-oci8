@@ -29,7 +29,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Collate', 'Invisible', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Collate', 'Invisible', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs', 'Json'];
 
     /**
      * The possible column serials.
@@ -1070,6 +1070,22 @@ class OracleGrammar extends Grammar
     {
         // implemented @modifyNullable
         return '';
+    }
+
+    /**
+     * Get the SQL for a JSON check constraint.
+     */
+    protected function modifyJson(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if (
+            in_array($column->type, ['json', 'jsonb'], true)
+            && $this->connection->isVersionAboveOrEqual('12c')
+            && ! $this->connection->isVersionAboveOrEqual('21c')
+        ) {
+            return ' check ('.$this->wrap($column).' is json)';
+        }
+
+        return null;
     }
 
     /**
