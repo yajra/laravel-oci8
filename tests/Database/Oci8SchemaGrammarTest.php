@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Query\Expression;
+use LogicException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Oci8Connection as Connection;
@@ -114,14 +115,80 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $statements);
     }
 
+    public function test_create_table_with_invisible_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '12c'), 'users');
+        $blueprint->create();
+        $blueprint->string('email');
+        $blueprint->string('internal_note')->invisible();
+
+        $this->assertSame([
+            'create table "USERS" ( "EMAIL" varchar2(255) not null, "INTERNAL_NOTE" varchar2(255) invisible not null )',
+        ], $blueprint->toSql());
+    }
+
+    public function test_add_invisible_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '12c'), 'users');
+        $blueprint->string('internal_note')->invisible();
+
+        $this->assertSame([
+            'alter table "USERS" add ( "INTERNAL_NOTE" varchar2(255) invisible not null )',
+        ], $blueprint->toSql());
+    }
+
+    public function test_invisible_false_does_not_hide_a_new_column(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '12c'), 'users');
+        $blueprint->string('internal_note')->invisible(false);
+
+        $this->assertSame([
+            'alter table "USERS" add ( "INTERNAL_NOTE" varchar2(255) not null )',
+        ], $blueprint->toSql());
+    }
+
+    public function test_change_column_to_invisible_uses_separate_visibility_statement(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '12c'), 'users');
+        $blueprint->string('internal_note')->invisible()->change();
+
+        $this->assertSame([
+            'alter table "USERS" modify "INTERNAL_NOTE" varchar2(255) not null',
+            'alter table "USERS" modify "INTERNAL_NOTE" invisible',
+        ], $blueprint->toSql());
+    }
+
+    public function test_change_column_to_visible_uses_separate_visibility_statement(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '12c'), 'users');
+        $blueprint->string('internal_note')->invisible(false)->change();
+
+        $this->assertSame([
+            'alter table "USERS" modify "INTERNAL_NOTE" varchar2(255) not null',
+            'alter table "USERS" modify "INTERNAL_NOTE" visible',
+        ], $blueprint->toSql());
+    }
+
+    public function test_invisible_columns_require_oracle_12c(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '11g'), 'users');
+        $blueprint->string('internal_note')->invisible();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Invisible columns require Oracle 12c or newer.');
+
+        $blueprint->toSql();
+    }
+
     protected function getConnection(
         ?OracleGrammar $grammar = null,
         ?OracleBuilder $builder = null,
         string $prefix = '',
         int $maxLength = 30,
-        string $schemaPrefix = ''
+        string $schemaPrefix = '',
+        ?string $serverVersion = null
     ) {
-        $serverVersion = getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
+        $serverVersion ??= getenv('SERVER_VERSION') ? getenv('SERVER_VERSION') : '11g';
 
         $connection = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)

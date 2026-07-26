@@ -29,7 +29,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Collate', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Collate', 'Invisible', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs'];
 
     /**
      * The possible column serials.
@@ -1154,7 +1154,22 @@ class OracleGrammar extends Grammar
 
         $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
 
-        return 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
+        $sql = 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
+
+        if (! is_null($column->invisible)) {
+            if (! $this->connection->isVersionAboveOrEqual('12c')) {
+                throw new LogicException('Invisible columns require Oracle 12c or newer.');
+            }
+
+            $visibility = $column->invisible ? 'invisible' : 'visible';
+
+            return [
+                $sql,
+                'alter table '.$this->wrapTable($blueprint).' modify '.$this->wrap($column).' '.$visibility,
+            ];
+        }
+
+        return $sql;
     }
 
     /**
@@ -1167,6 +1182,24 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Get the SQL for an invisible column modifier.
+     */
+    protected function modifyInvisible(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if (! $column->invisible) {
+            return null;
+        }
+
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new LogicException('Invisible columns require Oracle 12c or newer.');
+        }
+
+        // Oracle does not allow visibility changes to be combined with other
+        // column modifications, so compileChange handles this separately.
+        return $column->change ? null : ' invisible';
     }
 
     /**
