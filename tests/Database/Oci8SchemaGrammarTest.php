@@ -1925,13 +1925,13 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_enable_foreign_key_constraints()
+    public function test_compile_enable_foreign_key_constraints_quotes_identifiers()
     {
         $statement = $this->getGrammar()->compileEnableForeignKeyConstraints('username');
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table \' || c2.table_name || \' enable constraint \' || c2.constraint_name as statement
+                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
@@ -1948,13 +1948,13 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_disable_foreign_key_constraints()
+    public function test_compile_disable_foreign_key_constraints_quotes_identifiers()
     {
         $statement = $this->getGrammar()->compileDisableForeignKeyConstraints('username');
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table \' || c2.table_name || \' disable constraint \' || c2.constraint_name as statement
+                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)

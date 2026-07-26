@@ -1314,7 +1314,7 @@ class OracleGrammar extends Grammar
     {
         return 'begin
             for s in (
-                SELECT \'alter table \' || c2.table_name || \' '.$action.' constraint \' || c2.constraint_name as statement
+                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
