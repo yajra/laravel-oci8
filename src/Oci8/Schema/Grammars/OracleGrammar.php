@@ -39,7 +39,7 @@ class OracleGrammar extends Grammar
     /**
      * If this Grammar supports schema changes wrapped in a transaction.
      */
-    protected $transactions = true;
+    protected $transactions = false;
 
     /**
      * The commands to be executed outside of create or alter command.

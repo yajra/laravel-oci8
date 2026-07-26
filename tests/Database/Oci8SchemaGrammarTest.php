@@ -18,6 +18,11 @@ class Oci8SchemaGrammarTest extends TestCase
         m::close();
     }
 
+    public function test_schema_changes_do_not_support_transactions(): void
+    {
+        $this->assertFalse($this->getGrammar()->supportsSchemaTransactions());
+    }
+
     public function test_basic_create_table()
     {
         $conn = $this->getConnection();
