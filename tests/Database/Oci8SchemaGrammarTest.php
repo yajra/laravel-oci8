@@ -36,7 +36,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+            'create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint "USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -55,7 +55,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create global temporary table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) ) on commit preserve rows',
+            'create global temporary table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint "USERS_ID_PK" primary key ( "ID" ) ) on commit preserve rows',
             $statements[0]
         );
     }
@@ -74,7 +74,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(3, $statements);
         $this->assertEquals(
-            'create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+            'create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint "USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
         $this->assertEquals("comment on table \"USERS\" is 'Application users'", $statements[1]);
@@ -316,7 +316,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(2, $statements);
         $this->assertEquals('create table "USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
-        $this->assertEquals('create index users_first_name_index on "USERS" ( "FIRST NAME" )', $statements[1]);
+        $this->assertEquals('create index "USERS_FIRST_NAME_INDEX" on "USERS" ( "FIRST NAME" )', $statements[1]);
     }
 
     public function test_basic_create_table_with_reserved_words()
@@ -331,8 +331,22 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "GROUP" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+        $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "GROUP" varchar2(255) not null, constraint "USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]);
+    }
+
+    public function test_create_table_wraps_reserved_constraint_names(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->create();
+        $blueprint->integer('id');
+        $blueprint->integer('role_id');
+        $blueprint->primary('id', 'primary');
+        $blueprint->foreign('role_id', 'foreign')->references('id')->on('roles');
+
+        $this->assertSame([
+            'create table "USERS" ( "ID" number(10,0) not null, "ROLE_ID" number(10,0) not null, constraint "FOREIGN" foreign key ( "ROLE_ID" ) references "ROLES" ( "ID" ), constraint "PRIMARY" primary key ( "ID" ) )',
+        ], $blueprint->toSql());
     }
 
     public function test_basic_create_table_with_primary()
@@ -348,7 +362,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+        $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint "USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]);
     }
 
@@ -366,7 +380,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint prefix_users_id_pk primary key ( "ID" ) )',
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint "PREFIX_USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -383,7 +397,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "USERS" ( "ID" number(10,0) not null, "FIRST_NAME" nvarchar2(255) not null, constraint users_id_pk primary key ( "ID" ) )',
+            'create table "USERS" ( "ID" number(10,0) not null, "FIRST_NAME" nvarchar2(255) not null, constraint "USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -401,7 +415,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) default \'user@test.com\' not null, constraint users_id_pk primary key ( "ID" ) )',
+        $this->assertEquals('create table "USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) default \'user@test.com\' not null, constraint "USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]);
     }
 
@@ -418,7 +432,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint prefix_users_id_pk primary key ( "ID" ) )',
+        $this->assertEquals('create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]);
     }
 
@@ -436,7 +450,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint prefix_users_id_pk primary key ( "ID" ) )',
+        $this->assertEquals('create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]);
     }
 
@@ -457,7 +471,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint prefix_users_id_pk primary key ( "ID" ) )',
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint "PREFIX_USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -476,7 +490,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) on delete cascade, constraint prefix_users_id_pk primary key ( "ID" ) )',
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint "PREFIX_USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) on delete cascade, constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -495,7 +509,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) deferrable initially deferred, constraint prefix_users_id_pk primary key ( "ID" ) )',
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint "PREFIX_USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) deferrable initially deferred, constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -514,7 +528,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint prefix_users_foo_id_fk foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) enable novalidate, constraint prefix_users_id_pk primary key ( "ID" ) )',
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "FOO_ID" number(10,0) not null, constraint "PREFIX_USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "PREFIX_ORDERS" ( "ID" ) enable novalidate, constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
             $statements[0]
         );
     }
@@ -755,7 +769,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertSame([
             'alter table "USERS" add ( "ID" number(10,0) not null )',
             'alter table "USERS" add ( "EMAIL" varchar2(255) not null )',
-            'alter table "USERS" add constraint users_id_pk primary key ("ID")',
+            'alter table "USERS" add constraint "USERS_ID_PK" primary key ("ID")',
         ], $statements);
     }
 
@@ -788,7 +802,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals([
             'alter table "PREFIX_USERS" add ( "ID" number(10,0) not null )',
             'alter table "PREFIX_USERS" add ( "EMAIL" varchar2(255) not null )',
-            'alter table "PREFIX_USERS" add constraint prefix_users_id_pk primary key ("ID")',
+            'alter table "PREFIX_USERS" add constraint "PREFIX_USERS_ID_PK" primary key ("ID")',
         ], $statements);
     }
 
@@ -968,7 +982,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" drop constraint foo', $statements[0]);
+        $this->assertEquals('alter table "USERS" drop constraint "FOO"', $statements[0]);
     }
 
     public function test_drop_unique()
@@ -979,7 +993,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" drop constraint foo', $statements[0]);
+        $this->assertEquals('alter table "USERS" drop constraint "FOO"', $statements[0]);
     }
 
     public function test_drop_index()
@@ -990,7 +1004,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('drop index foo', $statements[0]);
+        $this->assertEquals('drop index "FOO"', $statements[0]);
     }
 
     public function test_drop_foreign()
@@ -1001,7 +1015,23 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" drop constraint foo', $statements[0]);
+        $this->assertEquals('alter table "USERS" drop constraint "FOO"', $statements[0]);
+    }
+
+    public function test_drop_commands_wrap_reserved_constraint_and_index_names(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->dropPrimary('primary');
+        $blueprint->dropUnique('unique');
+        $blueprint->dropForeign('foreign');
+        $blueprint->dropIndex('index');
+
+        $this->assertSame([
+            'alter table "USERS" drop constraint "PRIMARY"',
+            'alter table "USERS" drop constraint "UNIQUE"',
+            'alter table "USERS" drop constraint "FOREIGN"',
+            'drop index "INDEX"',
+        ], $blueprint->toSql());
     }
 
     public function test_drop_timestamps()
@@ -1022,7 +1052,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('drop index name_index', $statements[0]);
+        $this->assertEquals('drop index "NAME_INDEX"', $statements[0]);
     }
 
     public function test_multiple_drop_full_text_by_columns()
@@ -1046,7 +1076,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertSame('drop index users_location_spatialindex', $statements[0]);
+        $this->assertSame('drop index "USERS_LOCATION_SPATIALINDEX"', $statements[0]);
     }
 
     public function test_rename_table()
@@ -1086,6 +1116,32 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_rename_index_wraps_reserved_names(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->renameIndex('index', 'select');
+
+        $this->assertSame([
+            'alter index "INDEX" rename to "SELECT"',
+        ], $blueprint->toSql());
+    }
+
+    public function test_add_commands_wrap_reserved_constraint_and_index_names(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->primary('id', 'primary');
+        $blueprint->unique('email', 'unique');
+        $blueprint->foreign('role_id', 'foreign')->references('id')->on('roles');
+        $blueprint->index('name', 'index');
+
+        $this->assertSame([
+            'alter table "USERS" add constraint "PRIMARY" primary key ("ID")',
+            'alter table "USERS" add constraint "UNIQUE" unique ( "EMAIL" )',
+            'alter table "USERS" add constraint "FOREIGN" foreign key ( "ROLE_ID" ) references "ROLES" ( "ID" )',
+            'create index "INDEX" on "USERS" ( "NAME" )',
+        ], $blueprint->toSql());
+    }
+
     public function test_adding_primary_key()
     {
         $conn = $this->getConnection();
@@ -1094,7 +1150,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add constraint bar primary key ("FOO")', $statements[0]);
+        $this->assertEquals('alter table "USERS" add constraint "BAR" primary key ("FOO")', $statements[0]);
     }
 
     public function test_adding_primary_key_with_constraint_automatic_name()
@@ -1105,7 +1161,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add constraint users_foo_pk primary key ("FOO")', $statements[0]);
+        $this->assertEquals('alter table "USERS" add constraint "USERS_FOO_PK" primary key ("FOO")', $statements[0]);
     }
 
     public function test_adding_primary_key_with_constraint_automatic_name_greater_than_thirty_characters()
@@ -1117,7 +1173,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'alter table "USERS" add constraint user_rese_passwor_secre_cod_pk primary key ("RESET_PASSWORD_SECRET_CODE")',
+            'alter table "USERS" add constraint "USER_RESE_PASSWOR_SECRE_COD_PK" primary key ("RESET_PASSWORD_SECRET_CODE")',
             $statements[0]);
     }
 
@@ -1129,7 +1185,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add constraint bar unique ( "FOO" )', $statements[0]);
+        $this->assertEquals('alter table "USERS" add constraint "BAR" unique ( "FOO" )', $statements[0]);
     }
 
     public function test_adding_deferrable_unique_key()
@@ -1140,7 +1196,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add constraint bar unique ( "FOO" ) deferrable initially deferred', $statements[0]);
+        $this->assertEquals('alter table "USERS" add constraint "BAR" unique ( "FOO" ) deferrable initially deferred', $statements[0]);
     }
 
     public function test_adding_defined_unique_key_with_prefix()
@@ -1152,7 +1208,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "PREFIX_USERS" add constraint bar unique ( "FOO" )', $statements[0]);
+        $this->assertEquals('alter table "PREFIX_USERS" add constraint "BAR" unique ( "FOO" )', $statements[0]);
     }
 
     public function test_adding_generated_unique_key_with_prefix()
@@ -1164,7 +1220,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "PREFIX_USERS" add constraint prefix_users_foo_uk unique ( "FOO" )',
+        $this->assertEquals('alter table "PREFIX_USERS" add constraint "PREFIX_USERS_FOO_UK" unique ( "FOO" )',
             $statements[0]);
     }
 
@@ -1176,7 +1232,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" )', $statements[0]);
+        $this->assertEquals('create index "BAZ" on "USERS" ( "FOO", "BAR" )', $statements[0]);
     }
 
     public function test_adding_online_index()
@@ -1187,7 +1243,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('create index baz on "USERS" ( "FOO", "BAR" ) online', $statements[0]);
+        $this->assertEquals('create index "BAZ" on "USERS" ( "FOO", "BAR" ) online', $statements[0]);
     }
 
     public function test_adding_m_single_column_full_text_index()
@@ -1196,7 +1252,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->fullText(['name'], 'name');
         $statements = $blueprint->toSql();
 
-        $expected = "begin execute immediate 'create index name on \"USERS\" (name) indextype is ctxsys.context parameters (''sync(on commit)'')'; end;";
+        $expected = "begin execute immediate 'create index \"NAME\" on \"USERS\" (name) indextype is ctxsys.context parameters (''sync(on commit)'')'; end;";
 
         $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
@@ -1208,8 +1264,8 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->fullText(['firstname', 'lastname'], 'name');
         $statements = $blueprint->toSql();
 
-        $expectedSql['firstnameIndex'] = "execute immediate 'create index name_0 on \"USERS\" (firstname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
-        $expectedSql['lastnameIndex'] = "execute immediate 'create index name_1 on \"USERS\" (lastname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['firstnameIndex'] = "execute immediate 'create index \"NAME_0\" on \"USERS\" (firstname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['lastnameIndex'] = "execute immediate 'create index \"NAME_1\" on \"USERS\" (lastname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
         $expected = 'begin '.implode(' ', $expectedSql).' end;';
 
         $this->assertCount(1, $statements);
@@ -1224,7 +1280,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" )',
+        $this->assertEquals('alter table "USERS" add constraint "USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" )',
             $statements[0]);
     }
 
@@ -1237,7 +1293,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) deferrable initially deferred',
+            'alter table "USERS" add constraint "USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) deferrable initially deferred',
             $statements[0]
         );
     }
@@ -1251,7 +1307,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals(
-            'alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) enable novalidate',
+            'alter table "USERS" add constraint "USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) enable novalidate',
             $statements[0]
         );
     }
@@ -1264,7 +1320,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add constraint users_foo_id_fk foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) on delete cascade',
+        $this->assertEquals('alter table "USERS" add constraint "USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) on delete cascade',
             $statements[0]);
     }
 
@@ -1420,7 +1476,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(2, $statements);
         $this->assertSame([
             'alter table "USERS" add ( "FOO" number(10,0) not null )',
-            'alter table "USERS" add constraint users_foo_pk primary key ("FOO")',
+            'alter table "USERS" add constraint "USERS_FOO_PK" primary key ("FOO")',
         ], $statements);
     }
 
@@ -1796,7 +1852,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertSame([
-            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "VERY_LONG_FOO_BAR_ID" number(10,0) not null, constraint prefix_users_very_long_foo_bar_id_fk foreign key ( "VERY_LONG_FOO_BAR_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint prefix_users_id_pk primary key ( "ID" ) )',
+            'create table "PREFIX_USERS" ( "ID" number(10,0) not null, "EMAIL" varchar2(255) not null, "VERY_LONG_FOO_BAR_ID" number(10,0) not null, constraint "PREFIX_USERS_VERY_LONG_FOO_BAR_ID_FK" foreign key ( "VERY_LONG_FOO_BAR_ID" ) references "PREFIX_ORDERS" ( "ID" ), constraint "PREFIX_USERS_ID_PK" primary key ( "ID" ) )',
         ], $statements);
     }
 
