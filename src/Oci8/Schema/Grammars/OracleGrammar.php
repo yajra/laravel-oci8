@@ -443,8 +443,15 @@ class OracleGrammar extends Grammar
     public function compileUnique(Blueprint $blueprint, Fluent $command): string
     {
         $sql = 'alter table '.$this->wrapTable($blueprint).' add constraint '.$this->wrap($command->index).' unique ( '.$this->columnize($command->columns).' )';
+        $sql = $this->appendDeferrableClause($command, $sql);
 
-        return $this->appendDeferrableClause($command, $sql);
+        if ($command->online) {
+            $indexType = $command->deferrable ? '' : 'unique ';
+            $sql .= ' using index (create '.$indexType.'index '.$this->wrap($command->index)
+                .' on '.$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' ) online)';
+        }
+
+        return $sql;
     }
 
     protected function appendDeferrableClause(Fluent $command, string $sql): string

@@ -1200,6 +1200,26 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "USERS" add constraint "BAR" unique ( "FOO" ) deferrable initially deferred', $statements[0]);
     }
 
+    public function test_adding_online_unique_key()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->unique('foo', 'bar')->online();
+
+        $this->assertSame([
+            'alter table "USERS" add constraint "BAR" unique ( "FOO" ) using index (create unique index "BAR" on "USERS" ( "FOO" ) online)',
+        ], $blueprint->toSql());
+    }
+
+    public function test_adding_online_deferrable_unique_key_uses_nonunique_index()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->unique('foo', 'bar')->online()->deferrable()->initiallyImmediate(false);
+
+        $this->assertSame([
+            'alter table "USERS" add constraint "BAR" unique ( "FOO" ) deferrable initially deferred using index (create index "BAR" on "USERS" ( "FOO" ) online)',
+        ], $blueprint->toSql());
+    }
+
     public function test_adding_defined_unique_key_with_prefix()
     {
         $conn = $this->getConnection(prefix: 'prefix_');
