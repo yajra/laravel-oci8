@@ -1024,7 +1024,11 @@ class OracleGrammar extends Grammar
         $enum = '';
         if (count((array) $column->allowed)) {
             $columnName = $this->wrapValue($column->name);
-            $enum = " check ({$columnName} in ('".implode("', '", $column->allowed)."'))";
+            $allowed = implode(', ', array_map(
+                fn ($value) => $this->getDefaultValue($value),
+                $column->allowed
+            ));
+            $enum = " check ({$columnName} in ({$allowed}))";
         }
 
         // If we have the current nullable state (from a change operation), only include
