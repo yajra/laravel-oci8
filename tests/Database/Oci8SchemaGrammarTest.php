@@ -1253,7 +1253,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->fullText(['name'], 'name');
         $statements = $blueprint->toSql();
 
-        $expected = "begin execute immediate 'create index \"NAME\" on \"USERS\" (name) indextype is ctxsys.context parameters (''sync(on commit)'')'; end;";
+        $expected = "begin execute immediate 'create index \"NAME\" on \"USERS\" (\"NAME\") indextype is ctxsys.context parameters (''sync(on commit)'')'; end;";
 
         $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
@@ -1265,12 +1265,22 @@ class Oci8SchemaGrammarTest extends TestCase
         $blueprint->fullText(['firstname', 'lastname'], 'name');
         $statements = $blueprint->toSql();
 
-        $expectedSql['firstnameIndex'] = "execute immediate 'create index \"NAME_0\" on \"USERS\" (firstname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
-        $expectedSql['lastnameIndex'] = "execute immediate 'create index \"NAME_1\" on \"USERS\" (lastname) indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['firstnameIndex'] = "execute immediate 'create index \"NAME_0\" on \"USERS\" (\"FIRSTNAME\") indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
+        $expectedSql['lastnameIndex'] = "execute immediate 'create index \"NAME_1\" on \"USERS\" (\"LASTNAME\") indextype is ctxsys.context parameters (''datastore name_preference sync(on commit)'')';";
         $expected = 'begin '.implode(' ', $expectedSql).' end;';
 
         $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
+    }
+
+    public function test_full_text_indexes_wrap_reserved_and_mixed_case_column_names()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'articles');
+        $blueprint->fullText(['select', 'mixedCase'], 'article_search');
+
+        $this->assertSame([
+            "begin execute immediate 'create index \"ARTICLE_SEARCH_0\" on \"ARTICLES\" (\"SELECT\") indextype is ctxsys.context parameters (''datastore article_search_preference sync(on commit)'')'; execute immediate 'create index \"ARTICLE_SEARCH_1\" on \"ARTICLES\" (\"MIXEDCASE\") indextype is ctxsys.context parameters (''datastore article_search_preference sync(on commit)'')'; end;",
+        ], $blueprint->toSql());
     }
 
     public function test_adding_foreign_key()

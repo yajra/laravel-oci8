@@ -73,7 +73,10 @@ class OraclePreferences
      */
     protected function formatMultipleCtxColumns(array $columns): string
     {
-        return implode(', ', $columns);
+        return implode(', ', array_map(
+            fn ($column) => $this->connection->getSchemaGrammar()->wrap($column),
+            $columns
+        ));
     }
 
     /**

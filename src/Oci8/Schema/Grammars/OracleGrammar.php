@@ -498,6 +498,7 @@ class OracleGrammar extends Grammar
         foreach ($columns as $key => $column) {
             $indexName = $indexBaseName;
             $parametersIndex = '';
+            $column = $this->wrap($column);
 
             if (count($columns) > 1) {
                 $indexName .= "_{$key}";
