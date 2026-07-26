@@ -903,21 +903,27 @@ class Oci8SchemaGrammarTest extends TestCase
         $grammar = $this->getGrammar();
         $expected = '
             select
-                kc.constraint_name as name,
-                LISTAGG(kc.column_name, \',\') WITHIN GROUP (ORDER BY kc.position) as columns,
-                rc.r_owner as foreign_schema,
-                kcr.table_name as foreign_table,
-                LISTAGG(kcr.column_name, \',\') WITHIN GROUP (ORDER BY kcr.position) as foreign_columns,
-                rc.delete_rule AS "on_delete",
+                fk.constraint_name as name,
+                LISTAGG(fkc.column_name, \',\') WITHIN GROUP (ORDER BY fkc.position) as columns,
+                fk.r_owner as foreign_schema,
+                pkc.table_name as foreign_table,
+                LISTAGG(pkc.column_name, \',\') WITHIN GROUP (ORDER BY fkc.position) as foreign_columns,
+                fk.delete_rule AS "on_delete",
                 null AS "on_update"
-            from all_cons_columns kc
-            inner join all_constraints rc ON kc.constraint_name = rc.constraint_name
-            inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name
-            where kc.table_name = upper(\'test_table\')
-                and rc.r_owner = upper(\'schema\')
-                and rc.constraint_type = \'R\'
+            from all_constraints fk
+            inner join all_cons_columns fkc
+                on fkc.owner = fk.owner
+                and fkc.constraint_name = fk.constraint_name
+                and fkc.table_name = fk.table_name
+            inner join all_cons_columns pkc
+                on pkc.owner = fk.r_owner
+                and pkc.constraint_name = fk.r_constraint_name
+                and pkc.position = fkc.position
+            where fk.owner = upper(\'schema\')
+                and fk.table_name = upper(\'test_table\')
+                and fk.constraint_type = \'R\'
             group by
-                kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
+                fk.constraint_name, fk.r_owner, pkc.table_name, fk.delete_rule
         ';
 
         $sql = $grammar->compileForeignKeys('schema', 'test_table');
