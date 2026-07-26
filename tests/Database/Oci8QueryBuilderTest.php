@@ -2641,6 +2641,51 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(1, $results);
     }
 
+    public function test_multi_column_distinct_count()
+    {
+        $expected = 'select count(*) as "AGGREGATE" from '
+            .'(select distinct "I"."CATEGORY", "I"."STATUS" from "ITEMS" "I" where "I"."ACTIVE" = ?) '
+            .'"LARAVEL_DISTINCT_COUNT"';
+
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')
+            ->once()
+            ->with($expected, [1], true, [])
+            ->andReturn([['aggregate' => 3]]);
+        $builder->getProcessor()->shouldReceive('processSelect')
+            ->once()
+            ->andReturnUsing(fn ($builder, $results) => $results);
+
+        $count = $builder->from('items as i')
+            ->where('i.active', 1)
+            ->distinct(['i.category', 'i.status'])
+            ->count();
+
+        $this->assertSame(3, $count);
+    }
+
+    public function test_multi_column_distinct_count_using_aggregate_columns()
+    {
+        $expected = 'select count(*) as "AGGREGATE" from '
+            .'(select distinct "CATEGORY", "STATUS" from "ITEMS") '
+            .'"LARAVEL_DISTINCT_COUNT"';
+
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('select')
+            ->once()
+            ->with($expected, [], true, [])
+            ->andReturn([['aggregate' => 3]]);
+        $builder->getProcessor()->shouldReceive('processSelect')
+            ->once()
+            ->andReturnUsing(fn ($builder, $results) => $results);
+
+        $count = $builder->from('items')
+            ->distinct()
+            ->count(['category', 'status']);
+
+        $this->assertSame(3, $count);
+    }
+
     public function test_aggregate_min_function()
     {
         $builder = $this->getBuilder();
