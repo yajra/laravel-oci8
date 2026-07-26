@@ -891,6 +891,136 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a where row values condition.
+     */
+    protected function whereRowValues(Builder $query, $where): string
+    {
+        $columns = array_values($where['columns']);
+        $values = array_values($where['values']);
+
+        return match ($where['operator']) {
+            '=' => $this->compileRowValueEquality($columns, $values),
+            '!=', '<>' => 'not '.$this->compileRowValueEquality($columns, $values),
+            '<', '<=', '>', '>=' => $this->compileOrderedRowValueComparison(
+                $columns,
+                $values,
+                $where['operator']
+            ),
+            default => parent::whereRowValues($query, $where),
+        };
+    }
+
+    /**
+     * Compile an equality comparison between row values.
+     */
+    protected function compileRowValueEquality(array $columns, array $values): string
+    {
+        $conditions = [];
+
+        foreach ($columns as $index => $column) {
+            $conditions[] = $this->wrap($column).' = '.$this->parameter($values[$index]);
+        }
+
+        return '('.implode(' and ', $conditions).')';
+    }
+
+    /**
+     * Compile a lexicographical comparison between row values.
+     */
+    protected function compileOrderedRowValueComparison(array $columns, array $values, string $operator): string
+    {
+        $valueColumns = [];
+        $valueReferences = [];
+        $valueTable = $this->uniqueRowValueTableAlias($columns, $values);
+
+        foreach ($values as $index => $value) {
+            if ($this->isExpression($value)) {
+                $valueReferences[] = $this->parameter($value);
+
+                continue;
+            }
+
+            $valueColumn = $this->uniqueRowValueColumnAlias($index, $columns, $values);
+            $valueColumns[] = $this->parameter($value).' as '.$this->wrap($valueColumn);
+            $valueReferences[] = $this->wrap($valueTable).'.'.$this->wrap($valueColumn);
+        }
+
+        $strictOperator = str_starts_with($operator, '<') ? '<' : '>';
+        $comparisons = [];
+        $equalities = [];
+        $lastIndex = count($columns) - 1;
+
+        foreach ($columns as $index => $column) {
+            $column = $this->wrap($column);
+            $comparisonOperator = $index === $lastIndex ? $operator : $strictOperator;
+            $conditions = [...$equalities, $column.' '.$comparisonOperator.' '.$valueReferences[$index]];
+
+            $comparisons[] = count($conditions) === 1
+                ? $conditions[0]
+                : '('.implode(' and ', $conditions).')';
+
+            $equalities[] = $column.' = '.$valueReferences[$index];
+        }
+
+        $comparisonSql = implode(' or ', $comparisons);
+
+        if ($valueColumns === []) {
+            return '('.$comparisonSql.')';
+        }
+
+        $valuesSql = implode(', ', $valueColumns);
+
+        return 'exists (select 1 from (select '.$valuesSql.' from dual) '
+            .$this->wrap($valueTable).' where ('.$comparisonSql.'))';
+    }
+
+    /**
+     * Get an internal row-value column alias that does not shadow an outer reference.
+     */
+    protected function uniqueRowValueColumnAlias(int $index, array $columns, array $values): string
+    {
+        foreach ($values as $value) {
+            if ($this->isExpression($value)) {
+                $columns[] = $value;
+            }
+        }
+
+        $references = array_map(fn ($column) => (string) $this->wrap($column), $columns);
+        $suffix = 0;
+
+        do {
+            $alias = 'laravel_row_value_'.$index.($suffix === 0 ? '' : '_'.$suffix);
+            $pattern = '~(?<![[:alnum:]_$#])"?'.preg_quote($alias, '~').'"?(?![[:alnum:]_$#])~i';
+            $suffix++;
+        } while (Arr::first($references, fn ($reference) => preg_match($pattern, $reference) === 1) !== null);
+
+        return $alias;
+    }
+
+    /**
+     * Get an internal row-value table alias that does not shadow an outer qualifier.
+     */
+    protected function uniqueRowValueTableAlias(array $columns, array $values): string
+    {
+        foreach ($values as $value) {
+            if ($this->isExpression($value)) {
+                $columns[] = $value;
+            }
+        }
+
+        $columns = array_map(fn ($column) => (string) $this->wrap($column), $columns);
+        $suffix = 0;
+
+        do {
+            $alias = 'laravel_row_values'.($suffix === 0 ? '' : '_'.$suffix);
+            $pattern = '~(?<![[:alnum:]_$#])"?'.preg_quote($alias, '~').'"?\s*\.~i';
+            $suffix++;
+        } while (Arr::first($columns, fn ($column) => preg_match($pattern, $column) === 1) !== null);
+
+        return $alias;
+    }
+
+    /**
      * Compile a "where date" clause.
      *
      * @param  array  $where
