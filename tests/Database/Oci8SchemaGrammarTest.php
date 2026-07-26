@@ -966,9 +966,9 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $sql);
     }
 
-    public function test_drop_table_if_exists()
+    public function test_drop_table_if_exists_on_pre_23ai_suppresses_missing_or_invalid_table_names()
     {
-        $conn = $this->getConnection();
+        $conn = $this->getConnection(serverVersion: '21c');
         $conn->shouldReceive('getConfig')->with('username')->andReturn('system');
 
         $blueprint = new Blueprint($conn, 'users');
@@ -977,7 +977,45 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals("begin execute immediate 'drop table \"USERS\"'; exception when others then null; end;", $statements[0]);
+        $this->assertEquals("declare
+            table_does_not_exist exception;
+            identifier_is_too_long exception;
+            pragma exception_init(table_does_not_exist, -942);
+            pragma exception_init(identifier_is_too_long, -972);
+        begin
+            execute immediate 'drop table \"USERS\"';
+        exception
+            when table_does_not_exist or identifier_is_too_long then null;
+        end;", $statements[0]);
+    }
+
+    public function test_drop_table_if_exists_on_pre_23ai_escapes_dynamic_sql_literals()
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '21c'), "owner's table");
+        $blueprint->dropIfExists();
+
+        $this->assertSame([
+            "declare
+            table_does_not_exist exception;
+            identifier_is_too_long exception;
+            pragma exception_init(table_does_not_exist, -942);
+            pragma exception_init(identifier_is_too_long, -972);
+        begin
+            execute immediate 'drop table \"OWNER''S TABLE\"';
+        exception
+            when table_does_not_exist or identifier_is_too_long then null;
+        end;",
+        ], $blueprint->toSql());
+    }
+
+    public function test_drop_table_if_exists_uses_native_syntax_on_23ai()
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '23ai'), 'users');
+        $blueprint->dropIfExists();
+
+        $this->assertSame([
+            'drop table if exists "USERS"',
+        ], $blueprint->toSql());
     }
 
     public function test_drop_table_with_prefix()

@@ -582,7 +582,22 @@ class OracleGrammar extends Grammar
     {
         $table = $this->wrapTable($blueprint);
 
-        return "begin execute immediate 'drop table $table'; exception when others then null; end;";
+        if ($this->connection->isVersionAboveOrEqual('23ai')) {
+            return "drop table if exists {$table}";
+        }
+
+        $statement = $this->getDefaultValue("drop table {$table}");
+
+        return "declare
+            table_does_not_exist exception;
+            identifier_is_too_long exception;
+            pragma exception_init(table_does_not_exist, -942);
+            pragma exception_init(identifier_is_too_long, -972);
+        begin
+            execute immediate {$statement};
+        exception
+            when table_does_not_exist or identifier_is_too_long then null;
+        end;";
     }
 
     /**
