@@ -95,6 +95,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals("comment on column \"USERS\".\"NICKNAME\" is 'Public nickname'", $statements[1]);
     }
 
+    public function test_change_column_removes_explicitly_null_comment()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->string('email')->comment(null)->change();
+
+        $this->assertSame([
+            'alter table "USERS" modify "EMAIL" varchar2(255) not null',
+            'comment on column "USERS"."EMAIL" is \'\'',
+        ], $blueprint->toSql());
+    }
+
     public function test_create_table_with_collated_column(): void
     {
         $blueprint = new Blueprint($this->getConnection(), 'users');

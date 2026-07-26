@@ -681,13 +681,19 @@ class OracleGrammar extends Grammar
     {
         $comment = $command->column->comment;
         if (is_null($comment)) {
-            return null;
+            if (! $command->column->change || ! array_key_exists('comment', $command->column->getAttributes())) {
+                return null;
+            }
+
+            $comment = "''";
+        } else {
+            $comment = $this->getDefaultValue($comment);
         }
 
         return sprintf('comment on column %s.%s is %s',
             $this->wrapTable($blueprint),
             $this->wrap($command->column->name),
-            $this->getDefaultValue($comment)
+            $comment
         );
     }
 
