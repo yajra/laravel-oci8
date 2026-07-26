@@ -662,9 +662,8 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertStringContainsString('varchar2(1024)', $statements[0]);
     }
 
-    public function test_alter_table_modify_column_preserves_nullable_when_not_specified()
+    public function test_alter_table_modify_column_changes_nullable_to_not_null_when_not_specified()
     {
-        // Test case from issue #941: omitting ->nullable() should preserve existing nullable state
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
             ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
@@ -682,21 +681,19 @@ class Oci8SchemaGrammarTest extends TestCase
         $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
 
         $blueprint = new Blueprint($conn, 'attributes');
-        $blueprint->string('validation_regex', 1024)->change(); // No ->nullable() call
+        $blueprint->string('validation_regex', 1024)->change();
 
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        // Should NOT include 'not null' since column is currently nullable and we want to preserve it
-        $this->assertStringNotContainsString('not null', $statements[0]);
-        $this->assertStringNotContainsString(' null', $statements[0]);
-        $this->assertStringContainsString('varchar2(1024)', $statements[0]);
+        $this->assertSame(
+            'alter table "ATTRIBUTES" modify "VALIDATION_REGEX" varchar2(1024) not null',
+            $statements[0]
+        );
     }
 
     public function test_alter_table_modify_column_changes_nullable_to_not_null()
     {
-        // Test changing from nullable to not null - when nullable() is not specified,
-        // we preserve the existing nullable state per issue #941
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
             ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
@@ -714,14 +711,12 @@ class Oci8SchemaGrammarTest extends TestCase
         $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
 
         $blueprint = new Blueprint($conn, 'users');
-        $blueprint->string('email')->change(); // No ->nullable() call
+        $blueprint->string('email')->nullable(false)->change();
 
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        // Per issue #941, when nullable() is not specified, preserve existing nullable state
-        $this->assertStringNotContainsString('not null', $statements[0]);
-        $this->assertStringNotContainsString(' null', $statements[0]);
+        $this->assertSame('alter table "USERS" modify "EMAIL" varchar2(255) not null', $statements[0]);
     }
 
     public function test_alter_table_modify_column_changes_not_null_to_nullable()

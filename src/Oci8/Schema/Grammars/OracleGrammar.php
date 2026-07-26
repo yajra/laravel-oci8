@@ -1029,29 +1029,16 @@ class OracleGrammar extends Grammar
         }
 
         // If we have the current nullable state (from a change operation), only include
-        // NULL/NOT NULL if it's actually changing. This prevents ORA-01451 errors when
-        // trying to set a column to NULL that's already NULL, and preserves the
-        // existing nullable state when it's not being changed.
+        // NULL/NOT NULL when the state is changing. Omitting nullable() means NOT NULL,
+        // consistent with Laravel's column change semantics. Comparing the desired and
+        // current states prevents redundant clauses from causing ORA-01451 errors.
         if ($currentNullable !== null) {
             $desiredNullable = (bool) $column->nullable;
 
-            // Only include NULL/NOT NULL if the state is actually changing
             if ($desiredNullable === $currentNullable) {
-                // State is not changing, preserve existing - don't include NULL/NOT NULL
                 $null = '';
             } else {
-                // Special case: If column is currently nullable and we're trying to set it to NOT NULL,
-                // but nullable() was not explicitly called (it's the default), preserve the nullable state.
-                // This addresses the issue where omitting ->nullable() drops the nullable constraint.
-                // Note: We can't detect if nullable() was explicitly set, so we preserve nullable state
-                // when changing from nullable to NOT NULL to match user expectations from issue #941.
-                if ($currentNullable === true && $desiredNullable === false) {
-                    // Preserve nullable state when not explicitly changed
-                    $null = '';
-                } else {
-                    // State is changing, include the new constraint
-                    $null = $desiredNullable ? ' null' : ' not null';
-                }
+                $null = $desiredNullable ? ' null' : ' not null';
             }
         } else {
             // For create/add operations, always include the constraint
@@ -1147,8 +1134,8 @@ class OracleGrammar extends Grammar
 
         $column = $command->column;
 
-        // Get the current nullable state of the column to avoid ORA-01451 errors
-        // and preserve the existing nullable constraint when not explicitly changed
+        // Get the current nullable state of the column to avoid redundant NULL/NOT NULL
+        // clauses, which can cause ORA-01451 errors.
         $currentNullable = $this->getCurrentColumnNullable($blueprint, $column->name);
 
         $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
