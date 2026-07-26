@@ -1712,6 +1712,16 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $statements);
     }
 
+    public function test_adding_date_time_tz_with_precision()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->dateTimeTz('foo', 3);
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp(3) with time zone not null )',
+        ], $blueprint->toSql());
+    }
+
     public function test_adding_time()
     {
         $conn = $this->getConnection();
@@ -1731,7 +1741,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add ( "FOO" timestamp not null )', $statements[0]);
+        $this->assertEquals('alter table "USERS" add ( "FOO" timestamp(0) not null )', $statements[0]);
+    }
+
+    public function test_adding_time_stamp_with_precision()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->timestamp('foo', 6);
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp(6) not null )',
+        ], $blueprint->toSql());
     }
 
     public function test_adding_time_stamp_with_current_default()
@@ -1741,7 +1761,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertSame([
-            'alter table "USERS" add ( "FOO" timestamp default CURRENT_TIMESTAMP not null )',
+            'alter table "USERS" add ( "FOO" timestamp(0) default CURRENT_TIMESTAMP not null )',
         ], $statements);
     }
 
@@ -1753,7 +1773,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertCount(1, $statements);
-        $this->assertEquals('alter table "USERS" add ( "FOO" timestamp with time zone not null )', $statements[0]);
+        $this->assertEquals('alter table "USERS" add ( "FOO" timestamp(0) with time zone not null )', $statements[0]);
+    }
+
+    public function test_adding_time_stamp_tz_with_precision()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->timestampTz('foo', 9);
+
+        $this->assertSame([
+            'alter table "USERS" add ( "FOO" timestamp(9) with time zone not null )',
+        ], $blueprint->toSql());
     }
 
     public function test_adding_time_stamp_tz_with_current_default()
@@ -1763,7 +1793,7 @@ class Oci8SchemaGrammarTest extends TestCase
         $statements = $blueprint->toSql();
 
         $this->assertSame([
-            'alter table "USERS" add ( "FOO" timestamp with time zone default CURRENT_TIMESTAMP not null )',
+            'alter table "USERS" add ( "FOO" timestamp(0) with time zone default CURRENT_TIMESTAMP not null )',
         ], $statements);
     }
 
@@ -1776,8 +1806,8 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(2, $statements);
         $this->assertSame([
-            'alter table "USERS" add ( "CREATED_AT" timestamp null )',
-            'alter table "USERS" add ( "UPDATED_AT" timestamp null )',
+            'alter table "USERS" add ( "CREATED_AT" timestamp(0) null )',
+            'alter table "USERS" add ( "UPDATED_AT" timestamp(0) null )',
         ], $statements);
     }
 
@@ -1790,8 +1820,8 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(2, $statements);
         $this->assertSame([
-            'alter table "USERS" add ( "CREATED_AT" timestamp null )',
-            'alter table "USERS" add ( "UPDATED_AT" timestamp null )',
+            'alter table "USERS" add ( "CREATED_AT" timestamp(0) null )',
+            'alter table "USERS" add ( "UPDATED_AT" timestamp(0) null )',
         ], $statements);
     }
 
@@ -1804,8 +1834,8 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(2, $statements);
         $this->assertEquals([
-            'alter table "USERS" add ( "CREATED_AT" timestamp with time zone null )',
-            'alter table "USERS" add ( "UPDATED_AT" timestamp with time zone null )',
+            'alter table "USERS" add ( "CREATED_AT" timestamp(0) with time zone null )',
+            'alter table "USERS" add ( "UPDATED_AT" timestamp(0) with time zone null )',
         ], $statements);
     }
 

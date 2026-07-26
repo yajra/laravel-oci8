@@ -924,11 +924,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeDateTimeTz(Fluent $column): string
     {
-        if ($column->useCurrent) {
-            $column->default(new Expression('CURRENT_TIMESTAMP'));
-        }
-
-        return 'timestamp with time zone';
+        return $this->typeTimestampTz($column);
     }
 
     /**
@@ -948,7 +944,7 @@ class OracleGrammar extends Grammar
             $column->default(new Expression('CURRENT_TIMESTAMP'));
         }
 
-        return 'timestamp';
+        return 'timestamp'.(is_null($column->precision) ? '' : "({$column->precision})");
     }
 
     /**
@@ -956,11 +952,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeTimestampTz(Fluent $column): string
     {
-        if ($column->useCurrent) {
-            $column->default(new Expression('CURRENT_TIMESTAMP'));
-        }
-
-        return 'timestamp with time zone';
+        return $this->typeTimestamp($column).' with time zone';
     }
 
     /**
