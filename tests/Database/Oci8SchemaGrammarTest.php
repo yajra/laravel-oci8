@@ -760,6 +760,31 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertStringNotContainsString('not null', $statements[0]);
     }
 
+    public function test_alter_table_modify_column_removes_explicitly_null_default()
+    {
+        $conn = m::mock(Connection::class)
+            ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
+            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getTablePrefix')->andReturn('')
+            ->shouldReceive('getMaxLength')->andReturn(30)
+            ->shouldReceive('getSchemaPrefix')->andReturn('')
+            ->shouldReceive('isMaria')->andReturn(false)
+            ->shouldReceive('selectOne')
+            ->andReturn((object) ['nullable' => 1])
+            ->getMock();
+
+        $grammar = new OracleGrammar($conn);
+        $conn->shouldReceive('getSchemaGrammar')->andReturn($grammar);
+        $conn->shouldReceive('getSchemaBuilder')->andReturn($this->getBuilder());
+
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->string('email')->nullable()->default(null)->change();
+
+        $this->assertSame([
+            'alter table "USERS" modify "EMAIL" varchar2(255) default null',
+        ], $blueprint->toSql());
+    }
+
     public function test_basic_alter_table_with_primary()
     {
         $conn = $this->getConnection();

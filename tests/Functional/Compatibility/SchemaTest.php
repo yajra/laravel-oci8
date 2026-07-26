@@ -18,6 +18,7 @@ class SchemaTest extends TestCase
         Schema::dropIfExists('compat_cross_fk_child');
         Schema::dropIfExists('compatibility_fk_children');
         Schema::dropIfExists('compatibility_fk_parents');
+        Schema::dropIfExists('compatibility_defaults');
 
         if ($driver === 'oracle') {
             DB::connection('second_connection')
@@ -150,6 +151,25 @@ class SchemaTest extends TestCase
         $this->assertSame('compat_cross_fk_parent', $foreignKey['foreign_table']);
         $this->assertSame(['parent_id'], $foreignKey['columns']);
         $this->assertSame(['id'], $foreignKey['foreign_columns']);
+    }
+
+    #[Test]
+    public function it_can_remove_column_defaults()
+    {
+        Schema::create('compatibility_defaults', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('status')->nullable()->default('pending');
+        });
+
+        Schema::table('compatibility_defaults', function (Blueprint $table) {
+            $table->string('status')->nullable()->default(null)->change();
+        });
+
+        DB::table('compatibility_defaults')->insert(['id' => 1]);
+
+        $this->assertNull(
+            DB::table('compatibility_defaults')->where('id', 1)->value('status')
+        );
     }
 
     #[Test]
