@@ -8,7 +8,6 @@ use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Contracts\Database\Eloquent\ComparesCastableAttributes;
 use Illuminate\Contracts\Database\Eloquent\SerializesCastableAttributes;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
@@ -16,27 +15,10 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
 use InvalidArgumentException;
-use PHPUnit\Framework\Attributes\Group;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
-#[Group('integration')]
 class EloquentModelCustomCastingTest extends LaravelTestCase
 {
-    protected function setUp(): void
-    {
-        $db = new DB;
-
-        $db->addConnection([
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-        ]);
-
-        $db->bootEloquent();
-        $db->setAsGlobal();
-
-        $this->createSchema();
-    }
-
     /**
      * Setup the database schema.
      *
@@ -49,7 +31,7 @@ class EloquentModelCustomCastingTest extends LaravelTestCase
             $table->string('address_line_one');
             $table->string('address_line_two');
             $table->integer('amount');
-            $table->string('string_field');
+            $table->string('string_field')->nullable();
             $table->timestamps();
         });
 
@@ -78,6 +60,7 @@ class EloquentModelCustomCastingTest extends LaravelTestCase
         $this->schema()->drop('casting_table');
         $this->schema()->drop('members');
         $this->schema()->drop('documents');
+        $this->schema()->drop('people');
 
         parent::tearDown();
     }
@@ -186,10 +169,10 @@ class EloquentModelCustomCastingTest extends LaravelTestCase
         $model->save();
 
         $this->assertInstanceOf(Euro::class, $model->amount);
-        $this->assertEquals('2', $model->amount->value);
+        $this->assertSame('2', $model->amount->value);
 
         $model->increment('amount', new Euro('1'));
-        $this->assertEquals('3.00', $model->amount->value);
+        $this->assertSame('3.00', $model->amount->value);
     }
 
     public function test_model_with_custom_casts_compare_function()
@@ -442,14 +425,14 @@ class EuroCaster implements CastsAttributes
 
     public function increment($model, $key, $value, $attributes)
     {
-        $model->$key = new Euro((string) BigNumber::of($model->$key->value)->plus($value->value)->toScale(2));
+        $model->$key = new Euro((string) BigNumber::of((string) $model->$key->value)->plus($value->value)->toScale(2));
 
         return $model->$key;
     }
 
     public function decrement($model, $key, $value, $attributes)
     {
-        $model->$key = new Euro((string) BigNumber::of($model->$key->value)->subtract($value->value)->toScale(2));
+        $model->$key = new Euro((string) BigNumber::of((string) $model->$key->value)->subtract($value->value)->toScale(2));
 
         return $model->$key;
     }

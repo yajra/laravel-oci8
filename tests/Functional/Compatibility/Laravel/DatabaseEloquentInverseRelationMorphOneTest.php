@@ -33,8 +33,8 @@ class DatabaseEloquentInverseRelationMorphOneTest extends LaravelTestCase
      */
     protected function tearDown(): void
     {
-        $this->schema()->drop('test_images');
         $this->schema()->drop('test_posts');
+        $this->schema()->drop('test_images');
 
         parent::tearDown();
     }

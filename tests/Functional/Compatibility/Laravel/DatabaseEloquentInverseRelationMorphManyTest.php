@@ -34,8 +34,8 @@ class DatabaseEloquentInverseRelationMorphManyTest extends LaravelTestCase
      */
     protected function tearDown(): void
     {
-        $this->schema()->drop('test_comments');
         $this->schema()->drop('test_posts');
+        $this->schema()->drop('test_comments');
 
         parent::tearDown();
     }

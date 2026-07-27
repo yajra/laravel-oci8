@@ -409,26 +409,25 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertEquals(3, $query->getCountForPagination());
     }
 
-    // todo: fix this test
-    //    public function test_count_for_pagination_with_grouping_and_sub_selects()
-    //    {
-    //        EloquentTestUser::insert([
-    //            ['id' => 1, 'email' => 'taylorotwell@gmail.com'],
-    //            ['id' => 2, 'email' => 'abigailotwell@gmail.com'],
-    //            ['id' => 3, 'email' => 'foo@gmail.com'],
-    //            ['id' => 4, 'email' => 'foo@gmail.com'],
-    //        ]);
-    //        $user1 = EloquentTestUser::find(1);
-    //
-    //        $user1->friends()->create(['id' => 5, 'email' => 'friend@gmail.com']);
-    //
-    //        $query = EloquentTestUser::select([
-    //            'id',
-    //            'friends_count' => EloquentTestUser::whereColumn('friend_id', 'user_id')->count(),
-    //        ])->groupBy('email')->getQuery();
-    //
-    //        $this->assertEquals(4, $query->getCountForPagination());
-    //    }
+    public function test_count_for_pagination_with_grouping_and_sub_selects()
+    {
+        EloquentTestUser::insert([
+            ['id' => 1, 'email' => 'taylorotwell@gmail.com'],
+            ['id' => 2, 'email' => 'abigailotwell@gmail.com'],
+            ['id' => 3, 'email' => 'foo@gmail.com'],
+            ['id' => 4, 'email' => 'foo@gmail.com'],
+        ]);
+        $user1 = EloquentTestUser::find(1);
+
+        $user1->friends()->create(['id' => 5, 'email' => 'friend@gmail.com']);
+
+        $query = EloquentTestUser::select([
+            'email',
+            'friends_count' => DB::table('friends')->selectRaw('count(*)'),
+        ])->groupBy('email')->getQuery();
+
+        $this->assertEquals(4, $query->getCountForPagination());
+    }
 
     public function test_cursor_paginated_model_collection_retrieval()
     {
@@ -1205,7 +1204,7 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertCount(1, $results);
         $this->assertSame('taylorotwell@gmail.com', $results->first()->email);
         $this->assertTrue($results->first()->relationLoaded('friends'));
-        $this->assertSame($results->first()->friends->pluck('email')->unique()->toArray(), ['abigailotwell@gmail.com']);
+        $this->assertSame(['abigailotwell@gmail.com'], $results->first()->friends->pluck('email')->unique()->toArray());
     }
 
     public function test_has_on_nested_self_referencing_belongs_to_many_relationship()
@@ -1247,8 +1246,8 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertCount(1, $results);
         $this->assertSame('taylorotwell@gmail.com', $results->first()->email);
         $this->assertTrue($results->first()->relationLoaded('friends'));
-        $this->assertSame($results->first()->friends->pluck('email')->unique()->toArray(), ['abigailotwell@gmail.com']);
-        $this->assertSame($results->first()->friends->pluck('friends')->flatten()->pluck('email')->unique()->toArray(), ['foo@gmail.com']);
+        $this->assertSame(['abigailotwell@gmail.com'], $results->first()->friends->pluck('email')->unique()->toArray());
+        $this->assertSame(['foo@gmail.com'], $results->first()->friends->pluck('friends')->flatten()->pluck('email')->unique()->toArray());
     }
 
     public function test_has_on_self_referencing_belongs_to_many_relationship_with_where_pivot()
@@ -1321,7 +1320,7 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertCount(1, $results);
         $this->assertSame('Child Post', $results->first()->name);
         $this->assertTrue($results->first()->relationLoaded('parentPost'));
-        $this->assertSame($results->first()->parentPost->name, 'Parent Post');
+        $this->assertSame('Parent Post', $results->first()->parentPost->name);
     }
 
     public function test_has_on_nested_self_referencing_belongs_to_relationship()
@@ -1363,9 +1362,9 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertCount(1, $results);
         $this->assertSame('Child Post', $results->first()->name);
         $this->assertTrue($results->first()->relationLoaded('parentPost'));
-        $this->assertSame($results->first()->parentPost->name, 'Parent Post');
+        $this->assertSame('Parent Post', $results->first()->parentPost->name);
         $this->assertTrue($results->first()->parentPost->relationLoaded('parentPost'));
-        $this->assertSame($results->first()->parentPost->parentPost->name, 'Grandparent Post');
+        $this->assertSame('Grandparent Post', $results->first()->parentPost->parentPost->name);
     }
 
     public function test_has_on_self_referencing_has_many_relationship()
@@ -1404,7 +1403,7 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertCount(1, $results);
         $this->assertSame('Parent Post', $results->first()->name);
         $this->assertTrue($results->first()->relationLoaded('childPosts'));
-        $this->assertSame($results->first()->childPosts->pluck('name')->unique()->toArray(), ['Child Post']);
+        $this->assertSame(['Child Post'], $results->first()->childPosts->pluck('name')->unique()->toArray());
     }
 
     public function test_has_on_nested_self_referencing_has_many_relationship()
@@ -1446,8 +1445,8 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertCount(1, $results);
         $this->assertSame('Grandparent Post', $results->first()->name);
         $this->assertTrue($results->first()->relationLoaded('childPosts'));
-        $this->assertSame($results->first()->childPosts->pluck('name')->unique()->toArray(), ['Parent Post']);
-        $this->assertSame($results->first()->childPosts->pluck('childPosts')->flatten()->pluck('name')->unique()->toArray(), ['Child Post']);
+        $this->assertSame(['Parent Post'], $results->first()->childPosts->pluck('name')->unique()->toArray());
+        $this->assertSame(['Child Post'], $results->first()->childPosts->pluck('childPosts')->flatten()->pluck('name')->unique()->toArray());
     }
 
     public function test_has_with_non_where_bindings()
@@ -2597,7 +2596,7 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertNull($users[0]->birthday);
         $this->assertInstanceOf(\DateTime::class, $users[1]->birthday);
         $this->assertInstanceOf(\DateTime::class, $users[2]->birthday);
-        $this->assertEquals('1987-11-01', $users[2]->birthday->format('Y-m-d'));
+        $this->assertSame('1987-11-01', $users[2]->birthday->format('Y-m-d'));
 
         DB::flushQueryLog();
 
@@ -2663,37 +2662,37 @@ class DatabaseEloquentIntegrationTest extends LaravelTestCase
         $this->assertSame('22222222-0000-7000-0000-000000000000', $chris->uuid);
     }
 
-    // todo: fix test
-    //    public function test_fill_and_insert_or_ignore()
-    //    {
-    //        Str::createUuidsUsingSequence([
-    //            '00000000-0000-7000-0000-000000000000',
-    //            '11111111-0000-7000-0000-000000000000',
-    //            '22222222-0000-7000-0000-000000000000',
-    //        ]);
-    //
-    //        $this->assertEquals(1, ModelWithUniqueStringIds::fillAndInsertOrIgnore([
-    //            [
-    //                'id' => 1, 'name' => 'Taylor', 'role' => IntBackedRole::Admin, 'role_string' => StringBackedRole::Admin,
-    //            ],
-    //        ]));
-    //
-    //        $this->assertSame(1, ModelWithUniqueStringIds::fillAndInsertOrIgnore([
-    //            [
-    //                'id' => 1, 'name' => 'Taylor', 'role' => IntBackedRole::Admin, 'role_string' => StringBackedRole::Admin,
-    //            ],
-    //            [
-    //                'id' => 2, 'name' => 'Nuno',
-    //            ],
-    //        ]));
-    //
-    //        $models = ModelWithUniqueStringIds::get();
-    //        $this->assertSame('00000000-0000-7000-0000-000000000000', $models->firstWhere('name', 'Taylor')->uuid);
-    //        $this->assertSame(
-    //            ['uuid' => '22222222-0000-7000-0000-000000000000', 'role' => IntBackedRole::User],
-    //            $models->firstWhere('name', 'Nuno')->only('uuid', 'role')
-    //        );
-    //    }
+    public function test_fill_and_insert_or_ignore()
+    {
+        Str::createUuidsUsingSequence([
+            '00000000-0000-7000-0000-000000000000',
+            '11111111-0000-7000-0000-000000000000',
+            '22222222-0000-7000-0000-000000000000',
+        ]);
+
+        $this->assertEquals(1, ModelWithUniqueStringIds::fillAndInsertOrIgnore([
+            [
+                'id' => 1, 'name' => 'Taylor', 'role' => IntBackedRole::Admin, 'role_string' => StringBackedRole::Admin,
+            ],
+        ]));
+
+        $this->assertSame(1, ModelWithUniqueStringIds::fillAndInsertOrIgnore([
+            [
+                'id' => 1, 'name' => 'Taylor', 'role' => IntBackedRole::Admin, 'role_string' => StringBackedRole::Admin,
+                'uuid' => '00000000-0000-7000-0000-000000000000',
+            ],
+            [
+                'id' => 2, 'name' => 'Nuno',
+            ],
+        ]));
+
+        $models = ModelWithUniqueStringIds::get();
+        $this->assertSame('00000000-0000-7000-0000-000000000000', $models->firstWhere('name', 'Taylor')->uuid);
+        $this->assertSame(
+            ['uuid' => '11111111-0000-7000-0000-000000000000', 'role' => IntBackedRole::User],
+            $models->firstWhere('name', 'Nuno')->only('uuid', 'role')
+        );
+    }
 
     public function test_fill_and_insert_get_id()
     {
@@ -2901,9 +2900,11 @@ class EloquentTestPost extends Eloquent
 
     public function tags()
     {
-        return $this->morphToMany(EloquentTestTag::class, 'taggable', null, null, 'tag_id')->withPivot('taxonomy');
+        return $this->morphToMany(EloquentTestTag::class, 'taggable', Taggable::class, null, 'tag_id')->withPivot('taxonomy');
     }
 }
+
+class Taggable extends MorphPivot {}
 
 class EloquentTestTag extends Eloquent
 {
