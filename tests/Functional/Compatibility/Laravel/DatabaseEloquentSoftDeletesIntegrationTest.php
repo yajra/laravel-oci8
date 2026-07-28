@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
@@ -304,6 +305,42 @@ class DatabaseEloquentSoftDeletesIntegrationTest extends LaravelTestCase
         $this->assertCount(2, $users);
         $this->assertNull($users->find(1)->deleted_at);
         $this->assertNull($users->find(2)->deleted_at);
+    }
+
+    public function test_restore_does_not_fire_restored_event_when_saving_event_cancels_save()
+    {
+        $previousDispatcher = Eloquent::getEventDispatcher();
+
+        Eloquent::setEventDispatcher(new Dispatcher);
+
+        try {
+            $this->createUsers();
+
+            $restored = false;
+
+            SoftDeletesTestUser::saving(function () {
+                return false;
+            });
+
+            SoftDeletesTestUser::restored(function () use (&$restored) {
+                $restored = true;
+            });
+
+            $user = SoftDeletesTestUser::withTrashed()->find(1);
+
+            $this->assertFalse($user->restore());
+            $this->assertFalse($restored);
+            $this->assertNotNull(SoftDeletesTestUser::withTrashed()->find(1)->deleted_at);
+            $this->assertNull(SoftDeletesTestUser::find(1));
+        } finally {
+            SoftDeletesTestUser::flushEventListeners();
+
+            if ($previousDispatcher) {
+                Eloquent::setEventDispatcher($previousDispatcher);
+            } else {
+                Eloquent::unsetEventDispatcher();
+            }
+        }
     }
 
     public function test_only_trashed_only_returns_trashed_records()
@@ -959,11 +996,8 @@ class DatabaseEloquentSoftDeletesIntegrationTest extends LaravelTestCase
      */
     protected function createUsers()
     {
-        $taylor = SoftDeletesTestUser::create(['email' => 'taylorotwell@gmail.com']);
+        $taylor = SoftDeletesTestUser::create(['email' => 'taylorotwell@gmail.com', 'user_id' => 2]);
         $abigail = SoftDeletesTestUser::create(['email' => 'abigailotwell@gmail.com']);
-
-        $taylor->user_id = $abigail->id;
-        $taylor->save();
 
         $taylor->delete();
 

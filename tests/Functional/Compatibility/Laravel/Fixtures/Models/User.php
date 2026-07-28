@@ -2,9 +2,9 @@
 
 namespace Yajra\Oci8\Tests\Functional\Compatibility\Laravel\Fixtures\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as FoundationUser;
 
-class User extends Model
+class User extends FoundationUser
 {
-    protected $guarded = [];
+    protected $primaryKey = 'internal_id';
 }

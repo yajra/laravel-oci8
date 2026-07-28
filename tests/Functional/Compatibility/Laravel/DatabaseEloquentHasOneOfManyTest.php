@@ -6,6 +6,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Schema\Builder;
+use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
@@ -620,7 +621,7 @@ class HasOneOfManyTestUser extends Eloquent
             'published_at' => 'max',
             'id' => 'max',
         ], function ($q) {
-            $q->where('published_at', '<', now());
+            $q->where('published_at', '<', Carbon::now());
         });
     }
 
@@ -640,7 +641,7 @@ class HasOneOfManyTestUser extends Eloquent
             'published_at' => 'max',
             'id' => 'max',
         ], function ($q) {
-            $q->where('published_at', '<', now());
+            $q->where('published_at', '<', Carbon::now());
         });
     }
 

@@ -269,7 +269,7 @@ class DatabaseEloquentHasOneOrManyWithAttributesTest extends LaravelTestCase
         $relatedModel = $relationship->make();
 
         $this->assertSame($parentId, $relatedModel->parent_id);
-        $this->assertSame(true, $relatedModel->is_admin);
+        $this->assertTrue($relatedModel->is_admin);
     }
 }
 

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Schema\Builder;
+use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use Yajra\Oci8\Tests\LaravelTestCase;
 
@@ -99,7 +100,7 @@ class DatabaseEloquentHasOneThroughOfManyTest extends LaravelTestCase
     //        $relation->addEagerConstraints([$user]);
     //        $this->assertSame('select MAX("logins"."id") as "id_aggregate", "intermediates"."user_id" from "logins" inner join "intermediates" on "intermediates"."id" = "logins"."intermediate_id" where "intermediates"."user_id" = ? and "intermediates"."user_id" in (1) group by "intermediates"."user_id"', $relation->getOneOfManySubQuery()->toSql());
     //    }
-    //
+
     //    public function test_eager_loading_applies_constraints_to_query(): void
     //    {
     //        $user = HasOneThroughOfManyTestUser::create();
@@ -673,7 +674,7 @@ class HasOneThroughOfManyTestUser extends Eloquent
             'published_at' => 'max',
             'id' => 'max',
         ], function ($q) {
-            $q->where('published_at', '<', now());
+            $q->where('published_at', '<', Carbon::now());
         });
     }
 
@@ -693,7 +694,7 @@ class HasOneThroughOfManyTestUser extends Eloquent
             'published_at' => 'max',
             'id' => 'max',
         ], function ($q) {
-            $q->where('published_at', '<', now());
+            $q->where('published_at', '<', Carbon::now());
         });
     }
 

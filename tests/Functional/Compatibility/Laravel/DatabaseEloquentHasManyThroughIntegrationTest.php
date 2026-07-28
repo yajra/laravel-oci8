@@ -121,7 +121,7 @@ class DatabaseEloquentHasManyThroughIntegrationTest extends LaravelTestCase
 
         $this->assertCount(1, $country);
         $this->assertTrue($country->first()->relationLoaded('posts'));
-        $this->assertEquals($country->first()->posts->pluck('title')->unique()->toArray(), ['A title']);
+        $this->assertEquals(['A title'], $country->first()->posts->pluck('title')->unique()->toArray());
     }
 
     public function test_find_method()
