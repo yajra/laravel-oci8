@@ -1608,6 +1608,21 @@ class Oci8QueryBuilderTest extends TestCase
         }
     }
 
+    public function test_first_rows_hint_only_replaces_the_first_select()
+    {
+        $connection = $this->getConnection(serverVersion: '12c');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+
+        $builder->from('users')
+            ->selectRaw('(select count(*) from users) as user_count')
+            ->limit(1);
+
+        $this->assertSame(
+            'select /*+ FIRST_ROWS(1) */ (select count(*) from users) as user_count from "USERS" offset 0 rows fetch next 1 rows only',
+            $builder->toSql()
+        );
+    }
+
     public function test_limit_and_offset_to_paginate_one()
     {
         $builder = $this->getBuilder();
