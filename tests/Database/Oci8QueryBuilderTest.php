@@ -3727,18 +3727,164 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_where_row_values()
     {
+        $comparison = 'exists (select 1 from (select ? as "LARAVEL_ROW_VALUE_0", ? as "LARAVEL_ROW_VALUE_1" from dual) '
+            .'"LARAVEL_ROW_VALUES" where ("LAST_UPDATE" < "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0" '
+            .'or ("LAST_UPDATE" = "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0" '
+            .'and "ORDER_NUMBER" < "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_1")))';
+
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->whereRowValues(['last_update', 'order_number'], '<', [1, 2]);
-        $this->assertSame('select * from "ORDERS" where ("LAST_UPDATE", "ORDER_NUMBER") < (?, ?)', $builder->toSql());
+        $this->assertSame('select * from "ORDERS" where '.$comparison, $builder->toSql());
+        $this->assertEquals([1, 2], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->where('company_id', 1)->orWhereRowValues(['last_update', 'order_number'], '<', [1, 2]);
-        $this->assertSame('select * from "ORDERS" where "COMPANY_ID" = ? or ("LAST_UPDATE", "ORDER_NUMBER") < (?, ?)', $builder->toSql());
+        $this->assertSame('select * from "ORDERS" where "COMPANY_ID" = ? or '.$comparison, $builder->toSql());
+        $this->assertEquals([1, 1, 2], $builder->getBindings());
 
         $builder = $this->getBuilder();
         $builder->select('*')->from('orders')->whereRowValues(['last_update', 'order_number'], '<', [1, new Raw('2')]);
-        $this->assertSame('select * from "ORDERS" where ("LAST_UPDATE", "ORDER_NUMBER") < (?, 2)', $builder->toSql());
+        $this->assertSame(
+            'select * from "ORDERS" where exists (select 1 from '
+            .'(select ? as "LARAVEL_ROW_VALUE_0" from dual) '
+            .'"LARAVEL_ROW_VALUES" where ("LAST_UPDATE" < "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0" '
+            .'or ("LAST_UPDATE" = "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0" '
+            .'and "ORDER_NUMBER" < 2)))',
+            $builder->toSql()
+        );
         $this->assertEquals([1], $builder->getBindings());
+    }
+
+    public function test_where_row_values_equality()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders')->whereRowValues(['last_update', 'order_number'], '=', [1, 2]);
+        $this->assertSame('select * from "ORDERS" where ("LAST_UPDATE" = ? and "ORDER_NUMBER" = ?)', $builder->toSql());
+        $this->assertEquals([1, 2], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders as records')->where('company_id', 1)
+            ->orWhereRowValues(['records.last_update', 'records.order_number'], '=', [2, new Raw('3')]);
+        $this->assertSame(
+            'select * from "ORDERS" "RECORDS" where "COMPANY_ID" = ? or ("RECORDS"."LAST_UPDATE" = ? and "RECORDS"."ORDER_NUMBER" = 3)',
+            $builder->toSql()
+        );
+        $this->assertEquals([1, 2], $builder->getBindings());
+    }
+
+    public function test_where_row_values_inequality()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders')->whereRowValues(['last_update', 'order_number'], '<>', [1, 2]);
+
+        $this->assertSame(
+            'select * from "ORDERS" where not ("LAST_UPDATE" = ? and "ORDER_NUMBER" = ?)',
+            $builder->toSql()
+        );
+        $this->assertEquals([1, 2], $builder->getBindings());
+    }
+
+    public function test_where_row_values_with_non_sequential_keys()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders')->whereRowValues(
+            [2 => 'last_update', 4 => 'order_number'],
+            '=',
+            [1 => 1, 3 => 2]
+        );
+        $this->assertSame('select * from "ORDERS" where ("LAST_UPDATE" = ? and "ORDER_NUMBER" = ?)', $builder->toSql());
+        $this->assertEquals([1, 2], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders')->whereRowValues(
+            [2 => 'last_update', 4 => 'order_number'],
+            '<',
+            [1 => 1, 3 => 2]
+        );
+        $this->assertSame(
+            'select * from "ORDERS" where exists (select 1 from '
+            .'(select ? as "LARAVEL_ROW_VALUE_0", ? as "LARAVEL_ROW_VALUE_1" from dual) '
+            .'"LARAVEL_ROW_VALUES" where ("LAST_UPDATE" < "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0" '
+            .'or ("LAST_UPDATE" = "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0" '
+            .'and "ORDER_NUMBER" < "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_1")))',
+            $builder->toSql()
+        );
+        $this->assertEquals([1, 2], $builder->getBindings());
+    }
+
+    public function test_ordered_row_values_use_a_non_conflicting_internal_alias()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders as laravel_row_values')->whereRowValues(
+            ['laravel_row_values.last_update', 'laravel_row_values.order_number'],
+            '<',
+            [1, 2]
+        );
+
+        $this->assertSame(
+            'select * from "ORDERS" "LARAVEL_ROW_VALUES" where exists (select 1 from '
+            .'(select ? as "LARAVEL_ROW_VALUE_0", ? as "LARAVEL_ROW_VALUE_1" from dual) '
+            .'"LARAVEL_ROW_VALUES_1" where ("LARAVEL_ROW_VALUES"."LAST_UPDATE" '
+            .'< "LARAVEL_ROW_VALUES_1"."LARAVEL_ROW_VALUE_0" or '
+            .'("LARAVEL_ROW_VALUES"."LAST_UPDATE" = "LARAVEL_ROW_VALUES_1"."LARAVEL_ROW_VALUE_0" '
+            .'and "LARAVEL_ROW_VALUES"."ORDER_NUMBER" < "LARAVEL_ROW_VALUES_1"."LARAVEL_ROW_VALUE_1")))',
+            $builder->toSql()
+        );
+        $this->assertEquals([1, 2], $builder->getBindings());
+    }
+
+    public function test_ordered_row_values_do_not_shadow_unqualified_outer_columns()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('orders')->whereRowValues(
+            ['laravel_row_value_0', 'order_number'],
+            '<',
+            [1, 2]
+        );
+
+        $this->assertSame(
+            'select * from "ORDERS" where exists (select 1 from '
+            .'(select ? as "LARAVEL_ROW_VALUE_0_1", ? as "LARAVEL_ROW_VALUE_1" from dual) '
+            .'"LARAVEL_ROW_VALUES" where ("LARAVEL_ROW_VALUE_0" '
+            .'< "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0_1" or '
+            .'("LARAVEL_ROW_VALUE_0" = "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_0_1" '
+            .'and "ORDER_NUMBER" < "LARAVEL_ROW_VALUES"."LARAVEL_ROW_VALUE_1")))',
+            $builder->toSql()
+        );
+        $this->assertEquals([1, 2], $builder->getBindings());
+    }
+
+    public function test_ordered_row_values_keep_outer_referencing_expressions_visible()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('events as records')->whereRowValues(
+            ['records.start_at'],
+            '<',
+            [new Raw('records.end_at')]
+        );
+
+        $this->assertSame(
+            'select * from "EVENTS" "RECORDS" where ("RECORDS"."START_AT" < records.end_at)',
+            $builder->toSql()
+        );
+        $this->assertSame([], $builder->getBindings());
+
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('events as laravel_row_values')->whereRowValues(
+            ['start_at', 'id'],
+            '<',
+            [new Raw('laravel_row_values.end_at'), 10]
+        );
+
+        $this->assertSame(
+            'select * from "EVENTS" "LARAVEL_ROW_VALUES" where exists (select 1 from '
+            .'(select ? as "LARAVEL_ROW_VALUE_1" from dual) "LARAVEL_ROW_VALUES_1" where '
+            .'("START_AT" < laravel_row_values.end_at or '
+            .'("START_AT" = laravel_row_values.end_at '
+            .'and "ID" < "LARAVEL_ROW_VALUES_1"."LARAVEL_ROW_VALUE_1")))',
+            $builder->toSql()
+        );
+        $this->assertEquals([10], $builder->getBindings());
     }
 
     public function test_where_row_values_arity_mismatch()
