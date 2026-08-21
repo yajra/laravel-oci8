@@ -2950,6 +2950,44 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->from('users')->where('id', '=', 1)->update(['options->language' => 'en']);
     }
 
+    public function test_increment_each_method()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('raw')->twice()->andReturnUsing(
+            fn ($value) => new Raw($value)
+        );
+        $builder->getConnection()->shouldReceive('update')->once()->with(
+            'update "USERS" set "VOTES" = "VOTES" + 2, "SCORE" = "SCORE" + 3, "UPDATED_AT" = ? where "ID" = ?',
+            ['now', 1]
+        )->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->incrementEach(
+            ['votes' => 2, 'score' => 3],
+            ['updated_at' => 'now']
+        );
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_decrement_each_method()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('raw')->twice()->andReturnUsing(
+            fn ($value) => new Raw($value)
+        );
+        $builder->getConnection()->shouldReceive('update')->once()->with(
+            'update "USERS" set "VOTES" = "VOTES" - 2, "SCORE" = "SCORE" - 3, "UPDATED_AT" = ? where "ID" = ?',
+            ['now', 1]
+        )->andReturn(1);
+
+        $result = $builder->from('users')->where('id', '=', 1)->decrementEach(
+            ['votes' => 2, 'score' => 3],
+            ['updated_at' => 'now']
+        );
+
+        $this->assertEquals(1, $result);
+    }
+
     public function test_upsert_method()
     {
         $builder = $this->getBuilder();
