@@ -58,6 +58,32 @@ class ExpressionBackedWriteTest extends TestCase
     }
 
     #[Test]
+    public function it_updates_a_limited_from_sub_target_with_an_internal_alias(): void
+    {
+        if ($this->isPgsql() || $this->isMariaDb()) {
+            $this->markTestSkipped('This test covers Oracle inline-view writes.');
+        }
+
+        $updated = DB::query()
+            ->fromSub(function ($query) {
+                $query->select('name')
+                    ->selectRaw('"ID" as "USER_ID"')
+                    ->from('expression_write_users')
+                    ->where('name', '=', 'Alice');
+            }, 'users')
+            ->where('users.name', '=', 'Alice')
+            ->orderBy('users.user_id')
+            ->limit(1)
+            ->update(['name' => 'Updated Alice']);
+
+        $this->assertSame(1, $updated);
+        $this->assertSame(
+            ['Updated Alice', 'Bob'],
+            DB::table('expression_write_users')->orderBy('id')->pluck('name')->all()
+        );
+    }
+
+    #[Test]
     public function it_deletes_a_limited_from_raw_target(): void
     {
         if ($this->isPgsql() || $this->isMariaDb()) {

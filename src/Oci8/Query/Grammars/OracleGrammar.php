@@ -82,12 +82,10 @@ class OracleGrammar extends Grammar
      */
     protected function compileRowIdSelect(Builder $query): string
     {
-        $from = $this->getValue($query->from);
         $wrappedTable = $this->wrapTable($query->from);
-        $segments = preg_split('/\s+as\s+/i', trim($from), 2);
 
-        if (count($segments) > 1) {
-            $qualifier = $this->wrapValue($this->connection->getTablePrefix().$segments[1]);
+        if (preg_match('/\s+("(?:[^"]|"")*")\s*$/', $wrappedTable, $matches)) {
+            $qualifier = $matches[1];
         } else {
             $wrappedSegments = preg_split('/\s+/', $wrappedTable);
             $qualifier = count($wrappedSegments) > 1 ? last($wrappedSegments) : $wrappedTable;
