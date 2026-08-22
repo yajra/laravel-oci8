@@ -444,14 +444,18 @@ class OracleGrammar extends Grammar
             return $this->wrapAliasedTable($table, $prefix);
         }
 
-        $tableName = $this->wrap($prefix.$table);
-        $segments = explode(' ', $table);
+        $segments = preg_split('/\s+/', trim($table), 2);
+
         if (count($segments) > 1) {
-            $tableName = $this->wrap($prefix.$segments[0]).' '.$prefix.$segments[1];
+            return $this->wrapTable($segments[0], $prefix).' '.$this->wrapValue($prefix.$segments[1]);
         }
 
+        $tableName = parent::wrapTable($table, $prefix);
+
         if ($this->connection->getSchemaPrefix()) {
-            return $this->wrap($this->getSchemaPrefix()).'.'.$tableName;
+            return str_contains($table, '.')
+                ? $tableName
+                : $this->wrap($this->getSchemaPrefix()).'.'.$tableName;
         }
 
         return $tableName;
