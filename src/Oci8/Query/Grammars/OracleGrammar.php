@@ -239,7 +239,7 @@ class OracleGrammar extends Grammar
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries (only when no locks used else it results in ORA‑02014)
         if ($query->getConnection()->isVersionAboveOrEqual('12c') && $query->lock === null) {
             if ($query->limit !== null) {
-                $components['columns'] = str_replace('select', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns']);
+                $components['columns'] = preg_replace('/select/i', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns'], 1);
             }
 
             $offset = $query->offset ?: 0;
