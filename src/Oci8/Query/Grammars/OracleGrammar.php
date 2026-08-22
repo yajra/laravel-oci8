@@ -6,14 +6,17 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Query\IndexHint;
 use Illuminate\Database\Query\JoinLateralClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use JsonSerializable;
 use RuntimeException;
 use stdClass;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
+use Yajra\Oci8\Query\OracleBuilder;
 
 /**
  * @property Oci8Connection $connection
@@ -111,6 +114,10 @@ class OracleGrammar extends Grammar
         // see if that component exists. If it does, we'll just call the compiler
         // function for the component which is responsible for making the SQL.
         $components = $this->compileComponents($query);
+        $useAutomaticGoal = $query->limit !== null && $query->lock === null
+            && $query->getConnection()->isVersionAboveOrEqual('12c');
+
+        $components = $this->compileOptimizerHints($query, $components, $useAutomaticGoal);
         unset($components['lock']);
 
         if (isset($query->lock) && isset($query->limit)) {
@@ -247,7 +254,7 @@ class OracleGrammar extends Grammar
             $query->offset = null;
         }
 
-        $components = $this->compileComponents($query);
+        $components = $this->compileOptimizerHints($query, $this->compileComponents($query));
 
         $components['columns'] .= $this->compileRowNumber(
             $query->groupLimit['column'],
@@ -284,10 +291,6 @@ class OracleGrammar extends Grammar
     {
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries (only when no locks used else it results in ORA‑02014)
         if ($query->getConnection()->isVersionAboveOrEqual('12c') && $query->lock === null) {
-            if ($query->limit !== null) {
-                $components['columns'] = preg_replace('/select/i', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns'], 1);
-            }
-
             $offset = $query->offset ?: 0;
             $components['limit'] = "offset $offset rows";
 
@@ -306,6 +309,120 @@ class OracleGrammar extends Grammar
         // expression from the query and get the records with row numbers within our
         // given limit and offset value that we just put on as a query constraint.
         return $this->compileTableExpression($sql, $constraint, $query);
+    }
+
+    /**
+     * Determine whether the query already specifies an optimizer goal.
+     *
+     * @param  list<string>  $hints
+     */
+    protected function hasExplicitOptimizerGoal(array $hints): bool
+    {
+        foreach ($hints as $hint) {
+            // Keep quoted identifiers intact so parentheses inside them do not affect depth.
+            preg_match_all('/"(?:[^"]|"")*"|[()]|[^\s()"]+/', $hint, $matches);
+            $depth = 0;
+
+            foreach ($matches[0] as $token) {
+                if ($token === '(') {
+                    $depth++;
+                } elseif ($token === ')') {
+                    $depth = max(0, $depth - 1);
+                } elseif ($depth === 0 && in_array(strtoupper($token), ['ALL_ROWS', 'FIRST_ROWS'], true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Compile Oracle optimizer hints into the SELECT hint comment.
+     *
+     * @param  array<string, string|null>  $components
+     * @return array<string, string|null>
+     */
+    protected function compileOptimizerHints(Builder $query, array $components, bool $useAutomaticGoal = false): array
+    {
+        $optimizerHints = $query instanceof OracleBuilder ? $query->optimizerHints : [];
+
+        if (! empty($components['indexHint'])) {
+            $optimizerHints[] = $components['indexHint'];
+        }
+
+        unset($components['indexHint']);
+
+        if ($optimizerHints === [] && ! $useAutomaticGoal) {
+            return $components;
+        }
+
+        foreach (['aggregate', 'columns'] as $component) {
+            $sql = $components[$component] ?? null;
+            if (! is_string($sql) || ! preg_match('~^select\b(?:\s+/\*\+(.*?)\*/)?~is', $sql, $select)) {
+                continue;
+            }
+
+            $rawHint = trim($select[1] ?? '');
+            $hints = $rawHint === '' ? $optimizerHints : [$rawHint, ...$optimizerHints];
+
+            if ($useAutomaticGoal && ! $this->hasExplicitOptimizerGoal($hints)) {
+                array_unshift($hints, "FIRST_ROWS({$query->limit})");
+            }
+
+            if ($hints !== []) {
+                $components[$component] = 'select /*+ '.implode(' ', $hints).' */'.substr($sql, strlen($select[0]));
+            }
+
+            break;
+        }
+
+        return $components;
+    }
+
+    /**
+     * Compile an Oracle index optimizer hint.
+     *
+     * Laravel's "hint" and "force" modes both map to Oracle's INDEX hint.
+     */
+    protected function compileIndexHint(Builder $query, IndexHint $indexHint): string
+    {
+        $indexes = array_map('trim', explode(',', $indexHint->index));
+
+        foreach ($indexes as $index) {
+            if (! preg_match('/^[a-zA-Z0-9_$#]+$/', $index)) {
+                throw new InvalidArgumentException('Index name contains invalid characters.');
+            }
+        }
+
+        $type = match ($indexHint->type) {
+            'hint', 'force' => 'INDEX',
+            'ignore' => 'NO_INDEX',
+            default => throw new InvalidArgumentException('Unsupported index hint type.'),
+        };
+
+        return $type.'('.$this->compileIndexHintTable($query).' '.implode(' ', array_map(Str::upper(...), $indexes)).')';
+    }
+
+    /**
+     * Get the table reference used by an Oracle index hint.
+     */
+    protected function compileIndexHintTable(Builder $query): string
+    {
+        if (! is_string($query->from)) {
+            throw new InvalidArgumentException('Index hints require a table name or alias.');
+        }
+
+        $table = preg_replace('/\s+/', ' ', trim($query->from));
+        $segments = preg_split('/\s+(?:as\s+)?/i', $table);
+        $reference = count($segments) > 1 ? end($segments) : last(explode('.', $table));
+        $reference = trim((string) $reference, '"');
+
+        if (! preg_match('/^[a-zA-Z0-9_$#]+$/', $reference)) {
+            throw new InvalidArgumentException('Index hint table name contains invalid characters.');
+        }
+
+        return Str::upper($query->getConnection()->getTablePrefix().$reference);
     }
 
     /**
