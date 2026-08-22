@@ -422,6 +422,10 @@ class OracleGrammar extends Grammar
      */
     protected function wrapJsonSelector($value): string
     {
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
+        }
+
         [$field, $path] = $this->wrapJsonFieldAndPath($value);
 
         return 'json_value('.$field.$path.')';
@@ -1222,6 +1226,10 @@ class OracleGrammar extends Grammar
      */
     protected function compileJsonContains($column, $value, int $count = 1): string
     {
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
+        }
+
         $parts = explode('->', $column, 2);
         $field = $this->wrap($parts[0]);
 
@@ -1257,6 +1265,10 @@ class OracleGrammar extends Grammar
      */
     protected function compileJsonContainsKey($column): string
     {
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
+        }
+
         [$field, $path] = $this->wrapJsonFieldAndPath($column);
 
         return 'json_exists('.$field.$path.')';
@@ -1274,6 +1286,10 @@ class OracleGrammar extends Grammar
 
     protected function compileJsonLength($column, $operator, $value)
     {
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
+        }
+
         [$field, $path] = $this->wrapJsonFieldAndPath($column);
 
         $jsonPath = $path ?: '$[*]';

@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 use Yajra\Oci8\Tests\TestCase;
 
 class JsonTest extends TestCase
@@ -25,6 +26,21 @@ class JsonTest extends TestCase
         Schema::drop('json_test');
 
         parent::tearDown();
+    }
+
+    #[Test]
+    public function it_rejects_json_queries_before_oracle_12c(): void
+    {
+        $connection = DB::connection();
+
+        if ($connection->getDriverName() !== 'oracle' || ! $connection->isVersionBelow('12c')) {
+            $this->markTestSkipped('Pre-12c JSON query gating is Oracle specific.');
+        }
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON query operations require Oracle 12c or newer.');
+
+        DB::table('json_test')->where('options->language', 'en')->toSql();
     }
 
     #[Test]
