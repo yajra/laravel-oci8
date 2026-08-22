@@ -3073,13 +3073,55 @@ class Oci8QueryBuilderTest extends TestCase
         $builder->getConnection()
             ->shouldReceive('update')
             ->once()
-            ->with('update "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" set "EMAIL" = ?, "NAME" = ? where "USERS"."ID" = ?',
+            ->with('update "USERS" set "EMAIL" = ?, "NAME" = ? where "ROWID" in (select "USERS"."ROWID" from "USERS" inner join "ORDERS" on "USERS"."ID" = "ORDERS"."USER_ID" where "USERS"."ID" = ?)',
                 ['foo', 'bar', 1])
             ->andReturn(1);
         $result = $builder->from('users')
             ->join('orders', 'users.id', '=', 'orders.user_id')
             ->where('users.id', '=', 1)
             ->update(['email' => 'foo', 'name' => 'bar']);
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_join_bindings()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with(
+                'update "USERS" set "ACTIVE" = ? where "ROWID" in (select "USERS"."ROWID" from "USERS" inner join "PROFILES" on "USERS"."ID" = "PROFILES"."USER_ID" and "PROFILES"."TYPE" = ? where "USERS"."ID" = ?)',
+                [true, 'admin', 1]
+            )
+            ->andReturn(1);
+
+        $result = $builder->from('users')
+            ->join('profiles', function ($join) {
+                $join->on('users.id', '=', 'profiles.user_id')
+                    ->where('profiles.type', '=', 'admin');
+            })
+            ->where('users.id', '=', 1)
+            ->update(['active' => true]);
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function test_update_method_with_join_uses_prefixed_alias_rowid()
+    {
+        $builder = $this->getBuilder('prefix_');
+        $builder->getConnection()
+            ->shouldReceive('update')
+            ->once()
+            ->with(
+                'update "PREFIX_USERS" "PREFIX_U" set "ACTIVE" = ? where "ROWID" in (select "PREFIX_U"."ROWID" from "PREFIX_USERS" "PREFIX_U" inner join "PREFIX_PROFILES" "PREFIX_P" on "PREFIX_U"."ID" = "PREFIX_P"."USER_ID")',
+                [true]
+            )
+            ->andReturn(1);
+
+        $result = $builder->from('users as u')
+            ->join('profiles as p', 'u.id', '=', 'p.user_id')
+            ->update(['active' => true]);
+
         $this->assertEquals(1, $result);
     }
 

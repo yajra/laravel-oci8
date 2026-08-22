@@ -705,6 +705,32 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile an update statement into SQL.
+     */
+    public function compileUpdate(Builder $query, array $values): string
+    {
+        if (isset($query->joins)) {
+            return $this->compileUpdateWithJoinsUsingRowId($query, $values);
+        }
+
+        return parent::compileUpdate($query, $values);
+    }
+
+    /**
+     * Compile an update with joins using an Oracle ROWID subquery.
+     */
+    protected function compileUpdateWithJoinsUsingRowId(Builder $query, array $values): string
+    {
+        $table = $this->wrapTable($query->from);
+        $columns = $this->compileUpdateColumns($query, $values);
+        $target = $this->getUpdateFromTargetReference($query);
+        $selectQuery = clone $query;
+        $select = $this->compileSelect($selectQuery->select($target.'.rowid'));
+
+        return "update {$table} set {$columns} where {$this->wrap('rowid')} in ({$select})";
+    }
+
+    /**
      * Compile the columns for an update statement.
      */
     protected function compileUpdateColumns(Builder $query, array $values): string
@@ -748,7 +774,10 @@ class OracleGrammar extends Grammar
                 : $value)
             ->all();
 
-        return parent::prepareBindingsForUpdate($bindings, $values);
+        $values = Arr::flatten(array_map(fn ($value) => value($value), $values));
+        $cleanBindings = Arr::except($bindings, 'select');
+
+        return array_values(array_merge($values, Arr::flatten($cleanBindings)));
     }
 
     /**
