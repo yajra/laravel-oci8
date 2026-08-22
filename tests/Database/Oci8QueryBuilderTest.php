@@ -34,6 +34,77 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select * from "USERS"', $builder->toSql());
     }
 
+    public function test_index_hints()
+    {
+        $builder = $this->getBuilder();
+        $this->assertSame(
+            'select /*+ INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS"',
+            $builder->from('users')->useIndex('users_email_index')->toSql()
+        );
+
+        $builder = $this->getBuilder();
+        $this->assertSame(
+            'select /*+ INDEX(USERS USERS_EMAIL_INDEX USERS_NAME_INDEX) */ * from "USERS"',
+            $builder->from('users')->forceIndex('users_email_index, users_name_index')->toSql()
+        );
+
+        $builder = $this->getBuilder();
+        $this->assertSame(
+            'select /*+ NO_INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS"',
+            $builder->from('users')->ignoreIndex('users_email_index')->toSql()
+        );
+    }
+
+    public function test_index_hint_uses_prefixed_table_alias()
+    {
+        $builder = $this->getBuilder('prefix_');
+
+        $this->assertSame(
+            'select /*+ INDEX(PREFIX_U USERS_EMAIL_INDEX) */ * from "PREFIX_USERS" "PREFIX_U"',
+            $builder->from('users as u')->useIndex('users_email_index')->toSql()
+        );
+    }
+
+    public function test_index_hint_uses_prefixed_table_name_for_qualified_tables()
+    {
+        $builder = $this->getBuilder('prefix_');
+
+        $this->assertSame(
+            'select /*+ INDEX(PREFIX_USERS USERS_EMAIL_INDEX) */ * from "SCHEMA"."PREFIX_USERS"',
+            $builder->from('schema.users')->useIndex('users_email_index')->toSql()
+        );
+    }
+
+    public function test_index_hint_compiles_for_aggregate_queries()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('users')->useIndex('users_email_index');
+        $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+        $this->assertSame(
+            'select /*+ INDEX(USERS USERS_EMAIL_INDEX) */ count(*) as "AGGREGATE" from "USERS"',
+            $builder->toSql()
+        );
+    }
+
+    public function test_index_hint_is_merged_with_first_rows_hint()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+
+        $this->assertSame(
+            'select /*+ FIRST_ROWS(10) INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS" offset 0 rows fetch next 10 rows only',
+            $builder->from('users')->useIndex('users_email_index')->limit(10)->toSql()
+        );
+    }
+
+    public function test_index_hint_rejects_invalid_index_names()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Index name contains invalid characters.');
+
+        $this->getBuilder()->from('users')->useIndex('users_index */ FULL(users)')->toSql();
+    }
+
     public function test_basic_select_with_get_columns()
     {
         $builder = $this->getBuilder();
