@@ -326,6 +326,40 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([0 => 1], $builder->getBindings());
     }
 
+    public function test_regex_predicates()
+    {
+        $cases = [
+            'regexp' => 'REGEXP_LIKE("NAME", ?)',
+            'rlike' => 'REGEXP_LIKE("NAME", ?)',
+            'not regexp' => 'not REGEXP_LIKE("NAME", ?)',
+            'not rlike' => 'not REGEXP_LIKE("NAME", ?)',
+            '~' => 'REGEXP_LIKE("NAME", ?, \'c\')',
+            '~*' => 'REGEXP_LIKE("NAME", ?, \'i\')',
+            '!~' => 'not REGEXP_LIKE("NAME", ?, \'c\')',
+            '!~*' => 'not REGEXP_LIKE("NAME", ?, \'i\')',
+        ];
+
+        foreach ($cases as $operator => $predicate) {
+            $builder = $this->getBuilder();
+            $builder->select('*')->from('users')->where('name', $operator, '^Oracle');
+
+            $this->assertSame('select * from "USERS" where '.$predicate, $builder->toSql());
+            $this->assertEquals(['^Oracle'], $builder->getBindings());
+        }
+    }
+
+    public function test_regex_predicate_with_raw_pattern()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('name', 'regexp', new Raw("'^Oracle'"));
+
+        $this->assertSame(
+            'select * from "USERS" where REGEXP_LIKE("NAME", \'^Oracle\')',
+            $builder->toSql()
+        );
+        $this->assertEquals([], $builder->getBindings());
+    }
+
     public function test_where_null_safe_equals()
     {
         $builder = $this->getBuilder();

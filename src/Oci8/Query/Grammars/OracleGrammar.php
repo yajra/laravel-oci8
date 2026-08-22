@@ -891,6 +891,40 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a basic where clause.
+     */
+    protected function whereBasic(Builder $query, $where): string
+    {
+        $operator = strtolower($where['operator']);
+        $regexOperators = [
+            'regexp' => [false, null],
+            'rlike' => [false, null],
+            'not regexp' => [true, null],
+            'not rlike' => [true, null],
+            '~' => [false, 'c'],
+            '~*' => [false, 'i'],
+            '!~' => [true, 'c'],
+            '!~*' => [true, 'i'],
+        ];
+
+        if (! isset($regexOperators[$operator])) {
+            return parent::whereBasic($query, $where);
+        }
+
+        [$not, $matchParameter] = $regexOperators[$operator];
+
+        $sql = 'REGEXP_LIKE('
+            .$this->wrap($where['column']).', '
+            .$this->parameter($where['value']);
+
+        if ($matchParameter !== null) {
+            $sql .= ", '$matchParameter'";
+        }
+
+        return ($not ? 'not ' : '').$sql.')';
+    }
+
+    /**
      * Compile a "where date" clause.
      *
      * @param  array  $where
