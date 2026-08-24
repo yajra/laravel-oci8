@@ -50,6 +50,21 @@ class OracleGrammar extends Grammar
     protected $labelSearchFullText = 1;
 
     /**
+     * Compile a delete statement.
+     */
+    public function compileDelete(Builder $query): string
+    {
+        if (isset($query->joins) || isset($query->limit) || isset($query->offset)) {
+            $table = $this->wrapTable($query->from);
+            $where = $this->compileWheres($query);
+
+            return $this->compileDeleteWithJoins($query, $table, $where);
+        }
+
+        return parent::compileDelete($query);
+    }
+
+    /**
      * Compile a delete statement with joins into SQL.
      *
      * @param  string  $table
@@ -57,11 +72,30 @@ class OracleGrammar extends Grammar
      */
     protected function compileDeleteWithJoins(Builder $query, $table, $where): string
     {
-        $alias = last(explode(' as ', $table));
+        $selectSql = $this->compileRowIdSelect($query);
 
-        $joins = $this->compileJoins($query, $query->joins);
+        return "delete from {$table} where ROWID in ({$selectSql})";
+    }
 
-        return "delete (select * from {$alias} {$joins} {$where})";
+    /**
+     * Compile the ROWID select used by joined or limited write queries.
+     */
+    protected function compileRowIdSelect(Builder $query): string
+    {
+        $wrappedTable = $this->wrapTable($query->from);
+
+        if (preg_match('/\s+("(?:[^"]|"")*")\s*$/', $wrappedTable, $matches)) {
+            $qualifier = $matches[1];
+        } else {
+            $wrappedSegments = preg_split('/\s+/', $wrappedTable);
+            $qualifier = count($wrappedSegments) > 1 ? last($wrappedSegments) : $wrappedTable;
+        }
+
+        $rowId = new Expression($qualifier.'.ROWID as laravel_rowid');
+
+        $rowIdQuery = clone $query;
+
+        return $this->compileSelect($rowIdQuery->select($rowId));
     }
 
     /**
@@ -713,6 +747,30 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile an update statement.
+     */
+    public function compileUpdate(Builder $query, array $values): string
+    {
+        if (isset($query->joins) || isset($query->limit) || isset($query->offset)) {
+            return $this->compileUpdateWithJoinsOrLimit($query, $values);
+        }
+
+        return parent::compileUpdate($query, $values);
+    }
+
+    /**
+     * Compile an update statement with joins or a limit.
+     */
+    protected function compileUpdateWithJoinsOrLimit(Builder $query, array $values): string
+    {
+        $table = $this->wrapTable($query->from);
+        $columns = $this->compileUpdateColumns($query, $values);
+        $selectSql = $this->compileRowIdSelect($query);
+
+        return "update {$table} set {$columns} where ROWID in ({$selectSql})";
+    }
+
+    /**
      * Compile a JSON column update using Oracle's JSON_TRANSFORM function.
      */
     protected function compileJsonUpdateColumn(Builder $query, string $key, mixed $value): string
@@ -740,7 +798,54 @@ class OracleGrammar extends Grammar
                 : $value)
             ->all();
 
-        return parent::prepareBindingsForUpdate($bindings, $values);
+        $fromBindings = Arr::flatten($bindings['from'] ?? []);
+        $cleanBindings = Arr::except($bindings, ['select', 'from']);
+        $values = Arr::flatten(array_map(fn ($value) => value($value), $values));
+
+        return array_values(array_merge($fromBindings, $values, Arr::flatten($cleanBindings)));
+    }
+
+    /**
+     * Prepare the bindings for an update that may repeat its target in a ROWID subquery.
+     */
+    public function prepareBindingsForUpdateQuery(Builder $query, array $bindings, array $values): array
+    {
+        $prepared = $this->prepareBindingsForUpdate($bindings, $values);
+        $fromBindings = Arr::flatten($bindings['from'] ?? []);
+
+        if ($fromBindings === [] || ! $this->usesRowIdWrite($query)) {
+            return $prepared;
+        }
+
+        $trailingBindingCount = count(Arr::flatten(Arr::except($bindings, ['select', 'from'])));
+        $offset = count($prepared) - $trailingBindingCount;
+
+        array_splice($prepared, $offset, 0, $fromBindings);
+
+        return $prepared;
+    }
+
+    /**
+     * Prepare the bindings for a delete that may repeat its target in a ROWID subquery.
+     */
+    public function prepareBindingsForDeleteQuery(Builder $query, array $bindings): array
+    {
+        $prepared = $this->prepareBindingsForDelete($bindings);
+        $fromBindings = Arr::flatten($bindings['from'] ?? []);
+
+        if ($fromBindings === [] || ! $this->usesRowIdWrite($query)) {
+            return $prepared;
+        }
+
+        return array_values(array_merge($fromBindings, $prepared));
+    }
+
+    /**
+     * Determine whether a write query uses a ROWID subquery.
+     */
+    protected function usesRowIdWrite(Builder $query): bool
+    {
+        return isset($query->joins) || isset($query->limit) || isset($query->offset);
     }
 
     /**
