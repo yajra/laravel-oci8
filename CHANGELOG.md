@@ -1,3 +1,19 @@
+## [13.11.1](https://github.com/yajra/laravel-oci8/compare/v13.11.0...v13.11.1) (2026-08-25)
+
+### Bug Fixes
+
+* gate JSON queries by Oracle version ([e7d2ff2](https://github.com/yajra/laravel-oci8/commit/e7d2ff2491b91f44ef0b2917a720ddc68f97fde7))
+* wrap table aliases and prefix qualified names ([1632a30](https://github.com/yajra/laravel-oci8/commit/1632a305285f114c2e400a804bb64d59e6edb9d3))
+
+### Tests
+
+* add compatibility tests for whereBetweenSubquery ([a70f69e](https://github.com/yajra/laravel-oci8/commit/a70f69e7783bef496c00e6c8acd90ffbba32a3e6))
+* cover incrementEach and decrementEach ([89b97cc](https://github.com/yajra/laravel-oci8/commit/89b97cc54eb1f1a48a1dd90f8cbfc4a4a979a92e))
+
+### Continuous Integration
+
+* semantic release ([a42950a](https://github.com/yajra/laravel-oci8/commit/a42950a21c25e5266645b644843936415144bff6))
+
 ## [13.11.0](https://github.com/yajra/laravel-oci8/compare/v13.10.1...v13.11.0) (2026-08-22)
 
 ## [13.10.1](https://github.com/yajra/laravel-oci8/compare/v13.10.0...v13.10.1) (2026-07-21)
