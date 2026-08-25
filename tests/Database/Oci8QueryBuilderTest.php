@@ -95,15 +95,11 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select "X"."Y" as "FOO.BAR" from "BAZ"', $builder->toSql());
     }
 
-    /**
-     * @TODO: Correct output should also wrap x.
-     *          select "W" "X"."Y"."Z" as "FOO.BAR" from "BAZ"
-     */
     public function test_alias_wrapping_with_spaces_in_database_name()
     {
         $builder = $this->getBuilder();
         $builder->select('w x.y.z as foo.bar')->from('baz');
-        $this->assertSame('select "W" x."Y"."Z" as "FOO.BAR" from "BAZ"', $builder->toSql());
+        $this->assertSame('select "W" "X"."Y"."Z" as "FOO.BAR" from "BAZ"', $builder->toSql());
     }
 
     public function test_adding_selects()
@@ -118,6 +114,31 @@ class Oci8QueryBuilderTest extends TestCase
         $builder = $this->getBuilder('prefix_');
         $builder->select('*')->from('users');
         $this->assertEquals('select * from "PREFIX_USERS"', $builder->toSql());
+    }
+
+    public function test_qualified_table_applies_prefix_to_table_name()
+    {
+        $builder = $this->getBuilder('prefix_');
+        $builder->select('*')->from('public.users');
+
+        $this->assertSame('select * from "PUBLIC"."PREFIX_USERS"', $builder->toSql());
+    }
+
+    public function test_qualified_aliased_table_applies_prefix_to_table_name_and_alias()
+    {
+        $builder = $this->getBuilder('prefix_');
+        $builder->select('*')->from('public.users', 'people');
+
+        $this->assertSame('select * from "PUBLIC"."PREFIX_USERS" "PREFIX_PEOPLE"', $builder->toSql());
+    }
+
+    public function test_explicit_schema_takes_precedence_over_schema_prefix()
+    {
+        $connection = $this->getConnection(prefix: 'prefix_', schemaPrefix: 'tenant');
+        $builder = new Builder($connection, new OracleGrammar($connection), m::mock(OracleProcessor::class));
+        $builder->select('*')->from('public.users');
+
+        $this->assertSame('select * from "PUBLIC"."PREFIX_USERS"', $builder->toSql());
     }
 
     public function test_basic_select_distinct()
@@ -3803,7 +3824,7 @@ class Oci8QueryBuilderTest extends TestCase
     {
         $builder = $this->getBuilder();
         $builder->from('sessions', 'as_session')->where('bar', '<', '10');
-        $this->assertSame('select * from "SESSIONS" as_session where "BAR" < ?', $builder->toSql());
+        $this->assertSame('select * from "SESSIONS" "AS_SESSION" where "BAR" < ?', $builder->toSql());
         $this->assertEquals(['10'], $builder->getBindings());
     }
 
