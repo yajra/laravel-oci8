@@ -16,11 +16,57 @@
 
 ## [13.11.0](https://github.com/yajra/laravel-oci8/compare/v13.10.1...v13.11.0) (2026-08-22)
 
+### Bug Fixes
+
+* hint should be added to the outside query only ([06c4db0](https://github.com/yajra/laravel-oci8/commit/06c4db030d2f05e8a8a01e20c94375ba0ec80387))
+
+### Features
+
+* add regex predicate support ([cf36046](https://github.com/yajra/laravel-oci8/commit/cf36046bde8c07594d5ee83f3a9a8e5986cee560))
+
+### Tests
+
+* sync tests from laravel framework ([cc5fa3b](https://github.com/yajra/laravel-oci8/commit/cc5fa3bad2df528135237cd7f16e9dcb324e6ddc))
+
 ## [13.10.1](https://github.com/yajra/laravel-oci8/compare/v13.10.0...v13.10.1) (2026-07-21)
+
+### Bug Fixes
+
+* constrain OracleEloquent LOB updates to the model key ([6bdb952](https://github.com/yajra/laravel-oci8/commit/6bdb952b2a1b90685774e1f2a5bccc51468eab6f))
+
+### Tests
+
+* add more tests for OracleEloquent ([f492687](https://github.com/yajra/laravel-oci8/commit/f492687ccc9c605edbdf29cd5ca888fc4527150d))
+
+### Continuous Integration
+
+* add debug switches to phpunit commands for better debugging ([6f8fea0](https://github.com/yajra/laravel-oci8/commit/6f8fea0ddb1d9a677eab88de972a86da3d84ae95))
 
 ## [13.10.0](https://github.com/yajra/laravel-oci8/compare/v13.9.0...v13.10.0) (2026-07-17)
 
+### Bug Fixes
+
+* pint :robot: ([8ec401a](https://github.com/yajra/laravel-oci8/commit/8ec401a96b85e988cb2dc3b106bbccd9d99f99d2))
+
+### Features
+
+* add support for cascadeOnTruncate ([c5bed8b](https://github.com/yajra/laravel-oci8/commit/c5bed8b87f55fd10a22b3b9690e0fcf66465e986))
+* add support for deferrable and initiallyImmediate on indexes and foreign keys ([dba4a56](https://github.com/yajra/laravel-oci8/commit/dba4a567d4f30d4f5dffa7bb6ed87e491192a5f4))
+* add support for notValid in schema builder ([932ca90](https://github.com/yajra/laravel-oci8/commit/932ca90a0d2e3f178e4ec9fdb1b8ec77078f5ba0))
+* add support for online mode for indexes ([9956814](https://github.com/yajra/laravel-oci8/commit/9956814a2b3a8245e8c972d940b484d0609d8934))
+* add support for temporary tables in schema builder ([90b84c2](https://github.com/yajra/laravel-oci8/commit/90b84c2c5f65d3eb9fc4130db09b71b27d7850a2))
+
 ## [13.9.0](https://github.com/yajra/laravel-oci8/compare/v13.8.0...v13.9.0) (2026-07-17)
+
+### Bug Fixes
+
+* include all changes in release notes ([2628ac2](https://github.com/yajra/laravel-oci8/commit/2628ac2b4a461a2d9e1946de441b523678adbe0b))
+* install semantic release plugins ([f050630](https://github.com/yajra/laravel-oci8/commit/f050630468a01e51bcfe490407622ed777412e6b))
+* pint :robot: ([a500abc](https://github.com/yajra/laravel-oci8/commit/a500abc519c3a771903a7b826faa27cb28225a01))
+
+### Features
+
+* implement update from grammar feature ([dccbc88](https://github.com/yajra/laravel-oci8/commit/dccbc88c47c0b2253cde28e0de887994eb9d9721))
 
 # [13.8.0](https://github.com/yajra/laravel-oci8/compare/v13.7.0...v13.8.0) (2026-07-12)
 
