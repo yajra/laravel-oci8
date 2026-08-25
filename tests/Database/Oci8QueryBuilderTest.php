@@ -3830,17 +3830,17 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_where_json_contains()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
         $builder->select('*')->from('users')->whereJsonContains('options', ['en']);
         $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=?)', $builder->toSql());
         $this->assertEquals(['en'], $builder->getBindings());
 
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
         $builder->select('*')->from('users')->whereJsonContains('users.options->languages', ['en']);
         $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("USERS"."OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=?)', $builder->toSql());
         $this->assertEquals(['en'], $builder->getBindings());
 
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
         $builder->select('*')->from('users')->where('id', '=', 1)->orWhereJsonContains('options->languages', new Raw("Upper('en')"));
         $this->assertSame('select * from "USERS" where "ID" = ? or EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value=Upper(\'en\'))', $builder->toSql());
         $this->assertEquals([1], $builder->getBindings());
@@ -4005,9 +4005,9 @@ class Oci8QueryBuilderTest extends TestCase
         return $connection;
     }
 
-    protected function getBuilder(string $prefix = '')
+    protected function getBuilder(string $prefix = '', ?string $serverVersion = null)
     {
-        $connection = $this->getConnection(prefix: $prefix);
+        $connection = $this->getConnection(prefix: $prefix, serverVersion: $serverVersion);
         $grammar = new OracleGrammar($connection);
         $processor = m::mock(OracleProcessor::class);
 
@@ -4086,7 +4086,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_boolean_true()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('users')->where('data->active', true);
 
@@ -4098,7 +4098,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_boolean_false()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('users')->where('data->active', false);
 
@@ -4110,7 +4110,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_contains_key()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('users')
             ->whereJsonContainsKey('preferences->dietary_requirements');
@@ -4125,7 +4125,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_does_not_contain_key()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('users')
             ->whereJsonDoesntContainKey('preferences->dietary_requirements');
@@ -4140,7 +4140,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_length_for_root_array()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('json_test')
             ->whereJsonLength('options', '>=', 3);
@@ -4155,7 +4155,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_length_for_nested_array()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('json_test')
             ->whereJsonLength('options.items', '=', 2);
@@ -4170,7 +4170,7 @@ class Oci8QueryBuilderTest extends TestCase
 
     public function test_it_compiles_where_json_length_with_different_operator()
     {
-        $builder = $this->getBuilder();
+        $builder = $this->getBuilder(serverVersion: '12c');
 
         $builder->from('json_test')
             ->whereJsonLength('options.data.subitems', '<', 10);
@@ -4181,5 +4181,49 @@ class Oci8QueryBuilderTest extends TestCase
         );
 
         $this->assertSame([10], $builder->getBindings());
+    }
+
+    public function test_json_value_requires_oracle_12c()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON query operations require Oracle 12c or newer.');
+
+        $this->getBuilder(serverVersion: '11g')
+            ->from('users')
+            ->where('data->active', true)
+            ->toSql();
+    }
+
+    public function test_json_contains_requires_oracle_12c()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON query operations require Oracle 12c or newer.');
+
+        $this->getBuilder(serverVersion: '11g')
+            ->from('users')
+            ->whereJsonContains('options', 'en')
+            ->toSql();
+    }
+
+    public function test_json_exists_requires_oracle_12c()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON query operations require Oracle 12c or newer.');
+
+        $this->getBuilder(serverVersion: '11g')
+            ->from('users')
+            ->whereJsonContainsKey('options->language')
+            ->toSql();
+    }
+
+    public function test_json_length_requires_oracle_12c()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON query operations require Oracle 12c or newer.');
+
+        $this->getBuilder(serverVersion: '11g')
+            ->from('users')
+            ->whereJsonLength('options', '>', 1)
+            ->toSql();
     }
 }
