@@ -49,6 +49,12 @@ class QueryBuilderTest extends TestCase
             $table->string('name');
         });
 
+        Schema::create('query_builder_lobs', function (Blueprint $table) {
+            $table->id('id');
+            $table->binary('payload')->nullable();
+            $table->string('status');
+        });
+
         collect(range(1, 20))->each(function ($i) {
             /** @var User $user */
             User::query()->create([
@@ -65,6 +71,7 @@ class QueryBuilderTest extends TestCase
         Schema::drop('empty_defaults_table');
         Schema::drop('multiple_raw_insert_table');
         Schema::drop('single_raw_insert_table');
+        Schema::drop('query_builder_lobs');
 
         parent::tearDown();
     }
@@ -190,6 +197,112 @@ class QueryBuilderTest extends TestCase
 
         $this->assertArrayNotHasKey('rn', $notexpected2[0]);
         $this->assertArrayNotHasKey('rn', $notexpected2[1]);
+    }
+
+    #[Test]
+    public function it_can_execute_bound_where_in_clauses_larger_than_oracles_limit(): void
+    {
+        $matching = $this->getConnection()
+            ->table('users')
+            ->whereIn('id', range(1, 1001))
+            ->count();
+
+        $excluded = $this->getConnection()
+            ->table('users')
+            ->whereNotIn('id', range(1, 1001))
+            ->count();
+
+        $this->assertSame(20, $matching);
+        $this->assertSame(0, $excluded);
+    }
+
+    #[Test]
+    public function it_can_execute_oracles_random_order_expression_with_a_limit(): void
+    {
+        $users = $this->getConnection()
+            ->table('users')
+            ->inRandomOrder()
+            ->limit(5)
+            ->get();
+
+        $this->assertCount(5, $users);
+        $this->assertCount(5, $users->pluck('id')->unique());
+    }
+
+    #[Test]
+    public function it_can_insert_and_update_lobs_through_the_oracle_query_builder(): void
+    {
+        $id = $this->getConnection()
+            ->table('query_builder_lobs')
+            ->insertLob(
+                ['status' => 'created'],
+                ['payload' => 'first payload'],
+                'id'
+            );
+
+        $updated = $this->getConnection()
+            ->table('query_builder_lobs')
+            ->where('id', $id)
+            ->updateLob(
+                ['status' => 'updated'],
+                ['payload' => 'updated payload'],
+                'id'
+            );
+
+        $lob = $this->getConnection()
+            ->table('query_builder_lobs')
+            ->where('id', $id)
+            ->first();
+
+        $this->assertTrue($updated);
+        $this->assertSame('updated', $lob->status);
+        $this->assertSame('updated payload', $lob->payload);
+    }
+
+    #[Test]
+    public function it_updates_only_rows_after_an_offset_without_a_limit(): void
+    {
+        $this->getConnection()->table('jobs')->insert([
+            ['name' => 'First', 'job_id' => 1],
+            ['name' => 'Second', 'job_id' => 2],
+            ['name' => 'Third', 'job_id' => 3],
+            ['name' => 'Fourth', 'job_id' => 4],
+        ]);
+
+        $updated = $this->getConnection()
+            ->table('jobs')
+            ->orderBy('id')
+            ->offset(2)
+            ->update(['name' => 'Updated']);
+
+        $this->assertSame(2, $updated);
+        $this->assertSame(
+            ['First', 'Second', 'Updated', 'Updated'],
+            $this->getConnection()->table('jobs')->orderBy('id')->pluck('name')->all()
+        );
+    }
+
+    #[Test]
+    public function it_deletes_only_rows_after_an_offset_without_a_limit(): void
+    {
+        $this->getConnection()->table('jobs')->insert([
+            ['name' => 'First', 'job_id' => 1],
+            ['name' => 'Second', 'job_id' => 2],
+            ['name' => 'Third', 'job_id' => 3],
+            ['name' => 'Fourth', 'job_id' => 4],
+        ]);
+
+        $deleted = $this->getConnection()
+            ->table('jobs')
+            ->orderBy('id')
+            ->offset(2)
+            ->delete();
+
+        $this->assertSame(2, $deleted);
+        $this->assertSame(
+            ['First', 'Second'],
+            $this->getConnection()->table('jobs')->orderBy('id')->pluck('name')->all()
+        );
     }
 
     protected function getBuilder(): Builder
