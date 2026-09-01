@@ -44,7 +44,7 @@ class TriggerTest extends TestCase
         $schema->dropIfExists('bugs');
 
         $lastSql = array_slice($connection->getQueryLog(), -1)[0];
-        $this->assertStringContainsString("drop table \"{$schemaName}\".\"MY_BUGS\"", $lastSql['query']);
+        $this->assertStringContainsString("\"{$schemaName}\".\"MY_BUGS\"", $lastSql['query']);
 
         $connection->getSchemaBuilder()
             ->create('bugs', function (Blueprint $table) {

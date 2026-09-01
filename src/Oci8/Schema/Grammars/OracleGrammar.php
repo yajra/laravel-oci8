@@ -2,10 +2,13 @@
 
 namespace Yajra\Oci8\Schema\Grammars;
 
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use LogicException;
+use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
 
@@ -26,7 +29,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Increment', 'Nullable', 'Default', 'GeneratedAs'];
+    protected $modifiers = ['Collate', 'Invisible', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs', 'Json'];
 
     /**
      * The possible column serials.
@@ -36,14 +39,34 @@ class OracleGrammar extends Grammar
     /**
      * If this Grammar supports schema changes wrapped in a transaction.
      */
-    protected $transactions = true;
+    protected $transactions = false;
 
     /**
      * The commands to be executed outside of create or alter command.
      *
      * @var array
      */
-    protected $fluentCommands = ['Comment'];
+    protected $fluentCommands = ['Comment', 'AutoIncrementStartingValues'];
+
+    /**
+     * Compile a create database command.
+     *
+     * @throws RuntimeException
+     */
+    public function compileCreateDatabase($name): string
+    {
+        throw new RuntimeException('Oracle does not support creating databases via the schema builder.');
+    }
+
+    /**
+     * Compile a drop database if exists command.
+     *
+     * @throws RuntimeException
+     */
+    public function compileDropDatabaseIfExists($name): string
+    {
+        throw new RuntimeException('Oracle does not support dropping databases via the schema builder.');
+    }
 
     /**
      * Compile a create table command.
@@ -145,7 +168,9 @@ class OracleGrammar extends Grammar
 
             $onColumns = $this->columnize((array) $foreign->references);
 
-            $sql .= ", constraint {$foreign->index} foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
+            $index = $this->wrap($foreign->index);
+
+            $sql .= ", constraint {$index} foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
             // Once we have the basic foreign key creation statement constructed we can
             // build out the syntax for what should happen on an update or delete of
@@ -171,10 +196,18 @@ class OracleGrammar extends Grammar
         if (! is_null($primary)) {
             $columns = $this->columnize($primary->columns);
 
-            return ", constraint {$primary->index} primary key ( {$columns} )";
+            return ', constraint '.$this->wrap($primary->index)." primary key ( {$columns} )";
         }
 
         return null;
+    }
+
+    /**
+     * Compile the query to determine the schemas.
+     */
+    public function compileSchemas(): string
+    {
+        return 'select lower(username) as "name", decode(username, user, 1, 0) as "default" from all_users order by username';
     }
 
     /**
@@ -284,22 +317,28 @@ class OracleGrammar extends Grammar
 
         return sprintf("
             select
-                kc.constraint_name as name,
-                LISTAGG(kc.column_name, ',') WITHIN GROUP (ORDER BY kc.position) as columns,
-                rc.r_owner as foreign_schema,
-                kcr.table_name as foreign_table,
-                LISTAGG(kcr.column_name, ',') WITHIN GROUP (ORDER BY kcr.position) as foreign_columns,
-                rc.delete_rule AS \"on_delete\",
+                fk.constraint_name as name,
+                LISTAGG(fkc.column_name, ',') WITHIN GROUP (ORDER BY fkc.position) as columns,
+                fk.r_owner as foreign_schema,
+                pkc.table_name as foreign_table,
+                LISTAGG(pkc.column_name, ',') WITHIN GROUP (ORDER BY fkc.position) as foreign_columns,
+                fk.delete_rule AS \"on_delete\",
                 null AS \"on_update\"
-            from all_cons_columns kc
-            inner join all_constraints rc ON kc.constraint_name = rc.constraint_name
-            inner join all_cons_columns kcr ON kcr.constraint_name = rc.r_constraint_name
-            where kc.table_name = upper(%s)
-                and rc.r_owner = upper(%s)
-                and rc.constraint_type = 'R'
+            from all_constraints fk
+            inner join all_cons_columns fkc
+                on fkc.owner = fk.owner
+                and fkc.constraint_name = fk.constraint_name
+                and fkc.table_name = fk.table_name
+            inner join all_cons_columns pkc
+                on pkc.owner = fk.r_owner
+                and pkc.constraint_name = fk.r_constraint_name
+                and pkc.position = fkc.position
+            where fk.owner = upper(%s)
+                and fk.table_name = upper(%s)
+                and fk.constraint_type = 'R'
             group by
-                kc.constraint_name, rc.r_owner, kcr.table_name, kc.constraint_name, rc.delete_rule
-        ", $this->quoteString($table), $this->quoteString($schema));
+                fk.constraint_name, fk.r_owner, pkc.table_name, fk.delete_rule
+        ", $this->quoteString($schema), $this->quoteString($table));
     }
 
     /**
@@ -335,6 +374,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile the auto-incrementing column starting values.
+     */
+    public function compileAutoIncrementStartingValues(Blueprint $blueprint, Fluent $command): ?string
+    {
+        return null;
+    }
+
+    /**
      * Compile a primary key command.
      */
     public function compilePrimary(Blueprint $blueprint, Fluent $command): ?string
@@ -346,7 +393,7 @@ class OracleGrammar extends Grammar
 
             $table = $this->wrapTable($blueprint);
 
-            return "alter table {$table} add constraint {$command->index} primary key ({$columns})";
+            return 'alter table '.$table.' add constraint '.$this->wrap($command->index)." primary key ({$columns})";
         }
 
         return null;
@@ -371,7 +418,7 @@ class OracleGrammar extends Grammar
 
             $onColumns = $this->columnize((array) $command->references);
 
-            $sql = "alter table {$table} add constraint {$command->index} ";
+            $sql = 'alter table '.$table.' add constraint '.$this->wrap($command->index).' ';
 
             $sql .= "foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
@@ -395,9 +442,16 @@ class OracleGrammar extends Grammar
      */
     public function compileUnique(Blueprint $blueprint, Fluent $command): string
     {
-        $sql = 'alter table '.$this->wrapTable($blueprint)." add constraint {$command->index} unique ( ".$this->columnize($command->columns).' )';
+        $sql = 'alter table '.$this->wrapTable($blueprint).' add constraint '.$this->wrap($command->index).' unique ( '.$this->columnize($command->columns).' )';
+        $sql = $this->appendDeferrableClause($command, $sql);
 
-        return $this->appendDeferrableClause($command, $sql);
+        if ($command->online) {
+            $indexType = $command->deferrable ? '' : 'unique ';
+            $sql .= ' using index (create '.$indexType.'index '.$this->wrap($command->index)
+                .' on '.$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' ) online)';
+        }
+
+        return $sql;
     }
 
     protected function appendDeferrableClause(Fluent $command, string $sql): string
@@ -427,7 +481,7 @@ class OracleGrammar extends Grammar
      */
     public function compileIndex(Blueprint $blueprint, Fluent $command): string
     {
-        $sql = "create index {$command->index} on ".$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' )';
+        $sql = 'create index '.$this->wrap($command->index).' on '.$this->wrapTable($blueprint).' ( '.$this->columnize($command->columns).' )';
 
         if ($command->online) {
             $sql .= ' online';
@@ -451,6 +505,7 @@ class OracleGrammar extends Grammar
         foreach ($columns as $key => $column) {
             $indexName = $indexBaseName;
             $parametersIndex = '';
+            $column = $this->wrap($column);
 
             if (count($columns) > 1) {
                 $indexName .= "_{$key}";
@@ -458,6 +513,8 @@ class OracleGrammar extends Grammar
             }
 
             $parametersIndex .= 'sync(on commit)';
+
+            $indexName = $this->wrap($indexName);
 
             $sql = "execute immediate 'create index {$indexName} on $tableName ($column) indextype is ctxsys.context parameters (''$parametersIndex'')';";
 
@@ -525,7 +582,22 @@ class OracleGrammar extends Grammar
     {
         $table = $this->wrapTable($blueprint);
 
-        return "begin execute immediate 'drop table $table'; exception when others then null; end;";
+        if ($this->connection->isVersionAboveOrEqual('23ai')) {
+            return "drop table if exists {$table}";
+        }
+
+        $statement = $this->getDefaultValue("drop table {$table}");
+
+        return "declare
+            table_does_not_exist exception;
+            identifier_is_too_long exception;
+            pragma exception_init(table_does_not_exist, -942);
+            pragma exception_init(identifier_is_too_long, -972);
+        begin
+            execute immediate {$statement};
+        exception
+            when table_does_not_exist or identifier_is_too_long then null;
+        end;";
     }
 
     /**
@@ -555,7 +627,7 @@ class OracleGrammar extends Grammar
     {
         $table = $this->wrapTable($blueprint);
 
-        $index = mb_substr($command->index, 0, $this->getMaxLength());
+        $index = $this->wrap(mb_substr($command->index, 0, $this->getMaxLength()));
 
         if ($type === 'index') {
             return "drop index {$index}";
@@ -610,19 +682,33 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a drop spatial index command.
+     */
+    public function compileDropSpatialIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        return $this->compileDropIndex($blueprint, $command);
+    }
+
+    /**
      * Compile a comment command.
      */
     public function compileComment(Blueprint $blueprint, Fluent $command): ?string
     {
         $comment = $command->column->comment;
         if (is_null($comment)) {
-            return null;
+            if (! $command->column->change || ! array_key_exists('comment', $command->column->getAttributes())) {
+                return null;
+            }
+
+            $comment = "''";
+        } else {
+            $comment = $this->getDefaultValue($comment);
         }
 
         return sprintf('comment on column %s.%s is %s',
             $this->wrapTable($blueprint),
             $this->wrap($command->column->name),
-            $this->getDefaultValue($comment)
+            $comment
         );
     }
 
@@ -686,6 +772,14 @@ class OracleGrammar extends Grammar
     protected function typeString(Fluent $column): string
     {
         return "varchar2({$column->length})";
+    }
+
+    /**
+     * Create the column definition for a tiny text type.
+     */
+    protected function typeTinyText(Fluent $column): string
+    {
+        return 'varchar2(255)';
     }
 
     /**
@@ -783,6 +877,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a real type.
+     */
+    protected function typeReal(Fluent $column): string
+    {
+        return 'binary_float';
+    }
+
+    /**
      * Create the column definition for a double type.
      */
     protected function typeDouble(Fluent $column): string
@@ -817,10 +919,26 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Create the column definition for a year type.
+     */
+    protected function typeYear(Fluent $column): string
+    {
+        if ($column->useCurrent) {
+            $column->default(new Expression('EXTRACT(YEAR FROM CURRENT_DATE)'));
+        }
+
+        return $this->typeInteger($column);
+    }
+
+    /**
      * Create the column definition for a date type.
      */
     protected function typeDate(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_DATE'));
+        }
+
         return 'date';
     }
 
@@ -829,6 +947,10 @@ class OracleGrammar extends Grammar
      */
     protected function typeDateTime(Fluent $column): string
     {
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_TIMESTAMP'));
+        }
+
         return 'date';
     }
 
@@ -837,7 +959,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeDateTimeTz(Fluent $column): string
     {
-        return 'timestamp with time zone';
+        return $this->typeTimestampTz($column);
     }
 
     /**
@@ -853,7 +975,11 @@ class OracleGrammar extends Grammar
      */
     protected function typeTimestamp(Fluent $column): string
     {
-        return 'timestamp';
+        if ($column->useCurrent) {
+            $column->default(new Expression('CURRENT_TIMESTAMP'));
+        }
+
+        return 'timestamp'.(is_null($column->precision) ? '' : "({$column->precision})");
     }
 
     /**
@@ -861,7 +987,7 @@ class OracleGrammar extends Grammar
      */
     protected function typeTimestampTz(Fluent $column): string
     {
-        return 'timestamp with time zone';
+        return $this->typeTimestamp($column).' with time zone';
     }
 
     /**
@@ -926,33 +1052,24 @@ class OracleGrammar extends Grammar
         $enum = '';
         if (count((array) $column->allowed)) {
             $columnName = $this->wrapValue($column->name);
-            $enum = " check ({$columnName} in ('".implode("', '", $column->allowed)."'))";
+            $allowed = implode(', ', array_map(
+                fn ($value) => $this->getDefaultValue($value),
+                $column->allowed
+            ));
+            $enum = " check ({$columnName} in ({$allowed}))";
         }
 
         // If we have the current nullable state (from a change operation), only include
-        // NULL/NOT NULL if it's actually changing. This prevents ORA-01451 errors when
-        // trying to set a column to NULL that's already NULL, and preserves the
-        // existing nullable state when it's not being changed.
+        // NULL/NOT NULL when the state is changing. Omitting nullable() means NOT NULL,
+        // consistent with Laravel's column change semantics. Comparing the desired and
+        // current states prevents redundant clauses from causing ORA-01451 errors.
         if ($currentNullable !== null) {
             $desiredNullable = (bool) $column->nullable;
 
-            // Only include NULL/NOT NULL if the state is actually changing
             if ($desiredNullable === $currentNullable) {
-                // State is not changing, preserve existing - don't include NULL/NOT NULL
                 $null = '';
             } else {
-                // Special case: If column is currently nullable and we're trying to set it to NOT NULL,
-                // but nullable() was not explicitly called (it's the default), preserve the nullable state.
-                // This addresses the issue where omitting ->nullable() drops the nullable constraint.
-                // Note: We can't detect if nullable() was explicitly set, so we preserve nullable state
-                // when changing from nullable to NOT NULL to match user expectations from issue #941.
-                if ($currentNullable === true && $desiredNullable === false) {
-                    // Preserve nullable state when not explicitly changed
-                    $null = '';
-                } else {
-                    // State is changing, include the new constraint
-                    $null = $desiredNullable ? ' null' : ' not null';
-                }
+                $null = $desiredNullable ? ' null' : ' not null';
             }
         } else {
             // For create/add operations, always include the constraint
@@ -960,6 +1077,10 @@ class OracleGrammar extends Grammar
         }
 
         $null .= $enum;
+
+        if ($column->change && array_key_exists('default', $column->getAttributes()) && is_null($column->default)) {
+            return ' default null'.$null;
+        }
 
         if (! is_null($column->default)) {
             return ' default '.$this->getDefaultValue($column->default).$null;
@@ -978,12 +1099,50 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Get the SQL for a JSON check constraint.
+     */
+    protected function modifyJson(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if (
+            in_array($column->type, ['json', 'jsonb'], true)
+            && $this->connection->isVersionAboveOrEqual('12c')
+            && ! $this->connection->isVersionAboveOrEqual('21c')
+        ) {
+            return ' check ('.$this->wrap($column).' is json)';
+        }
+
+        return null;
+    }
+
+    /**
      * Get the SQL for an auto-increment column modifier.
      */
     protected function modifyIncrement(Blueprint $blueprint, Fluent $column): ?string
     {
         if (in_array($column->type, $this->serials) && $column->autoIncrement) {
             $blueprint->primary($column->name);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the SQL for a generated virtual column modifier.
+     *
+     * @throws LogicException
+     */
+    protected function modifyVirtualAs(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if ($column->change) {
+            if (array_key_exists('virtualAs', $column->getAttributes())) {
+                throw new LogicException('This database driver does not support modifying generated columns.');
+            }
+
+            return null;
+        }
+
+        if (! is_null($column->virtualAs)) {
+            return " generated always as ({$this->getValue($column->virtualAs)}) virtual";
         }
 
         return null;
@@ -1010,8 +1169,8 @@ class OracleGrammar extends Grammar
 
         $column = $command->column;
 
-        // Get the current nullable state of the column to avoid ORA-01451 errors
-        // and preserve the existing nullable constraint when not explicitly changed
+        // Get the current nullable state of the column to avoid redundant NULL/NOT NULL
+        // clauses, which can cause ORA-01451 errors.
         $currentNullable = $this->getCurrentColumnNullable($blueprint, $column->name);
 
         $changes = [$this->getType($column).$this->modifyCollate($blueprint, $column)];
@@ -1037,7 +1196,22 @@ class OracleGrammar extends Grammar
 
         $columns[] = 'modify '.$this->wrap($column).' '.implode(' ', array_filter(array_map('trim', $changes)));
 
-        return 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
+        $sql = 'alter table '.$this->wrapTable($blueprint).' '.implode(' ', $columns);
+
+        if (! is_null($column->invisible)) {
+            if (! $this->connection->isVersionAboveOrEqual('12c')) {
+                throw new LogicException('Invisible columns require Oracle 12c or newer.');
+            }
+
+            $visibility = $column->invisible ? 'invisible' : 'visible';
+
+            return [
+                $sql,
+                'alter table '.$this->wrapTable($blueprint).' modify '.$this->wrap($column).' '.$visibility,
+            ];
+        }
+
+        return $sql;
     }
 
     /**
@@ -1050,6 +1224,24 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Get the SQL for an invisible column modifier.
+     */
+    protected function modifyInvisible(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if (! $column->invisible) {
+            return null;
+        }
+
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new LogicException('Invisible columns require Oracle 12c or newer.');
+        }
+
+        // Oracle does not allow visibility changes to be combined with other
+        // column modifications, so compileChange handles this separately.
+        return $column->change ? null : ' invisible';
     }
 
     /**
@@ -1154,7 +1346,7 @@ class OracleGrammar extends Grammar
     {
         return 'begin
             for s in (
-                SELECT \'alter table \' || c2.table_name || \' '.$action.' constraint \' || c2.constraint_name as statement
+                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
@@ -1202,10 +1394,20 @@ class OracleGrammar extends Grammar
         $sql = null;
 
         if (! is_null($column->generatedAs)) {
+            $options = [];
+
+            if (! is_bool($column->generatedAs) && ! empty($column->generatedAs)) {
+                $options[] = $column->generatedAs;
+            }
+
+            if ($value = $column->get('startingValue', $column->get('from'))) {
+                $options[] = "start with {$value}";
+            }
+
             $sql = sprintf(
                 ' generated %s as identity%s',
                 $column->always ? 'always' : ('by default'.($column->onNull ? ' on null' : '')),
-                ! is_bool($column->generatedAs) && ! empty($column->generatedAs) ? " ({$column->generatedAs})" : ''
+                $options === [] ? '' : ' ('.implode(' ', $options).')'
             );
         }
 
