@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Query\IndexHint;
 use Illuminate\Database\Query\JoinLateralClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use JsonSerializable;
 use RuntimeException;
 use stdClass;
@@ -107,6 +109,13 @@ class OracleGrammar extends Grammar
         // see if that component exists. If it does, we'll just call the compiler
         // function for the component which is responsible for making the SQL.
         $components = $this->compileComponents($query);
+        $optimizerHints = [];
+
+        if ($query->limit !== null && $query->lock === null && $query->getConnection()->isVersionAboveOrEqual('12c')) {
+            $optimizerHints[] = "FIRST_ROWS({$query->limit})";
+        }
+
+        $components = $this->compileOptimizerHints($components, $optimizerHints);
         unset($components['lock']);
 
         if (isset($query->lock) && isset($query->limit)) {
@@ -201,7 +210,7 @@ class OracleGrammar extends Grammar
             $query->offset = null;
         }
 
-        $components = $this->compileComponents($query);
+        $components = $this->compileOptimizerHints($this->compileComponents($query));
 
         $components['columns'] .= $this->compileRowNumber(
             $query->groupLimit['column'],
@@ -238,10 +247,6 @@ class OracleGrammar extends Grammar
     {
         // Improved response time with FIRST_ROWS(n) hint for ORDER BY queries (only when no locks used else it results in ORA‑02014)
         if ($query->getConnection()->isVersionAboveOrEqual('12c') && $query->lock === null) {
-            if ($query->limit !== null) {
-                $components['columns'] = preg_replace('/select/i', "select /*+ FIRST_ROWS({$query->limit}) */", $components['columns'], 1);
-            }
-
             $offset = $query->offset ?: 0;
             $components['limit'] = "offset $offset rows";
 
@@ -260,6 +265,84 @@ class OracleGrammar extends Grammar
         // expression from the query and get the records with row numbers within our
         // given limit and offset value that we just put on as a query constraint.
         return $this->compileTableExpression($sql, $constraint, $query);
+    }
+
+    /**
+     * Compile Oracle optimizer hints into the SELECT hint comment.
+     *
+     * @param  array<string, string|null>  $components
+     * @param  list<string>  $optimizerHints
+     * @return array<string, string|null>
+     */
+    protected function compileOptimizerHints(array $components, array $optimizerHints = []): array
+    {
+        if (! empty($components['indexHint'])) {
+            $optimizerHints[] = $components['indexHint'];
+        }
+
+        unset($components['indexHint']);
+
+        if ($optimizerHints === []) {
+            return $components;
+        }
+
+        foreach (['aggregate', 'columns'] as $component) {
+            if (! is_string($components[$component] ?? null)) {
+                continue;
+            }
+
+            $hint = '/*+ '.implode(' ', $optimizerHints).' */';
+            $components[$component] = preg_replace('/^select\b/i', 'select '.$hint, $components[$component], 1);
+
+            break;
+        }
+
+        return $components;
+    }
+
+    /**
+     * Compile an Oracle index optimizer hint.
+     *
+     * Laravel's "hint" and "force" modes both map to Oracle's INDEX hint.
+     */
+    protected function compileIndexHint(Builder $query, IndexHint $indexHint): string
+    {
+        $indexes = array_map('trim', explode(',', $indexHint->index));
+
+        foreach ($indexes as $index) {
+            if (! preg_match('/^[a-zA-Z0-9_$]+$/', $index)) {
+                throw new InvalidArgumentException('Index name contains invalid characters.');
+            }
+        }
+
+        $type = match ($indexHint->type) {
+            'hint', 'force' => 'INDEX',
+            'ignore' => 'NO_INDEX',
+            default => throw new InvalidArgumentException('Unsupported index hint type.'),
+        };
+
+        return $type.'('.$this->compileIndexHintTable($query).' '.implode(' ', array_map(Str::upper(...), $indexes)).')';
+    }
+
+    /**
+     * Get the table reference used by an Oracle index hint.
+     */
+    protected function compileIndexHintTable(Builder $query): string
+    {
+        if (! is_string($query->from)) {
+            throw new InvalidArgumentException('Index hints require a table name or alias.');
+        }
+
+        $table = preg_replace('/\s+/', ' ', trim($query->from));
+        $segments = preg_split('/\s+(?:as\s+)?/i', $table);
+        $reference = count($segments) > 1 ? end($segments) : last(explode('.', $table));
+        $reference = trim((string) $reference, '"');
+
+        if (! preg_match('/^[a-zA-Z0-9_$]+$/', $reference)) {
+            throw new InvalidArgumentException('Index hint table name contains invalid characters.');
+        }
+
+        return Str::upper($query->getConnection()->getTablePrefix().$reference);
     }
 
     /**
