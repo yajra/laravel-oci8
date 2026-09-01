@@ -481,6 +481,12 @@ class Oci8Connection extends Connection
     public function bindValues($statement, $bindings): void
     {
         foreach ($bindings as $key => $value) {
+            if (is_resource($value)) {
+                $statement->bindValue(is_string($key) ? $key : $key + 1, stream_get_contents($value), PDO::PARAM_LOB);
+
+                continue;
+            }
+
             $statement->bindValue(is_string($key) ? $key : $key + 1, $value, is_string($value) && strlen($value) > 3999 ? SQLT_CLOB : PDO::PARAM_STR);
         }
     }

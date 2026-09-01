@@ -101,6 +101,14 @@ class OracleProcessor extends Processor
     {
         $count = count($values);
         for ($i = 0; $i < $count; $i++) {
+            if (is_resource($values[$i])) {
+                $values[$i] = stream_get_contents($values[$i]);
+                $statement->bindParam($parameter, $values[$i], PDO::PARAM_LOB);
+                $parameter++;
+
+                continue;
+            }
+
             if (is_object($values[$i])) {
                 if ($values[$i] instanceof DateTime) {
                     $values[$i] = $values[$i]->format($query->grammar->getDateFormat());
