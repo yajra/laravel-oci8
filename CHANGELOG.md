@@ -1,3 +1,13 @@
+## [13.11.2](https://github.com/yajra/laravel-oci8/compare/v13.11.1...v13.11.2) (2026-09-01)
+
+### Bug Fixes
+
+* compile joined updates for Oracle ([8f6b96c](https://github.com/yajra/laravel-oci8/commit/8f6b96ca908745bea35a601519500b4dacfd05b7))
+
+### Documentation
+
+* restore missing release notes ([c62ea4f](https://github.com/yajra/laravel-oci8/commit/c62ea4f1a4c5edceb8e83b5dfdef97cefb0f6fb2))
+
 ## [13.11.1](https://github.com/yajra/laravel-oci8/compare/v13.11.0...v13.11.1) (2026-08-25)
 
 ### Bug Fixes
