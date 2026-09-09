@@ -1,3 +1,13 @@
+## [13.12.0](https://github.com/yajra/laravel-oci8/compare/v13.11.2...v13.12.0) (2026-09-09)
+
+### Features
+
+* add tests for limit and offset with quoted aliases in OracleGrammar ([b692a47](https://github.com/yajra/laravel-oci8/commit/b692a47d4e8912aedad290bbd1d7d4ba28ecff60))
+
+### Bug Fixes
+
+* remove unnecessary wrapping of column alias in OracleGrammar ([60671f5](https://github.com/yajra/laravel-oci8/commit/60671f54865899cb6957d844f6bc4e570f35e04b))
+
 ## [13.11.2](https://github.com/yajra/laravel-oci8/compare/v13.11.1...v13.11.2) (2026-09-01)
 
 ### Bug Fixes
