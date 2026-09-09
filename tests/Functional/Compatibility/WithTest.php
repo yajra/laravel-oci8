@@ -167,6 +167,30 @@ class WithTest extends TestCase
             User::withSum('children', 'score')->find($user->id)->children_sum_score
         );
     }
+
+    #[Test]
+    public function it_works_with_sum_when_using_limit_and_offset()
+    {
+        $user = User::create([
+            'name' => 'test',
+            'email' => 'test@test.hu',
+        ]);
+
+        Child::create([
+            'name' => 'child',
+            'user_id' => $user->id,
+            'score' => 50,
+        ]);
+
+        $users = User::select(['id'])
+            ->withSum('children', 'score')
+            ->offset(0)
+            ->limit(10)
+            ->get();
+
+        $this->assertCount(1, $users);
+        $this->assertEquals(50, $users->first()->children_sum_score);
+    }
 }
 
 /**

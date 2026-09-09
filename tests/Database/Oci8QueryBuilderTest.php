@@ -1709,6 +1709,21 @@ class Oci8QueryBuilderTest extends TestCase
         }
     }
 
+    public function test_limit_and_offset_does_not_double_wrap_quoted_alias()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('article')
+            ->select('id')
+            ->selectRaw('(select sum("STOCK"."QUANTITY") from "STOCK" where "ARTICLE"."ID" = "STOCK"."_ARTICLE_ID") as "STOCKS_SUM_QUANTITY"')
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."ID", t2."STOCKS_SUM_QUANTITY" from ( select rownum AS "rn", t1.* from (select "ID", (select sum("STOCK"."QUANTITY") from "STOCK" where "ARTICLE"."ID" = "STOCK"."_ARTICLE_ID") as "STOCKS_SUM_QUANTITY" from "ARTICLE") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
     public function test_for_page()
     {
         $builder = $this->getBuilder();
