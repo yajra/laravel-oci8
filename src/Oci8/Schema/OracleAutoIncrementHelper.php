@@ -31,7 +31,7 @@ class OracleAutoIncrementHelper
         }
 
         $col = $column->name;
-        $start = $column->start ?? $column->startingValue ?? 1;
+        $start = $column->get('start', $column->get('startingValue', $column->get('from', 1)));
 
         // create sequence for auto increment
         $sequenceName = $this->createObjectName($table, $col, 'seq');
@@ -53,7 +53,7 @@ class OracleAutoIncrementHelper
         // search for primary key / autoIncrement column
         foreach ($columns as $column) {
             // if column is autoIncrement set the primary col name
-            if ($column->autoIncrement) {
+            if ($column->autoIncrement && is_null($column->generatedAs)) {
                 return $column;
             }
         }

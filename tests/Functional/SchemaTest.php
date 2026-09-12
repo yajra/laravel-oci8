@@ -88,6 +88,27 @@ class SchemaTest extends TestCase
     }
 
     #[Test]
+    public function it_can_set_auto_increment_from_value()
+    {
+        if (Schema::hasTable('auto_increment_from')) {
+            Schema::drop('auto_increment_from');
+        }
+
+        Schema::create('auto_increment_from', function (Blueprint $blueprint) {
+            $blueprint->increments('id')->from(1000);
+            $blueprint->string('email');
+        });
+
+        DB::table('auto_increment_from')->insert([
+            'email' => 'test@email.com',
+        ]);
+
+        $this->assertDatabaseCount('auto_increment_from', 1);
+        $increment = DB::table('auto_increment_from')->first();
+        $this->assertEquals(1000, $increment->id);
+    }
+
+    #[Test]
     public function it_can_get_columns()
     {
         if (Schema::hasTable('users')) {
@@ -347,6 +368,31 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('generated_as_table', ['id' => 1, 'name' => 'foo']);
         $this->assertDatabaseHas('generated_as_table', ['id' => 2, 'name' => 'bar']);
         $this->assertDatabaseHas('generated_as_table', ['id' => 5, 'name' => 'foobar']);
+    }
+
+    #[Test]
+    public function it_does_not_create_legacy_objects_for_an_identity_column()
+    {
+        if (DB::connection()->isVersionBelow('12c')) {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
+        if (Schema::hasTable('identity_start')) {
+            Schema::drop('identity_start');
+        }
+
+        Schema::create('identity_start', function (Blueprint $table) {
+            $table->increments('id')->generatedAs()->startingValue(100);
+            $table->string('name');
+        });
+
+        $this->assertFalse(DB::connection()->getSequence()->exists('identity_start_id_seq'));
+
+        DB::table('identity_start')->insert([
+            'name' => 'foo',
+        ]);
+
+        $this->assertDatabaseHas('identity_start', ['id' => 100, 'name' => 'foo']);
     }
 
     #[Test]

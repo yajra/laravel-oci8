@@ -15,7 +15,16 @@ class SchemaTest extends TestCase
     {
         $driver = DB::connection()->getDriverName();
 
+        Schema::dropIfExists('compat_cross_fk_child');
+        Schema::dropIfExists('compatibility_fk_children');
+        Schema::dropIfExists('compatibility_fk_parents');
+        Schema::dropIfExists('compatibility_defaults');
+
         if ($driver === 'oracle') {
+            DB::connection('second_connection')
+                ->getSchemaBuilder()
+                ->dropIfExists('compat_cross_fk_parent');
+
             DB::statement('begin execute immediate \'drop view "COMPATIBILITY_VIEW"\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop type "COMPATIBILITY_TYPE_LIST" force\'; exception when others then null; end;');
             DB::statement('begin execute immediate \'drop type "COMPATIBILITY_TYPE" force\'; exception when others then null; end;');
@@ -76,6 +85,91 @@ class SchemaTest extends TestCase
         $indexes = array_column(Schema::getIndexes($schema.'.rename_index_table'), 'name');
 
         $this->assertContains('rename_index_table_name_index', $indexes);
+    }
+
+    #[Test]
+    public function it_can_get_composite_foreign_keys_from_schema_builder()
+    {
+        Schema::create('compatibility_fk_parents', function (Blueprint $table) {
+            $table->integer('tenant_id');
+            $table->integer('id');
+            $table->primary(['tenant_id', 'id']);
+        });
+
+        Schema::create('compatibility_fk_children', function (Blueprint $table) {
+            $table->integer('parent_tenant_id');
+            $table->integer('parent_id');
+            $table->foreign(
+                ['parent_tenant_id', 'parent_id'],
+                'compat_fk_child_parent_fk'
+            )->references(['tenant_id', 'id'])->on('compatibility_fk_parents');
+        });
+
+        $foreignKey = collect(Schema::getForeignKeys('compatibility_fk_children'))
+            ->firstWhere('name', 'compat_fk_child_parent_fk');
+
+        $this->assertNotNull($foreignKey);
+        $this->assertSame(['parent_tenant_id', 'parent_id'], $foreignKey['columns']);
+        $this->assertSame('compatibility_fk_parents', $foreignKey['foreign_table']);
+        $this->assertSame(['tenant_id', 'id'], $foreignKey['foreign_columns']);
+    }
+
+    #[Test]
+    public function it_can_get_cross_schema_foreign_keys_from_schema_builder()
+    {
+        if (DB::connection()->getDriverName() !== 'oracle') {
+            $this->markTestSkipped('This compatibility test targets Oracle cross-schema constraints.');
+        }
+
+        $parentConnection = DB::connection('second_connection');
+        $parentSchema = $parentConnection->getSchemaBuilder();
+        $parentUsername = (string) $parentConnection->getConfig('username');
+        $currentUsername = (string) DB::connection()->getConfig('username');
+
+        $parentSchema->create('compat_cross_fk_parent', function (Blueprint $table) {
+            $table->integer('id')->primary();
+        });
+
+        $parentConnection->statement(sprintf(
+            'grant references on %s to %s',
+            $parentConnection->getSchemaGrammar()->wrapTable('compat_cross_fk_parent'),
+            $parentConnection->getSchemaGrammar()->wrap($currentUsername)
+        ));
+
+        Schema::create('compat_cross_fk_child', function (Blueprint $table) use ($parentUsername) {
+            $table->integer('parent_id');
+            $table->foreign('parent_id', 'compat_cross_fk_child_fk')
+                ->references('id')
+                ->on($parentUsername.'.compat_cross_fk_parent');
+        });
+
+        $foreignKey = collect(Schema::getForeignKeys('compat_cross_fk_child'))
+            ->firstWhere('name', 'compat_cross_fk_child_fk');
+
+        $this->assertNotNull($foreignKey);
+        $this->assertSame(strtolower($parentUsername), $foreignKey['foreign_schema']);
+        $this->assertSame('compat_cross_fk_parent', $foreignKey['foreign_table']);
+        $this->assertSame(['parent_id'], $foreignKey['columns']);
+        $this->assertSame(['id'], $foreignKey['foreign_columns']);
+    }
+
+    #[Test]
+    public function it_can_remove_column_defaults()
+    {
+        Schema::create('compatibility_defaults', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('status')->nullable()->default('pending');
+        });
+
+        Schema::table('compatibility_defaults', function (Blueprint $table) {
+            $table->string('status')->nullable()->default(null)->change();
+        });
+
+        DB::table('compatibility_defaults')->insert(['id' => 1]);
+
+        $this->assertNull(
+            DB::table('compatibility_defaults')->where('id', 1)->value('status')
+        );
     }
 
     #[Test]

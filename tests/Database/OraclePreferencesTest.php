@@ -44,7 +44,7 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences = new OraclePreferences($connection);
 
         $expected = "BEGIN ctx_ddl.create_preference('name_preference', 'MULTI_COLUMN_DATASTORE');
-                ctx_ddl.set_attribute('name_preference', 'COLUMNS', 'firstname, lastname'); END;";
+                ctx_ddl.set_attribute('name_preference', 'COLUMNS', '\"FIRSTNAME\", \"LASTNAME\"'); END;";
 
         $connection->shouldReceive('statement')
             ->once()
@@ -64,9 +64,9 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences = new OraclePreferences($connection);
 
         $preferences['name_preference'] = "ctx_ddl.create_preference('name_preference', 'MULTI_COLUMN_DATASTORE');
-                ctx_ddl.set_attribute('name_preference', 'COLUMNS', 'firstname, lastname');";
+                ctx_ddl.set_attribute('name_preference', 'COLUMNS', '\"FIRSTNAME\", \"LASTNAME\"');";
         $preferences['product_preference'] = "ctx_ddl.create_preference('product_preference', 'MULTI_COLUMN_DATASTORE');
-                ctx_ddl.set_attribute('product_preference', 'COLUMNS', 'category, price');";
+                ctx_ddl.set_attribute('product_preference', 'COLUMNS', '\"CATEGORY\", \"PRICE\"');";
 
         $expected = 'BEGIN '.implode(' ', $preferences).' END;';
 

@@ -135,7 +135,7 @@ class TableCommentsTest extends TestCase
         });
 
         Schema::table('table_comments', function ($table): void {
-            $table->string('name')->comment('')->change();
+            $table->string('name')->comment(null)->change();
         });
 
         $column = collect(Schema::getColumns('table_comments'))->firstWhere('name', 'name');
