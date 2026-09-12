@@ -1,3 +1,36 @@
+## [13.13.0](https://github.com/yajra/laravel-oci8/compare/v13.12.0...v13.13.0) (2026-09-12)
+
+### Features
+
+* add Oracle schema auto-increment starting value support ([7ac3e32](https://github.com/yajra/laravel-oci8/commit/7ac3e32195bef91bb869cdf6c80b7e2495fcdd4a))
+* add Oracle schema virtualAs column support ([a0e0ae9](https://github.com/yajra/laravel-oci8/commit/a0e0ae9d7cc9c911718b75446d8d60f03b56031d))
+* compile Oracle timestamp precision ([d633661](https://github.com/yajra/laravel-oci8/commit/d633661395b91262416807e48bfe08e17ac89ef2))
+* constrain CLOB-backed JSON columns ([7f331d3](https://github.com/yajra/laravel-oci8/commit/7f331d336fb1cb927d5462b00df7eed4c0784a26))
+* expose Oracle current schema listing ([f68b1d0](https://github.com/yajra/laravel-oci8/commit/f68b1d0572cbce57f39b20bcd5561a2fc6de7610))
+* for compileDropDatabaseIfExists and compileCreateDatabase throw unsupported exceptions ([69d86be](https://github.com/yajra/laravel-oci8/commit/69d86bee44412223ba036b44dcc5b80b9c48bdbe))
+* implement compileSchemas to get schemas ([baa799c](https://github.com/yajra/laravel-oci8/commit/baa799c013c751a8fd21148892943c86dd3f793b))
+* support collated Oracle columns ([aa08d72](https://github.com/yajra/laravel-oci8/commit/aa08d725103cdb6fb889c251064a9ce96cf60961))
+* support dropping Oracle spatial indexes ([b1c3575](https://github.com/yajra/laravel-oci8/commit/b1c3575bb330d9d33579d99c29427f941ed35c87))
+* support invisible Oracle columns ([e3d0e21](https://github.com/yajra/laravel-oci8/commit/e3d0e216199934626606ca5ed7f17ee2a767da57))
+* support online Oracle unique indexes ([2525305](https://github.com/yajra/laravel-oci8/commit/252530590e572f9967d90b473b38ab44582236c9))
+* support Oracle real columns ([e959139](https://github.com/yajra/laravel-oci8/commit/e9591394cb5e698cc956efa7e99aa75a84783dcd))
+* support Oracle tinyText columns ([6aa29e2](https://github.com/yajra/laravel-oci8/commit/6aa29e20c0018444873b635c74c459d635ad3bf0))
+* support Oracle useCurrent columns ([d72c134](https://github.com/yajra/laravel-oci8/commit/d72c1341ee0f87b7b799d665f6a67998c51a06cb))
+* support Oracle year columns ([810e01e](https://github.com/yajra/laravel-oci8/commit/810e01ec0398686fa7c02fc01087651cbc534d47))
+
+### Bug Fixes
+
+* disable Oracle schema transactions ([7d21112](https://github.com/yajra/laravel-oci8/commit/7d21112698ef897a729d50b2d9a2f54ff34feaac))
+* escape Oracle enum literals ([9e88e53](https://github.com/yajra/laravel-oci8/commit/9e88e53eb4637555d40af345d075d2e8d9f29f1e))
+* honor explicit not-null column changes ([5af1b96](https://github.com/yajra/laravel-oci8/commit/5af1b9693683f2c2dd1ea8d9a93e2ac15fb20d96))
+* introspect Oracle foreign keys correctly ([5c10995](https://github.com/yajra/laravel-oci8/commit/5c1099555aef376a0fad713e3f9242144c4cdd81))
+* preserve Oracle drop table errors ([2fcbdbb](https://github.com/yajra/laravel-oci8/commit/2fcbdbbf33ea2b44df8be0af5af93204f77000aa))
+* quote Oracle foreign key toggles ([0580f9b](https://github.com/yajra/laravel-oci8/commit/0580f9bffbae4edb8b7b88f56d6ad1636e938914))
+* remove explicit null Oracle comments ([15e4659](https://github.com/yajra/laravel-oci8/commit/15e4659447637371000ac06618bc687c6fc31312))
+* remove explicit null Oracle defaults ([9289eae](https://github.com/yajra/laravel-oci8/commit/9289eae44ab699e7f2694fba214653fb920054f6))
+* wrap Oracle full-text columns ([057017f](https://github.com/yajra/laravel-oci8/commit/057017fd866cdc987a6d856c71ecc3f9143cbf93))
+* wrap Oracle schema identifiers ([1ef4fab](https://github.com/yajra/laravel-oci8/commit/1ef4fabf1cebd1e37d84794b75457f52f916d9b1))
+
 ## [13.12.0](https://github.com/yajra/laravel-oci8/compare/v13.11.2...v13.12.0) (2026-09-09)
 
 ### Features
