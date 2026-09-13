@@ -359,34 +359,208 @@ class OracleGrammar extends Grammar
         $columns = [];
 
         foreach ($query->columns as $column) {
-            $value = $column instanceof Expression
-                ? $column->getValue($query->getGrammar())
-                : $column;
+            $expressions = $column instanceof Expression
+                ? $this->splitSelectExpressions((string) $column->getValue($query->getGrammar()))
+                : [$column];
 
-            $value = trim((string) $value);
+            foreach ($expressions as $expression) {
+                $value = trim((string) $expression);
 
-            if ($value === 'rn' || preg_match('/\srn$/i', $value)) {
-                return 't2.*';
+                if ($value === 'rn' || preg_match('/\srn$/i', $value)) {
+                    return 't2.*';
+                }
+
+                if (($alias = $this->extractSelectAlias($value)) !== null) {
+                    $columns[] = 't2.'.$this->wrap($alias);
+
+                    continue;
+                }
+
+                if (preg_match('/^[a-z_][a-z0-9_$#.]*\s*\(.*\)$/is', $value)) {
+                    $columns[] = 't2.'.$this->wrap($value);
+
+                    continue;
+                }
+
+                if ($value === '*' || str_contains($value, '*')) {
+                    return 't2.*';
+                }
+
+                if (str_contains($value, '(')) {
+                    return 't2.*';
+                }
+
+                $columns[] = 't2.'.$this->wrap(last(explode('.', $value)));
             }
+        }
 
-            if ($value === '*' || str_contains($value, '*')) {
-                return 't2.*';
-            }
+        return implode(', ', $columns);
+    }
 
-            if (preg_match('/\s+as\s+"?([^"]+)"?$/i', $value, $matches)) {
-                $columns[] = 't2.'.$this->wrap($matches[1]);
+    /**
+     * Extract an explicit or implicit alias from a select expression.
+     */
+    protected function extractSelectAlias(string $value): ?string
+    {
+        $aliasPattern = '(?:"((?:""|[^"])*)"|([a-z_][a-z0-9_$#]*))';
+
+        if (preg_match('/\s+as\s+'.$aliasPattern.'$/i', $value, $matches, flags: PREG_UNMATCHED_AS_NULL)) {
+            return $matches[1] !== null ? str_replace('""', '"', $matches[1]) : $matches[2];
+        }
+
+        if (! preg_match('/\s+'.$aliasPattern.'$/i', $value, $matches, flags: PREG_UNMATCHED_AS_NULL)) {
+            return null;
+        }
+
+        $expression = rtrim(substr($value, 0, -strlen($matches[0])));
+        $quotedAlias = $matches[1] !== null;
+        $alias = $quotedAlias ? str_replace('""', '"', $matches[1]) : $matches[2];
+
+        if ($expression === '' || preg_match('/(?:\|\||[+\-*\/%=<>.])$/', $expression)) {
+            return null;
+        }
+
+        if (! $quotedAlias && in_array(strtolower($alias), ['all', 'distinct', 'end', 'null', 'unique'], true)) {
+            return null;
+        }
+
+        return $alias;
+    }
+
+    /**
+     * Split a raw select clause into its top-level expressions.
+     *
+     * Commas inside functions, subqueries, quoted values, or comments are part
+     * of the expression and must not be treated as column separators.
+     *
+     * @return array<int, string>
+     */
+    protected function splitSelectExpressions(string $value): array
+    {
+        $expressions = [];
+        $expression = '';
+        $depth = 0;
+        $quote = null;
+        $alternativeQuoteEnd = null;
+        $lineComment = false;
+        $blockComment = false;
+        $length = strlen($value);
+
+        for ($index = 0; $index < $length; $index++) {
+            $character = $value[$index];
+            $next = $index + 1 < $length ? $value[$index + 1] : null;
+
+            if ($lineComment) {
+                if ($character === "\n" || $character === "\r") {
+                    $lineComment = false;
+                    $expression .= ' ';
+                }
 
                 continue;
             }
 
-            if (str_contains($value, '(')) {
-                return 't2.*';
+            if ($blockComment) {
+                if ($character === '*' && $next === '/') {
+                    $blockComment = false;
+                    $expression .= ' ';
+                    $index++;
+                }
+
+                continue;
             }
 
-            $columns[] = 't2.'.$this->wrap(last(explode('.', $value)));
+            if ($alternativeQuoteEnd !== null) {
+                $expression .= $character;
+
+                if ($character === $alternativeQuoteEnd && $next === "'") {
+                    $expression .= $next;
+                    $alternativeQuoteEnd = null;
+                    $index++;
+                }
+
+                continue;
+            }
+
+            if ($quote !== null) {
+                $expression .= $character;
+
+                if ($character === $quote) {
+                    if ($next === $quote) {
+                        $expression .= $next;
+                        $index++;
+                    } else {
+                        $quote = null;
+                    }
+                }
+
+                continue;
+            }
+
+            if ($character === '-' && $next === '-') {
+                $lineComment = true;
+                $expression .= ' ';
+                $index++;
+
+                continue;
+            }
+
+            if ($character === '/' && $next === '*') {
+                $blockComment = true;
+                $expression .= ' ';
+                $index++;
+
+                continue;
+            }
+
+            if (($character === 'q' || $character === 'Q') && $next === "'" && $index + 2 < $length) {
+                $delimiter = $value[$index + 2];
+                $alternativeQuoteEnd = match ($delimiter) {
+                    '[' => ']',
+                    '{' => '}',
+                    '(' => ')',
+                    '<' => '>',
+                    default => $delimiter,
+                };
+                $expression .= $character.$next.$delimiter;
+                $index += 2;
+
+                continue;
+            }
+
+            if ($character === "'" || $character === '"') {
+                $quote = $character;
+                $expression .= $character;
+
+                continue;
+            }
+
+            if ($character === '(') {
+                $depth++;
+                $expression .= $character;
+
+                continue;
+            }
+
+            if ($character === ')') {
+                $depth = max(0, $depth - 1);
+                $expression .= $character;
+
+                continue;
+            }
+
+            if ($character === ',' && $depth === 0) {
+                $expressions[] = $expression;
+                $expression = '';
+
+                continue;
+            }
+
+            $expression .= $character;
         }
 
-        return implode(', ', $columns);
+        $expressions[] = $expression;
+
+        return $expressions;
     }
 
     /**
