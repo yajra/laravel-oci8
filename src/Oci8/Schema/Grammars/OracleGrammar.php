@@ -669,10 +669,22 @@ class OracleGrammar extends Grammar
             return $this->compileDropIndex($blueprint, $command);
         }
 
-        $columns = array_map(fn ($column) => "'".strtoupper((string) $column)."'", $columns);
-        $columns = implode(', ', $columns);
+        $columns = implode(', ', array_map(
+            fn ($column) => $this->quoteString(str_replace("'", "''", strtoupper((string) $column))),
+            $columns
+        ));
 
-        $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ($columns)) loop
+        $table = $blueprint->getTable();
+        $separator = strrpos($table, '.');
+
+        if ($separator !== false) {
+            $table = substr($table, $separator + 1);
+        }
+
+        $table = $this->connection->getTablePrefix().$table;
+        $table = $this->quoteString(str_replace("'", "''", strtoupper($table)));
+
+        $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_table = $table and idx_text_name in ($columns)) loop
             execute immediate 'drop index ' || idx_rec.idx_name;
         end loop;";
 

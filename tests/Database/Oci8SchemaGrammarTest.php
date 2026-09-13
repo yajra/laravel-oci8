@@ -1199,18 +1199,30 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('drop index "NAME_INDEX"', $statements[0]);
     }
 
-    public function test_multiple_drop_full_text_by_columns()
+    public function test_multiple_drop_full_text_by_columns_is_scoped_to_the_table()
     {
         $blueprint = new Blueprint($this->getConnection(), 'users');
         $blueprint->dropFullText(['firstname', 'lastname']);
         $statements = $blueprint->toSql();
 
-        $expected = "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ('FIRSTNAME', 'LASTNAME')) loop
+        $expected = "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_table = 'USERS' and idx_text_name in ('FIRSTNAME', 'LASTNAME')) loop
             execute immediate 'drop index ' || idx_rec.idx_name;
         end loop; end;";
 
         $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
+    }
+
+    public function test_drop_full_text_by_columns_uses_the_physical_table_name()
+    {
+        $blueprint = new Blueprint($this->getConnection(prefix: 'prefix_'), 'reporting.users');
+        $blueprint->dropFullText(['name']);
+
+        $this->assertSame([
+            "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_table = 'PREFIX_USERS' and idx_text_name in ('NAME')) loop
+            execute immediate 'drop index ' || idx_rec.idx_name;
+        end loop; end;",
+        ], $blueprint->toSql());
     }
 
     public function test_drop_spatial_index()
