@@ -227,8 +227,10 @@ class OracleGrammar extends Grammar
     public function compileColumnExists(string $database, string $table): string
     {
         $hiddenColumnFilter = $this->getHiddenColumnFilter();
+        $database = $this->quoteMetadataValue($database);
+        $table = $this->quoteMetadataValue($table);
 
-        return "select column_name from all_tab_cols where upper(owner) = upper('{$database}') and upper(table_name) = upper('{$table}') and {$hiddenColumnFilter} order by column_id";
+        return "select column_name from all_tab_cols where upper(owner) = upper({$database}) and upper(table_name) = upper({$table}) and {$hiddenColumnFilter} order by column_id";
     }
 
     /**
@@ -240,6 +242,8 @@ class OracleGrammar extends Grammar
     public function compileColumns($schema, $table): string
     {
         $schema ??= $this->connection->getSchema();
+        $schema = $this->quoteMetadataValue((string) $schema);
+        $table = $this->quoteMetadataValue((string) $table);
         $autoIncrement = $this->connection->isVersionAboveOrEqual('12c')
             ? "decode(t.identity_column, 'YES', 1, 0) as auto_increment,"
             : 'null as auto_increment,';
@@ -265,8 +269,8 @@ class OracleGrammar extends Grammar
                 c.comments as \"comment\"
             from all_tab_cols t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
-            where upper(t.table_name) = upper('{$table}')
-                and upper(t.owner) = upper('{$schema}')
+            where upper(t.table_name) = upper({$table})
+                and upper(t.owner) = upper({$schema})
                 and {$hiddenColumnFilter}
             order by
                 t.column_id
@@ -281,6 +285,14 @@ class OracleGrammar extends Grammar
         return $this->connection->isVersionAboveOrEqual('12c')
             ? "({$prefix}hidden_column = 'NO' or {$prefix}user_generated = 'YES')"
             : "{$prefix}hidden_column = 'NO'";
+    }
+
+    /**
+     * Quote a metadata query value after escaping embedded string delimiters.
+     */
+    protected function quoteMetadataValue(string $value): string
+    {
+        return $this->quoteString(str_replace("'", "''", $value));
     }
 
     /**

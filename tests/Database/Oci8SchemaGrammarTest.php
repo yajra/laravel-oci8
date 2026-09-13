@@ -1007,6 +1007,16 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_compile_column_exists_escapes_metadata_values(): void
+    {
+        $grammar = $this->getGrammar();
+
+        $this->assertSame(
+            "select column_name from all_tab_cols where upper(owner) = upper('sche''ma') and upper(table_name) = upper('test''table') and hidden_column = 'NO' order by column_id",
+            $grammar->compileColumnExists("sche'ma", "test'table")
+        );
+    }
+
     public function test_compile_columns_method()
     {
         $grammar = $this->getGrammar();
@@ -1037,6 +1047,14 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $sql = $grammar->compileColumns('schema', 'test_table');
         $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_columns_escapes_metadata_values(): void
+    {
+        $sql = $this->getGrammar()->compileColumns("sche'ma", "test'table");
+
+        $this->assertStringContainsString("upper(t.table_name) = upper('test''table')", $sql);
+        $this->assertStringContainsString("upper(t.owner) = upper('sche''ma')", $sql);
     }
 
     public function test_compile_views_method()
