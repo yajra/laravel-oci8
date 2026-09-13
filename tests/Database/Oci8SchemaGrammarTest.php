@@ -976,10 +976,20 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function test_compile_column_exists_method()
     {
-        $grammar = $this->getGrammar();
-        $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') order by column_id';
+        $grammar = $this->getGrammar($this->getConnection(serverVersion: '11g'));
+        $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') and hidden_column = \'NO\' order by column_id';
         $sql = $grammar->compileColumnExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_column_exists_keeps_user_generated_invisible_columns(): void
+    {
+        $grammar = $this->getGrammar($this->getConnection(serverVersion: '12c'));
+
+        $this->assertSame(
+            'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') and (hidden_column = \'NO\' or user_generated = \'YES\') order by column_id',
+            $grammar->compileColumnExists('schema', 'test_table')
+        );
     }
 
     public function test_compile_columns_method()
@@ -1005,7 +1015,7 @@ class Oci8SchemaGrammarTest extends TestCase
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
             where upper(t.table_name) = upper(\'test_table\')
                 and upper(t.owner) = upper(\'schema\')
-                '.($conn->isVersionAboveOrEqual('12c') ? "and (t.hidden_column = 'NO' or t.user_generated = 'YES')" : "and t.hidden_column = 'NO'").'
+                and '.($conn->isVersionAboveOrEqual('12c') ? "(t.hidden_column = 'NO' or t.user_generated = 'YES')" : "t.hidden_column = 'NO'").'
             order by
                 t.column_id
         ';

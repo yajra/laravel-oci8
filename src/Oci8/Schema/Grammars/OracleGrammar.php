@@ -226,7 +226,9 @@ class OracleGrammar extends Grammar
      */
     public function compileColumnExists(string $database, string $table): string
     {
-        return "select column_name from all_tab_cols where upper(owner) = upper('{$database}') and upper(table_name) = upper('{$table}') order by column_id";
+        $hiddenColumnFilter = $this->getHiddenColumnFilter();
+
+        return "select column_name from all_tab_cols where upper(owner) = upper('{$database}') and upper(table_name) = upper('{$table}') and {$hiddenColumnFilter} order by column_id";
     }
 
     /**
@@ -244,9 +246,7 @@ class OracleGrammar extends Grammar
         $collation = $this->connection->isVersionAboveOrEqual('12cR2')
             ? 'lower(t.collation) as collation,'
             : 'null as collation,';
-        $hiddenColumnFilter = $this->connection->isVersionAboveOrEqual('12c')
-            ? "and (t.hidden_column = 'NO' or t.user_generated = 'YES')"
-            : "and t.hidden_column = 'NO'";
+        $hiddenColumnFilter = $this->getHiddenColumnFilter('t.');
 
         return "
             select
@@ -267,10 +267,20 @@ class OracleGrammar extends Grammar
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
             where upper(t.table_name) = upper('{$table}')
                 and upper(t.owner) = upper('{$schema}')
-                {$hiddenColumnFilter}
+                and {$hiddenColumnFilter}
             order by
                 t.column_id
         ";
+    }
+
+    /**
+     * Get the predicate that excludes Oracle's system-generated hidden columns.
+     */
+    protected function getHiddenColumnFilter(string $prefix = ''): string
+    {
+        return $this->connection->isVersionAboveOrEqual('12c')
+            ? "({$prefix}hidden_column = 'NO' or {$prefix}user_generated = 'YES')"
+            : "{$prefix}hidden_column = 'NO'";
     }
 
     /**
