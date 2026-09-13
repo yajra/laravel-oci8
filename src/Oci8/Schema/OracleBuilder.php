@@ -4,6 +4,7 @@ namespace Yajra\Oci8\Schema;
 
 use Closure;
 use Illuminate\Database\Schema\Builder;
+use InvalidArgumentException;
 use Yajra\Oci8\Oci8Connection;
 
 /**
@@ -171,6 +172,12 @@ class OracleBuilder extends Builder
     public function parseSchemaAndTable($reference, $withDefaultSchema = null): array
     {
         $parts = explode('.', $reference);
+
+        if (count($parts) > 2) {
+            throw new InvalidArgumentException(
+                "Using three-part references is not supported, you may use `Schema::connection('{$parts[0]}')` instead."
+            );
+        }
 
         // Use the connection's effective schema unless the object reference includes
         // an explicit owner.

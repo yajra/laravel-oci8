@@ -295,6 +295,21 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertSame(['id'], $builder->getColumnListing('users'));
     }
 
+    public function test_schema_builder_rejects_three_part_references(): void
+    {
+        $connection = m::mock(Connection::class);
+        $connection->shouldReceive('getSchemaGrammar')->once()->andReturn(m::mock(OracleGrammar::class));
+
+        $builder = new OracleBuilder($connection);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Using three-part references is not supported, you may use `Schema::connection('database')` instead."
+        );
+
+        $builder->parseSchemaAndTable('database.schema.users');
+    }
+
     public function test_schema_grammar_uses_connection_schema_as_default(): void
     {
         $grammar = $this->getGrammar($this->getConnection(schemaPrefix: 'reporting'));
