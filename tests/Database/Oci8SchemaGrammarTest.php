@@ -384,6 +384,19 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('create table "SCHEMA"."USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
     }
 
+    public function test_schema_prefix_does_not_override_an_explicit_schema(): void
+    {
+        $conn = $this->getConnection(prefix: 'prefix_', schemaPrefix: 'schema');
+
+        $blueprint = new Blueprint($conn, 'archive.users');
+        $blueprint->create();
+        $blueprint->string('name');
+
+        $this->assertSame([
+            'create table "ARCHIVE"."PREFIX_USERS" ( "NAME" varchar2(255) not null )',
+        ], $blueprint->toSql());
+    }
+
     public function test_create_index_name_using_column_with_space()
     {
         $conn = $this->getConnection();
@@ -1335,6 +1348,40 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "PREFIX_USERS" rename to "PREFIX_FOO"', $statements[0]);
+    }
+
+    public function test_rename_table_with_schema_prefix_only_qualifies_source(): void
+    {
+        $conn = $this->getConnection(prefix: 'prefix_', schemaPrefix: 'schema');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->rename('foo');
+
+        $this->assertSame([
+            'alter table "SCHEMA"."PREFIX_USERS" rename to "PREFIX_FOO"',
+        ], $blueprint->toSql());
+    }
+
+    public function test_rename_table_accepts_matching_explicit_schema_on_target(): void
+    {
+        $conn = $this->getConnection(schemaPrefix: 'schema');
+        $blueprint = new Blueprint($conn, 'archive.users');
+        $blueprint->rename('ARCHIVE.foo');
+
+        $this->assertSame([
+            'alter table "ARCHIVE"."USERS" rename to "FOO"',
+        ], $blueprint->toSql());
+    }
+
+    public function test_rename_table_rejects_cross_schema_target(): void
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'archive.users');
+        $blueprint->rename('reporting.foo');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Oracle cannot rename a table across schemas [archive] and [reporting].');
+
+        $blueprint->toSql();
     }
 
     public function test_rename_index()
