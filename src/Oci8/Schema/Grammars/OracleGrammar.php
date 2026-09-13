@@ -7,6 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
@@ -1354,16 +1355,21 @@ class OracleGrammar extends Grammar
      */
     public function compileForeignKeyConstraints(string $owner, string $action): string
     {
+        $action = strtolower($action);
+
+        if (! in_array($action, ['enable', 'disable'], true)) {
+            throw new InvalidArgumentException("Unsupported foreign key constraint action [{$action}].");
+        }
+
+        $owner = $this->quoteString(str_replace("'", "''", $owner));
+
         return 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.owner, \'"\', \'""\') || \'"."\' || replace(c2.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
-                FROM all_constraints c
-                         INNER JOIN all_constraints c2
-                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
-                         INNER JOIN all_cons_columns col
-                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
-                WHERE c2.constraint_type = \'R\'
-                  AND c.owner = \''.strtoupper($owner).'\'
+                SELECT \'alter table "\' || replace(fk.owner, \'"\', \'""\') || \'"."\' || replace(fk.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(fk.constraint_name, \'"\', \'""\') || \'"\' as statement
+                FROM all_constraints fk
+                WHERE fk.constraint_type = \'R\'
+                  AND upper(fk.owner) = upper('.$owner.')
+                ORDER BY fk.table_name, fk.constraint_name
                 )
                 loop
                     execute immediate s.statement;
