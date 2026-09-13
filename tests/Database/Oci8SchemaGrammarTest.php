@@ -576,6 +576,33 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_create_table_omits_default_foreign_key_delete_actions()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->integer('role_id');
+        $blueprint->integer('team_id');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->restrictOnDelete();
+        $blueprint->foreign('team_id')->references('id')->on('teams')->noActionOnDelete();
+        $blueprint->create();
+
+        $this->assertSame([
+            'create table "USERS" ( "ROLE_ID" number(10,0) not null, "TEAM_ID" number(10,0) not null, constraint "USERS_ROLE_ID_FK" foreign key ( "ROLE_ID" ) references "ROLES" ( "ID" ), constraint "USERS_TEAM_ID_FK" foreign key ( "TEAM_ID" ) references "TEAMS" ( "ID" ) )',
+        ], $blueprint->toSql());
+    }
+
+    public function test_create_table_rejects_foreign_key_update_actions()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->integer('role_id');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->cascadeOnUpdate();
+        $blueprint->create();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Oracle does not support ON UPDATE actions [cascade] on foreign keys.');
+
+        $blueprint->toSql();
+    }
+
     public function test_basic_create_table_with_deferrable_foreign_key()
     {
         $conn = $this->getConnection(prefix: 'prefix_');
@@ -1526,6 +1553,27 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint "USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) on delete cascade',
             $statements[0]);
+    }
+
+    public function test_adding_foreign_key_with_set_null_delete()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->nullOnDelete();
+
+        $this->assertSame([
+            'alter table "USERS" add constraint "USERS_ROLE_ID_FK" foreign key ( "ROLE_ID" ) references "ROLES" ( "ID" ) on delete set null',
+        ], $blueprint->toSql());
+    }
+
+    public function test_adding_foreign_key_rejects_unsupported_delete_actions()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->onDelete('set default');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Oracle does not support the ON DELETE action [set default].');
+
+        $blueprint->toSql();
     }
 
     public function test_adding_incrementing_id()

@@ -173,12 +173,7 @@ class OracleGrammar extends Grammar
 
             $sql .= ", constraint {$index} foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
-            // Once we have the basic foreign key creation statement constructed we can
-            // build out the syntax for what should happen on an update or delete of
-            // the affected columns, which will get something like "cascade", etc.
-            if (! is_null($foreign->onDelete)) {
-                $sql .= " on delete {$foreign->onDelete}";
-            }
+            $sql = $this->appendForeignKeyActions($foreign, $sql);
 
             $sql = $this->appendDeferrableClause($foreign, $sql);
             $sql = $this->appendNotValidClause($foreign, $sql);
@@ -415,12 +410,7 @@ class OracleGrammar extends Grammar
 
             $sql .= "foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
-            // Once we have the basic foreign key creation statement constructed we can
-            // build out the syntax for what should happen on an update or delete of
-            // the affected columns, which will get something like "cascade", etc.
-            if (! is_null($command->onDelete)) {
-                $sql .= " on delete {$command->onDelete}";
-            }
+            $sql = $this->appendForeignKeyActions($command, $sql);
 
             $sql = $this->appendDeferrableClause($command, $sql);
 
@@ -428,6 +418,34 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Append the referential actions supported by Oracle.
+     */
+    protected function appendForeignKeyActions(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->onUpdate)) {
+            $action = strtolower(trim((string) $command->onUpdate));
+
+            throw new LogicException("Oracle does not support ON UPDATE actions [{$action}] on foreign keys.");
+        }
+
+        if (is_null($command->onDelete)) {
+            return $sql;
+        }
+
+        $action = strtolower(trim((string) $command->onDelete));
+
+        if (in_array($action, ['restrict', 'no action'], true)) {
+            return $sql;
+        }
+
+        if (! in_array($action, ['cascade', 'set null'], true)) {
+            throw new InvalidArgumentException("Oracle does not support the ON DELETE action [{$action}].");
+        }
+
+        return $sql." on delete {$action}";
     }
 
     /**
