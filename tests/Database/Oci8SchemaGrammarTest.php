@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Query\Expression;
+use InvalidArgumentException;
 use LogicException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -2133,20 +2134,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertStringContainsString("DROP TYPE \"' || replace(t.owner", $statement);
     }
 
-    public function test_compile_enable_foreign_key_constraints_quotes_identifiers()
+    public function test_compile_enable_foreign_key_constraints_selects_foreign_keys_by_owner()
     {
         $statement = $this->getGrammar()->compileEnableForeignKeyConstraints('username');
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.owner, \'"\', \'""\') || \'"."\' || replace(c2.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
-                FROM all_constraints c
-                         INNER JOIN all_constraints c2
-                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
-                         INNER JOIN all_cons_columns col
-                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
-                WHERE c2.constraint_type = \'R\'
-                  AND c.owner = \'USERNAME\'
+                SELECT \'alter table "\' || replace(fk.owner, \'"\', \'""\') || \'"."\' || replace(fk.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(fk.constraint_name, \'"\', \'""\') || \'"\' as statement
+                FROM all_constraints fk
+                WHERE fk.constraint_type = \'R\'
+                  AND upper(fk.owner) = upper(\'username\')
+                ORDER BY fk.table_name, fk.constraint_name
                 )
                 loop
                     execute immediate s.statement;
@@ -2156,20 +2154,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_disable_foreign_key_constraints_quotes_identifiers()
+    public function test_compile_disable_foreign_key_constraints_selects_foreign_keys_by_owner()
     {
         $statement = $this->getGrammar()->compileDisableForeignKeyConstraints('username');
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.owner, \'"\', \'""\') || \'"."\' || replace(c2.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
-                FROM all_constraints c
-                         INNER JOIN all_constraints c2
-                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
-                         INNER JOIN all_cons_columns col
-                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
-                WHERE c2.constraint_type = \'R\'
-                  AND c.owner = \'USERNAME\'
+                SELECT \'alter table "\' || replace(fk.owner, \'"\', \'""\') || \'"."\' || replace(fk.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(fk.constraint_name, \'"\', \'""\') || \'"\' as statement
+                FROM all_constraints fk
+                WHERE fk.constraint_type = \'R\'
+                  AND upper(fk.owner) = upper(\'username\')
+                ORDER BY fk.table_name, fk.constraint_name
                 )
                 loop
                     execute immediate s.statement;
@@ -2177,6 +2172,22 @@ class Oci8SchemaGrammarTest extends TestCase
         end;';
 
         $this->assertEquals($expected, $statement);
+    }
+
+    public function test_compile_foreign_key_constraints_escapes_the_owner(): void
+    {
+        $statement = $this->getGrammar()->compileForeignKeyConstraints("tenant'o", 'ENABLE');
+
+        $this->assertStringContainsString("upper(fk.owner) = upper('tenant''o')", $statement);
+        $this->assertStringContainsString(' enable constraint ', $statement);
+    }
+
+    public function test_compile_foreign_key_constraints_rejects_an_unsupported_action(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported foreign key constraint action [drop].');
+
+        $this->getGrammar()->compileForeignKeyConstraints('username', 'drop');
     }
 
     public function test_compile_tables_includes_current_user_table_storage()
