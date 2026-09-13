@@ -96,7 +96,7 @@ class OracleBuilder extends Builder
     public function dropAllTables(): void
     {
         $this->ctxDdlPreferences->dropAllPreferences();
-        $this->connection->statement($this->grammar->compileDropAllTables());
+        $this->connection->statement($this->grammar->compileDropAllTables($this->connection->getSchema()));
     }
 
     /**
@@ -104,7 +104,7 @@ class OracleBuilder extends Builder
      */
     public function dropAllViews(): void
     {
-        $this->connection->statement($this->grammar->compileDropAllViews());
+        $this->connection->statement($this->grammar->compileDropAllViews($this->connection->getSchema()));
     }
 
     /**
@@ -112,7 +112,7 @@ class OracleBuilder extends Builder
      */
     public function dropAllTypes(): void
     {
-        $this->connection->statement($this->grammar->compileDropAllTypes());
+        $this->connection->statement($this->grammar->compileDropAllTypes($this->connection->getSchema()));
     }
 
     /**
@@ -136,11 +136,12 @@ class OracleBuilder extends Builder
      */
     public function getColumnListing($table): array
     {
-        $database = $this->connection->getConfig('username');
+        [$schema, $table] = $this->parseSchemaAndTable($table);
+
         $table = $this->connection->getTablePrefix().$table;
         /** @var Grammars\OracleGrammar $grammar */
         $grammar = $this->grammar;
-        $results = $this->connection->select($grammar->compileColumnExists($database, $table));
+        $results = $this->connection->select($grammar->compileColumnExists($schema, $table));
 
         return $this->connection->getPostProcessor()->processColumnListing($results);
     }
@@ -171,10 +172,9 @@ class OracleBuilder extends Builder
     {
         $parts = explode('.', $reference);
 
-        // We will use the default schema unless the schema has been specified in the
-        // query. If the schema has been specified in the query then we can use it
-        // instead of a default schema configured in the connection search path.
-        $schema = $this->connection->getConfig('username');
+        // Use the connection's effective schema unless the object reference includes
+        // an explicit owner.
+        $schema = $this->connection->getSchema();
 
         if (count($parts) === 2) {
             $schema = $parts[0];
@@ -208,7 +208,7 @@ class OracleBuilder extends Builder
     public function disableForeignKeyConstraints(): bool
     {
         return $this->connection->statement(
-            $this->grammar->compileDisableForeignKeyConstraints($this->connection->getConfig('username'))
+            $this->grammar->compileDisableForeignKeyConstraints($this->connection->getSchema())
         );
     }
 
@@ -218,7 +218,7 @@ class OracleBuilder extends Builder
     public function enableForeignKeyConstraints(): bool
     {
         return $this->connection->statement(
-            $this->grammar->compileEnableForeignKeyConstraints($this->connection->getConfig('username'))
+            $this->grammar->compileEnableForeignKeyConstraints($this->connection->getSchema())
         );
     }
 
@@ -229,7 +229,7 @@ class OracleBuilder extends Builder
     {
         return $this->connection->getPostProcessor()->processTables(
             $this->connection->selectFromWriteConnection(
-                $this->grammar->compileTables($schema ?? $this->connection->getConfig('username'))
+                $this->grammar->compileTables($schema ?? $this->connection->getSchema())
             )
         );
     }

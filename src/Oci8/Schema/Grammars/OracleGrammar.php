@@ -238,7 +238,7 @@ class OracleGrammar extends Grammar
      */
     public function compileColumns($schema, $table): string
     {
-        $schema ??= $this->connection->getConfig('username');
+        $schema ??= $this->connection->getSchema();
         $autoIncrement = $this->connection->isVersionAboveOrEqual('12c')
             ? "decode(t.identity_column, 'YES', 1, 0) as auto_increment,"
             : 'null as auto_increment,';
@@ -313,7 +313,7 @@ class OracleGrammar extends Grammar
      */
     public function compileForeignKeys($schema, $table): string
     {
-        $schema ??= $this->connection->getConfig('username');
+        $schema ??= $this->connection->getSchema();
 
         return sprintf("
             select
@@ -348,7 +348,7 @@ class OracleGrammar extends Grammar
      */
     protected function compileOwnerWhereClause($schema, string $column = 'owner'): string
     {
-        $schema ??= $this->connection->getConfig('username');
+        $schema ??= $this->connection->getSchema();
 
         if (is_array($schema)) {
             $schemas = implode(', ', array_map(
@@ -527,15 +527,17 @@ class OracleGrammar extends Grammar
     /**
      * Compile the SQL needed to drop all tables.
      */
-    public function compileDropAllTables(): string
+    public function compileDropAllTables(?string $schema = null): string
     {
+        $owner = $this->quoteString(strtoupper($schema ?? $this->connection->getSchema()));
+
         return 'BEGIN
-            FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
-            EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS PURGE\');
+            FOR c IN (SELECT owner, table_name FROM all_tables WHERE owner = '.$owner.' AND secondary = \'N\') LOOP
+            EXECUTE IMMEDIATE (\'DROP TABLE "\' || replace(c.owner, \'"\', \'""\') || \'"."\' || replace(c.table_name, \'"\', \'""\') || \'" CASCADE CONSTRAINTS PURGE\');
             END LOOP;
 
-            FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
-            EXECUTE IMMEDIATE (\'DROP SEQUENCE \' || s.sequence_name);
+            FOR s IN (SELECT sequence_owner, sequence_name FROM all_sequences WHERE sequence_owner = '.$owner.' AND sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
+            EXECUTE IMMEDIATE (\'DROP SEQUENCE "\' || replace(s.sequence_owner, \'"\', \'""\') || \'"."\' || replace(s.sequence_name, \'"\', \'""\') || \'"\');
             END LOOP;
 
             END;';
@@ -544,11 +546,13 @@ class OracleGrammar extends Grammar
     /**
      * Compile the SQL needed to drop all views.
      */
-    public function compileDropAllViews(): string
+    public function compileDropAllViews(?string $schema = null): string
     {
+        $owner = $this->quoteString(strtoupper($schema ?? $this->connection->getSchema()));
+
         return 'BEGIN
-            FOR v IN (SELECT view_name FROM user_views) LOOP
-            EXECUTE IMMEDIATE (\'DROP VIEW "\' || v.view_name || \'" CASCADE CONSTRAINTS\');
+            FOR v IN (SELECT owner, view_name FROM all_views WHERE owner = '.$owner.') LOOP
+            EXECUTE IMMEDIATE (\'DROP VIEW "\' || replace(v.owner, \'"\', \'""\') || \'"."\' || replace(v.view_name, \'"\', \'""\') || \'" CASCADE CONSTRAINTS\');
             END LOOP;
 
             END;';
@@ -557,11 +561,13 @@ class OracleGrammar extends Grammar
     /**
      * Compile the SQL needed to drop all types.
      */
-    public function compileDropAllTypes(): string
+    public function compileDropAllTypes(?string $schema = null): string
     {
+        $owner = $this->quoteString(strtoupper($schema ?? $this->connection->getSchema()));
+
         return 'BEGIN
-            FOR t IN (SELECT type_name FROM user_types) LOOP
-            EXECUTE IMMEDIATE (\'DROP TYPE "\' || t.type_name || \'" FORCE\');
+            FOR t IN (SELECT owner, type_name FROM all_types WHERE owner = '.$owner.') LOOP
+            EXECUTE IMMEDIATE (\'DROP TYPE "\' || replace(t.owner, \'"\', \'""\') || \'"."\' || replace(t.type_name, \'"\', \'""\') || \'" FORCE\');
             END LOOP;
 
             END;';
@@ -1255,7 +1261,7 @@ class OracleGrammar extends Grammar
 
         try {
             $table = $blueprint->getTable();
-            $schema = $this->connection->getConfig('username');
+            $schema = $this->connection->getSchema();
 
             // Parse schema and table if table contains schema prefix
             if (str_contains($table, '.')) {
@@ -1338,7 +1344,7 @@ class OracleGrammar extends Grammar
     {
         return 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
+                SELECT \'alter table "\' || replace(c2.owner, \'"\', \'""\') || \'"."\' || replace(c2.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)

@@ -10,6 +10,7 @@ use Yajra\Oci8\Oci8Connection as Connection;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 use Yajra\Oci8\Schema\OracleBuilder;
+use Yajra\Oci8\Schema\OraclePreferences;
 
 class Oci8SchemaGrammarTest extends TestCase
 {
@@ -212,6 +213,7 @@ class Oci8SchemaGrammarTest extends TestCase
             ->shouldReceive('getTablePrefix')->andReturn($prefix)
             ->shouldReceive('getMaxLength')->andReturn($maxLength)
             ->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix)
+            ->shouldReceive('getSchema')->andReturn($schemaPrefix ?: 'TEST_SCHEMA')
             ->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='))
             ->shouldReceive('isMaria')->andReturn(false)
             ->getMock();
@@ -268,6 +270,73 @@ class Oci8SchemaGrammarTest extends TestCase
         $builder = new OracleBuilder($conn);
 
         $this->assertSame(['REPORTING'], $builder->getCurrentSchemaListing());
+    }
+
+    public function test_schema_builder_uses_connection_schema_as_default(): void
+    {
+        $grammar = m::mock(OracleGrammar::class);
+        $processor = m::mock();
+        $connection = m::mock(Connection::class);
+        $connection->shouldReceive('getSchemaGrammar')->once()->andReturn($grammar);
+        $connection->shouldReceive('getSchema')->twice()->andReturn('REPORTING');
+        $connection->shouldReceive('getTablePrefix')->once()->andReturn('prefix_');
+        $grammar->shouldReceive('compileColumnExists')
+            ->once()
+            ->with('REPORTING', 'prefix_users')
+            ->andReturn('column listing sql');
+        $connection->shouldReceive('select')->once()->with('column listing sql')->andReturn([]);
+        $processor->shouldReceive('processColumnListing')->once()->with([])->andReturn(['id']);
+        $connection->shouldReceive('getPostProcessor')->once()->andReturn($processor);
+
+        $builder = new OracleBuilder($connection);
+
+        $this->assertSame(['REPORTING', 'users'], $builder->parseSchemaAndTable('users'));
+        $this->assertSame(['id'], $builder->getColumnListing('users'));
+    }
+
+    public function test_schema_grammar_uses_connection_schema_as_default(): void
+    {
+        $grammar = $this->getGrammar($this->getConnection(schemaPrefix: 'reporting'));
+
+        $this->assertStringContainsString("upper(t.owner) = upper('reporting')", $grammar->compileColumns(null, 'users'));
+        $this->assertStringContainsString("upper(owner) = upper('reporting')", $grammar->compileViews(null));
+        $this->assertStringContainsString("upper(owner) = upper('reporting')", $grammar->compileTypes(null));
+        $this->assertStringContainsString("fk.owner = upper('reporting')", $grammar->compileForeignKeys(null, 'users'));
+    }
+
+    public function test_schema_builder_uses_connection_schema_for_management_commands(): void
+    {
+        $grammar = m::mock(OracleGrammar::class);
+        $preferences = m::mock(OraclePreferences::class);
+        $connection = m::mock(Connection::class);
+        $connection->shouldReceive('getSchemaGrammar')->once()->andReturn($grammar);
+        $connection->shouldReceive('getSchema')->times(6)->andReturn('REPORTING');
+        $preferences->shouldReceive('dropAllPreferences')->once();
+        $grammar->shouldReceive('compileDropAllTables')->once()->with('REPORTING')->andReturn('drop tables');
+        $grammar->shouldReceive('compileDropAllViews')->once()->with('REPORTING')->andReturn('drop views');
+        $grammar->shouldReceive('compileDropAllTypes')->once()->with('REPORTING')->andReturn('drop types');
+        $grammar->shouldReceive('compileDisableForeignKeyConstraints')->once()->with('REPORTING')->andReturn('disable foreign keys');
+        $grammar->shouldReceive('compileEnableForeignKeyConstraints')->once()->with('REPORTING')->andReturn('enable foreign keys');
+        $grammar->shouldReceive('compileTables')->once()->with('REPORTING')->andReturn('list tables');
+        $connection->shouldReceive('statement')->once()->with('drop tables')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('drop views')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('drop types')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('disable foreign keys')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('enable foreign keys')->andReturnTrue();
+        $connection->shouldReceive('selectFromWriteConnection')->once()->with('list tables')->andReturn([]);
+        $processor = m::mock();
+        $processor->shouldReceive('processTables')->once()->with([])->andReturn([]);
+        $connection->shouldReceive('getPostProcessor')->once()->andReturn($processor);
+
+        $builder = new OracleBuilder($connection);
+        $builder->ctxDdlPreferences = $preferences;
+
+        $builder->dropAllTables();
+        $builder->dropAllViews();
+        $builder->dropAllTypes();
+        $this->assertTrue($builder->disableForeignKeyConstraints());
+        $this->assertTrue($builder->enableForeignKeyConstraints());
+        $this->assertSame([], $builder->getTables());
     }
 
     public function test_create_database_is_not_supported(): void
@@ -645,7 +714,7 @@ class Oci8SchemaGrammarTest extends TestCase
         // Test case from issue #941: modifying nullable column with ->nullable() should not fail
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -677,7 +746,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -707,7 +776,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -735,7 +804,7 @@ class Oci8SchemaGrammarTest extends TestCase
         // Test changing from not null to nullable
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -764,7 +833,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -2003,20 +2072,36 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function test_drop_all_tables()
     {
-        $statement = $this->getGrammar()->compileDropAllTables();
+        $statement = $this->getGrammar()->compileDropAllTables('reporting');
 
         $expected = 'BEGIN
-            FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
-            EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS PURGE\');
+            FOR c IN (SELECT owner, table_name FROM all_tables WHERE owner = \'REPORTING\' AND secondary = \'N\') LOOP
+            EXECUTE IMMEDIATE (\'DROP TABLE "\' || replace(c.owner, \'"\', \'""\') || \'"."\' || replace(c.table_name, \'"\', \'""\') || \'" CASCADE CONSTRAINTS PURGE\');
             END LOOP;
 
-            FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
-            EXECUTE IMMEDIATE (\'DROP SEQUENCE \' || s.sequence_name);
+            FOR s IN (SELECT sequence_owner, sequence_name FROM all_sequences WHERE sequence_owner = \'REPORTING\' AND sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
+            EXECUTE IMMEDIATE (\'DROP SEQUENCE "\' || replace(s.sequence_owner, \'"\', \'""\') || \'"."\' || replace(s.sequence_name, \'"\', \'""\') || \'"\');
             END LOOP;
 
             END;';
 
         $this->assertEquals($expected, $statement);
+    }
+
+    public function test_drop_all_views_uses_the_requested_schema()
+    {
+        $statement = $this->getGrammar()->compileDropAllViews('reporting');
+
+        $this->assertStringContainsString("FROM all_views WHERE owner = 'REPORTING'", $statement);
+        $this->assertStringContainsString("DROP VIEW \"' || replace(v.owner", $statement);
+    }
+
+    public function test_drop_all_types_uses_the_requested_schema()
+    {
+        $statement = $this->getGrammar()->compileDropAllTypes('reporting');
+
+        $this->assertStringContainsString("FROM all_types WHERE owner = 'REPORTING'", $statement);
+        $this->assertStringContainsString("DROP TYPE \"' || replace(t.owner", $statement);
     }
 
     public function test_compile_enable_foreign_key_constraints_quotes_identifiers()
@@ -2025,7 +2110,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
+                SELECT \'alter table "\' || replace(c2.owner, \'"\', \'""\') || \'"."\' || replace(c2.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
@@ -2048,7 +2133,7 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
+                SELECT \'alter table "\' || replace(c2.owner, \'"\', \'""\') || \'"."\' || replace(c2.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
                 FROM all_constraints c
                          INNER JOIN all_constraints c2
                                     ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
