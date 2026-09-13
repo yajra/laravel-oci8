@@ -625,7 +625,7 @@ class OracleGrammar extends Grammar
     {
         $table = $this->wrapTable($blueprint);
 
-        $index = $this->wrap(mb_substr($command->index, 0, $this->getMaxLength()));
+        $index = $this->wrap($command->index);
 
         if ($type === 'index') {
             return "drop index {$index}";

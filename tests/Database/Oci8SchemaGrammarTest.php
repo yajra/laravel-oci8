@@ -1178,6 +1178,23 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $blueprint->toSql());
     }
 
+    public function test_drop_commands_preserve_long_explicit_names(): void
+    {
+        $name = 'users_external_identity_provider_reference_unique';
+        $blueprint = new Blueprint($this->getConnection(maxLength: 30), 'users');
+        $blueprint->dropPrimary($name);
+        $blueprint->dropUnique($name);
+        $blueprint->dropForeign($name);
+        $blueprint->dropIndex($name);
+
+        $this->assertSame([
+            'alter table "USERS" drop constraint "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+            'alter table "USERS" drop constraint "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+            'alter table "USERS" drop constraint "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+            'drop index "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+        ], $blueprint->toSql());
+    }
+
     public function test_drop_timestamps()
     {
         $conn = $this->getConnection();
