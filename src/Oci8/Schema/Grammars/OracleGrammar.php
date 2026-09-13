@@ -107,11 +107,14 @@ class OracleGrammar extends Grammar
      */
     public function wrapTable($table, $prefix = null): string
     {
-        if ($this->getSchemaPrefix()) {
-            return $this->getSchemaPrefix().'.'.parent::wrapTable($table);
+        $tableName = $table instanceof Blueprint ? $table->getTable() : $table;
+        $schemaPrefix = $this->getSchemaPrefix();
+
+        if ($schemaPrefix && is_string($tableName) && ! str_contains($tableName, '.')) {
+            return $schemaPrefix.'.'.parent::wrapTable($table, $prefix);
         }
 
-        return parent::wrapTable($table);
+        return parent::wrapTable($table, $prefix);
     }
 
     /**
@@ -758,8 +761,39 @@ class OracleGrammar extends Grammar
     public function compileRename(Blueprint $blueprint, Fluent $command): string
     {
         $from = $this->wrapTable($blueprint);
+        $to = $this->getLocalRenameTarget($blueprint, $command->to);
 
-        return "alter table {$from} rename to ".$this->wrapTable($command->to);
+        return "alter table {$from} rename to ".parent::wrapTable($to);
+    }
+
+    /**
+     * Get the unqualified target name for an Oracle table rename.
+     */
+    protected function getLocalRenameTarget(Blueprint $blueprint, string $target): string
+    {
+        $targetParts = explode('.', $target);
+
+        if (count($targetParts) === 1) {
+            return $target;
+        }
+
+        if (count($targetParts) !== 2 || in_array('', $targetParts, true)) {
+            throw new InvalidArgumentException("Invalid Oracle table rename target [{$target}].");
+        }
+
+        [$targetSchema, $targetTable] = $targetParts;
+        $sourceParts = explode('.', $blueprint->getTable());
+        $sourceSchema = count($sourceParts) === 2
+            ? $sourceParts[0]
+            : $this->connection->getSchema();
+
+        if (strcasecmp($sourceSchema, $targetSchema) !== 0) {
+            throw new InvalidArgumentException(
+                "Oracle cannot rename a table across schemas [{$sourceSchema}] and [{$targetSchema}]."
+            );
+        }
+
+        return $targetTable;
     }
 
     /**
