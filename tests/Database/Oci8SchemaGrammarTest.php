@@ -2179,26 +2179,46 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_tables()
+    public function test_compile_tables_includes_current_user_table_storage()
     {
-        $statement = $this->getGrammar()->compileTables('username');
+        $statement = $this->getGrammar($this->getConnection(serverVersion: '11g'))->compileTables('username');
 
-        $expected = 'select lower(all_tab_comments.table_name)  as "name",
-                lower(all_tables.owner) as "schema",
-                sum(user_segments.bytes) as "size",
-                all_tab_comments.comments as "comment",
-                (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
-            from all_tables
-                join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
-                left join user_segments on user_segments.segment_name = all_tables.table_name
-            where all_tables.owner = \'USERNAME\'
-                and all_tab_comments.owner = \'USERNAME\'
-                and all_tab_comments.table_type in (\'TABLE\')
-            group by all_tab_comments.table_name, all_tables.owner, all_tables.num_rows,
-                all_tables.avg_row_len, all_tables.blocks, all_tab_comments.comments
-            order by all_tab_comments.table_name';
+        $this->assertStringContainsString('segments.bytes as "size"', $statement);
+        $this->assertStringContainsString('from user_segments s', $statement);
+        $this->assertStringContainsString('select st.owner as table_owner', $statement);
+        $this->assertStringContainsString('on st.owner = user', $statement);
+        $this->assertStringContainsString('on i.owner = user', $statement);
+        $this->assertStringContainsString('on l.owner = user', $statement);
+        $this->assertStringContainsString('on segments.owner = t.owner', $statement);
+        $this->assertStringContainsString('join all_indexes i', $statement);
+        $this->assertStringContainsString('join all_lobs l', $statement);
+        $this->assertStringContainsString("s.segment_type in ('TABLE', 'TABLE PARTITION', 'TABLE SUBPARTITION')", $statement);
+        $this->assertStringContainsString("s.segment_type in ('INDEX', 'INDEX PARTITION', 'INDEX SUBPARTITION')", $statement);
+        $this->assertStringContainsString("s.segment_type in ('LOBSEGMENT', 'LOBINDEX', 'LOB PARTITION', 'LOB SUBPARTITION')", $statement);
+        $this->assertStringContainsString("where upper(table_owner) = upper('username')", $statement);
+        $this->assertStringContainsString("where upper(t.owner) = upper('username')", $statement);
+        $this->assertStringContainsString('null as "collation"', $statement);
+        $this->assertStringNotContainsString('all_segments', $statement);
+        $this->assertStringNotContainsString('dba_segments', $statement);
+        $this->assertDoesNotMatchRegularExpression('/\bs\.owner\b/', $statement);
+        $this->assertStringNotContainsString('NLS_SORT', $statement);
+    }
 
-        $this->assertEquals($expected, $statement);
+    public function test_compile_tables_accepts_multiple_schemas()
+    {
+        $statement = $this->getGrammar()->compileTables(['reporting', 'audit']);
+
+        $this->assertStringContainsString("where upper(table_owner) in (upper('reporting'), upper('audit'))", $statement);
+        $this->assertStringContainsString("where upper(t.owner) in (upper('reporting'), upper('audit'))", $statement);
+        $this->assertStringContainsString('order by t.owner, t.table_name', $statement);
+    }
+
+    public function test_compile_tables_reports_table_default_collation_on_oracle_12c_release_2_and_newer()
+    {
+        $statement = $this->getGrammar($this->getConnection(serverVersion: '12cR2'))
+            ->compileTables('username');
+
+        $this->assertStringContainsString('lower(t.default_collation) as "collation"', $statement);
     }
 
     public function test_adding_generated_as()

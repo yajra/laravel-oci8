@@ -1374,24 +1374,60 @@ class OracleGrammar extends Grammar
     /**
      * Compile the query to determine the tables.
      *
-     * @param  string  $schema
+     * @param  string|string[]|null  $schema
      */
     public function compileTables($schema): string
     {
-        return 'select lower(all_tab_comments.table_name)  as "name",
-                lower(all_tables.owner) as "schema",
-                sum(user_segments.bytes) as "size",
-                all_tab_comments.comments as "comment",
-                (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
-            from all_tables
-                join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
-                left join user_segments on user_segments.segment_name = all_tables.table_name
-            where all_tables.owner = \''.strtoupper($schema).'\'
-                and all_tab_comments.owner = \''.strtoupper($schema).'\'
-                and all_tab_comments.table_type in (\'TABLE\')
-            group by all_tab_comments.table_name, all_tables.owner, all_tables.num_rows,
-                all_tables.avg_row_len, all_tables.blocks, all_tab_comments.comments
-            order by all_tab_comments.table_name';
+        // USER_SEGMENTS only exposes the logged-in user's storage. Keep its
+        // joins owner-scoped so other schemas cannot inherit those sizes.
+        $tableOwnerWhere = $this->compileOwnerWhereClause($schema, 't.owner');
+        $segmentOwnerWhere = $this->compileOwnerWhereClause($schema, 'table_owner');
+        $collation = $this->connection->isVersionAboveOrEqual('12cR2')
+            ? 'lower(t.default_collation)'
+            : 'null';
+
+        return 'select lower(t.table_name) as "name",
+                lower(t.owner) as "schema",
+                segments.bytes as "size",
+                c.comments as "comment",
+                '.$collation.' as "collation"
+            from all_tables t
+                join all_tab_comments c
+                    on c.owner = t.owner
+                    and c.table_name = t.table_name
+                    and c.table_type = \'TABLE\'
+                left join (
+                    select table_owner as owner, table_name, sum(bytes) as bytes
+                    from (
+                        select st.owner as table_owner, st.table_name, s.bytes
+                        from user_segments s
+                        join all_tables st
+                            on st.owner = user
+                            and st.table_name = s.segment_name
+                        where s.segment_type in (\'TABLE\', \'TABLE PARTITION\', \'TABLE SUBPARTITION\')
+                        union all
+                        select i.table_owner, i.table_name, s.bytes
+                        from user_segments s
+                        join all_indexes i
+                            on i.owner = user
+                            and i.index_name = s.segment_name
+                        where s.segment_type in (\'INDEX\', \'INDEX PARTITION\', \'INDEX SUBPARTITION\')
+                            and i.index_type != \'LOB\'
+                        union all
+                        select l.owner as table_owner, l.table_name, s.bytes
+                        from user_segments s
+                        join all_lobs l
+                            on l.owner = user
+                            and (l.segment_name = s.segment_name or l.index_name = s.segment_name)
+                        where s.segment_type in (\'LOBSEGMENT\', \'LOBINDEX\', \'LOB PARTITION\', \'LOB SUBPARTITION\')
+                    ) table_segments
+                    where '.$segmentOwnerWhere.'
+                    group by table_owner, table_name
+                ) segments
+                    on segments.owner = t.owner
+                    and segments.table_name = t.table_name
+            where '.$tableOwnerWhere.'
+            order by t.owner, t.table_name';
     }
 
     /**
