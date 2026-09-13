@@ -343,6 +343,23 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(2, $statements);
         $this->assertEquals('alter table "PLACES" add ( "SHAPE" sdo_geometry not null )', $statements[0]);
         $this->assertEquals(
+            'create index "PLACES_SHAPE_SPATIAL" on "PLACES" ( "SHAPE" ) indextype is mdsys.spatial_index',
+            $statements[1]
+        );
+    }
+
+    public function test_create_spatial_index_uses_system_managed_index_on_oracle_18_and_newer()
+    {
+        $conn = $this->getConnection(serverVersion: '19c');
+
+        $blueprint = new Blueprint($conn, 'places');
+        $blueprint->geometry('shape');
+        $blueprint->spatialIndex('shape', 'places_shape_spatial');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals(
             'create index "PLACES_SHAPE_SPATIAL" on "PLACES" ( "SHAPE" ) indextype is mdsys.spatial_index_v2',
             $statements[1]
         );
@@ -398,6 +415,24 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('alter table "EMBEDDINGS" add ( "EMBEDDING" vector(1536) not null )', $statements[0]);
         $this->assertEquals(
             'create vector index "EMBEDDINGS_EMBEDDING_VECTOR" on "EMBEDDINGS" ( "EMBEDDING" ) organization neighbor partitions distance euclidean',
+            $statements[1]
+        );
+    }
+
+    public function test_create_vector_index_supports_squared_euclidean_distance()
+    {
+        $conn = $this->getConnection(serverVersion: '23c');
+
+        $blueprint = new Blueprint($conn, 'embeddings');
+        $blueprint->vector('embedding', 1536);
+        $blueprint->vectorIndex('embedding', 'embeddings_embedding_vector')
+            ->operatorClass('vector_l2sq_ops');
+
+        $statements = $blueprint->toSql();
+
+        $this->assertCount(2, $statements);
+        $this->assertEquals(
+            'create vector index "EMBEDDINGS_EMBEDDING_VECTOR" on "EMBEDDINGS" ( "EMBEDDING" ) organization inmemory neighbor graph distance euclidean_squared',
             $statements[1]
         );
     }

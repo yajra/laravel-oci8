@@ -487,8 +487,12 @@ class OracleGrammar extends Grammar
      */
     public function compileSpatialIndex(Blueprint $blueprint, Fluent $command): string
     {
+        $indexType = $this->connection->isVersionAboveOrEqual('18c')
+            ? 'mdsys.spatial_index_v2'
+            : 'mdsys.spatial_index';
+
         return 'create index '.$this->wrap($command->index).' on '.$this->wrapTable($blueprint)
-            .' ( '.$this->columnize($command->columns).' ) indextype is mdsys.spatial_index_v2';
+            .' ( '.$this->columnize($command->columns)." ) indextype is {$indexType}";
     }
 
     /**
@@ -1110,7 +1114,7 @@ class OracleGrammar extends Grammar
             'vector_ip_ops' => 'dot',
             'vector_l1_ops' => 'manhattan',
             'vector_hamming_ops' => 'hamming',
-            'vector_l2sq_ops' => 'l2_squared',
+            'vector_l2sq_ops' => 'euclidean_squared',
             'vector_l2_ops' => 'euclidean',
             default => 'cosine',
         };

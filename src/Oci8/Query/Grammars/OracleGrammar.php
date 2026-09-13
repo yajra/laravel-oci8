@@ -14,6 +14,8 @@ use RuntimeException;
 use stdClass;
 use Yajra\Oci8\Oci8Connection;
 use Yajra\Oci8\OracleReservedWords;
+use Yajra\Oci8\Query\OracleGeometry;
+use Yajra\Oci8\Query\OracleVector;
 
 /**
  * @property Oci8Connection $connection
@@ -48,6 +50,24 @@ class OracleGrammar extends Grammar
      * @var int
      */
     protected $labelSearchFullText = 1;
+
+    /**
+     * Get the appropriate query parameter placeholder for a value.
+     */
+    public function parameter($value): string
+    {
+        if ($value instanceof OracleVector) {
+            return 'TO_VECTOR(?)';
+        }
+
+        if ($value instanceof OracleGeometry) {
+            $srid = $value->srid ?? 'NULL';
+
+            return "MDSYS.SDO_GEOMETRY(?, {$srid})";
+        }
+
+        return parent::parameter($value);
+    }
 
     /**
      * Compile a delete statement with joins into SQL.
@@ -1202,7 +1222,9 @@ class OracleGrammar extends Grammar
     protected function compileUnionSelectFromDual(array $values): string
     {
         return collect($values)->map(function ($record) {
-            $values = collect($record)->map(fn ($value, $key) => '? as '.$this->wrap($key))->implode(', ');
+            $values = collect($record)
+                ->map(fn ($value, $key) => $this->parameter($value).' as '.$this->wrap($key))
+                ->implode(', ');
 
             return 'select '.$values.' from dual';
         })->implode(' union all ');
