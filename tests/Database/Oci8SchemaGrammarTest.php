@@ -1223,6 +1223,40 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $blueprint->toSql());
     }
 
+    public function test_generated_index_name_uses_a_deterministic_fallback_when_parts_cannot_be_shortened_further(): void
+    {
+        $connection = $this->getConnection(maxLength: 30);
+        $table = 'users_with_a_very_long_name';
+        $column = 'external_identity_provider_reference';
+
+        $first = (new Blueprint($connection, $table))->unique($column)->index;
+        $second = (new Blueprint($connection, $table))->unique($column)->index;
+
+        $this->assertSame($first, $second);
+        $this->assertLessThanOrEqual(30, strlen($first));
+        $this->assertMatchesRegularExpression('/_[a-f0-9]{8}$/', $first);
+    }
+
+    public function test_generated_index_name_keeps_the_existing_shortening_when_it_can_fit(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(maxLength: 30), 'verylongusers');
+
+        $index = $blueprint->unique('verylongreference')->index;
+
+        $this->assertSame('verylonguse_verylongreferen_uk', $index);
+        $this->assertSame(30, strlen($index));
+    }
+
+    public function test_generated_index_name_shortening_handles_multibyte_parts_by_byte_length(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(maxLength: 30), '使用者_資料');
+
+        $index = $blueprint->unique('外部_識別碼')->index;
+
+        $this->assertSame('使用_資料_外部_識別_uk', $index);
+        $this->assertSame(30, strlen($index));
+    }
+
     public function test_drop_timestamps()
     {
         $conn = $this->getConnection();
