@@ -5,8 +5,11 @@ namespace Yajra\Oci8\Tests\Functional\Compatibility;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PDO;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
+use Throwable;
 use Yajra\Oci8\Tests\TestCase;
 
 class JsonTest extends TestCase
@@ -169,6 +172,53 @@ class JsonTest extends TestCase
             ->get();
 
         $this->assertCount(2, $results);
+
+        $results = DB::table('json_test')
+            ->whereJsonContains('options', [])
+            ->get();
+
+        $this->assertCount(2, $results);
+    }
+
+    #[Test]
+    public function it_matches_json_array_values_longer_than_4000_bytes()
+    {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
+        $longValue = str_repeat('x', 5000);
+
+        DB::table('json_test')->insert([
+            'id' => 1,
+            'options' => json_encode([$longValue]),
+        ]);
+
+        DB::table('json_test')->insert([
+            'id' => 2,
+            'options' => json_encode(['short']),
+        ]);
+
+        DB::table('json_test')->insert([
+            'id' => 3,
+            'options' => json_encode([str_repeat('x', 4999).'y']),
+        ]);
+
+        $contains = DB::table('json_test')
+            ->whereJsonContains('options', $longValue)
+            ->get();
+
+        $this->assertEquals([1], $contains->pluck('id')->all());
+        $this->assertSame([$longValue], json_decode($contains->first()->options, true));
+
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            $overlaps = DB::table('json_test')
+                ->whereJsonOverlaps('options', [$longValue])
+                ->get();
+
+            $this->assertEquals([1], $overlaps->pluck('id')->all());
+            $this->assertSame([$longValue], json_decode($overlaps->first()->options, true));
+        }
     }
 
     #[Test]

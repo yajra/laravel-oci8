@@ -1240,11 +1240,16 @@ class OracleGrammar extends Grammar
     protected function whereJsonContains(Builder $query, $where): string
     {
         $not = $where['not'] ? 'NOT ' : '';
+        $values = array_map(
+            fn ($value) => is_string($value) && strlen($value) > 3999
+                ? $this->parameter($value)
+                : 'TO_CLOB('.$this->parameter($value).')',
+            is_array($where['value']) ? $where['value'] : [$where['value']]
+        );
 
         return $not.$this->compileJsonContains(
             $where['column'],
-            is_array($where['value']) ? $this->parameterize($where['value']) : $this->parameter($where['value']),
-            is_array($where['value']) ? count($where['value']) : 1
+            $values
         );
     }
 
@@ -1252,33 +1257,33 @@ class OracleGrammar extends Grammar
      * Compile a "JSON contains" statement into SQL.
      *
      * @param  string  $column
-     * @param  string  $value
-     * @param  int  $count  = 1
+     * @param  array|string  $value
      *
      * @throws RuntimeException
      */
-    protected function compileJsonContains($column, $value, int $count = 1): string
+    protected function compileJsonContains($column, $value): string
     {
         if (! $this->connection->isVersionAboveOrEqual('12c')) {
             throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
         }
 
-        $parts = explode('->', $column, 2);
-        $field = $this->wrap($parts[0]);
+        $values = is_array($value) ? $value : [$value];
 
-        if (count($parts) > 1) {
-            $jsonPath = '$.'.str_replace('->', '.', $parts[1]).'[*]';
-        } else {
-            $jsonPath = '$[*]';
+        if ($values === []) {
+            return '(1 = 1)';
         }
 
-        $sql = 'EXISTS (SELECT 1 FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value';
+        $jsonTable = $this->compileJsonArrayTable($column);
+        $conditions = array_map(
+            fn ($value) => 'EXISTS (SELECT 1 FROM '.$jsonTable.' jt WHERE DBMS_LOB.COMPARE(jt.value, '.$value.') = 0)',
+            $values
+        );
 
-        if ($count === 1) {
-            return $sql.'='.$value.')';
+        if (count($conditions) === 1) {
+            return $conditions[0];
         }
 
-        return $sql.' IN ('.$value.') HAVING COUNT(DISTINCT jt.value) = '.$count.')';
+        return '('.implode(' AND ', $conditions).')';
     }
 
     /**
@@ -1289,10 +1294,16 @@ class OracleGrammar extends Grammar
     protected function whereJsonOverlaps(Builder $query, $where): string
     {
         $not = $where['not'] ? 'NOT ' : '';
+        $values = array_map(
+            fn ($value) => is_string($value) && strlen($value) > 3999
+                ? $this->parameter($value)
+                : 'TO_CLOB('.$this->parameter($value).')',
+            is_array($where['value']) ? $where['value'] : [$where['value']]
+        );
 
         return $not.$this->compileJsonOverlaps(
             $where['column'],
-            is_array($where['value']) ? $this->parameterize($where['value']) : $this->parameter($where['value'])
+            $values
         );
     }
 
@@ -1300,7 +1311,7 @@ class OracleGrammar extends Grammar
      * Compile a "JSON overlaps" statement into SQL.
      *
      * @param  string  $column
-     * @param  string  $value
+     * @param  array|string  $value
      *
      * @throws RuntimeException
      */
@@ -1310,10 +1321,27 @@ class OracleGrammar extends Grammar
             throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
         }
 
-        if ($value === '') {
+        $values = is_array($value) ? $value : [$value];
+
+        if ($values === []) {
             return '(1 = 0)';
         }
 
+        $conditions = array_map(
+            fn ($value) => 'DBMS_LOB.COMPARE(jt.value, '.$value.') = 0',
+            $values
+        );
+
+        return 'EXISTS (SELECT 1 FROM '.$this->compileJsonArrayTable($column).' jt WHERE '.implode(' OR ', $conditions).')';
+    }
+
+    /**
+     * Compile a JSON array into a relational table with CLOB values.
+     *
+     * @param  string  $column
+     */
+    protected function compileJsonArrayTable($column): string
+    {
         $parts = explode('->', $column, 2);
         $field = $this->wrap($parts[0]);
 
@@ -1323,7 +1351,7 @@ class OracleGrammar extends Grammar
             $jsonPath = '$[*]';
         }
 
-        return 'EXISTS (SELECT 1 FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value IN ('.$value.'))';
+        return 'JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (value CLOB PATH \'$\'))';
     }
 
     /**
