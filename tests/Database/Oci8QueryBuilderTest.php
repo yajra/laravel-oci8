@@ -3941,6 +3941,29 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals([1], $builder->getBindings());
     }
 
+    public function test_where_json_overlaps()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->select('*')->from('users')->whereJsonOverlaps('options', ['en', 'de']);
+        $this->assertSame('select * from "USERS" where EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value IN (?, ?))', $builder->toSql());
+        $this->assertEquals(['en', 'de'], $builder->getBindings());
+
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->select('*')->from('users')->whereJsonDoesntOverlap('users.options->languages', ['en']);
+        $this->assertSame('select * from "USERS" where NOT EXISTS (SELECT 1 FROM JSON_TABLE("USERS"."OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value IN (?))', $builder->toSql());
+        $this->assertEquals(['en'], $builder->getBindings());
+
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->select('*')->from('users')->where('id', 1)->orWhereJsonOverlaps('options->languages', new Raw("Upper('en')"));
+        $this->assertSame('select * from "USERS" where "ID" = ? or EXISTS (SELECT 1 FROM JSON_TABLE("OPTIONS", \'$.languages[*]\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value IN (Upper(\'en\')))', $builder->toSql());
+        $this->assertEquals([1], $builder->getBindings());
+
+        $builder = $this->getBuilder(serverVersion: '12c');
+        $builder->select('*')->from('users')->whereJsonOverlaps('options', []);
+        $this->assertSame('select * from "USERS" where (1 = 0)', $builder->toSql());
+        $this->assertEquals([], $builder->getBindings());
+    }
+
     public function test_from_sub()
     {
         $builder = $this->getBuilder();
@@ -4297,6 +4320,17 @@ class Oci8QueryBuilderTest extends TestCase
         $this->getBuilder(serverVersion: '11g')
             ->from('users')
             ->whereJsonContains('options', 'en')
+            ->toSql();
+    }
+
+    public function test_json_overlaps_requires_oracle_12c()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('JSON query operations require Oracle 12c or newer.');
+
+        $this->getBuilder(serverVersion: '11g')
+            ->from('users')
+            ->whereJsonOverlaps('options', ['en'])
             ->toSql();
     }
 

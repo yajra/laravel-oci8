@@ -310,6 +310,46 @@ class JsonTest extends TestCase
     }
 
     #[Test]
+    public function it_finds_rows_where_root_json_arrays_overlap()
+    {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->markTestSkipped('Laravel does not support JSON overlap queries on PostgreSQL.');
+        }
+
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
+            $this->markTestSkipped('This is only supported from 12c and onward!');
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['en', 'de'])],
+            ['options' => json_encode(['fr', 'hu'])],
+            ['options' => json_encode(['es'])],
+        ]);
+
+        $overlapping = DB::table('json_test')
+            ->whereJsonOverlaps('options', ['de', 'hu'])
+            ->get();
+
+        $notOverlapping = DB::table('json_test')
+            ->whereJsonDoesntOverlap('options', ['de', 'hu'])
+            ->get();
+
+        $orOverlapping = DB::table('json_test')
+            ->where('id', 99999)
+            ->orWhereJsonOverlaps('options', ['de', 'hu'])
+            ->get();
+
+        $emptyOverlap = DB::table('json_test')
+            ->whereJsonOverlaps('options', [])
+            ->get();
+
+        $this->assertCount(2, $overlapping);
+        $this->assertCount(1, $notOverlapping);
+        $this->assertCount(2, $orOverlapping);
+        $this->assertCount(0, $emptyOverlap);
+    }
+
+    #[Test]
     public function it_finds_rows_with_json_length_equal_to_1()
     {
         if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {

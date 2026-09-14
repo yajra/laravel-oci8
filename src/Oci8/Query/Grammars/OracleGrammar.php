@@ -1282,6 +1282,51 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a "where JSON overlaps" clause.
+     *
+     * @param  array  $where
+     */
+    protected function whereJsonOverlaps(Builder $query, $where): string
+    {
+        $not = $where['not'] ? 'NOT ' : '';
+
+        return $not.$this->compileJsonOverlaps(
+            $where['column'],
+            is_array($where['value']) ? $this->parameterize($where['value']) : $this->parameter($where['value'])
+        );
+    }
+
+    /**
+     * Compile a "JSON overlaps" statement into SQL.
+     *
+     * @param  string  $column
+     * @param  string  $value
+     *
+     * @throws RuntimeException
+     */
+    protected function compileJsonOverlaps($column, $value): string
+    {
+        if (! $this->connection->isVersionAboveOrEqual('12c')) {
+            throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
+        }
+
+        if ($value === '') {
+            return '(1 = 0)';
+        }
+
+        $parts = explode('->', $column, 2);
+        $field = $this->wrap($parts[0]);
+
+        if (count($parts) > 1) {
+            $jsonPath = '$.'.str_replace('->', '.', $parts[1]).'[*]';
+        } else {
+            $jsonPath = '$[*]';
+        }
+
+        return 'EXISTS (SELECT 1 FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (value VARCHAR2(4000) PATH \'$\')) jt WHERE jt.value IN ('.$value.'))';
+    }
+
+    /**
      * Prepare the binding for a "JSON contains" statement.
      *
      * @param  mixed  $binding
