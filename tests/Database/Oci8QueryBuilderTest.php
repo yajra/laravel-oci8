@@ -1189,7 +1189,7 @@ class Oci8QueryBuilderTest extends TestCase
         }
     }
 
-    public function test_union_limit_falls_back_to_all_columns_when_selecting_expression_without_alias()
+    public function test_union_limit_projects_unaliased_function_expression()
     {
         $builder = $this->getBuilder();
         $builder->selectRaw('lower(name)')->from('users');
@@ -1199,7 +1199,7 @@ class Oci8QueryBuilderTest extends TestCase
         if ($this->getConnection()->isVersionAboveOrEqual('12c')) {
             $this->assertSame('(select lower(name) from "USERS") union (select lower(name) from "DOGS") offset 0 rows fetch next 10 rows only', $builder->toSql());
         } else {
-            $this->assertSame('select t2.* from ( select rownum AS "rn", t1.* from ((select lower(name) from "USERS") union (select lower(name) from "DOGS")) t1 ) t2 where t2."rn" between 1 and 10', $builder->toSql());
+            $this->assertSame('select t2."LOWER(NAME)" from ( select rownum AS "rn", t1.* from ((select lower(name) from "USERS") union (select lower(name) from "DOGS")) t1 ) t2 where t2."rn" between 1 and 10', $builder->toSql());
         }
     }
 
@@ -1720,6 +1720,146 @@ class Oci8QueryBuilderTest extends TestCase
 
         $this->assertSame(
             'select t2."ID", t2."STOCKS_SUM_QUANTITY" from ( select rownum AS "rn", t1.* from (select "ID", (select sum("STOCK"."QUANTITY") from "STOCK" where "ARTICLE"."ID" = "STOCK"."_ARTICLE_ID") as "STOCKS_SUM_QUANTITY" from "ARTICLE") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_handles_multiple_expressions_in_select_raw()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('orders')
+            ->selectRaw(
+                'user_id, '
+                .'SUM(CASE WHEN EXTRACT(YEAR FROM created_at) = 2024 THEN 1 ELSE 0 END) as year_2024, '
+                .'SUM(CASE WHEN EXTRACT(YEAR FROM created_at) = 2025 THEN 1 ELSE 0 END) as year_2025, '
+                .'SUM(CASE WHEN EXTRACT(YEAR FROM created_at) = 2026 THEN 1 ELSE 0 END) as year_2026'
+            )
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."USER_ID", t2."YEAR_2024", t2."YEAR_2025", t2."YEAR_2026" from ( select rownum AS "rn", t1.* from (select user_id, SUM(CASE WHEN EXTRACT(YEAR FROM created_at) = 2024 THEN 1 ELSE 0 END) as year_2024, SUM(CASE WHEN EXTRACT(YEAR FROM created_at) = 2025 THEN 1 ELSE 0 END) as year_2025, SUM(CASE WHEN EXTRACT(YEAR FROM created_at) = 2026 THEN 1 ELSE 0 END) as year_2026 from "ORDERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_keeps_nested_commas_within_select_raw_expression()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('users')
+            ->selectRaw("id, COALESCE(name, 'Doe, John') as display_name")
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."ID", t2."DISPLAY_NAME" from ( select rownum AS "rn", t1.* from (select id, COALESCE(name, \'Doe, John\') as display_name from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_handles_subquery_in_multiple_select_raw_expressions()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('orders')
+            ->selectRaw(
+                'id, (select COALESCE(SUM(order_items.amount), 0) from order_items '
+                .'where order_items.order_id = orders.id) as item_total'
+            )
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."ID", t2."ITEM_TOTAL" from ( select rownum AS "rn", t1.* from (select id, (select COALESCE(SUM(order_items.amount), 0) from order_items where order_items.order_id = orders.id) as item_total from "ORDERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_handles_oracle_alternative_quoted_literal_in_select_raw()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('users')
+            ->selectRaw("q'[It's, complicated (really)]' as description, id")
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."DESCRIPTION", t2."ID" from ( select rownum AS "rn", t1.* from (select q\'[It\'s, complicated (really)]\' as description, id from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_ignores_comments_when_splitting_select_raw()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('users')
+            ->selectRaw("id /* comma, and parenthesis ) */, name -- comma, and parenthesis (\n, email")
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            "select t2.\"ID\", t2.\"NAME\", t2.\"EMAIL\" from ( select rownum AS \"rn\", t1.* from (select id /* comma, and parenthesis ) */, name -- comma, and parenthesis (\n, email from \"USERS\") t1 ) t2 where t2.\"rn\" between 1 and 10",
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_handles_select_raw_aliases_without_as()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('orders')
+            ->selectRaw('user_id customer_id, SUM(amount) order_total')
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."CUSTOMER_ID", t2."ORDER_TOTAL" from ( select rownum AS "rn", t1.* from (select user_id customer_id, SUM(amount) order_total from "ORDERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_handles_aliased_count_and_multiplication_in_select_raw()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('orders')
+            ->selectRaw('COUNT(*) as order_count, price * quantity as line_total')
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."ORDER_COUNT", t2."LINE_TOTAL" from ( select rownum AS "rn", t1.* from (select COUNT(*) as order_count, price * quantity as line_total from "ORDERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limit_and_offset_projects_unaliased_function_expression()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('users')
+            ->selectRaw('LOWER(name)')
+            ->offset(0)
+            ->limit(10);
+
+        $this->assertSame(
+            'select t2."LOWER(NAME)" from ( select rownum AS "rn", t1.* from (select LOWER(name) from "USERS") t1 ) t2 where t2."rn" between 1 and 10',
+            $builder->toSql()
+        );
+    }
+
+    public function test_limited_union_branch_projects_raw_expressions_without_synthetic_row_number()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g');
+        $builder->from('orders')
+            ->selectRaw('id item_id, 0 as item_count, amount as line_total, ABS(amount)');
+
+        $limited = $this->getBuilder(serverVersion: '11g')
+            ->from('order_items')
+            ->selectRaw('id item_id, COUNT(*) OVER () as item_count, amount * 2 as line_total, ABS(amount)')
+            ->orderBy('id')
+            ->limit(2);
+
+        $builder->unionAll($limited);
+
+        $this->assertSame(
+            '(select id item_id, 0 as item_count, amount as line_total, ABS(amount) from "ORDERS") union all (select t2."ITEM_ID", t2."ITEM_COUNT", t2."LINE_TOTAL", t2."ABS(AMOUNT)" from ( select rownum AS "rn", t1.* from (select id item_id, COUNT(*) OVER () as item_count, amount * 2 as line_total, ABS(amount) from "ORDER_ITEMS" order by "ID" asc) t1 ) t2 where t2."rn" between 1 and 2)',
             $builder->toSql()
         );
     }
