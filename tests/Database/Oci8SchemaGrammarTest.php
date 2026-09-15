@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Query\Expression;
+use InvalidArgumentException;
 use LogicException;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -10,6 +11,7 @@ use Yajra\Oci8\Oci8Connection as Connection;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 use Yajra\Oci8\Schema\OracleBuilder;
+use Yajra\Oci8\Schema\OraclePreferences;
 
 class Oci8SchemaGrammarTest extends TestCase
 {
@@ -212,6 +214,7 @@ class Oci8SchemaGrammarTest extends TestCase
             ->shouldReceive('getTablePrefix')->andReturn($prefix)
             ->shouldReceive('getMaxLength')->andReturn($maxLength)
             ->shouldReceive('getSchemaPrefix')->andReturn($schemaPrefix)
+            ->shouldReceive('getSchema')->andReturn($schemaPrefix ?: 'TEST_SCHEMA')
             ->shouldReceive('isVersionAboveOrEqual')->andReturnUsing(fn ($version) => version_compare($version, $serverVersion, '<='))
             ->shouldReceive('isMaria')->andReturn(false)
             ->getMock();
@@ -270,6 +273,88 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertSame(['REPORTING'], $builder->getCurrentSchemaListing());
     }
 
+    public function test_schema_builder_uses_connection_schema_as_default(): void
+    {
+        $grammar = m::mock(OracleGrammar::class);
+        $processor = m::mock();
+        $connection = m::mock(Connection::class);
+        $connection->shouldReceive('getSchemaGrammar')->once()->andReturn($grammar);
+        $connection->shouldReceive('getSchema')->twice()->andReturn('REPORTING');
+        $connection->shouldReceive('getTablePrefix')->once()->andReturn('prefix_');
+        $grammar->shouldReceive('compileColumnExists')
+            ->once()
+            ->with('REPORTING', 'prefix_users')
+            ->andReturn('column listing sql');
+        $connection->shouldReceive('select')->once()->with('column listing sql')->andReturn([]);
+        $processor->shouldReceive('processColumnListing')->once()->with([])->andReturn(['id']);
+        $connection->shouldReceive('getPostProcessor')->once()->andReturn($processor);
+
+        $builder = new OracleBuilder($connection);
+
+        $this->assertSame(['REPORTING', 'users'], $builder->parseSchemaAndTable('users'));
+        $this->assertSame(['id'], $builder->getColumnListing('users'));
+    }
+
+    public function test_schema_builder_rejects_three_part_references(): void
+    {
+        $connection = m::mock(Connection::class);
+        $connection->shouldReceive('getSchemaGrammar')->once()->andReturn(m::mock(OracleGrammar::class));
+
+        $builder = new OracleBuilder($connection);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Using three-part references is not supported, you may use `Schema::connection('database')` instead."
+        );
+
+        $builder->parseSchemaAndTable('database.schema.users');
+    }
+
+    public function test_schema_grammar_uses_connection_schema_as_default(): void
+    {
+        $grammar = $this->getGrammar($this->getConnection(schemaPrefix: 'reporting'));
+
+        $this->assertStringContainsString("upper(t.owner) = upper('reporting')", $grammar->compileColumns(null, 'users'));
+        $this->assertStringContainsString("upper(owner) = upper('reporting')", $grammar->compileViews(null));
+        $this->assertStringContainsString("upper(owner) = upper('reporting')", $grammar->compileTypes(null));
+        $this->assertStringContainsString("fk.owner = upper('reporting')", $grammar->compileForeignKeys(null, 'users'));
+    }
+
+    public function test_schema_builder_uses_connection_schema_for_management_commands(): void
+    {
+        $grammar = m::mock(OracleGrammar::class);
+        $preferences = m::mock(OraclePreferences::class);
+        $connection = m::mock(Connection::class);
+        $connection->shouldReceive('getSchemaGrammar')->once()->andReturn($grammar);
+        $connection->shouldReceive('getSchema')->times(6)->andReturn('REPORTING');
+        $preferences->shouldReceive('dropAllPreferences')->once();
+        $grammar->shouldReceive('compileDropAllTables')->once()->with('REPORTING')->andReturn('drop tables');
+        $grammar->shouldReceive('compileDropAllViews')->once()->with('REPORTING')->andReturn('drop views');
+        $grammar->shouldReceive('compileDropAllTypes')->once()->with('REPORTING')->andReturn('drop types');
+        $grammar->shouldReceive('compileDisableForeignKeyConstraints')->once()->with('REPORTING')->andReturn('disable foreign keys');
+        $grammar->shouldReceive('compileEnableForeignKeyConstraints')->once()->with('REPORTING')->andReturn('enable foreign keys');
+        $grammar->shouldReceive('compileTables')->once()->with('REPORTING')->andReturn('list tables');
+        $connection->shouldReceive('statement')->once()->with('drop tables')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('drop views')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('drop types')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('disable foreign keys')->andReturnTrue();
+        $connection->shouldReceive('statement')->once()->with('enable foreign keys')->andReturnTrue();
+        $connection->shouldReceive('selectFromWriteConnection')->once()->with('list tables')->andReturn([]);
+        $processor = m::mock();
+        $processor->shouldReceive('processTables')->once()->with([])->andReturn([]);
+        $connection->shouldReceive('getPostProcessor')->once()->andReturn($processor);
+
+        $builder = new OracleBuilder($connection);
+        $builder->ctxDdlPreferences = $preferences;
+
+        $builder->dropAllTables();
+        $builder->dropAllViews();
+        $builder->dropAllTypes();
+        $this->assertTrue($builder->disableForeignKeyConstraints());
+        $this->assertTrue($builder->enableForeignKeyConstraints());
+        $this->assertSame([], $builder->getTables());
+    }
+
     public function test_create_database_is_not_supported(): void
     {
         $this->expectException(\RuntimeException::class);
@@ -312,6 +397,19 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('create table "SCHEMA"."USERS" ( "FIRST NAME" varchar2(255) not null )', $statements[0]);
+    }
+
+    public function test_schema_prefix_does_not_override_an_explicit_schema(): void
+    {
+        $conn = $this->getConnection(prefix: 'prefix_', schemaPrefix: 'schema');
+
+        $blueprint = new Blueprint($conn, 'archive.users');
+        $blueprint->create();
+        $blueprint->string('name');
+
+        $this->assertSame([
+            'create table "ARCHIVE"."PREFIX_USERS" ( "NAME" varchar2(255) not null )',
+        ], $blueprint->toSql());
     }
 
     public function test_create_index_name_using_column_with_space()
@@ -506,6 +604,33 @@ class Oci8SchemaGrammarTest extends TestCase
         );
     }
 
+    public function test_create_table_omits_default_foreign_key_delete_actions()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->integer('role_id');
+        $blueprint->integer('team_id');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->restrictOnDelete();
+        $blueprint->foreign('team_id')->references('id')->on('teams')->noActionOnDelete();
+        $blueprint->create();
+
+        $this->assertSame([
+            'create table "USERS" ( "ROLE_ID" number(10,0) not null, "TEAM_ID" number(10,0) not null, constraint "USERS_ROLE_ID_FK" foreign key ( "ROLE_ID" ) references "ROLES" ( "ID" ), constraint "USERS_TEAM_ID_FK" foreign key ( "TEAM_ID" ) references "TEAMS" ( "ID" ) )',
+        ], $blueprint->toSql());
+    }
+
+    public function test_create_table_rejects_foreign_key_update_actions()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->integer('role_id');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->cascadeOnUpdate();
+        $blueprint->create();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Oracle does not support ON UPDATE actions [cascade] on foreign keys.');
+
+        $blueprint->toSql();
+    }
+
     public function test_basic_create_table_with_deferrable_foreign_key()
     {
         $conn = $this->getConnection(prefix: 'prefix_');
@@ -645,7 +770,7 @@ class Oci8SchemaGrammarTest extends TestCase
         // Test case from issue #941: modifying nullable column with ->nullable() should not fail
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -677,7 +802,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -707,7 +832,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -735,7 +860,7 @@ class Oci8SchemaGrammarTest extends TestCase
         // Test changing from not null to nullable
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -764,7 +889,7 @@ class Oci8SchemaGrammarTest extends TestCase
     {
         $conn = m::mock(Connection::class)
             ->shouldReceive('getConfig')->with('prefix_indexes')->andReturn(null)
-            ->shouldReceive('getConfig')->with('username')->andReturn('TEST_SCHEMA')
+            ->shouldReceive('getSchema')->andReturn('TEST_SCHEMA')
             ->shouldReceive('getTablePrefix')->andReturn('')
             ->shouldReceive('getMaxLength')->andReturn(30)
             ->shouldReceive('getSchemaPrefix')->andReturn('')
@@ -867,9 +992,29 @@ class Oci8SchemaGrammarTest extends TestCase
     public function test_compile_column_exists_method()
     {
         $grammar = $this->getGrammar();
-        $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') order by column_id';
+        $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') and hidden_column = \'NO\' order by column_id';
         $sql = $grammar->compileColumnExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_column_exists_keeps_user_generated_invisible_columns(): void
+    {
+        $grammar = $this->getGrammar($this->getConnection(serverVersion: '12c'));
+
+        $this->assertSame(
+            'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') and (hidden_column = \'NO\' or user_generated = \'YES\') order by column_id',
+            $grammar->compileColumnExists('schema', 'test_table')
+        );
+    }
+
+    public function test_compile_column_exists_escapes_metadata_values(): void
+    {
+        $grammar = $this->getGrammar();
+
+        $this->assertSame(
+            "select column_name from all_tab_cols where upper(owner) = upper('sche''ma') and upper(table_name) = upper('test''table') and hidden_column = 'NO' order by column_id",
+            $grammar->compileColumnExists("sche'ma", "test'table")
+        );
     }
 
     public function test_compile_columns_method()
@@ -895,13 +1040,21 @@ class Oci8SchemaGrammarTest extends TestCase
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
             where upper(t.table_name) = upper(\'test_table\')
                 and upper(t.owner) = upper(\'schema\')
-                '.($conn->isVersionAboveOrEqual('12c') ? "and (t.hidden_column = 'NO' or t.user_generated = 'YES')" : "and t.hidden_column = 'NO'").'
+                and '.($conn->isVersionAboveOrEqual('12c') ? "(t.hidden_column = 'NO' or t.user_generated = 'YES')" : "t.hidden_column = 'NO'").'
             order by
                 t.column_id
         ';
 
         $sql = $grammar->compileColumns('schema', 'test_table');
         $this->assertEquals($expected, $sql);
+    }
+
+    public function test_compile_columns_escapes_metadata_values(): void
+    {
+        $sql = $this->getGrammar()->compileColumns("sche'ma", "test'table");
+
+        $this->assertStringContainsString("upper(t.table_name) = upper('test''table')", $sql);
+        $this->assertStringContainsString("upper(t.owner) = upper('sche''ma')", $sql);
     }
 
     public function test_compile_views_method()
@@ -1109,6 +1262,57 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $blueprint->toSql());
     }
 
+    public function test_drop_commands_preserve_long_explicit_names(): void
+    {
+        $name = 'users_external_identity_provider_reference_unique';
+        $blueprint = new Blueprint($this->getConnection(maxLength: 30), 'users');
+        $blueprint->dropPrimary($name);
+        $blueprint->dropUnique($name);
+        $blueprint->dropForeign($name);
+        $blueprint->dropIndex($name);
+
+        $this->assertSame([
+            'alter table "USERS" drop constraint "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+            'alter table "USERS" drop constraint "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+            'alter table "USERS" drop constraint "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+            'drop index "USERS_EXTERNAL_IDENTITY_PROVIDER_REFERENCE_UNIQUE"',
+        ], $blueprint->toSql());
+    }
+
+    public function test_generated_index_name_uses_a_deterministic_fallback_when_parts_cannot_be_shortened_further(): void
+    {
+        $connection = $this->getConnection(maxLength: 30);
+        $table = 'users_with_a_very_long_name';
+        $column = 'external_identity_provider_reference';
+
+        $first = (new Blueprint($connection, $table))->unique($column)->index;
+        $second = (new Blueprint($connection, $table))->unique($column)->index;
+
+        $this->assertSame($first, $second);
+        $this->assertLessThanOrEqual(30, strlen($first));
+        $this->assertMatchesRegularExpression('/_[a-f0-9]{8}$/', $first);
+    }
+
+    public function test_generated_index_name_keeps_the_existing_shortening_when_it_can_fit(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(maxLength: 30), 'verylongusers');
+
+        $index = $blueprint->unique('verylongreference')->index;
+
+        $this->assertSame('verylonguse_verylongreferen_uk', $index);
+        $this->assertSame(30, strlen($index));
+    }
+
+    public function test_generated_index_name_shortening_handles_multibyte_parts_by_byte_length(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(maxLength: 30), '使用者_資料');
+
+        $index = $blueprint->unique('外部_識別碼')->index;
+
+        $this->assertSame('使用_資料_外部_識別_uk', $index);
+        $this->assertSame(30, strlen($index));
+    }
+
     public function test_drop_timestamps()
     {
         $conn = $this->getConnection();
@@ -1130,18 +1334,30 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals('drop index "NAME_INDEX"', $statements[0]);
     }
 
-    public function test_multiple_drop_full_text_by_columns()
+    public function test_multiple_drop_full_text_by_columns_is_scoped_to_the_table()
     {
         $blueprint = new Blueprint($this->getConnection(), 'users');
         $blueprint->dropFullText(['firstname', 'lastname']);
         $statements = $blueprint->toSql();
 
-        $expected = "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ('FIRSTNAME', 'LASTNAME')) loop
+        $expected = "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_table = 'USERS' and idx_text_name in ('FIRSTNAME', 'LASTNAME')) loop
             execute immediate 'drop index ' || idx_rec.idx_name;
         end loop; end;";
 
         $this->assertCount(1, $statements);
         $this->assertEquals($expected, $statements[0]);
+    }
+
+    public function test_drop_full_text_by_columns_uses_the_physical_table_name()
+    {
+        $blueprint = new Blueprint($this->getConnection(prefix: 'prefix_'), 'reporting.users');
+        $blueprint->dropFullText(['name']);
+
+        $this->assertSame([
+            "begin for idx_rec in (select idx_name from ctx_user_indexes where idx_table = 'PREFIX_USERS' and idx_text_name in ('NAME')) loop
+            execute immediate 'drop index ' || idx_rec.idx_name;
+        end loop; end;",
+        ], $blueprint->toSql());
     }
 
     public function test_drop_spatial_index()
@@ -1175,6 +1391,40 @@ class Oci8SchemaGrammarTest extends TestCase
 
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "PREFIX_USERS" rename to "PREFIX_FOO"', $statements[0]);
+    }
+
+    public function test_rename_table_with_schema_prefix_only_qualifies_source(): void
+    {
+        $conn = $this->getConnection(prefix: 'prefix_', schemaPrefix: 'schema');
+        $blueprint = new Blueprint($conn, 'users');
+        $blueprint->rename('foo');
+
+        $this->assertSame([
+            'alter table "SCHEMA"."PREFIX_USERS" rename to "PREFIX_FOO"',
+        ], $blueprint->toSql());
+    }
+
+    public function test_rename_table_accepts_matching_explicit_schema_on_target(): void
+    {
+        $conn = $this->getConnection(schemaPrefix: 'schema');
+        $blueprint = new Blueprint($conn, 'archive.users');
+        $blueprint->rename('ARCHIVE.foo');
+
+        $this->assertSame([
+            'alter table "ARCHIVE"."USERS" rename to "FOO"',
+        ], $blueprint->toSql());
+    }
+
+    public function test_rename_table_rejects_cross_schema_target(): void
+    {
+        $conn = $this->getConnection();
+        $blueprint = new Blueprint($conn, 'archive.users');
+        $blueprint->rename('reporting.foo');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Oracle cannot rename a table across schemas [archive] and [reporting].');
+
+        $blueprint->toSql();
     }
 
     public function test_rename_index()
@@ -1427,6 +1677,27 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertCount(1, $statements);
         $this->assertEquals('alter table "USERS" add constraint "USERS_FOO_ID_FK" foreign key ( "FOO_ID" ) references "ORDERS" ( "ID" ) on delete cascade',
             $statements[0]);
+    }
+
+    public function test_adding_foreign_key_with_set_null_delete()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->nullOnDelete();
+
+        $this->assertSame([
+            'alter table "USERS" add constraint "USERS_ROLE_ID_FK" foreign key ( "ROLE_ID" ) references "ROLES" ( "ID" ) on delete set null',
+        ], $blueprint->toSql());
+    }
+
+    public function test_adding_foreign_key_rejects_unsupported_delete_actions()
+    {
+        $blueprint = new Blueprint($this->getConnection(), 'users');
+        $blueprint->foreign('role_id')->references('id')->on('roles')->onDelete('set default');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Oracle does not support the ON DELETE action [set default].');
+
+        $blueprint->toSql();
     }
 
     public function test_adding_incrementing_id()
@@ -2003,15 +2274,15 @@ class Oci8SchemaGrammarTest extends TestCase
 
     public function test_drop_all_tables()
     {
-        $statement = $this->getGrammar()->compileDropAllTables();
+        $statement = $this->getGrammar()->compileDropAllTables('reporting');
 
         $expected = 'BEGIN
-            FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
-            EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS PURGE\');
+            FOR c IN (SELECT owner, table_name FROM all_tables WHERE owner = \'REPORTING\' AND secondary = \'N\') LOOP
+            EXECUTE IMMEDIATE (\'DROP TABLE "\' || replace(c.owner, \'"\', \'""\') || \'"."\' || replace(c.table_name, \'"\', \'""\') || \'" CASCADE CONSTRAINTS PURGE\');
             END LOOP;
 
-            FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
-            EXECUTE IMMEDIATE (\'DROP SEQUENCE \' || s.sequence_name);
+            FOR s IN (SELECT sequence_owner, sequence_name FROM all_sequences WHERE sequence_owner = \'REPORTING\' AND sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
+            EXECUTE IMMEDIATE (\'DROP SEQUENCE "\' || replace(s.sequence_owner, \'"\', \'""\') || \'"."\' || replace(s.sequence_name, \'"\', \'""\') || \'"\');
             END LOOP;
 
             END;';
@@ -2019,20 +2290,33 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_enable_foreign_key_constraints_quotes_identifiers()
+    public function test_drop_all_views_uses_the_requested_schema()
+    {
+        $statement = $this->getGrammar()->compileDropAllViews('reporting');
+
+        $this->assertStringContainsString("FROM all_views WHERE owner = 'REPORTING'", $statement);
+        $this->assertStringContainsString("DROP VIEW \"' || replace(v.owner", $statement);
+    }
+
+    public function test_drop_all_types_uses_the_requested_schema()
+    {
+        $statement = $this->getGrammar()->compileDropAllTypes('reporting');
+
+        $this->assertStringContainsString("FROM all_types WHERE owner = 'REPORTING'", $statement);
+        $this->assertStringContainsString("DROP TYPE \"' || replace(t.owner", $statement);
+    }
+
+    public function test_compile_enable_foreign_key_constraints_selects_foreign_keys_by_owner()
     {
         $statement = $this->getGrammar()->compileEnableForeignKeyConstraints('username');
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
-                FROM all_constraints c
-                         INNER JOIN all_constraints c2
-                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
-                         INNER JOIN all_cons_columns col
-                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
-                WHERE c2.constraint_type = \'R\'
-                  AND c.owner = \'USERNAME\'
+                SELECT \'alter table "\' || replace(fk.owner, \'"\', \'""\') || \'"."\' || replace(fk.table_name, \'"\', \'""\') || \'" enable constraint "\' || replace(fk.constraint_name, \'"\', \'""\') || \'"\' as statement
+                FROM all_constraints fk
+                WHERE fk.constraint_type = \'R\'
+                  AND upper(fk.owner) = upper(\'username\')
+                ORDER BY fk.table_name, fk.constraint_name
                 )
                 loop
                     execute immediate s.statement;
@@ -2042,20 +2326,17 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_disable_foreign_key_constraints_quotes_identifiers()
+    public function test_compile_disable_foreign_key_constraints_selects_foreign_keys_by_owner()
     {
         $statement = $this->getGrammar()->compileDisableForeignKeyConstraints('username');
 
         $expected = 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
-                FROM all_constraints c
-                         INNER JOIN all_constraints c2
-                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
-                         INNER JOIN all_cons_columns col
-                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
-                WHERE c2.constraint_type = \'R\'
-                  AND c.owner = \'USERNAME\'
+                SELECT \'alter table "\' || replace(fk.owner, \'"\', \'""\') || \'"."\' || replace(fk.table_name, \'"\', \'""\') || \'" disable constraint "\' || replace(fk.constraint_name, \'"\', \'""\') || \'"\' as statement
+                FROM all_constraints fk
+                WHERE fk.constraint_type = \'R\'
+                  AND upper(fk.owner) = upper(\'username\')
+                ORDER BY fk.table_name, fk.constraint_name
                 )
                 loop
                     execute immediate s.statement;
@@ -2065,26 +2346,55 @@ class Oci8SchemaGrammarTest extends TestCase
         $this->assertEquals($expected, $statement);
     }
 
-    public function test_compile_tables()
+    public function test_compile_foreign_key_constraints_escapes_the_owner(): void
+    {
+        $statement = $this->getGrammar()->compileForeignKeyConstraints("tenant'o", 'ENABLE');
+
+        $this->assertStringContainsString("upper(fk.owner) = upper('tenant''o')", $statement);
+        $this->assertStringContainsString(' enable constraint ', $statement);
+    }
+
+    public function test_compile_foreign_key_constraints_rejects_an_unsupported_action(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported foreign key constraint action [drop].');
+
+        $this->getGrammar()->compileForeignKeyConstraints('username', 'drop');
+    }
+
+    public function test_compile_tables_includes_all_table_storage()
     {
         $statement = $this->getGrammar()->compileTables('username');
 
-        $expected = 'select lower(all_tab_comments.table_name)  as "name",
-                lower(all_tables.owner) as "schema",
-                sum(user_segments.bytes) as "size",
-                all_tab_comments.comments as "comment",
-                (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
-            from all_tables
-                join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
-                left join user_segments on user_segments.segment_name = all_tables.table_name
-            where all_tables.owner = \'USERNAME\'
-                and all_tab_comments.owner = \'USERNAME\'
-                and all_tab_comments.table_type in (\'TABLE\')
-            group by all_tab_comments.table_name, all_tables.owner, all_tables.num_rows,
-                all_tables.avg_row_len, all_tables.blocks, all_tab_comments.comments
-            order by all_tab_comments.table_name';
+        $this->assertStringContainsString('segments.bytes as "size"', $statement);
+        $this->assertStringContainsString('from all_segments s', $statement);
+        $this->assertStringContainsString('join all_indexes i', $statement);
+        $this->assertStringContainsString('join all_lobs l', $statement);
+        $this->assertStringContainsString("s.segment_type in ('TABLE', 'TABLE PARTITION', 'TABLE SUBPARTITION')", $statement);
+        $this->assertStringContainsString("s.segment_type in ('INDEX', 'INDEX PARTITION', 'INDEX SUBPARTITION')", $statement);
+        $this->assertStringContainsString("s.segment_type in ('LOBSEGMENT', 'LOBINDEX', 'LOB PARTITION', 'LOB SUBPARTITION')", $statement);
+        $this->assertStringContainsString("where upper(table_owner) = upper('username')", $statement);
+        $this->assertStringContainsString("where upper(t.owner) = upper('username')", $statement);
+        $this->assertStringContainsString('null as "collation"', $statement);
+        $this->assertStringNotContainsString('user_segments', $statement);
+        $this->assertStringNotContainsString('NLS_SORT', $statement);
+    }
 
-        $this->assertEquals($expected, $statement);
+    public function test_compile_tables_accepts_multiple_schemas()
+    {
+        $statement = $this->getGrammar()->compileTables(['reporting', 'audit']);
+
+        $this->assertStringContainsString("where upper(table_owner) in (upper('reporting'), upper('audit'))", $statement);
+        $this->assertStringContainsString("where upper(t.owner) in (upper('reporting'), upper('audit'))", $statement);
+        $this->assertStringContainsString('order by t.owner, t.table_name', $statement);
+    }
+
+    public function test_compile_tables_reports_table_default_collation_on_oracle_12c_release_2_and_newer()
+    {
+        $statement = $this->getGrammar($this->getConnection(serverVersion: '12cR2'))
+            ->compileTables('username');
+
+        $this->assertStringContainsString('lower(t.default_collation) as "collation"', $statement);
     }
 
     public function test_adding_generated_as()

@@ -39,6 +39,27 @@ class Oci8ConnectionTest extends TestCase
         $this->assertSame('ALTER SESSION SET CURRENT_SCHEMA  = demo', $pdo->lastPreparedSql);
     }
 
+    public function test_current_schema_session_variable_updates_the_connection_schema()
+    {
+        $pdo = new Oci8ConnectionTestMockPDO;
+        $connection = new Oci8Connection($pdo, config: ['username' => 'original']);
+
+        $connection->setSessionVars(['CURRENT_SCHEMA' => 'reporting']);
+
+        $this->assertSame('reporting', $connection->getSchema());
+        $this->assertSame('ALTER SESSION SET CURRENT_SCHEMA  = reporting', $pdo->lastPreparedSql);
+    }
+
+    public function test_schema_prefix_is_the_effective_schema()
+    {
+        $connection = new Oci8Connection(new Oci8ConnectionTestMockPDO, config: [
+            'username' => 'original',
+            'prefix_schema' => 'reporting',
+        ]);
+
+        $this->assertSame('reporting', $connection->getSchema());
+    }
+
     public function test_get_schema_prefix()
     {
         $connection = m::mock(Oci8Connection::class);

@@ -7,6 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\Grammar;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
 use Yajra\Oci8\Oci8Connection;
@@ -106,11 +107,14 @@ class OracleGrammar extends Grammar
      */
     public function wrapTable($table, $prefix = null): string
     {
-        if ($this->getSchemaPrefix()) {
-            return $this->getSchemaPrefix().'.'.parent::wrapTable($table);
+        $tableName = $table instanceof Blueprint ? $table->getTable() : $table;
+        $schemaPrefix = $this->getSchemaPrefix();
+
+        if ($schemaPrefix && is_string($tableName) && ! str_contains($tableName, '.')) {
+            return $schemaPrefix.'.'.parent::wrapTable($table, $prefix);
         }
 
-        return parent::wrapTable($table);
+        return parent::wrapTable($table, $prefix);
     }
 
     /**
@@ -172,12 +176,7 @@ class OracleGrammar extends Grammar
 
             $sql .= ", constraint {$index} foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
-            // Once we have the basic foreign key creation statement constructed we can
-            // build out the syntax for what should happen on an update or delete of
-            // the affected columns, which will get something like "cascade", etc.
-            if (! is_null($foreign->onDelete)) {
-                $sql .= " on delete {$foreign->onDelete}";
-            }
+            $sql = $this->appendForeignKeyActions($foreign, $sql);
 
             $sql = $this->appendDeferrableClause($foreign, $sql);
             $sql = $this->appendNotValidClause($foreign, $sql);
@@ -227,7 +226,11 @@ class OracleGrammar extends Grammar
      */
     public function compileColumnExists(string $database, string $table): string
     {
-        return "select column_name from all_tab_cols where upper(owner) = upper('{$database}') and upper(table_name) = upper('{$table}') order by column_id";
+        $hiddenColumnFilter = $this->getHiddenColumnFilter();
+        $database = $this->quoteMetadataValue($database);
+        $table = $this->quoteMetadataValue($table);
+
+        return "select column_name from all_tab_cols where upper(owner) = upper({$database}) and upper(table_name) = upper({$table}) and {$hiddenColumnFilter} order by column_id";
     }
 
     /**
@@ -238,16 +241,16 @@ class OracleGrammar extends Grammar
      */
     public function compileColumns($schema, $table): string
     {
-        $schema ??= $this->connection->getConfig('username');
+        $schema ??= $this->connection->getSchema();
+        $schema = $this->quoteMetadataValue((string) $schema);
+        $table = $this->quoteMetadataValue((string) $table);
         $autoIncrement = $this->connection->isVersionAboveOrEqual('12c')
             ? "decode(t.identity_column, 'YES', 1, 0) as auto_increment,"
             : 'null as auto_increment,';
         $collation = $this->connection->isVersionAboveOrEqual('12cR2')
             ? 'lower(t.collation) as collation,'
             : 'null as collation,';
-        $hiddenColumnFilter = $this->connection->isVersionAboveOrEqual('12c')
-            ? "and (t.hidden_column = 'NO' or t.user_generated = 'YES')"
-            : "and t.hidden_column = 'NO'";
+        $hiddenColumnFilter = $this->getHiddenColumnFilter('t.');
 
         return "
             select
@@ -266,12 +269,30 @@ class OracleGrammar extends Grammar
                 c.comments as \"comment\"
             from all_tab_cols t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
-            where upper(t.table_name) = upper('{$table}')
-                and upper(t.owner) = upper('{$schema}')
-                {$hiddenColumnFilter}
+            where upper(t.table_name) = upper({$table})
+                and upper(t.owner) = upper({$schema})
+                and {$hiddenColumnFilter}
             order by
                 t.column_id
         ";
+    }
+
+    /**
+     * Get the predicate that excludes Oracle's system-generated hidden columns.
+     */
+    protected function getHiddenColumnFilter(string $prefix = ''): string
+    {
+        return $this->connection->isVersionAboveOrEqual('12c')
+            ? "({$prefix}hidden_column = 'NO' or {$prefix}user_generated = 'YES')"
+            : "{$prefix}hidden_column = 'NO'";
+    }
+
+    /**
+     * Quote a metadata query value after escaping embedded string delimiters.
+     */
+    protected function quoteMetadataValue(string $value): string
+    {
+        return $this->quoteString(str_replace("'", "''", $value));
     }
 
     /**
@@ -313,7 +334,7 @@ class OracleGrammar extends Grammar
      */
     public function compileForeignKeys($schema, $table): string
     {
-        $schema ??= $this->connection->getConfig('username');
+        $schema ??= $this->connection->getSchema();
 
         return sprintf("
             select
@@ -348,7 +369,7 @@ class OracleGrammar extends Grammar
      */
     protected function compileOwnerWhereClause($schema, string $column = 'owner'): string
     {
-        $schema ??= $this->connection->getConfig('username');
+        $schema ??= $this->connection->getSchema();
 
         if (is_array($schema)) {
             $schemas = implode(', ', array_map(
@@ -414,12 +435,7 @@ class OracleGrammar extends Grammar
 
             $sql .= "foreign key ( {$columns} ) references {$on} ( {$onColumns} )";
 
-            // Once we have the basic foreign key creation statement constructed we can
-            // build out the syntax for what should happen on an update or delete of
-            // the affected columns, which will get something like "cascade", etc.
-            if (! is_null($command->onDelete)) {
-                $sql .= " on delete {$command->onDelete}";
-            }
+            $sql = $this->appendForeignKeyActions($command, $sql);
 
             $sql = $this->appendDeferrableClause($command, $sql);
 
@@ -427,6 +443,34 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Append the referential actions supported by Oracle.
+     */
+    protected function appendForeignKeyActions(Fluent $command, string $sql): string
+    {
+        if (! is_null($command->onUpdate)) {
+            $action = strtolower(trim((string) $command->onUpdate));
+
+            throw new LogicException("Oracle does not support ON UPDATE actions [{$action}] on foreign keys.");
+        }
+
+        if (is_null($command->onDelete)) {
+            return $sql;
+        }
+
+        $action = strtolower(trim((string) $command->onDelete));
+
+        if (in_array($action, ['restrict', 'no action'], true)) {
+            return $sql;
+        }
+
+        if (! in_array($action, ['cascade', 'set null'], true)) {
+            throw new InvalidArgumentException("Oracle does not support the ON DELETE action [{$action}].");
+        }
+
+        return $sql." on delete {$action}";
     }
 
     /**
@@ -527,15 +571,17 @@ class OracleGrammar extends Grammar
     /**
      * Compile the SQL needed to drop all tables.
      */
-    public function compileDropAllTables(): string
+    public function compileDropAllTables(?string $schema = null): string
     {
+        $owner = $this->quoteString(strtoupper($schema ?? $this->connection->getSchema()));
+
         return 'BEGIN
-            FOR c IN (SELECT table_name FROM user_tables WHERE secondary = \'N\') LOOP
-            EXECUTE IMMEDIATE (\'DROP TABLE "\' || c.table_name || \'" CASCADE CONSTRAINTS PURGE\');
+            FOR c IN (SELECT owner, table_name FROM all_tables WHERE owner = '.$owner.' AND secondary = \'N\') LOOP
+            EXECUTE IMMEDIATE (\'DROP TABLE "\' || replace(c.owner, \'"\', \'""\') || \'"."\' || replace(c.table_name, \'"\', \'""\') || \'" CASCADE CONSTRAINTS PURGE\');
             END LOOP;
 
-            FOR s IN (SELECT sequence_name FROM user_sequences WHERE sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
-            EXECUTE IMMEDIATE (\'DROP SEQUENCE \' || s.sequence_name);
+            FOR s IN (SELECT sequence_owner, sequence_name FROM all_sequences WHERE sequence_owner = '.$owner.' AND sequence_name NOT LIKE \'ISEQ$$_%\' ESCAPE \'\\\') LOOP
+            EXECUTE IMMEDIATE (\'DROP SEQUENCE "\' || replace(s.sequence_owner, \'"\', \'""\') || \'"."\' || replace(s.sequence_name, \'"\', \'""\') || \'"\');
             END LOOP;
 
             END;';
@@ -544,11 +590,13 @@ class OracleGrammar extends Grammar
     /**
      * Compile the SQL needed to drop all views.
      */
-    public function compileDropAllViews(): string
+    public function compileDropAllViews(?string $schema = null): string
     {
+        $owner = $this->quoteString(strtoupper($schema ?? $this->connection->getSchema()));
+
         return 'BEGIN
-            FOR v IN (SELECT view_name FROM user_views) LOOP
-            EXECUTE IMMEDIATE (\'DROP VIEW "\' || v.view_name || \'" CASCADE CONSTRAINTS\');
+            FOR v IN (SELECT owner, view_name FROM all_views WHERE owner = '.$owner.') LOOP
+            EXECUTE IMMEDIATE (\'DROP VIEW "\' || replace(v.owner, \'"\', \'""\') || \'"."\' || replace(v.view_name, \'"\', \'""\') || \'" CASCADE CONSTRAINTS\');
             END LOOP;
 
             END;';
@@ -557,11 +605,13 @@ class OracleGrammar extends Grammar
     /**
      * Compile the SQL needed to drop all types.
      */
-    public function compileDropAllTypes(): string
+    public function compileDropAllTypes(?string $schema = null): string
     {
+        $owner = $this->quoteString(strtoupper($schema ?? $this->connection->getSchema()));
+
         return 'BEGIN
-            FOR t IN (SELECT type_name FROM user_types) LOOP
-            EXECUTE IMMEDIATE (\'DROP TYPE "\' || t.type_name || \'" FORCE\');
+            FOR t IN (SELECT owner, type_name FROM all_types WHERE owner = '.$owner.') LOOP
+            EXECUTE IMMEDIATE (\'DROP TYPE "\' || replace(t.owner, \'"\', \'""\') || \'"."\' || replace(t.type_name, \'"\', \'""\') || \'" FORCE\');
             END LOOP;
 
             END;';
@@ -619,7 +669,7 @@ class OracleGrammar extends Grammar
     {
         $table = $this->wrapTable($blueprint);
 
-        $index = $this->wrap(mb_substr($command->index, 0, $this->getMaxLength()));
+        $index = $this->wrap($command->index);
 
         if ($type === 'index') {
             return "drop index {$index}";
@@ -663,10 +713,22 @@ class OracleGrammar extends Grammar
             return $this->compileDropIndex($blueprint, $command);
         }
 
-        $columns = array_map(fn ($column) => "'".strtoupper((string) $column)."'", $columns);
-        $columns = implode(', ', $columns);
+        $columns = implode(', ', array_map(
+            fn ($column) => $this->quoteString(str_replace("'", "''", strtoupper((string) $column))),
+            $columns
+        ));
 
-        $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_text_name in ($columns)) loop
+        $table = $blueprint->getTable();
+        $separator = strrpos($table, '.');
+
+        if ($separator !== false) {
+            $table = substr($table, $separator + 1);
+        }
+
+        $table = $this->connection->getTablePrefix().$table;
+        $table = $this->quoteString(str_replace("'", "''", strtoupper($table)));
+
+        $dropFullTextSql = "for idx_rec in (select idx_name from ctx_user_indexes where idx_table = $table and idx_text_name in ($columns)) loop
             execute immediate 'drop index ' || idx_rec.idx_name;
         end loop;";
 
@@ -721,8 +783,39 @@ class OracleGrammar extends Grammar
     public function compileRename(Blueprint $blueprint, Fluent $command): string
     {
         $from = $this->wrapTable($blueprint);
+        $to = $this->getLocalRenameTarget($blueprint, $command->to);
 
-        return "alter table {$from} rename to ".$this->wrapTable($command->to);
+        return "alter table {$from} rename to ".parent::wrapTable($to);
+    }
+
+    /**
+     * Get the unqualified target name for an Oracle table rename.
+     */
+    protected function getLocalRenameTarget(Blueprint $blueprint, string $target): string
+    {
+        $targetParts = explode('.', $target);
+
+        if (count($targetParts) === 1) {
+            return $target;
+        }
+
+        if (count($targetParts) !== 2 || in_array('', $targetParts, true)) {
+            throw new InvalidArgumentException("Invalid Oracle table rename target [{$target}].");
+        }
+
+        [$targetSchema, $targetTable] = $targetParts;
+        $sourceParts = explode('.', $blueprint->getTable());
+        $sourceSchema = count($sourceParts) === 2
+            ? $sourceParts[0]
+            : $this->connection->getSchema();
+
+        if (strcasecmp($sourceSchema, $targetSchema) !== 0) {
+            throw new InvalidArgumentException(
+                "Oracle cannot rename a table across schemas [{$sourceSchema}] and [{$targetSchema}]."
+            );
+        }
+
+        return $targetTable;
     }
 
     /**
@@ -1255,7 +1348,7 @@ class OracleGrammar extends Grammar
 
         try {
             $table = $blueprint->getTable();
-            $schema = $this->connection->getConfig('username');
+            $schema = $this->connection->getSchema();
 
             // Parse schema and table if table contains schema prefix
             if (str_contains($table, '.')) {
@@ -1336,16 +1429,21 @@ class OracleGrammar extends Grammar
      */
     public function compileForeignKeyConstraints(string $owner, string $action): string
     {
+        $action = strtolower($action);
+
+        if (! in_array($action, ['enable', 'disable'], true)) {
+            throw new InvalidArgumentException("Unsupported foreign key constraint action [{$action}].");
+        }
+
+        $owner = $this->quoteString(str_replace("'", "''", $owner));
+
         return 'begin
             for s in (
-                SELECT \'alter table "\' || replace(c2.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(c2.constraint_name, \'"\', \'""\') || \'"\' as statement
-                FROM all_constraints c
-                         INNER JOIN all_constraints c2
-                                    ON (c.constraint_name = c2.r_constraint_name AND c.owner = c2.owner)
-                         INNER JOIN all_cons_columns col
-                                    ON (c.constraint_name = col.constraint_name AND c.owner = col.owner)
-                WHERE c2.constraint_type = \'R\'
-                  AND c.owner = \''.strtoupper($owner).'\'
+                SELECT \'alter table "\' || replace(fk.owner, \'"\', \'""\') || \'"."\' || replace(fk.table_name, \'"\', \'""\') || \'" '.$action.' constraint "\' || replace(fk.constraint_name, \'"\', \'""\') || \'"\' as statement
+                FROM all_constraints fk
+                WHERE fk.constraint_type = \'R\'
+                  AND upper(fk.owner) = upper('.$owner.')
+                ORDER BY fk.table_name, fk.constraint_name
                 )
                 loop
                     execute immediate s.statement;
@@ -1356,24 +1454,58 @@ class OracleGrammar extends Grammar
     /**
      * Compile the query to determine the tables.
      *
-     * @param  string  $schema
+     * @param  string|string[]|null  $schema
      */
     public function compileTables($schema): string
     {
-        return 'select lower(all_tab_comments.table_name)  as "name",
-                lower(all_tables.owner) as "schema",
-                sum(user_segments.bytes) as "size",
-                all_tab_comments.comments as "comment",
-                (select lower(value) from nls_database_parameters where parameter = \'NLS_SORT\') as "collation"
-            from all_tables
-                join all_tab_comments on all_tab_comments.table_name = all_tables.table_name
-                left join user_segments on user_segments.segment_name = all_tables.table_name
-            where all_tables.owner = \''.strtoupper($schema).'\'
-                and all_tab_comments.owner = \''.strtoupper($schema).'\'
-                and all_tab_comments.table_type in (\'TABLE\')
-            group by all_tab_comments.table_name, all_tables.owner, all_tables.num_rows,
-                all_tables.avg_row_len, all_tables.blocks, all_tab_comments.comments
-            order by all_tab_comments.table_name';
+        $tableOwnerWhere = $this->compileOwnerWhereClause($schema, 't.owner');
+        $segmentOwnerWhere = $this->compileOwnerWhereClause($schema, 'table_owner');
+        $collation = $this->connection->isVersionAboveOrEqual('12cR2')
+            ? 'lower(t.default_collation)'
+            : 'null';
+
+        return 'select lower(t.table_name) as "name",
+                lower(t.owner) as "schema",
+                segments.bytes as "size",
+                c.comments as "comment",
+                '.$collation.' as "collation"
+            from all_tables t
+                join all_tab_comments c
+                    on c.owner = t.owner
+                    and c.table_name = t.table_name
+                    and c.table_type = \'TABLE\'
+                left join (
+                    select table_owner as owner, table_name, sum(bytes) as bytes
+                    from (
+                        select s.owner as table_owner, st.table_name, s.bytes
+                        from all_segments s
+                        join all_tables st
+                            on st.owner = s.owner
+                            and st.table_name = s.segment_name
+                        where s.segment_type in (\'TABLE\', \'TABLE PARTITION\', \'TABLE SUBPARTITION\')
+                        union all
+                        select i.table_owner, i.table_name, s.bytes
+                        from all_segments s
+                        join all_indexes i
+                            on i.owner = s.owner
+                            and i.index_name = s.segment_name
+                        where s.segment_type in (\'INDEX\', \'INDEX PARTITION\', \'INDEX SUBPARTITION\')
+                            and i.index_type != \'LOB\'
+                        union all
+                        select l.owner as table_owner, l.table_name, s.bytes
+                        from all_segments s
+                        join all_lobs l
+                            on l.owner = s.owner
+                            and (l.segment_name = s.segment_name or l.index_name = s.segment_name)
+                        where s.segment_type in (\'LOBSEGMENT\', \'LOBINDEX\', \'LOB PARTITION\', \'LOB SUBPARTITION\')
+                    ) table_segments
+                    where '.$segmentOwnerWhere.'
+                    group by table_owner, table_name
+                ) segments
+                    on segments.owner = t.owner
+                    and segments.table_name = t.table_name
+            where '.$tableOwnerWhere.'
+            order by t.owner, t.table_name';
     }
 
     /**
