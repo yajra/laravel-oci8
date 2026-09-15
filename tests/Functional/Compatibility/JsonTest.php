@@ -354,6 +354,45 @@ class JsonTest extends TestCase
     }
 
     #[Test]
+    public function it_finds_rows_by_nested_json_length()
+    {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['items' => ['first']])],
+            ['options' => json_encode(['items' => ['first', 'second']])],
+            ['options' => json_encode(['items' => []])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->whereJsonLength('options->items', '>', 1)
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
+    public function it_finds_rows_by_deeply_nested_json_length()
+    {
+        if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {
+            $this->markTestSkipped();
+        }
+
+        DB::table('json_test')->insert([
+            ['options' => json_encode(['data' => ['items' => ['first', 'second']]])],
+            ['options' => json_encode(['data' => ['items' => ['first']]])],
+        ]);
+
+        $results = DB::table('json_test')
+            ->whereJsonLength('options->data->items', '=', 2)
+            ->get();
+
+        $this->assertCount(1, $results);
+    }
+
+    #[Test]
     public function it_returns_zero_results_for_empty_json_array()
     {
         if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {

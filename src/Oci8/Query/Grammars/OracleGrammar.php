@@ -1323,11 +1323,14 @@ class OracleGrammar extends Grammar
             throw new RuntimeException('JSON query operations require Oracle 12c or newer.');
         }
 
-        [$field, $path] = $this->wrapJsonFieldAndPath($column);
+        $parts = explode('->', $column, 2);
+        $field = $this->wrap($parts[0]);
 
-        $jsonPath = $path ?: '$[*]';
+        $jsonPath = count($parts) > 1
+            ? $this->wrapJsonPath($parts[1].'[*]', '->')
+            : "'$[*]'";
 
-        return '(SELECT COUNT(*) FROM JSON_TABLE('.$field.', \''.$jsonPath.'\' COLUMNS (val PATH \'$\')) ) '.$operator.' '.$value;
+        return '(SELECT COUNT(*) FROM JSON_TABLE('.$field.', '.$jsonPath.' COLUMNS (val PATH \'$\')) ) '.$operator.' '.$value;
     }
 
     /**
