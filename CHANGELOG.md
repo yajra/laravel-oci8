@@ -1,3 +1,17 @@
+## [13.14.0](https://github.com/yajra/laravel-oci8/compare/v13.13.0...v13.14.0) (2026-09-15)
+
+### Features
+
+* support multi-column distinct counts ([6bfe82a](https://github.com/yajra/laravel-oci8/commit/6bfe82a0429d6c6a8095aeae6c633bb872d8ff50))
+
+### Bug Fixes
+
+* compile nested JSON length paths ([a50281e](https://github.com/yajra/laravel-oci8/commit/a50281e7fbe7db577069648b1f793d85468b3458))
+
+### Documentation
+
+* document schema and query builder compatibility ([aae4ddd](https://github.com/yajra/laravel-oci8/commit/aae4dddb2a44c1923765ed3fb91993e787503261))
+
 ## [13.13.0](https://github.com/yajra/laravel-oci8/compare/v13.12.0...v13.13.0) (2026-09-12)
 
 ### Features
