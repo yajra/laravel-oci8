@@ -82,6 +82,10 @@ class OracleGrammar extends Grammar
      */
     public function compileSelect(Builder $query): string
     {
+        if ($this->isMultiColumnDistinctCount($query)) {
+            return $this->compileMultiColumnDistinctCount($query);
+        }
+
         if (($query->unions || $query->havings) && $query->aggregate) {
             return $this->compileUnionAggregate($query);
         }
@@ -172,6 +176,48 @@ class OracleGrammar extends Grammar
         }
 
         return trim($sql);
+    }
+
+    /**
+     * Determine whether the query counts distinct combinations of columns.
+     */
+    protected function isMultiColumnDistinctCount(Builder $query): bool
+    {
+        if (strtolower($query->aggregate['function'] ?? '') !== 'count') {
+            return false;
+        }
+
+        $columns = is_array($query->distinct)
+            ? $query->distinct
+            : ($query->distinct ? $query->aggregate['columns'] : []);
+
+        return count($columns) > 1;
+    }
+
+    /**
+     * Compile a count of distinct column combinations.
+     */
+    protected function compileMultiColumnDistinctCount(Builder $query): string
+    {
+        $columns = is_array($query->distinct)
+            ? $query->distinct
+            : $query->aggregate['columns'];
+
+        $distinctQuery = clone $query;
+        $distinctQuery->aggregate = null;
+        $distinctQuery->columns = $columns;
+        $distinctQuery->distinct = true;
+        $distinctQuery->orders = null;
+        $distinctQuery->limit = null;
+        $distinctQuery->offset = null;
+        $distinctQuery->lock = null;
+        $distinctQuery->setBindings([], 'select');
+        $distinctQuery->setBindings([], 'order');
+
+        $sql = $this->compileSelect($distinctQuery);
+
+        return 'select count(*) as '.$this->wrap('aggregate')
+            .' from ('.$sql.') '.$this->wrapTable('laravel_distinct_count');
     }
 
     /**
