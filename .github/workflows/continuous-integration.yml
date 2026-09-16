@@ -59,13 +59,18 @@ jobs:
           extensions: oci8
           tools: composer:v2
           coverage: xdebug
+          ini-values: memory_limit=256M
 
       - name: Install dependencies
         uses: nick-invision/retry@v4
         with:
           timeout_minutes: 5
           max_attempts: 5
-          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+          command: |
+            # TODO: Remove this fork override after blob stream binding testing is complete.
+            composer config repositories.pdo-via-oci8 vcs https://github.com/csaba215/pdo-via-oci8.git
+            composer require --no-update --no-interaction "yajra/laravel-pdo-via-oci8:dev-feature/blob-stream-binding as 3.7.1"
+            composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Install Oracle Instant Client tools
         run: |
@@ -168,10 +173,72 @@ jobs:
             "
           fi
 
+      - name: Create Oracle test tablespace
+        run: |
+          if [ "${{ matrix.oracle }}" = "11g" ]; then
+            SQLPLUS_PATH="/u01/app/oracle/product/11.2.0/xe/bin/sqlplus -L"
+            ORACLE_ENV="export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; export PATH=\$ORACLE_HOME/bin:\$PATH; export LD_LIBRARY_PATH=\$ORACLE_HOME/lib:\$LD_LIBRARY_PATH;"
+            LOGIN="system/oracle@XE"
+          elif [ "${{ matrix.oracle }}" = "21c" ]; then
+            SQLPLUS_PATH="sqlplus -L"
+            ORACLE_ENV=""
+            LOGIN="system/oracle@XEPDB1"
+          elif [ "${{ matrix.oracle }}" = "26ai" ]; then
+            SQLPLUS_PATH="sqlplus -L"
+            ORACLE_ENV=""
+            LOGIN="system/oracle@FREEPDB1"
+          else
+            echo "Using the managed DATA tablespace for Oracle ${{ matrix.oracle }}."
+            exit 0
+          fi
+
+          docker exec -i -u oracle "${{ job.services.oracle.id }}" bash -lc "$ORACLE_ENV $SQLPLUS_PATH -s $LOGIN" <<'SQL'
+          WHENEVER SQLERROR EXIT SQL.SQLCODE
+          SET SERVEROUTPUT ON
+
+          DECLARE
+              datafile_path VARCHAR2(4000);
+              db_create_file_dest VARCHAR2(4000);
+          BEGIN
+              SELECT value
+              INTO db_create_file_dest
+              FROM v$parameter
+              WHERE name = 'db_create_file_dest';
+
+              IF db_create_file_dest IS NOT NULL THEN
+                  EXECUTE IMMEDIATE
+                      'CREATE TABLESPACE LARAVEL_OCI8_TEST DATAFILE SIZE 128M '
+                      || 'AUTOEXTEND ON NEXT 128M MAXSIZE 2G';
+              ELSE
+                  SELECT SUBSTR(file_name, 1, INSTR(file_name, '/', -1))
+                         || 'laravel_oci8_test.dbf'
+                  INTO datafile_path
+                  FROM dba_data_files
+                  WHERE tablespace_name = 'SYSTEM'
+                    AND ROWNUM = 1;
+
+                  EXECUTE IMMEDIATE
+                      'CREATE TABLESPACE LARAVEL_OCI8_TEST DATAFILE '''
+                      || REPLACE(datafile_path, '''', '''''')
+                      || ''' SIZE 128M AUTOEXTEND ON NEXT 128M MAXSIZE 2G';
+              END IF;
+          END;
+          /
+
+          ALTER USER LARAVEL_OCI8 DEFAULT TABLESPACE LARAVEL_OCI8_TEST;
+          ALTER USER LARAVEL_OCI8 QUOTA UNLIMITED ON LARAVEL_OCI8_TEST;
+          ALTER USER SECOND_CONNECTION DEFAULT TABLESPACE LARAVEL_OCI8_TEST;
+          ALTER USER SECOND_CONNECTION QUOTA UNLIMITED ON LARAVEL_OCI8_TEST;
+          EXIT
+          SQL
+
       - name: Debug versions
         run: |
           echo "PHP:"
           php -v
+          echo
+          echo "PHP memory limit:"
+          php -r 'echo ini_get("memory_limit"), PHP_EOL;'
           echo
           echo "Composer:"
           composer --version
@@ -215,6 +282,9 @@ jobs:
           else
             composer show | grep -E '^(laravel/framework|illuminate/database) '
           fi
+          echo
+          echo "PDO via OCI8 version:"
+          composer show yajra/laravel-pdo-via-oci8
 
       - name: Execute tests
         env:
@@ -287,7 +357,11 @@ jobs:
         with:
           timeout_minutes: 5
           max_attempts: 5
-          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+          command: |
+            # TODO: Remove this fork override after blob stream binding testing is complete.
+            composer config repositories.pdo-via-oci8 vcs https://github.com/csaba215/pdo-via-oci8.git
+            composer require --no-update --no-interaction "yajra/laravel-pdo-via-oci8:dev-feature/blob-stream-binding as 3.7.1"
+            composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Initialize PostgreSQL (second_connection)
         run: |
@@ -340,7 +414,11 @@ jobs:
         with:
           timeout_minutes: 5
           max_attempts: 5
-          command: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+          command: |
+            # TODO: Remove this fork override after blob stream binding testing is complete.
+            composer config repositories.pdo-via-oci8 vcs https://github.com/csaba215/pdo-via-oci8.git
+            composer require --no-update --no-interaction "yajra/laravel-pdo-via-oci8:dev-feature/blob-stream-binding as 3.7.1"
+            composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
       - name: Initialize MariaDB (second_connection)
         run: |
