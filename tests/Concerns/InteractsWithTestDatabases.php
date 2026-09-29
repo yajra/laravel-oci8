@@ -6,6 +6,7 @@ use Illuminate\Database\Connection;
 use PDO;
 use Yajra\Oci8\Connectors\OracleConnector;
 use Yajra\Oci8\Oci8Connection;
+use Yajra\Pdo\Oci8;
 
 trait InteractsWithTestDatabases
 {
@@ -108,6 +109,9 @@ trait InteractsWithTestDatabases
             'retry_delay' => '1',
             'transport_connect_timeout' => '60',
             'expire_time' => '0',
+            'options' => [
+                Oci8::ATTR_BLOB_AS_STREAM => true,
+            ],
         ], $overrides);
     }
 
