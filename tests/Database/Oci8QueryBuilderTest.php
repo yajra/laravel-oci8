@@ -940,6 +940,206 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals(['johnny', 'white'], $builder->getBindings());
     }
 
+    public function test_vector_similarity_query_methods()
+    {
+        $builder = $this->getBuilder(serverVersion: '23ai');
+        $builder->from('documents')
+            ->select('id')
+            ->selectVectorDistance('embedding', [0.1, 0.2], 'distance')
+            ->whereVectorSimilarTo('embedding', [0.1, 0.2], 0.7);
+
+        $this->assertSame(
+            'select "ID", VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), COSINE) as "DISTANCE" from "DOCUMENTS" '
+            .'where VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), COSINE) <= ? '
+            .'order by VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), COSINE) asc',
+            $builder->toSql()
+        );
+        $this->assertSame(['[0.1,0.2]', '[0.1,0.2]', 1 - 0.7, '[0.1,0.2]'], $builder->getBindings());
+    }
+
+    public function test_vector_distance_query_methods_support_index_metrics()
+    {
+        $builder = $this->getBuilder(serverVersion: '23ai');
+        $builder->from('documents')
+            ->selectVectorDistance('embedding', [1, 2], metric: 'vector_l2_ops')
+            ->whereVectorDistanceLessThan('embedding', [1, 2], 5, metric: 'vector_l1_ops')
+            ->orWhereVectorDistanceLessThan('embedding', [1, 2], 10, 'vector_hamming_ops')
+            ->orderByVectorDistance('embedding', [1, 2], 'vector_ip_ops');
+
+        $this->assertSame(
+            'select VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), EUCLIDEAN) as "EMBEDDING_DISTANCE" from "DOCUMENTS" '
+            .'where VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), MANHATTAN) <= ? '
+            .'or VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), HAMMING) <= ? '
+            .'order by VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), DOT) asc',
+            $builder->toSql()
+        );
+        $this->assertSame(['[1,2]', '[1,2]', 5, '[1,2]', 10, '[1,2]'], $builder->getBindings());
+    }
+
+    public function test_vector_distance_query_methods_support_squared_euclidean_metric()
+    {
+        $builder = $this->getBuilder(serverVersion: '23ai');
+        $builder->from('documents')
+            ->orderByVectorDistance('embedding', [1, 2], 'vector_l2sq_ops');
+
+        $this->assertSame(
+            'select * from "DOCUMENTS" order by VECTOR_DISTANCE("EMBEDDING", TO_VECTOR(?), EUCLIDEAN_SQUARED) asc',
+            $builder->toSql()
+        );
+        $this->assertSame(['[1,2]'], $builder->getBindings());
+    }
+
+    public function test_vector_distance_query_methods_reject_unknown_metrics()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported Oracle vector distance metric [unknown].');
+
+        $this->getBuilder(serverVersion: '23ai')
+            ->from('documents')
+            ->orderByVectorDistance('embedding', [1, 2], 'unknown');
+    }
+
+    public function test_vector_distance_query_methods_require_oracle_23ai()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Vector distance queries require Oracle 23ai or newer.');
+
+        $this->getBuilder(serverVersion: '21c')
+            ->from('documents')
+            ->whereVectorSimilarTo('embedding', [1, 2]);
+    }
+
+    public function test_vector_values_are_normalized_for_insert_update_and_upsert()
+    {
+        $builder = $this->getBuilder(serverVersion: '23ai');
+        $builder->getConnection()->shouldReceive('insert')->once()->with(
+            'insert into "DOCUMENTS" ("ID", "EMBEDDING") values (?, TO_VECTOR(?))',
+            [1, '[0.1,0.2]']
+        )->andReturnTrue();
+
+        $builder->from('documents')->insert([
+            'id' => 1,
+            'embedding' => $builder->vectorValue([0.1, 0.2]),
+        ]);
+
+        $builder = $this->getBuilder(serverVersion: '23ai');
+        $builder->getConnection()->shouldReceive('update')->once()->with(
+            'update "DOCUMENTS" set "EMBEDDING" = TO_VECTOR(?) where "ID" = ?',
+            ['[0.3,0.4]', 1]
+        )->andReturn(1);
+
+        $builder->from('documents')->where('id', 1)->update([
+            'embedding' => $builder->vectorValue([0.3, 0.4]),
+        ]);
+
+        $builder = $this->getBuilder(serverVersion: '23ai');
+        $builder->getConnection()->shouldReceive('affectingStatement')->once()->with(
+            'merge into "DOCUMENTS" using (select ? as "ID", TO_VECTOR(?) as "EMBEDDING" from dual) '
+            .'"LARAVEL_SOURCE" on ("LARAVEL_SOURCE"."ID" = "DOCUMENTS"."ID") '
+            .'when matched then update set "EMBEDDING" = "LARAVEL_SOURCE"."EMBEDDING" '
+            .'when not matched then insert ("ID", "EMBEDDING") values '
+            .'("LARAVEL_SOURCE"."ID", "LARAVEL_SOURCE"."EMBEDDING")',
+            [1, '[0.5,0.6]']
+        )->andReturn(1);
+
+        $builder->from('documents')->upsert([
+            'id' => 1,
+            'embedding' => $builder->vectorValue([0.5, 0.6]),
+        ], 'id');
+    }
+
+    public function test_spatial_values_are_normalized_for_insert_and_update()
+    {
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('insert')->once()->with(
+            'insert into "PLACES" ("ID", "SHAPE") values (?, MDSYS.SDO_GEOMETRY(?, 4326))',
+            [1, 'POINT (19.04 47.5)']
+        )->andReturnTrue();
+
+        $builder->from('places')->insert([
+            'id' => 1,
+            'shape' => $builder->spatialValue('POINT (19.04 47.5)', 4326),
+        ]);
+
+        $builder = $this->getBuilder();
+        $builder->getConnection()->shouldReceive('update')->once()->with(
+            'update "PLACES" set "SHAPE" = MDSYS.SDO_GEOMETRY(?, 4326) where "ID" = ?',
+            ['POINT (19.05 47.51)', 1]
+        )->andReturn(1);
+
+        $builder->from('places')->where('id', 1)->update([
+            'shape' => $builder->spatialValue('POINT (19.05 47.51)', 4326),
+        ]);
+    }
+
+    public function test_spatial_selection_and_distance_query_methods()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('places')
+            ->select('id')
+            ->selectSpatialAsText('shape')
+            ->selectSpatialDistance('shape', 'POINT (0 0)', 'distance', unit: 'KM', srid: 4326)
+            ->orderBySpatialDistance('shape', 'POINT (0 0)', unit: 'KM', srid: 4326);
+
+        $this->assertSame(
+            'select "ID", SDO_UTIL.TO_WKTGEOMETRY("SHAPE") as "SHAPE_WKT", '
+            .'SDO_GEOM.SDO_DISTANCE("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?, ?) as "DISTANCE" '
+            .'from "PLACES" order by '
+            .'SDO_GEOM.SDO_DISTANCE("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?, ?) asc',
+            $builder->toSql()
+        );
+        $this->assertSame(
+            ['POINT (0 0)', 0.005, 'unit=KM', 'POINT (0 0)', 0.005, 'unit=KM'],
+            $builder->getBindings()
+        );
+    }
+
+    public function test_spatial_predicate_query_methods()
+    {
+        $builder = $this->getBuilder();
+        $geometry = $builder->spatialValue('POINT (19.04 47.5)', 4326);
+
+        $builder->from('places')
+            ->whereSpatialIntersects('shape', $geometry)
+            ->whereSpatialContains('area', $geometry)
+            ->orWhereSpatialRelation('shape', $geometry, 'TOUCH')
+            ->whereSpatialWithinDistance('shape', $geometry, 10, 'KM')
+            ->orWhereSpatialWithinDistance('shape', $geometry, 20, 'KM');
+
+        $this->assertSame(
+            'select * from "PLACES" where '
+            .'SDO_RELATE("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?) = \'TRUE\' and '
+            .'SDO_RELATE("AREA", MDSYS.SDO_GEOMETRY(?, 4326), ?) = \'TRUE\' or '
+            .'SDO_RELATE("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?) = \'TRUE\' and '
+            .'SDO_WITHIN_DISTANCE("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?) = \'TRUE\' or '
+            .'SDO_WITHIN_DISTANCE("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?) = \'TRUE\'',
+            $builder->toSql()
+        );
+        $this->assertSame([
+            'POINT (19.04 47.5)', 'mask=ANYINTERACT',
+            'POINT (19.04 47.5)', 'mask=CONTAINS',
+            'POINT (19.04 47.5)', 'mask=TOUCH',
+            'POINT (19.04 47.5)', 'distance=10 unit=KM',
+            'POINT (19.04 47.5)', 'distance=20 unit=KM',
+        ], $builder->getBindings());
+    }
+
+    public function test_spatial_nearest_neighbor_query_method()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('places')->whereSpatialNearestTo(
+            'shape', 'POINT (0 0)', 5, srid: 4326, label: 2
+        );
+
+        $this->assertSame(
+            'select * from "PLACES" where '
+            .'SDO_NN("SHAPE", MDSYS.SDO_GEOMETRY(?, 4326), ?, 2) = \'TRUE\' '
+            .'order by SDO_NN_DISTANCE(2) asc',
+            $builder->toSql()
+        );
+        $this->assertSame(['POINT (0 0)', 'sdo_num_res=5'], $builder->getBindings());
+    }
+
     public function test_unions()
     {
         $builder = $this->getBuilder();
