@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Schema;
 
 use Closure;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
 use InvalidArgumentException;
 use Yajra\Oci8\Oci8Connection;
@@ -52,8 +53,12 @@ class OracleBuilder extends Builder
      *
      * @param  string  $table
      */
-    protected function createBlueprint($table, ?Closure $callback = null): OracleBlueprint
+    protected function createBlueprint($table, ?Closure $callback = null): Blueprint
     {
+        if (isset($this->resolver)) {
+            return parent::createBlueprint($table, $callback);
+        }
+
         return new OracleBlueprint($this->connection, $table, $callback);
     }
 

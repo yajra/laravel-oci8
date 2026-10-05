@@ -3,6 +3,7 @@
 namespace Yajra\Oci8\Tests\Database;
 
 use Illuminate\Database\Query\Expression;
+use Illuminate\Database\Schema\Blueprint as IlluminateBlueprint;
 use InvalidArgumentException;
 use LogicException;
 use Mockery as m;
@@ -237,6 +238,43 @@ class Oci8SchemaGrammarTest extends TestCase
     public function getBuilder()
     {
         return mock(OracleBuilder::class);
+    }
+
+    public function test_schema_builder_uses_oracle_blueprint_by_default(): void
+    {
+        $connection = $this->getConnection();
+        $connection->shouldReceive('statement')->once()
+            ->with('create table "USERS" ( "NAME" nvarchar2(255) not null )')
+            ->andReturnTrue();
+
+        $builder = new OracleBuilder($connection);
+
+        $builder->create('users', function ($blueprint) {
+            $this->assertInstanceOf(Blueprint::class, $blueprint);
+            $blueprint->nvarchar2('name');
+        });
+    }
+
+    public function test_schema_builder_honors_custom_blueprint_resolver(): void
+    {
+        $connection = $this->getConnection();
+        $connection->shouldReceive('statement')->once()
+            ->with('alter table "USERS" add ( "NAME" varchar2(255) not null )')
+            ->andReturnTrue();
+        $customBlueprint = new IlluminateBlueprint($connection, 'users');
+        $builder = new OracleBuilder($connection);
+        $builder->blueprintResolver(function ($resolvedConnection, $table, $callback) use ($connection, $customBlueprint) {
+            $this->assertSame($connection, $resolvedConnection);
+            $this->assertSame('users', $table);
+            $this->assertNull($callback);
+
+            return $customBlueprint;
+        });
+
+        $builder->table('users', function ($blueprint) use ($customBlueprint) {
+            $this->assertSame($customBlueprint, $blueprint);
+            $blueprint->string('name');
+        });
     }
 
     public function test_set_schema_prefix_delegates_to_connection(): void
