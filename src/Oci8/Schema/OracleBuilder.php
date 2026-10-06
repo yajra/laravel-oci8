@@ -79,6 +79,8 @@ class OracleBuilder extends Builder
             }
         }
 
+        $this->ctxDdlPreferences->createPreferences($blueprint);
+
         $this->build($blueprint);
     }
 
