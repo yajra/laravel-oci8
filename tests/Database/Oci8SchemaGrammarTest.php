@@ -2579,6 +2579,28 @@ class Oci8SchemaGrammarTest extends TestCase
         ], $blueprint->toSql());
     }
 
+    public function test_virtual_as_cannot_be_changed(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '26ai'), 'generated_columns');
+        $blueprint->integer('double_value')->virtualAs(new Expression('"VALUE" * 3'))->change();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('This database driver does not support modifying generated columns.');
+
+        $blueprint->toSql();
+    }
+
+    public function test_virtual_as_cannot_be_removed(): void
+    {
+        $blueprint = new Blueprint($this->getConnection(serverVersion: '26ai'), 'generated_columns');
+        $blueprint->integer('double_value')->virtualAs(null)->change();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('This database driver does not support modifying generated columns.');
+
+        $blueprint->toSql();
+    }
+
     public function test_create_table_with_virtual_as()
     {
         $blueprint = new Blueprint($this->getConnection(), 'generated_columns');
