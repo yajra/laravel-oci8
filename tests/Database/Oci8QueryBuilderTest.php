@@ -1542,6 +1542,88 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertSame('select * from "USERS" having "EMAIL" = ? or "EMAIL" = ?', $builder->toSql());
     }
 
+    public function test_bitwise_where()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->where('flags', '&', 4);
+
+        $this->assertEquals('select * from "USERS" where (BITAND("FLAGS", ?)) != 0', $builder->toSql());
+    }
+
+    public function test_bitwise_where_supports_missing_oracle_operators()
+    {
+        $tests = [
+            ['|', 'select * from "USERS" where (("FLAGS" + ? - BITAND("FLAGS", 4))) != 0'],
+            ['^', 'select * from "USERS" where (("FLAGS" + ? - (BITAND("FLAGS", 4) * 2))) != 0'],
+            ['#', 'select * from "USERS" where (("FLAGS" + ? - (BITAND("FLAGS", 4) * 2))) != 0'],
+            ['<<', 'select * from "USERS" where (("FLAGS" * POWER(2, ?))) != 0'],
+            ['>>', 'select * from "USERS" where (FLOOR("FLAGS" / POWER(2, ?))) != 0'],
+            ['&~', 'select * from "USERS" where (("FLAGS" - BITAND("FLAGS", ?))) != 0'],
+        ];
+
+        foreach ($tests as [$operator, $sql]) {
+            $builder = $this->getBuilder();
+            $builder->select('*')->from('users')->where('flags', $operator, 4);
+
+            $this->assertSame($sql, $builder->toSql());
+            $this->assertSame([4], $builder->getBindings());
+        }
+    }
+
+    public function test_bitwise_where_normalizes_repeated_operands()
+    {
+        $tests = [
+            ['|', 4.5, 'select * from "USERS" where (("FLAGS" + 4 - BITAND("FLAGS", TRUNC(?)))) != 0', [4.5]],
+            ['^', 4.5, 'select * from "USERS" where (("FLAGS" + 4 - (BITAND("FLAGS", TRUNC(?)) * 2))) != 0', [4.5]],
+            ['#', new Raw('mask_value'), 'select * from "USERS" where (("FLAGS" + TRUNC(mask_value) - (BITAND("FLAGS", TRUNC(mask_value)) * 2))) != 0', []],
+        ];
+
+        foreach ($tests as [$operator, $value, $sql, $bindings]) {
+            $builder = $this->getBuilder();
+            $builder->select('*')->from('users')->where('flags', $operator, $value);
+
+            $this->assertSame($sql, $builder->toSql());
+            $this->assertSame($bindings, $builder->getBindings());
+        }
+    }
+
+    public function test_bitwise_having()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->groupBy('flags')->having('flags', '&', 4);
+
+        $this->assertEquals('select * from "USERS" group by "FLAGS" having (BITAND("FLAGS", ?)) != 0', $builder->toSql());
+    }
+
+    public function test_bitwise_having_supports_missing_oracle_operators()
+    {
+        $tests = [
+            ['|', 'select * from "USERS" group by "FLAGS" having (("FLAGS" + ? - BITAND("FLAGS", 4))) != 0'],
+            ['^', 'select * from "USERS" group by "FLAGS" having (("FLAGS" + ? - (BITAND("FLAGS", 4) * 2))) != 0'],
+            ['#', 'select * from "USERS" group by "FLAGS" having (("FLAGS" + ? - (BITAND("FLAGS", 4) * 2))) != 0'],
+            ['<<', 'select * from "USERS" group by "FLAGS" having (("FLAGS" * POWER(2, ?))) != 0'],
+            ['>>', 'select * from "USERS" group by "FLAGS" having (FLOOR("FLAGS" / POWER(2, ?))) != 0'],
+            ['&~', 'select * from "USERS" group by "FLAGS" having (("FLAGS" - BITAND("FLAGS", ?))) != 0'],
+        ];
+
+        foreach ($tests as [$operator, $sql]) {
+            $builder = $this->getBuilder();
+            $builder->select('*')->from('users')->groupBy('flags')->having('flags', $operator, 4);
+
+            $this->assertSame($sql, $builder->toSql());
+            $this->assertSame([4], $builder->getBindings());
+        }
+    }
+
+    public function test_bitwise_having_normalizes_repeated_operands()
+    {
+        $builder = $this->getBuilder();
+        $builder->select('*')->from('users')->groupBy('flags')->having('flags', '|', 4.5);
+
+        $this->assertSame('select * from "USERS" group by "FLAGS" having (("FLAGS" + 4 - BITAND("FLAGS", TRUNC(?)))) != 0', $builder->toSql());
+        $this->assertSame([4.5], $builder->getBindings());
+    }
+
     public function test_having_followed_by_select_get()
     {
         $builder = $this->getBuilder();

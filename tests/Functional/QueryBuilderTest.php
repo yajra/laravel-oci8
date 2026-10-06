@@ -49,6 +49,11 @@ class QueryBuilderTest extends TestCase
             $table->string('name');
         });
 
+        Schema::create('bitwise_flags', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->increments('id');
+            $table->integer('flags');
+        });
+
         collect(range(1, 20))->each(function ($i) {
             /** @var User $user */
             User::query()->create([
@@ -65,6 +70,7 @@ class QueryBuilderTest extends TestCase
         Schema::drop('empty_defaults_table');
         Schema::drop('multiple_raw_insert_table');
         Schema::drop('single_raw_insert_table');
+        Schema::drop('bitwise_flags');
 
         parent::tearDown();
     }
@@ -190,6 +196,47 @@ class QueryBuilderTest extends TestCase
 
         $this->assertArrayNotHasKey('rn', $notexpected2[0]);
         $this->assertArrayNotHasKey('rn', $notexpected2[1]);
+    }
+
+    #[Test]
+    public function it_can_filter_rows_using_bitwise_where()
+    {
+        DB::table('bitwise_flags')->insert([
+            ['flags' => 1],
+            ['flags' => 4],
+            ['flags' => 5],
+            ['flags' => 8],
+        ]);
+
+        $results = DB::table('bitwise_flags')
+            ->where('flags', '&', 4)
+            ->orderBy('id')
+            ->pluck('flags')
+            ->all();
+
+        $this->assertSame([4, 5], $results);
+    }
+
+    #[Test]
+    public function it_can_filter_groups_using_bitwise_having()
+    {
+        DB::table('bitwise_flags')->insert([
+            ['flags' => 1],
+            ['flags' => 4],
+            ['flags' => 4],
+            ['flags' => 5],
+            ['flags' => 8],
+        ]);
+
+        $results = DB::table('bitwise_flags')
+            ->select('flags')
+            ->groupBy('flags')
+            ->having('flags', '&', 4)
+            ->orderBy('flags')
+            ->pluck('flags')
+            ->all();
+
+        $this->assertSame([4, 5], $results);
     }
 
     protected function getBuilder(): Builder
