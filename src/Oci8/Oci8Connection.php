@@ -63,12 +63,9 @@ class Oci8Connection extends Connection
      */
     public function setSchema(string $schema): static
     {
-        $this->schema = $schema;
-        $sessionVars = [
+        return $this->setSessionVars([
             'CURRENT_SCHEMA' => $schema,
-        ];
-
-        return $this->setSessionVars($sessionVars);
+        ]);
     }
 
     /**
@@ -77,8 +74,13 @@ class Oci8Connection extends Connection
     public function setSessionVars(array $sessionVars): static
     {
         $vars = [];
+        $schema = null;
+
         foreach ($sessionVars as $option => $value) {
-            if (strtoupper($option) == 'CURRENT_SCHEMA' || strtoupper($option) == 'EDITION') {
+            if (strtoupper($option) == 'CURRENT_SCHEMA') {
+                $schema = (string) $value;
+                $vars[] = "$option  = $value";
+            } elseif (strtoupper($option) == 'EDITION') {
                 $vars[] = "$option  = $value";
             } else {
                 $vars[] = "$option  = '$value'";
@@ -88,6 +90,10 @@ class Oci8Connection extends Connection
         if ($vars) {
             $sql = 'ALTER SESSION SET '.implode(' ', $vars);
             $this->statement($sql);
+
+            if (! is_null($schema)) {
+                $this->schema = $schema;
+            }
         }
 
         return $this;

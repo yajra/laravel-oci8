@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
+use InvalidArgumentException;
 use Yajra\Oci8\Oci8Connection;
 
 /**
@@ -46,24 +47,64 @@ class OracleBlueprint extends Blueprint
             $index = strtolower($this->connection->getTablePrefix().$this->table.'_'.implode('_', $columns).'_'.$type);
 
             $index = str_replace(['-', '.', ' '], '_', $index);
-            while (strlen($index) > $this->connection->getMaxLength()) {
+            $originalIndex = $index;
+            $maxLength = $this->connection->getMaxLength();
+
+            if ($maxLength < 1) {
+                throw new InvalidArgumentException('Oracle object name length must be at least 1 byte.');
+            }
+
+            $shortestIndex = implode('_', array_map(
+                fn ($part) => mb_substr($part, 0, min(2, mb_strlen($part))),
+                explode('_', $index)
+            ));
+
+            if (strlen($shortestIndex) > $maxLength) {
+                return $this->shortenIndexNameWithHash($originalIndex, $maxLength);
+            }
+
+            while (strlen($index) > $maxLength) {
                 $parts = explode('_', $index);
 
                 for ($i = 0; $i < count($parts); $i++) {
                     // if any part is longer than 2 chars, take one off
-                    $len = strlen($parts[$i]);
+                    $len = mb_strlen($parts[$i]);
                     if ($len > 2) {
                         $parts[$i] = mb_substr($parts[$i], 0, $len - 1);
                     }
                 }
 
-                $index = implode('_', $parts);
+                $shortenedIndex = implode('_', $parts);
+
+                if (strlen($shortenedIndex) >= strlen($index)) {
+                    $index = $this->shortenIndexNameWithHash($originalIndex, $maxLength);
+
+                    break;
+                }
+
+                $index = $shortenedIndex;
             }
         } else {
             $index = mb_substr($this->table, 0, 9).'_comp_'.str_replace('.', '_', microtime(true));
         }
 
         return $index;
+    }
+
+    /**
+     * Shorten an index name to a byte limit while retaining a stable hash suffix.
+     */
+    private function shortenIndexNameWithHash(string $index, int $maxLength): string
+    {
+        $hash = substr(sha1($index), 0, min(8, $maxLength));
+
+        if (strlen($hash) >= $maxLength) {
+            return substr($hash, 0, $maxLength);
+        }
+
+        $prefix = rtrim(mb_strcut($index, 0, $maxLength - strlen($hash) - 1), '_');
+
+        return $prefix === '' ? $hash : $prefix.'_'.$hash;
     }
 
     /**

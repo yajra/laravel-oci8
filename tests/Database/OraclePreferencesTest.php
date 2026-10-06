@@ -83,6 +83,57 @@ class OraclePreferencesTest extends TestCase
         $oraclePreferences->createPreferences($blueprint);
     }
 
+    public function test_alter_table_creates_full_text_preferences_before_indexes(): void
+    {
+        $connection = $this->getConnection();
+        $statements = [];
+        $connection->shouldReceive('statement')->andReturnUsing(function ($sql) use (&$statements) {
+            $statements[] = $sql;
+
+            return true;
+        });
+        $builder = new OracleBuilder($connection);
+
+        $builder->table('users', function (Blueprint $table) {
+            $table->fullText(['firstname', 'lastname'], 'name');
+        });
+
+        $this->assertCount(2, $statements);
+        $this->assertSame("BEGIN ctx_ddl.create_preference('name_preference', 'MULTI_COLUMN_DATASTORE');
+                ctx_ddl.set_attribute('name_preference', 'COLUMNS', '\"FIRSTNAME\", \"LASTNAME\"'); END;", $statements[0]);
+        $this->assertStringContainsString('create index "NAME_0" on "USERS" ("FIRSTNAME")', $statements[1]);
+        $this->assertStringContainsString('create index "NAME_1" on "USERS" ("LASTNAME")', $statements[1]);
+        $this->assertStringContainsString('datastore name_preference sync(on commit)', $statements[1]);
+
+        $statements = [];
+        $builder->table('users', function (Blueprint $table) {
+            $table->string('email');
+        });
+
+        $this->assertSame(['alter table "USERS" add ( "EMAIL" varchar2(255) not null )'], $statements);
+    }
+
+    public function test_alter_table_with_single_full_text_column_does_not_create_preferences(): void
+    {
+        $connection = $this->getConnection();
+        $statements = [];
+        $connection->shouldReceive('statement')->andReturnUsing(function ($sql) use (&$statements) {
+            $statements[] = $sql;
+
+            return true;
+        });
+        $builder = new OracleBuilder($connection);
+
+        $builder->table('users', function (Blueprint $table) {
+            $table->fullText('name', 'name_search');
+        });
+
+        $this->assertCount(1, $statements);
+        $this->assertStringContainsString('create index "NAME_SEARCH" on "USERS" ("NAME")', $statements[0]);
+        $this->assertStringNotContainsString('ctx_ddl', $statements[0]);
+        $this->assertStringNotContainsString('datastore', $statements[0]);
+    }
+
     public function test_drop_all_preferences_by_table()
     {
         $connection = $this->getConnection();
