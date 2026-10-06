@@ -30,7 +30,7 @@ class OracleGrammar extends Grammar
      *
      * @var array
      */
-    protected $modifiers = ['Collate', 'Invisible', 'Increment', 'VirtualAs', 'Nullable', 'Default', 'GeneratedAs', 'Json'];
+    protected $modifiers = ['Collate', 'Invisible', 'Increment', 'VirtualAs', 'StoredAs', 'Nullable', 'Default', 'GeneratedAs', 'Json'];
 
     /**
      * The possible column serials.
@@ -1231,6 +1231,37 @@ class OracleGrammar extends Grammar
         }
 
         return null;
+    }
+
+    /**
+     * Get the SQL for a stored generated column modifier.
+     *
+     * @throws LogicException
+     * @throws InvalidArgumentException
+     */
+    protected function modifyStoredAs(Blueprint $blueprint, Fluent $column): ?string
+    {
+        if ($column->change) {
+            if (array_key_exists('storedAs', $column->getAttributes())) {
+                throw new LogicException('This database driver does not support modifying generated columns.');
+            }
+
+            return null;
+        }
+
+        if (is_null($column->storedAs)) {
+            return null;
+        }
+
+        if (! is_null($column->virtualAs)) {
+            throw new InvalidArgumentException('A column cannot use both virtualAs() and storedAs().');
+        }
+
+        if (! $this->connection->isVersionAboveOrEqual('26ai')) {
+            throw new LogicException('Stored generated columns require Oracle 26ai or newer.');
+        }
+
+        return " generated always as ({$this->getValue($column->storedAs)}) materialized";
     }
 
     /**
