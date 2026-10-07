@@ -13,6 +13,7 @@ use PHPStan\ShouldNotHappenException;
 class DatabaseFacadeExtension implements MethodsClassReflectionExtension
 {
     private const SUPPORTED_METHODS = [
+        'insertGetId',
         'getSchema',
         'setSchema',
         'setSessionVars',

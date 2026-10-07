@@ -133,6 +133,61 @@ class QueryBuilderTest extends TestCase
     }
 
     #[Test]
+    public function it_runs_before_executing_callbacks_for_insert_get_id()
+    {
+        $connection = $this->getConnection();
+        $started = false;
+        $connection->beforeExecuting(function () use ($connection, &$started) {
+            if ($started) {
+                return;
+            }
+
+            $started = true;
+            $connection->beginTransaction();
+        });
+
+        $id = $connection->table('jobs')->insertGetId(['name' => 'Lazy transaction']);
+
+        $this->assertTrue($started);
+        $this->assertSame(1, $connection->transactionLevel());
+        $this->assertGreaterThan(0, $id);
+
+        $connection->rollBack();
+
+        $this->assertDatabaseMissing('jobs', ['id' => $id]);
+    }
+
+    #[Test]
+    public function it_can_insert_and_get_id_with_long_text()
+    {
+        Schema::table('jobs', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->string('name', 4000)->change();
+        });
+
+        $name = str_repeat('x', 4000);
+        $connection = $this->getConnection();
+        $id = $connection->table('jobs')->insertGetId(['name' => $name]);
+
+        $this->assertSame($name, $connection->table('jobs')->where('id', $id)->value('name'));
+    }
+
+    #[Test]
+    public function it_can_create_a_model_with_an_explicit_sequence()
+    {
+        $model = new class extends User
+        {
+            public $sequence = 'users_id_seq';
+
+            protected $table = 'users';
+        };
+
+        $user = $model->newQuery()->create(['name' => 'Explicit sequence', 'email' => 'sequence@example.com']);
+
+        $this->assertGreaterThan(0, $user->id);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Explicit sequence']);
+    }
+
+    #[Test]
     public function it_can_insert_empty_and_get_id()
     {
         $id = $this->getBuilder()->from('empty_defaults_table')->insertGetId([]);

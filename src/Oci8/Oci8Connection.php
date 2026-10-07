@@ -51,6 +51,31 @@ class Oci8Connection extends Connection
     }
 
     /**
+     * Execute an insert statement and return its generated primary key.
+     */
+    public function insertGetId(string $query, array $bindings = []): int
+    {
+        return $this->run($query, $bindings, function ($query, $bindings) {
+            if ($this->pretending()) {
+                return 0;
+            }
+
+            $statement = $this->getPdo()->prepare($query);
+
+            $this->bindValues($statement, $this->prepareBindings($bindings));
+
+            $id = 0;
+            $statement->bindParam(count($bindings) + 1, $id, PDO::PARAM_INT, -1);
+
+            $this->recordsHaveBeenModified();
+
+            $statement->execute();
+
+            return $id;
+        });
+    }
+
+    /**
      * Get the current schema.
      */
     public function getSchema(): string
