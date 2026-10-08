@@ -34,6 +34,239 @@ class Oci8QueryBuilderTest extends TestCase
         $this->assertEquals('select * from "USERS"', $builder->toSql());
     }
 
+    public function test_index_hints()
+    {
+        $builder = $this->getBuilder();
+        $this->assertSame(
+            'select /*+ INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS"',
+            $builder->from('users')->useIndex('users_email_index')->toSql()
+        );
+
+        $builder = $this->getBuilder();
+        $this->assertSame(
+            'select /*+ INDEX(USERS USERS_EMAIL_INDEX USERS_NAME_INDEX) */ * from "USERS"',
+            $builder->from('users')->forceIndex('users_email_index, users_name_index')->toSql()
+        );
+
+        $builder = $this->getBuilder();
+        $this->assertSame(
+            'select /*+ NO_INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS"',
+            $builder->from('users')->ignoreIndex('users_email_index')->toSql()
+        );
+    }
+
+    public function test_index_hints_accept_hash_characters()
+    {
+        foreach (['useIndex' => 'INDEX', 'forceIndex' => 'INDEX', 'ignoreIndex' => 'NO_INDEX'] as $method => $hint) {
+            $this->assertSame(
+                'select /*+ '.$hint.'(USERS#ARCHIVE USERS_EMAIL#IDX) */ * from "USERS#ARCHIVE"',
+                $this->getBuilder()->from('users#archive')->{$method}('users_email#idx')->toSql()
+            );
+
+            $this->assertSame(
+                'select /*+ '.$hint.'(PREFIX_U#ARCHIVE USERS_EMAIL#IDX USERS_NAME#IDX) */ * from "PREFIX_USERS" "PREFIX_U#ARCHIVE"',
+                $this->getBuilder('prefix_')->from('users as u#archive')->{$method}('users_email#idx, users_name#idx')->toSql()
+            );
+
+            $this->assertSame(
+                'select /*+ '.$hint.'(PREFIX_USERS#ARCHIVE USERS_EMAIL#IDX) */ * from "SCHEMA"."PREFIX_USERS#ARCHIVE"',
+                $this->getBuilder('prefix_')->from('schema.users#archive')->{$method}('users_email#idx')->toSql()
+            );
+        }
+    }
+
+    public function test_index_hint_uses_prefixed_table_alias()
+    {
+        $builder = $this->getBuilder('prefix_');
+
+        $this->assertSame(
+            'select /*+ INDEX(PREFIX_U USERS_EMAIL_INDEX) */ * from "PREFIX_USERS" "PREFIX_U"',
+            $builder->from('users as u')->useIndex('users_email_index')->toSql()
+        );
+    }
+
+    public function test_index_hint_uses_prefixed_table_name_for_qualified_tables()
+    {
+        $builder = $this->getBuilder('prefix_');
+
+        $this->assertSame(
+            'select /*+ INDEX(PREFIX_USERS USERS_EMAIL_INDEX) */ * from "SCHEMA"."PREFIX_USERS"',
+            $builder->from('schema.users')->useIndex('users_email_index')->toSql()
+        );
+    }
+
+    public function test_index_hint_compiles_for_aggregate_queries()
+    {
+        $builder = $this->getBuilder();
+        $builder->from('users')->useIndex('users_email_index');
+        $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+        $this->assertSame(
+            'select /*+ INDEX(USERS USERS_EMAIL_INDEX) */ count(*) as "AGGREGATE" from "USERS"',
+            $builder->toSql()
+        );
+    }
+
+    public function test_index_hint_is_merged_with_first_rows_hint()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c');
+
+        $this->assertSame(
+            'select /*+ FIRST_ROWS(10) INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS" offset 0 rows fetch next 10 rows only',
+            $builder->from('users')->useIndex('users_email_index')->limit(10)->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_are_appended_to_a_single_comment()
+    {
+        $builder = $this->getBuilder()->from('users')
+            ->hint(' FIRST_ROWS ')->hint('LEADING(users)', 'USE_NL(orders)');
+
+        $this->assertSame(
+            'select /*+ FIRST_ROWS LEADING(users) USE_NL(orders) */ * from "USERS"',
+            $builder->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_merge_with_pagination_and_index_hints()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c')->from('users')
+            ->hint('LEADING(users) USE_NL(orders)')->useIndex('users_email_index')->limit(10);
+        $expected = 'select /*+ FIRST_ROWS(10) LEADING(users) USE_NL(orders) INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS" offset 0 rows fetch next 10 rows only';
+
+        $this->assertSame($expected, $builder->toSql());
+        $this->assertSame($expected, $builder->toSql());
+        $this->assertSame(['LEADING(users) USE_NL(orders)'], $builder->optimizerHints);
+    }
+
+    public function test_explicit_optimizer_goals_override_automatic_first_rows()
+    {
+        foreach (['ALL_ROWS', 'all_rows', 'FIRST_ROWS', 'FIRST_ROWS(100)', 'first_rows (100)', "LEADING(users)\nall_rows"] as $hint) {
+            $builder = $this->getBuilder(serverVersion: '12c')->from('users')
+                ->hint($hint)->useIndex('users_email_index')->limit(10);
+            $expected = 'select /*+ '.$hint.' INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS" offset 0 rows fetch next 10 rows only';
+
+            $this->assertSame($expected, $builder->toSql());
+            $this->assertSame($expected, $builder->toSql());
+            $this->assertSame([$hint], $builder->optimizerHints);
+        }
+    }
+
+    public function test_optimizer_hint_arguments_do_not_override_automatic_first_rows()
+    {
+        foreach (['QB_NAME(ALL_ROWS)', 'INDEX(users ALL_ROWS users_email_index)', 'LEADING(users FIRST_ROWS orders)', 'QB_NAME("ALL_ROWS")'] as $hint) {
+            $builder = $this->getBuilder(serverVersion: '12c')->from('users')->hint($hint)->limit(10);
+
+            $this->assertSame(
+                'select /*+ FIRST_ROWS(10) '.$hint.' */ * from "USERS" offset 0 rows fetch next 10 rows only',
+                $builder->toSql()
+            );
+        }
+    }
+
+    public function test_explicit_optimizer_goal_is_preserved_by_first()
+    {
+        $builder = $this->getBuilder(serverVersion: '12c')->from('users')->hint('ALL_ROWS');
+        $builder->getConnection()->shouldReceive('select')->once()
+            ->with('select /*+ ALL_ROWS */ * from "USERS" offset 0 rows fetch next 1 rows only', [], true, [])
+            ->andReturn([['id' => 1]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()
+            ->with($builder, [['id' => 1]])->andReturn([['id' => 1]]);
+
+        $this->assertSame(['id' => 1], $builder->first());
+    }
+
+    public function test_explicit_optimizer_goal_is_preserved_by_pagination()
+    {
+        Paginator::currentPathResolver(fn () => '/');
+
+        $builder = $this->getBuilder(serverVersion: '12c')->from('users')->hint('LEADING(users)')->hint('ALL_ROWS');
+        $builder->getConnection()->shouldReceive('select')->once()
+            ->with('select /*+ LEADING(users) ALL_ROWS */ * from "USERS" offset 10 rows fetch next 10 rows only', [], true, [])
+            ->andReturn([['id' => 11]]);
+        $builder->getProcessor()->shouldReceive('processSelect')->once()
+            ->with($builder, [['id' => 11]])->andReturn([['id' => 11]]);
+
+        $this->assertSame([['id' => 11]], $builder->paginate(10, ['*'], 'page', 2, 11)->items());
+    }
+
+    public function test_optimizer_hints_compile_for_aggregates()
+    {
+        $builder = $this->getBuilder()->from('users')->hint('ALL_ROWS')->useIndex('users_email_index');
+        $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+        $this->assertSame(
+            'select /*+ ALL_ROWS INDEX(USERS USERS_EMAIL_INDEX) */ count(*) as "AGGREGATE" from "USERS"',
+            $builder->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_compile_inside_group_limit_wrapper()
+    {
+        $builder = $this->getBuilder()->from('users')->hint('FIRST_ROWS')
+            ->useIndex('users_email_index')->groupLimit(2, 'team_id');
+
+        $this->assertSame(
+            'select * from (select /*+ FIRST_ROWS INDEX(USERS USERS_EMAIL_INDEX) */ "USERS".*, row_number() over (partition by "TEAM_ID" order by null) as "LARAVEL_ROW" from "USERS") "LARAVEL_TABLE" where "LARAVEL_ROW" <= 2 order by "LARAVEL_ROW"',
+            $builder->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_compile_inside_legacy_pagination_wrapper()
+    {
+        $builder = $this->getBuilder(serverVersion: '11g')->from('users')
+            ->hint('FIRST_ROWS')->useIndex('users_email_index')->limit(1);
+
+        $this->assertSame(
+            'select * from (select /*+ FIRST_ROWS INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS") where rownum = 1',
+            $builder->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_remain_local_to_each_query_block()
+    {
+        $inner = $this->getBuilder()->from('orders')->select('user_id')->hint('FULL(orders)');
+        $outer = $this->getBuilder()->from('users')->hint('FIRST_ROWS')->whereIn('id', $inner);
+
+        $this->assertSame(
+            'select /*+ FIRST_ROWS */ * from "USERS" where "ID" in (select /*+ FULL(orders) */ "USER_ID" from "ORDERS")',
+            $outer->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_preserve_dollar_signs()
+    {
+        $builder = $this->getBuilder()->from('users')->hint('QB_NAME(block$1)')->useIndex('users$1');
+
+        $this->assertSame(
+            'select /*+ QB_NAME(block$1) INDEX(USERS USERS$1) */ * from "USERS"',
+            $builder->toSql()
+        );
+    }
+
+    public function test_optimizer_hints_reject_comment_delimiters_and_empty_values()
+    {
+        foreach (['', '  ', '/*+ FIRST_ROWS */', 'FIRST_ROWS */', 'FIRST_ROWS /*'] as $hint) {
+            $builder = $this->getBuilder()->hint('FIRST_ROWS');
+
+            try {
+                $builder->hint('LEADING(users)', $hint);
+                $this->fail('Expected invalid optimizer hints to be rejected.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame('Optimizer hints must be non-empty and must not contain comment delimiters.', $exception->getMessage());
+                $this->assertSame(['FIRST_ROWS'], $builder->optimizerHints);
+            }
+        }
+    }
+
+    public function test_index_hint_rejects_invalid_index_names()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Index name contains invalid characters.');
+
+        $this->getBuilder()->from('users')->useIndex('users_index */ FULL(users)')->toSql();
+    }
+
     public function test_basic_select_with_get_columns()
     {
         $builder = $this->getBuilder();

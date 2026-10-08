@@ -1,0 +1,3 @@
+includes:
+    - ../../vendor/larastan/larastan/extension.neon
+    - ../../extension.neon

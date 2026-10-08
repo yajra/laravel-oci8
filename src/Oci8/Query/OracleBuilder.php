@@ -5,11 +5,39 @@ namespace Yajra\Oci8\Query;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use InvalidArgumentException;
 use Yajra\Oci8\Query\Grammars\OracleGrammar;
 use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleBuilder extends Builder
 {
+    /**
+     * Oracle optimizer hints for this query block.
+     *
+     * @var list<string>
+     */
+    public array $optimizerHints = [];
+
+    /**
+     * Append optimizer hints without the surrounding comment delimiters.
+     *
+     * @return $this
+     */
+    public function hint(string ...$hints): static
+    {
+        $hints = array_map('trim', $hints);
+
+        foreach ($hints as $hint) {
+            if ($hint === '' || str_contains($hint, '/*') || str_contains($hint, '*/')) {
+                throw new InvalidArgumentException('Optimizer hints must be non-empty and must not contain comment delimiters.');
+            }
+        }
+
+        $this->optimizerHints = array_merge($this->optimizerHints, $hints);
+
+        return $this;
+    }
+
     /**
      * Insert a new record and get the value of the primary key.
      */

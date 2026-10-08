@@ -45,13 +45,19 @@ composer require yajra/laravel-oci8:^13
 
 ## Larastan / PHPStan
 
-This package includes an optional PHPStan/Larastan extension for OCI8-specific `DB` methods.
+This package includes an optional PHPStan/Larastan extension for OCI8-specific `DB` methods
+and the `hint()` method on query builders and Eloquent models.
 Include it in your `phpstan.neon` if you want those methods recognized during static analysis.
 
 ```neon
 includes:
     - vendor/yajra/laravel-oci8/extension.neon
 ```
+
+The extension recognizes `DB::table('users')->hint('ALL_ROWS')`,
+`User::query()->hint('ALL_ROWS')`, and `User::hint('ALL_ROWS')`, preserving fluent
+builder and model types. Enabling it assumes these hints run on Oracle connections;
+PHPStan does not infer the database driver for each query.
 
 ## Service Provider (Optional on Laravel 5.5+)
 
@@ -285,12 +291,56 @@ The tables below cover Laravel 13 builder operations whose behavior depends on t
 | Unsupported | `insertOrIgnoreReturning()` and `insertOrIgnoreUsing()` | No Oracle compiler is provided for these Laravel operations. |
 | Unsupported | `whereJsonOverlaps()`, `whereJsonDoesntOverlap()`, and their `orWhere...` variants | JSON overlap predicates are not implemented. |
 | Unsupported | `straightJoin()`, `straightJoinWhere()`, and `straightJoinSub()` | Straight joins are a MySQL-specific query hint. |
-| Unsupported | `useIndex()`, `forceIndex()`, and `ignoreIndex()` | Laravel's portable index-hint API has no Oracle compiler. Use an Oracle hint in a raw expression when needed. |
+| Supported | `hint()`, `useIndex()`, `forceIndex()`, and `ignoreIndex()` | SELECT optimizer hints share one comment per query block. `useIndex()` and `forceIndex()` compile to `INDEX`; `ignoreIndex()` compiles to `NO_INDEX`. |
 | Unsupported | Vector helpers: `selectVectorDistance()`, `whereVectorSimilarTo()`, `whereVectorDistanceLessThan()`, and `orderByVectorDistance()` | Laravel currently restricts these helpers to PostgreSQL connections. |
 | No-op | `timeout()` | The timeout value is stored on the builder but is not compiled into Oracle SQL. |
 | No-op | The column list passed to `distinct(...)` | Oracle SQL applies `DISTINCT` to the complete selected row; the distinct-on column list is ignored. |
 | No-op | `orderBy()`, `limit()`, and `offset()` on non-joined `update()`, on `updateFrom()`, or on `delete()` | These clauses are not included in those Oracle mutation statements. A joined `update()` applies them inside its `ROWID` subquery. |
 | No-op | Options passed to `whereFullText()` | Oracle Text compilation currently ignores Laravel's language, mode, and expansion options. |
+
+### Oracle optimizer hints
+
+Use `hint()` to append one or more SELECT hints, without `/*+ ... */` delimiters.
+Repeated calls add to the same hint comment, together with index hints. Unlocked,
+limited queries on Oracle 12c+ also generate `FIRST_ROWS(n)` unless an explicit
+optimizer goal overrides it.
+Hint text is raw SQL; use trusted strings.
+
+```php
+DB::table('users')
+    ->hint('FIRST_ROWS')
+    ->hint('LEADING(users)')
+    ->useIndex('users_email_index')
+    ->get();
+// select /*+ FIRST_ROWS LEADING(users) INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS"
+
+DB::table('users')
+    ->hint('LEADING(users)')
+    ->useIndex('users_email_index')
+    ->limit(10)
+    ->get();
+// select /*+ FIRST_ROWS(10) LEADING(users) INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS" offset 0 rows fetch next 10 rows only
+```
+
+To prevent conflicting optimizer goals, supplying `ALL_ROWS`, `FIRST_ROWS`, or
+`FIRST_ROWS(n)` through `hint()` suppresses the automatic `FIRST_ROWS(n)` for that
+query block. This also applies to limits added by `first()` and pagination.
+Detection is case-insensitive and works across repeated calls or multiple hints
+in one string. Names inside hint arguments, such as `QB_NAME(ALL_ROWS)`, do not
+count as optimizer goals.
+
+```php
+DB::table('users')
+    ->hint('ALL_ROWS')
+    ->limit(10)
+    ->get();
+// select /*+ ALL_ROWS */ * from "USERS" offset 0 rows fetch next 10 rows only
+```
+
+An explicit `hint('FIRST_ROWS(100)')->limit(10)` similarly retains `FIRST_ROWS(100)`
+as its optimizer goal while limiting the result to 10 rows. Conflict detection
+only controls the automatically generated goal; callers must avoid supplying
+conflicting explicit goals themselves, such as `hint('ALL_ROWS', 'FIRST_ROWS')`.
 
 ## Credits
 
