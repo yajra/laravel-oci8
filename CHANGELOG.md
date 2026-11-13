@@ -1,3 +1,10 @@
+## [12.11.1](https://github.com/yajra/laravel-oci8/compare/v12.11.0...v12.11.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **ci:** handle channel-only semantic release results ([a396934](https://github.com/yajra/laravel-oci8/commit/a396934a0e31f097d10eb91d93cf3c207d30e008))
+
 # [12.11.0](https://github.com/yajra/laravel-oci8/compare/v12.10.1...v12.11.0) (2026-03-17)
 
 
