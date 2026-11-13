@@ -1,3 +1,9 @@
+## [13.14.1](https://github.com/yajra/laravel-oci8/compare/v13.14.0...v13.14.1) (2026-11-13)
+
+### Bug Fixes
+
+* run insertGetId through Laravel query lifecycle (Laravel 13) ([9270193](https://github.com/yajra/laravel-oci8/commit/9270193cfe6de38d90d5d44b787aa40bfc641c89))
+
 ## [13.14.0](https://github.com/yajra/laravel-oci8/compare/v13.13.0...v13.14.0) (2026-09-15)
 
 ### Features
