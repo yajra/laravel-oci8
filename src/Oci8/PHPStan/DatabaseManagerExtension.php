@@ -12,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 class DatabaseManagerExtension implements MethodsClassReflectionExtension
 {
     private const SUPPORTED_METHODS = [
+        'insertGetId',
         'getSchema',
         'setSchema',
         'setSessionVars',
