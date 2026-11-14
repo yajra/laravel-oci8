@@ -28,6 +28,30 @@ class OracleGrammar extends Grammar
     protected static bool $cascadeTruncate = false;
 
     /**
+     * The grammar specific operators supported by Oracle.
+     *
+     * @var string[]
+     */
+    protected $operators = [
+        '#',
+    ];
+
+    /**
+     * The grammar specific bitwise operators supported by Oracle.
+     *
+     * @var string[]
+     */
+    protected $bitwiseOperators = [
+        '&',
+        '|',
+        '^',
+        '#',
+        '<<',
+        '>>',
+        '&~',
+    ];
+
+    /**
      * The keyword identifier wrapper format.
      */
     protected string $wrapper = '%s';
@@ -1127,6 +1151,14 @@ class OracleGrammar extends Grammar
     }
 
     /**
+     * Compile a bitwise operator where clause.
+     */
+    protected function whereBitwise(Builder $query, $where): string
+    {
+        return '('.$this->compileBitwiseExpression($where['column'], $where['operator'], $where['value']).') != 0';
+    }
+
+    /**
      * Compile a "where fulltext" clause.
      *
      * @param  array  $where
@@ -1155,6 +1187,76 @@ class OracleGrammar extends Grammar
         $this->labelSearchFullText++;
 
         return $fullTextClause;
+    }
+
+    /**
+     * Compile a single having clause.
+     */
+    protected function compileHaving(array $having)
+    {
+        if ($having['type'] === 'Bitwise') {
+            return $this->compileHavingBitwise($having);
+        }
+
+        return parent::compileHaving($having);
+    }
+
+    /**
+     * Compile a having clause involving a bitwise operator.
+     */
+    protected function compileHavingBitwise($having): string
+    {
+        return '('.$this->compileBitwiseExpression($having['column'], $having['operator'], $having['value']).') != 0';
+    }
+
+    /**
+     * Compile an Oracle-compatible bitwise expression.
+     *
+     * @param  \Illuminate\Database\Query\Expression|string  $column
+     * @param  mixed  $value
+     */
+    protected function compileBitwiseExpression($column, string $operator, $value): string
+    {
+        $column = $this->wrap($column);
+        $parameter = $this->parameter($value);
+        [$arithmeticOperand, $bitandOperand] = $this->compileRepeatedBitwiseOperands($value);
+
+        return match (strtolower($operator)) {
+            '&' => 'BITAND('.$column.', '.$parameter.')',
+            '|' => '('.$column.' + '.$arithmeticOperand.' - BITAND('.$column.', '.$bitandOperand.'))',
+            '^', '#' => '('.$column.' + '.$arithmeticOperand.' - (BITAND('.$column.', '.$bitandOperand.') * 2))',
+            '<<' => '('.$column.' * POWER(2, '.$parameter.'))',
+            '>>' => 'FLOOR('.$column.' / POWER(2, '.$parameter.'))',
+            '&~' => '('.$column.' - BITAND('.$column.', '.$parameter.'))',
+            default => $column.' '.$operator.' '.$parameter,
+        };
+    }
+
+    /**
+     * Compile a consistently normalized operand that must be referenced twice.
+     *
+     * @param  mixed  $value
+     * @return array{string, string}
+     */
+    protected function compileRepeatedBitwiseOperands($value): array
+    {
+        $parameter = $this->parameter($value);
+
+        if ($this->isExpression($value)) {
+            $operand = 'TRUNC('.$parameter.')';
+
+            return [$operand, $operand];
+        }
+
+        if (is_int($value)) {
+            return [$parameter, (string) $value];
+        }
+
+        if (is_string($value) && preg_match('/^-?\d+$/', $value) === 1) {
+            return [$parameter, $value];
+        }
+
+        return [(string) (int) $value, 'TRUNC('.$parameter.')'];
     }
 
     private function resolveClause($column, $values, $type): string
