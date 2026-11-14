@@ -7,3 +7,7 @@ services:
         class: Yajra\Oci8\PHPStan\DatabaseFacadeExtension
         tags:
             - phpstan.broker.methodsClassReflectionExtension
+    -
+        class: Yajra\Oci8\PHPStan\BuilderExtension
+        tags:
+            - phpstan.broker.methodsClassReflectionExtension

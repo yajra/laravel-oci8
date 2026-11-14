@@ -113,6 +113,36 @@ class QueryBuilderTest extends TestCase
     }
 
     #[Test]
+    public function it_can_query_using_oracle_index_hints()
+    {
+        Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->index('email', 'users_email_index');
+        });
+
+        $useIndex = $this->getBuilder()
+            ->from('users')
+            ->useIndex('users_email_index')
+            ->where('email', 'Email-1@example.com')
+            ->first();
+
+        $forceIndex = $this->getBuilder()
+            ->from('users')
+            ->forceIndex('users_email_index')
+            ->where('email', 'Email-1@example.com')
+            ->first();
+
+        $ignoreIndex = $this->getBuilder()
+            ->from('users')
+            ->ignoreIndex('users_email_index')
+            ->where('email', 'Email-1@example.com')
+            ->first();
+
+        $this->assertSame('Email-1@example.com', $useIndex->email);
+        $this->assertSame('Email-1@example.com', $forceIndex->email);
+        $this->assertSame('Email-1@example.com', $ignoreIndex->email);
+    }
+
+    #[Test]
     public function it_can_insert_and_get_id()
     {
         $lastId = $this->getConnection()->table('users')->max('id');
