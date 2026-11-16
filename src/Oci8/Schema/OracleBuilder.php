@@ -183,11 +183,13 @@ class OracleBuilder extends Builder
      */
     public function getIndexes($table): array
     {
+        [$schema, $table] = $this->parseSchemaAndTable($table);
+
         $table = $this->connection->getTablePrefix().$table;
 
         return $this->connection->getPostProcessor()->processIndexes(
             $this->connection->selectFromWriteConnection(
-                $this->grammar->compileIndexes($this->connection->getConfig('username'), $table)
+                $this->grammar->compileIndexes($schema, $table)
             )
         );
     }
