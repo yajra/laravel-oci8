@@ -198,6 +198,16 @@ Laravel-OCI8 provides **read-only JSON** query support for Oracle databases.
 > Only JSON filtering and querying are available.  
 > For JSON updates, the full JSON document must be modified in the application and saved back to the database.
 
+## Index metadata
+
+`Schema::getIndexes($table)` returns index columns in their declared order and
+reads primary keys from Oracle constraints. Function-based columns contain the
+SQL expression, including its original string literals. Internal LOB indexes
+are excluded.
+
+Each index also contains `directions`, a list of `asc` or `desc` values in the
+same order as `columns`. Qualified table names such as `APP.USERS` are supported.
+
 ## Credits
 
 - [Arjay Angeles][link-author]

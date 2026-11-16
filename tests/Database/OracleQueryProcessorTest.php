@@ -12,12 +12,67 @@ use PDOException;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Oci8Connection;
+use Yajra\Oci8\Query\Processors\OracleProcessor;
 
 class OracleQueryProcessorTest extends TestCase
 {
     protected function tearDown(): void
     {
         m::close();
+    }
+
+    public function test_process_indexes_preserves_expressions_and_column_directions(): void
+    {
+        $expression = "CASE WHEN \"NAME\" = 'Admin,User' THEN LOWER(\"NAME\") END";
+        $results = [
+            (object) ['index_owner' => 'APP', 'name' => 'PRIMARY_ITEMS', 'columns' => 'ID', 'expression' => null,
+                'direction' => 'ASC', 'type' => 'NORMAL', 'unique' => 1, 'primary' => 1],
+            (object) ['index_owner' => 'APP', 'name' => 'ITEMS_PK_LABEL', 'columns' => 'LAST_NAME', 'expression' => null,
+                'direction' => 'DESC', 'type' => 'NORMAL', 'unique' => 0, 'primary' => 0],
+            (object) ['index_owner' => 'APP', 'name' => 'ITEMS_PK_LABEL', 'columns' => 'FIRST_NAME', 'expression' => null,
+                'direction' => 'ASC', 'type' => 'NORMAL', 'unique' => 0, 'primary' => 0],
+            (object) ['index_owner' => 'APP', 'name' => 'ITEMS_EXPRESSION', 'columns' => 'SYS_NC00005$', 'expression' => $expression,
+                'direction' => 'ASC', 'type' => 'FUNCTION-BASED NORMAL', 'unique' => 0, 'primary' => 0],
+        ];
+
+        $indexes = (new OracleProcessor)->processIndexes($results);
+
+        $this->assertSame([
+            ['name' => 'primary_items', 'columns' => ['id'], 'type' => 'normal',
+                'unique' => true, 'primary' => true, 'directions' => ['asc']],
+            ['name' => 'items_pk_label', 'columns' => ['last_name', 'first_name'], 'type' => 'normal',
+                'unique' => false, 'primary' => false, 'directions' => ['desc', 'asc']],
+            ['name' => 'items_expression', 'columns' => [$expression], 'type' => 'function-based normal',
+                'unique' => false, 'primary' => false, 'directions' => ['asc']],
+        ], $indexes);
+    }
+
+    public function test_process_indexes_keeps_case_distinct_quoted_names_separate(): void
+    {
+        $indexes = (new OracleProcessor)->processIndexes([
+            (object) ['index_owner' => 'APP', 'name' => 'METADATA_NAMES', 'columns' => 'ID', 'expression' => null,
+                'direction' => 'ASC', 'type' => 'NORMAL', 'unique' => 0, 'primary' => 0],
+            (object) ['index_owner' => 'APP', 'name' => 'metadata_names', 'columns' => 'NAME', 'expression' => null,
+                'direction' => 'ASC', 'type' => 'NORMAL', 'unique' => 0, 'primary' => 0],
+        ]);
+
+        $this->assertCount(2, $indexes);
+        $this->assertSame([['id'], ['name']], array_column($indexes, 'columns'));
+        $this->assertSame(['metadata_names', 'metadata_names'], array_column($indexes, 'name'));
+    }
+
+    public function test_process_indexes_keeps_indexes_from_different_owners_separate(): void
+    {
+        $indexes = (new OracleProcessor)->processIndexes([
+            (object) ['index_owner' => 'APP', 'name' => 'SHARED_IDX', 'columns' => 'ID', 'expression' => null,
+                'direction' => 'ASC', 'type' => 'NORMAL', 'unique' => 1, 'primary' => 0],
+            (object) ['index_owner' => 'OTHER_APP', 'name' => 'SHARED_IDX', 'columns' => 'NAME', 'expression' => null,
+                'direction' => 'ASC', 'type' => 'NORMAL', 'unique' => 0, 'primary' => 0],
+        ]);
+
+        $this->assertCount(2, $indexes);
+        $this->assertSame([['id'], ['name']], array_column($indexes, 'columns'));
+        $this->assertSame([true, false], array_column($indexes, 'unique'));
     }
 
     public function test_insert_get_id_runs_before_executing_callbacks_before_preparing_the_statement(): void
