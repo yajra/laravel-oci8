@@ -266,6 +266,26 @@ class SchemaTest extends TestCase
 
             $indexes = array_column(Schema::getIndexes('index_metadata'), null, 'name');
             $this->assertCount(4, $indexes);
+            if (! $indexes['primary_metadata']['primary']) {
+                $owner = Schema::getConnection()->getConfig('username');
+                $this->fail('[DEBUG-oci8-11g-primary] '.json_encode([
+                    'indexes' => $indexes,
+                    'constraints' => DB::select(
+                        'select owner,table_name,constraint_name,constraint_type,index_owner,index_name '
+                        ."from all_constraints where owner=upper(?) and table_name='INDEX_METADATA'",
+                        [$owner],
+                    ),
+                    'own_constraints' => DB::select(
+                        'select table_name,constraint_name,constraint_type,index_owner,index_name '
+                        ."from user_constraints where table_name='INDEX_METADATA'",
+                    ),
+                    'raw_indexes' => DB::select(
+                        'select owner,index_name,table_owner,table_name,index_type,uniqueness '
+                        ."from all_indexes where table_owner=upper(?) and table_name='INDEX_METADATA'",
+                        [$owner],
+                    ),
+                ], JSON_THROW_ON_ERROR));
+            }
             $this->assertTrue($indexes['primary_metadata']['primary']);
             $this->assertTrue($indexes['primary_metadata']['unique']);
             $this->assertFalse($indexes['metadata_pk_label']['primary']);
