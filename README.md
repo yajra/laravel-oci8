@@ -292,6 +292,16 @@ The tables below cover Laravel 13 builder operations whose behavior depends on t
 | No-op | `orderBy()`, `limit()`, and `offset()` on non-joined `update()`, on `updateFrom()`, or on `delete()` | These clauses are not included in those Oracle mutation statements. A joined `update()` applies them inside its `ROWID` subquery. |
 | No-op | Options passed to `whereFullText()` | Oracle Text compilation currently ignores Laravel's language, mode, and expansion options. |
 
+## Index metadata
+
+`Schema::getIndexes($table)` returns index columns in their declared order and
+reads primary keys from Oracle constraints. Function-based columns contain the
+SQL expression, including its original string literals. Internal LOB indexes
+are excluded.
+
+Each index also contains `directions`, a list of `asc` or `desc` values in the
+same order as `columns`. Qualified table names such as `APP.USERS` are supported.
+
 ## Credits
 
 - [Arjay Angeles][link-author]

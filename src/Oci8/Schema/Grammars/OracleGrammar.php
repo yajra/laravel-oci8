@@ -1299,17 +1299,22 @@ class OracleGrammar extends Grammar
     public function compileIndexes($schema, $table): string
     {
         return sprintf(
-            'select i.index_name as name, '
-            ."LISTAGG(coalesce(extractvalue(dbms_xmlgen.getxmltype('select column_expression from all_ind_expressions where index_owner = ''' || i.index_owner || ''' and index_name = ''' || i.index_name || ''' and table_owner = ''' || i.table_owner || ''' and table_name = ''' || i.table_name || ''' and column_position = ' || i.column_position), '/ROWSET/ROW/COLUMN_EXPRESSION'), i.column_name), ',') WITHIN GROUP (ORDER BY i.column_position) as columns, "
-            .'a.index_type as type, '
-            ."decode(a.uniqueness, 'UNIQUE', 1, 0) as \"unique\", "
-            ."max(decode(c.constraint_type, 'P', 1, 0)) as \"primary\" "
-            .'from all_ind_columns i '
-            .'join all_indexes a on a.owner = i.index_owner and a.index_name = i.index_name and a.table_owner = i.table_owner and a.table_name = i.table_name '
-            ."left join all_constraints c on c.owner = a.table_owner and c.index_name = a.index_name and c.constraint_type = 'P' "
+            'select i.index_owner, i.index_name as name, i.column_name as columns, '
+            .'e.column_expression as expression, i.descend as direction, '
+            ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"unique\", "
+            ."decode(c.constraint_type, 'P', 1, 0) as \"primary\" "
+            .'from all_ind_columns i join all_indexes a '
+            .'on a.owner = i.index_owner and a.index_name = i.index_name '
+            .'and a.table_owner = i.table_owner and a.table_name = i.table_name '
+            .'left join all_ind_expressions e '
+            .'on e.index_owner = i.index_owner and e.index_name = i.index_name '
+            .'and e.table_owner = i.table_owner and e.table_name = i.table_name '
+            .'and e.column_position = i.column_position '
+            .'left join all_constraints c '
+            .'on c.owner = a.table_owner and c.index_owner = a.owner '
+            ."and c.index_name = a.index_name and c.constraint_type = 'P' "
             .'where i.table_owner = upper(%s) and i.table_name = upper(%s) '
-            .'group by i.index_name, a.index_type, a.uniqueness '
-            .'order by i.index_name',
+            ."and a.index_type <> 'LOB' order by i.index_owner, i.index_name, i.column_position",
             $this->quoteString($schema),
             $this->quoteString($table)
         );
