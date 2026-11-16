@@ -948,7 +948,8 @@ class OracleGrammar extends Grammar
             .'on e.index_owner = i.index_owner and e.index_name = i.index_name '
             .'and e.table_owner = i.table_owner and e.table_name = i.table_name '
             .'and e.column_position = i.column_position '
-            .'left join all_constraints c '
+            ."left join (select owner, index_owner, index_name, constraint_type from user_constraints where constraint_type = 'P' "
+            ."union all select owner, index_owner, index_name, constraint_type from all_constraints where constraint_type = 'P' and owner <> user) c "
             .'on c.owner = a.table_owner and c.index_owner = a.owner '
             ."and c.index_name = a.index_name and c.constraint_type = 'P' "
             .'where i.table_owner = upper(%s) and i.table_name = upper(%s) '
