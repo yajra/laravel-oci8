@@ -33,6 +33,10 @@ abstract class TestCase extends BaseTestCase
 
         $app['config']->set('database.default', 'oracle');
         $app['config']->set('database.connections.oracle', $this->oracleConfig());
+        $app['config']->set('database.connections.second_connection', $this->oracleConfig([
+            'username' => 'second_connection',
+            'password' => 'second_connection',
+        ]));
     }
 
     protected function getPackageProviders($app): array

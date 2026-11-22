@@ -281,6 +281,13 @@ class SchemaTest extends TestCase
 
             $owner = Schema::getConnection()->getConfig('username');
             $this->assertSame($indexes, array_column(Schema::getIndexes($owner.'.index_metadata'), null, 'name'));
+
+            $reader = DB::connection('second_connection')->getConfig('username');
+            DB::statement("grant select on index_metadata to {$reader}");
+
+            $this->assertTrue(
+                Schema::connection('second_connection')->hasIndex($owner.'.index_metadata', ['id'], 'primary')
+            );
         } finally {
             Schema::drop('index_metadata');
         }
