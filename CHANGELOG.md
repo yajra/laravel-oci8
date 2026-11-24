@@ -1,3 +1,19 @@
+## [13.15.0](https://github.com/yajra/laravel-oci8/compare/v13.14.1...v13.15.0) (2026-11-24)
+
+### Features
+
+* **ci:** add php 8.6 to ci ([3272736](https://github.com/yajra/laravel-oci8/commit/3272736a26864a91f54723f37db6cb2e2993d68d))
+
+### Bug Fixes
+
+* detect primary indexes across Oracle schemas ([e21720c](https://github.com/yajra/laravel-oci8/commit/e21720cbb1fb40f3a28905e91b7af11ee6de5fe1))
+* preserve index expressions without XML aggregation ([386a3c8](https://github.com/yajra/laravel-oci8/commit/386a3c86307abcbe018da469e71d1858bfa46314))
+* read own primary constraints reliably on Oracle 11g ([c771576](https://github.com/yajra/laravel-oci8/commit/c771576e193b8b9eba16cc177fbc899d16fdbd6b))
+
+### Documentation
+
+* remove unrelated README change ([c3283e3](https://github.com/yajra/laravel-oci8/commit/c3283e3f1c43c5a3beda9cdccb5ba3a4b7add860))
+
 ## [13.14.1](https://github.com/yajra/laravel-oci8/compare/v13.14.0...v13.14.1) (2026-11-13)
 
 ### Bug Fixes
