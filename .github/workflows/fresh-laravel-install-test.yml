@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.3, 8.4, 8.5]
+        php: [8.3, 8.4, 8.5, 8.6]
         oracle: [11g, 19c, 21c, 23ai, 26ai]
 
     name: PHP ${{ matrix.php }} · Oracle ${{ matrix.oracle }}
