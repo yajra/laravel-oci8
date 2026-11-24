@@ -253,25 +253,25 @@ class OracleProcessor extends Processor
      */
     public function processIndexes($results): array
     {
-        $collection = array_map(function ($result) {
-            $result = (object) $result;
+        $indexes = [];
 
-            return [
-                'name' => $name = strtolower((string) $result->name),
-                'columns' => $result->columns,
+        foreach ($results as $result) {
+            $result = (object) $result;
+            $owner = (string) $result->index_owner;
+            $name = (string) $result->name;
+            $indexes[$owner][$name] ??= [
+                'name' => strtolower($name),
+                'columns' => [],
                 'type' => strtolower((string) $result->type),
                 'unique' => (bool) $result->unique,
-                'primary' => str_contains($name, '_pk'),
+                'primary' => (bool) $result->primary,
+                'directions' => [],
             ];
-        }, $results);
+            $indexes[$owner][$name]['columns'][] = $result->expression ?? strtolower((string) $result->columns);
+            $indexes[$owner][$name]['directions'][] = strtolower((string) $result->direction);
+        }
 
-        return collect($collection)->groupBy('name')->map(fn ($items) => [
-            'name' => $items->first()['name'],
-            'columns' => $items->pluck('columns')->map(fn ($item) => strtolower((string) $item))->all(),
-            'type' => $items->first()['type'],
-            'unique' => $items->first()['unique'],
-            'primary' => $items->first()['primary'],
-        ])->values()->all();
+        return collect($indexes)->flatten(1)->all();
     }
 
     /**

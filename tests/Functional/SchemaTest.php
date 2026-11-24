@@ -249,6 +249,72 @@ class SchemaTest extends TestCase
     }
 
     #[Test]
+    public function it_reads_complete_index_metadata(): void
+    {
+        Schema::create('index_metadata', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->binary('payload');
+            $table->primary('id', 'primary_metadata');
+            $table->unique('first_name', 'metadata_pk_label');
+        });
+
+        try {
+            DB::statement('create index metadata_names on index_metadata (last_name DESC, first_name ASC)');
+            DB::statement("create index metadata_expression on index_metadata (CASE WHEN first_name = 'Admin,User' THEN LOWER(first_name) END)");
+
+            $indexes = array_column(Schema::getIndexes('index_metadata'), null, 'name');
+            $this->assertCount(4, $indexes);
+            $this->assertTrue($indexes['primary_metadata']['primary']);
+            $this->assertTrue($indexes['primary_metadata']['unique']);
+            $this->assertFalse($indexes['metadata_pk_label']['primary']);
+            $this->assertTrue($indexes['metadata_pk_label']['unique']);
+            $this->assertCount(2, $indexes['metadata_names']['columns']);
+            $this->assertStringContainsString('LAST_NAME', strtoupper($indexes['metadata_names']['columns'][0]));
+            $this->assertSame('first_name', $indexes['metadata_names']['columns'][1]);
+            $this->assertSame(['desc', 'asc'], $indexes['metadata_names']['directions']);
+            $this->assertCount(1, $indexes['metadata_expression']['columns']);
+            $this->assertStringContainsString("'Admin,User'", $indexes['metadata_expression']['columns'][0]);
+            $this->assertStringContainsString('LOWER("FIRST_NAME")', $indexes['metadata_expression']['columns'][0]);
+            $this->assertSame(['asc'], $indexes['metadata_expression']['directions']);
+
+            $owner = Schema::getConnection()->getConfig('username');
+            $this->assertSame($indexes, array_column(Schema::getIndexes($owner.'.index_metadata'), null, 'name'));
+
+            $reader = DB::connection('second_connection')->getConfig('username');
+            DB::statement("grant select on index_metadata to {$reader}");
+
+            $this->assertTrue(
+                Schema::connection('second_connection')->hasIndex($owner.'.index_metadata', ['id'], 'primary')
+            );
+        } finally {
+            Schema::drop('index_metadata');
+        }
+    }
+
+    #[Test]
+    public function it_keeps_case_distinct_quoted_indexes_separate(): void
+    {
+        Schema::create('quoted_indexes', function (Blueprint $table) {
+            $table->integer('id');
+            $table->string('name');
+        });
+
+        try {
+            DB::statement('create index "METADATA_NAMES" on quoted_indexes (id)');
+            DB::statement('create index "metadata_names" on quoted_indexes (name)');
+
+            $indexes = Schema::getIndexes('quoted_indexes');
+
+            $this->assertCount(2, $indexes);
+            $this->assertEqualsCanonicalizing([['id'], ['name']], array_column($indexes, 'columns'));
+        } finally {
+            Schema::drop('quoted_indexes');
+        }
+    }
+
+    #[Test]
     public function it_can_add_generated_as_column()
     {
         if (DB::connection()->getDriverName() === 'oracle' && DB::connection()->isVersionBelow('12c')) {

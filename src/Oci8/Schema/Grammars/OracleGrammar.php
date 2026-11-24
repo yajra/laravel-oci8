@@ -937,11 +937,28 @@ class OracleGrammar extends Grammar
     public function compileIndexes($schema, $table): string
     {
         return sprintf(
-            'select i.index_name as name, i.column_name as columns, '
-            ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"UNIQUE\" "
-            .'from all_ind_columns i join ALL_INDEXES a on a.index_name = i.index_name '
-            .'WHERE i.table_name = a.table_name AND i.table_owner = a.table_owner AND '
-            .'i.TABLE_OWNER = upper(%s) AND i.TABLE_NAME = upper(%s) ',
+            'with table_indexes as ('
+            .'select owner, index_name, table_owner, table_name, index_type, uniqueness, '
+            .'count(*) over (partition by index_name) as same_name_count from all_indexes '
+            .'where table_owner = upper(%s) and table_name = upper(%s)) '
+            .'select i.index_owner, i.index_name as name, i.column_name as columns, '
+            .'e.column_expression as expression, i.descend as direction, '
+            ."a.index_type as type, decode(a.uniqueness, 'UNIQUE', 1, 0) as \"unique\", "
+            ."decode(c.constraint_type, 'P', 1, 0) as \"primary\" "
+            .'from table_indexes a join all_ind_columns i '
+            .'on i.index_owner = a.owner and i.index_name = a.index_name '
+            .'and i.table_owner = a.table_owner and i.table_name = a.table_name '
+            .'left join all_ind_expressions e '
+            .'on e.index_owner = i.index_owner and e.index_name = i.index_name '
+            .'and e.table_owner = i.table_owner and e.table_name = i.table_name '
+            .'and e.column_position = i.column_position '
+            .'left join (select owner, table_name, index_owner, index_name, constraint_type '
+            ."from user_constraints where constraint_type = 'P' "
+            .'union all select owner, table_name, index_owner, index_name, constraint_type '
+            ."from all_constraints where constraint_type = 'P' and owner <> user) c "
+            .'on c.owner = a.table_owner and c.table_name = a.table_name and c.index_name = a.index_name '
+            .'and (c.index_owner = a.owner or (c.index_owner is null and a.same_name_count = 1)) '
+            ."where a.index_type <> 'LOB' order by i.index_owner, i.index_name, i.column_position",
             $this->quoteString($schema),
             $this->quoteString($table)
         );
