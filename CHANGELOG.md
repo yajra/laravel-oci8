@@ -1,3 +1,12 @@
+## [12.11.2](https://github.com/yajra/laravel-oci8/compare/v12.11.1...v12.11.2) (2026-11-24)
+
+
+### Bug Fixes
+
+* detect primary indexes across Oracle schemas ([9daf970](https://github.com/yajra/laravel-oci8/commit/9daf97029143ef2c5d49b7d2978778c93725d60b))
+* preserve complete Oracle index metadata ([4967d9f](https://github.com/yajra/laravel-oci8/commit/4967d9fd251d99750a95e5621703091ec10e1a18))
+* read own primary constraints reliably on Oracle 11g ([e082b5c](https://github.com/yajra/laravel-oci8/commit/e082b5c43ab04da2624848c26e229f0d35a1ce8b))
+
 ## [12.11.1](https://github.com/yajra/laravel-oci8/compare/v12.11.0...v12.11.1) (2026-11-13)
 
 
