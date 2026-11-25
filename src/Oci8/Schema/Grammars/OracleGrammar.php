@@ -239,6 +239,20 @@ class OracleGrammar extends Grammar
     public function compileColumns($schema, $table): string
     {
         $schema ??= $this->connection->getConfig('username');
+
+        return $this->compileColumnsQuery("'{$schema}'", "'{$table}'");
+    }
+
+    /**
+     * Compile the columns query with placeholders for the table and schema.
+     */
+    public function compileColumnsWithBindings(): string
+    {
+        return $this->compileColumnsQuery('?', '?');
+    }
+
+    private function compileColumnsQuery(string $schema, string $table): string
+    {
         $autoIncrement = $this->connection->isVersionAboveOrEqual('12c')
             ? "decode(t.identity_column, 'YES', 1, 0) as auto_increment,"
             : 'null as auto_increment,';
@@ -266,8 +280,8 @@ class OracleGrammar extends Grammar
                 c.comments as \"comment\"
             from all_tab_cols t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
-            where upper(t.table_name) = upper('{$table}')
-                and upper(t.owner) = upper('{$schema}')
+            where upper(t.table_name) = upper({$table})
+                and upper(t.owner) = upper({$schema})
                 {$hiddenColumnFilter}
             order by
                 t.column_id
