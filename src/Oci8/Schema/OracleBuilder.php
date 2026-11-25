@@ -149,7 +149,10 @@ class OracleBuilder extends Builder
         $table = $this->connection->getTablePrefix().$table;
 
         return $this->connection->getPostProcessor()->processColumns(
-            $this->connection->selectFromWriteConnection($this->grammar->compileColumns($schema, $table))
+            $this->connection->selectFromWriteConnection(
+                $this->grammar->compileColumnsWithBindings(),
+                [$table, $schema]
+            )
         );
     }
 
