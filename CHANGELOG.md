@@ -1,3 +1,9 @@
+## [13.15.1](https://github.com/yajra/laravel-oci8/compare/v13.15.0...v13.15.1) (2026-11-27)
+
+### Performance Improvements
+
+* bind table and schema in column introspection ([0b99bf8](https://github.com/yajra/laravel-oci8/commit/0b99bf8788649d15e6695b8b5ad22fd3a5ef0560))
+
 ## [13.15.0](https://github.com/yajra/laravel-oci8/compare/v13.14.1...v13.15.0) (2026-11-24)
 
 ### Features
