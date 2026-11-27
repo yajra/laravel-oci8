@@ -113,6 +113,79 @@ class QueryBuilderTest extends TestCase
     }
 
     #[Test]
+    public function it_can_query_using_oracle_index_hints()
+    {
+        Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->index('email', 'users_email_index');
+        });
+
+        $useIndex = $this->getBuilder()
+            ->from('users')
+            ->useIndex('users_email_index')
+            ->where('email', 'Email-1@example.com')
+            ->first();
+
+        $forceIndex = $this->getBuilder()
+            ->from('users')
+            ->forceIndex('users_email_index')
+            ->where('email', 'Email-1@example.com')
+            ->first();
+
+        $ignoreIndex = $this->getBuilder()
+            ->from('users')
+            ->ignoreIndex('users_email_index')
+            ->where('email', 'Email-1@example.com')
+            ->first();
+
+        $this->assertSame('Email-1@example.com', $useIndex->email);
+        $this->assertSame('Email-1@example.com', $forceIndex->email);
+        $this->assertSame('Email-1@example.com', $ignoreIndex->email);
+    }
+
+    #[Test]
+    public function it_executes_a_query_with_raw_and_generated_hints_in_one_comment()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->index('email', 'users_email_index');
+        });
+
+        $query = $this->getBuilder()->from('users')
+            ->selectRaw('/*+ ALL_ROWS */ *')
+            ->hint('QB_NAME(users_block)')
+            ->useIndex('users_email_index')
+            ->where('email', 'Email-1@example.com');
+
+        $connection = $query->getConnection();
+        $connection->enableQueryLog();
+
+        $this->assertSame(['Email-1@example.com'], $query->get()->pluck('email')->all());
+        $this->assertSame(
+            'select /*+ ALL_ROWS QB_NAME(users_block) INDEX(USERS USERS_EMAIL_INDEX) */ * from "USERS" where "EMAIL" = ?',
+            $connection->getQueryLog()[0]['query']
+        );
+    }
+
+    #[Test]
+    public function it_executes_a_limited_query_when_a_nested_hint_argument_is_named_all_rows()
+    {
+        if (! $this->getConnection()->isVersionAboveOrEqual('12c')) {
+            $this->markTestSkipped('Requires Oracle 12c or later for automatic FIRST_ROWS hints.');
+        }
+
+        $query = $this->getBuilder()->from('users as u')->select('u.name')
+            ->join('users as o', 'o.id', '=', 'u.id')
+            ->join('users as all_rows', 'all_rows.id', '=', 'u.id')
+            ->hint('LEADING((U O) ALL_ROWS )')
+            ->orderBy('u.id')->limit(2);
+
+        $connection = $query->getConnection();
+        $connection->enableQueryLog();
+
+        $this->assertSame(['Record-1', 'Record-2'], $query->get()->pluck('name')->all());
+        $this->assertStringStartsWith('select /*+ FIRST_ROWS(2) LEADING((U O) ALL_ROWS ) */ ', $connection->getQueryLog()[0]['query']);
+    }
+
+    #[Test]
     public function it_can_insert_and_get_id()
     {
         $lastId = $this->getConnection()->table('users')->max('id');
