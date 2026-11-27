@@ -6,6 +6,7 @@ use Illuminate\Database\Query\Expression;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Yajra\Oci8\Oci8Connection as Connection;
+use Yajra\Oci8\Query\Processors\OracleProcessor;
 use Yajra\Oci8\Schema\Grammars\OracleGrammar;
 use Yajra\Oci8\Schema\OracleBlueprint as Blueprint;
 use Yajra\Oci8\Schema\OracleBuilder;
@@ -574,6 +575,29 @@ class Oci8SchemaGrammarTest extends TestCase
         $expected = 'select column_name from all_tab_cols where upper(owner) = upper(\'schema\') and upper(table_name) = upper(\'test_table\') order by column_id';
         $sql = $grammar->compileColumnExists('schema', 'test_table');
         $this->assertEquals($expected, $sql);
+    }
+
+    public function test_get_columns_reuses_sql_with_bindings_for_prefixed_tables(): void
+    {
+        $connection = $this->getConnection(prefix: 'app_');
+        $connection->shouldReceive('getConfig')->with('username')->andReturn('default_schema');
+        $connection->shouldReceive('getPostProcessor')->andReturn(new OracleProcessor);
+
+        $sql = str_replace(
+            ["upper('app_users')", "upper('default_schema')"],
+            'upper(?)',
+            $connection->getSchemaGrammar()->compileColumns('default_schema', 'app_users')
+        );
+
+        $connection->shouldReceive('selectFromWriteConnection')
+            ->once()->with($sql, ['app_users', 'default_schema'])->andReturn([]);
+        $connection->shouldReceive('selectFromWriteConnection')
+            ->once()->with($sql, ['app_orders', 'reporting'])->andReturn([]);
+
+        $builder = new OracleBuilder($connection);
+
+        $this->assertSame([], $builder->getColumns('users'));
+        $this->assertSame([], $builder->getColumns('reporting.orders'));
     }
 
     public function test_compile_columns_method()

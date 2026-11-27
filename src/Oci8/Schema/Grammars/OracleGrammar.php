@@ -191,6 +191,19 @@ class OracleGrammar extends Grammar
     {
         $schema ??= $this->connection->getConfig('username');
 
+        return $this->compileColumnsQuery("'{$schema}'", "'{$table}'");
+    }
+
+    /**
+     * Compile the columns query with placeholders for the table and schema.
+     */
+    public function compileColumnsWithBindings(): string
+    {
+        return $this->compileColumnsQuery('?', '?');
+    }
+
+    private function compileColumnsQuery(string $schema, string $table): string
+    {
         return "
             select
                 t.column_name as name,
@@ -206,8 +219,8 @@ class OracleGrammar extends Grammar
                 c.comments as \"comment\"
             from all_tab_columns t
             left join all_col_comments c on t.owner = c.owner and t.table_name = c.table_name AND t.column_name = c.column_name
-            where upper(t.table_name) = upper('{$table}')
-                and upper(t.owner) = upper('{$schema}')
+            where upper(t.table_name) = upper({$table})
+                and upper(t.owner) = upper({$schema})
             order by
                 t.column_id
         ";
