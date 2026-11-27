@@ -195,6 +195,49 @@ This is the baseline, if no version is set, this version is assumed.
 - JSON path updates with query builder `update(['options->path' => $value])`. ([#1007](https://github.com/yajra/laravel-oci8/pull/1007))
 ### 21c
 - Use native json type instead of clob in schema builder. ([#983](https://github.com/yajra/laravel-oci8/pull/983))
+### 23ai
+- Native vector columns, vector indexes, and vector distance queries.
+
+## Vector queries
+
+Oracle 23ai and newer support Laravel's vector distance query methods. Vector arrays used in insert, update, and upsert statements can be wrapped with `vectorValue`:
+
+```php
+$query = DB::connection('oracle')->table('documents');
+
+$query->insert([
+    'id' => 1,
+    'embedding' => $query->vectorValue([0.1, 0.2, 0.3]),
+]);
+
+$documents = $query
+    ->selectVectorDistance('embedding', [0.1, 0.2, 0.3], 'distance')
+    ->whereVectorDistanceLessThan('embedding', [0.1, 0.2, 0.3], 0.3)
+    ->orderByVectorDistance('embedding', [0.1, 0.2, 0.3])
+    ->get();
+```
+
+The lower-level distance methods accept an optional metric. Supported metrics are `cosine`, `dot`, `euclidean`, `euclidean_squared`, `manhattan`, `hamming`, and `jaccard`. Laravel operator-class names such as `vector_l2_ops` are also accepted. Use the same metric for the query and its vector index so Oracle can use the index.
+
+## Spatial queries
+
+Spatial values use well-known text and may include an SRID:
+
+```php
+$query = DB::connection('oracle')->table('places');
+$point = $query->spatialValue('POINT (19.04 47.5)', 4326);
+
+$query->insert(['id' => 1, 'shape' => $point]);
+
+$places = $query
+    ->selectSpatialAsText('shape', 'wkt')
+    ->selectSpatialDistance('shape', $point, 'distance', unit: 'KM')
+    ->whereSpatialWithinDistance('shape', $point, 10, 'KM')
+    ->orderBySpatialDistance('shape', $point, unit: 'KM')
+    ->get();
+```
+
+`whereSpatialRelation`, `whereSpatialIntersects`, `whereSpatialContains`, and `whereSpatialNearestTo` provide Oracle Spatial predicate and nearest-neighbor support.
 
 ## Oracle Max Name Length
 
