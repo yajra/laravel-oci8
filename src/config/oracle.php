@@ -1,5 +1,7 @@
 <?php
 
+use Yajra\Pdo\Oci8;
+
 return [
     'oracle' => [
         'driver' => 'oracle',
@@ -23,6 +25,9 @@ return [
         'expire_time' => env('DB_EXPIRE_TIME', '0'), // 19c and above only
         'max_name_len' => env('ORA_MAX_NAME_LEN', 30),
         'dynamic' => [],
+        'options' => [
+            Oci8::ATTR_BLOB_AS_STREAM => env('DB_BLOB_AS_STREAM', false),
+        ],
         'sessionVars' => [
             'NLS_TIME_FORMAT' => 'HH24:MI:SS',
             'NLS_DATE_FORMAT' => 'YYYY-MM-DD HH24:MI:SS',

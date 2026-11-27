@@ -65,7 +65,11 @@ jobs:
           command: composer create-project laravel/laravel:^13.0 /tmp/laravel-oci8-smoke --prefer-dist --no-interaction --no-progress
 
       - name: Point Composer to local package checkout
-        run: composer config repositories.laravel-oci8 path "$GITHUB_WORKSPACE"
+        run: |
+          composer config repositories.laravel-oci8 path "$GITHUB_WORKSPACE"
+          # TODO: Remove this fork override after BLOB stream return testing is complete.
+          composer config repositories.pdo-via-oci8 vcs https://github.com/csaba215/pdo-via-oci8.git
+          composer require --no-update --no-interaction "yajra/laravel-pdo-via-oci8:dev-feature/return-blobs-as-stream as 3.7.1"
         working-directory: /tmp/laravel-oci8-smoke
 
       - name: Install package from local checkout
