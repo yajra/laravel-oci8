@@ -1,3 +1,10 @@
+## [12.11.3](https://github.com/yajra/laravel-oci8/compare/v12.11.2...v12.11.3) (2026-11-27)
+
+
+### Performance Improvements
+
+* bind table and schema in column introspection ([edb24db](https://github.com/yajra/laravel-oci8/commit/edb24dbae79dc8b82c2b8102d1069d3e2ec46b7e))
+
 ## [12.11.2](https://github.com/yajra/laravel-oci8/compare/v12.11.1...v12.11.2) (2026-11-24)
 
 
